@@ -1,4 +1,4 @@
-# Omnivix
+<img src="public/brand/logo-dark.svg" alt="Omnivix" width="200" />
 
 Omnivix is a template-driven social banner generator built with Next.js App Router.
 It has a gallery home, a shared studio editor, and deterministic PNG export via Playwright.
