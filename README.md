@@ -1,7 +1,9 @@
-<img src="public/brand/logo-dark.svg" alt="Omnivix" width="200" />
+<p align="center">
+  <img src="public/brand/logo-dark.svg#gh-light-mode-only" alt="Omnivix" width="200" />
+  <img src="public/brand/logo-light.svg#gh-dark-mode-only" alt="Omnivix" width="200" />
+</p>
 
-Omnivix is a template-driven social banner generator built with Next.js App Router.
-It has a gallery home, a shared studio editor, and deterministic PNG export via Playwright.
+Omnivix is a template-driven social banner generator built with Next.js App Router. It has a gallery home, a shared studio editor, and deterministic PNG export via Playwright.
 
 ## Architecture
 
@@ -48,3 +50,17 @@ pnpm lint
 pnpm test
 pnpm build
 ```
+
+## Contributing
+
+Contributions are welcome. A few guidelines:
+
+- Open an issue first for larger changes or new templates so direction is agreed early.
+- Use pnpm for installs and scripts; keep the lockfile as the source of truth.
+- Before opening a PR, run `pnpm lint`, `pnpm test`, and `pnpm build` locally.
+- Prefer small, focused diffs. New template work should keep one rendering path for preview and export (shared `BannerRenderer` and per-template renderers), not a second export-only tree.
+
+## Author
+
+- Maintained by [@marhjoh](https://github.com/marhjoh). 
+- See [contributors](https://github.com/marhjoh/omnivix/graphs/contributors) for everyone who has helped shape the project.
