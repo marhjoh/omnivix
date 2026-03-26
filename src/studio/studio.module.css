@@ -1,0 +1,132 @@
+.shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  overflow-y: auto;
+  background: var(--surface);
+}
+
+.preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 32px;
+  gap: 12px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.loadingLogo {
+  width: 40px;
+  height: 40px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loadingDot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.error {
+  text-align: center;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.errorLogo {
+  width: 36px;
+  height: 36px;
+  opacity: 0.5;
+}
+
+.errorTitle {
+  color: var(--danger);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.errorHint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+:global(.field-input) {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+
+:global(.field-input:focus) {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.15);
+}
+
+:global(.omnivix-artboard) {
+  width: min(100%, 1200px);
+  aspect-ratio: var(--banner-width) / var(--banner-height);
+  max-height: calc(100vh - 120px);
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.omnivix-safe-area) {
+  display: none;
+}
