@@ -1,0 +1,20 @@
+{
+  "name": "Omnivix",
+  "short_name": "Omnivix",
+  "description": "Template-driven social banner generator",
+  "theme_color": "#040A1C",
+  "background_color": "#040A1C",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/brand/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
