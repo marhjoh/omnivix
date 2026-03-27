@@ -8,7 +8,7 @@ import {
 
 export const templateRegistry = {
   "github-banner": githubBannerDefinition,
-  "pinned-repos-banner": pinnedReposDefinition,
+  "repos-banner": pinnedReposDefinition,
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
 } as const;

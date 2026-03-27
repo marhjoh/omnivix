@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export type TemplateId =
   | "github-banner"
-  | "pinned-repos-banner"
+  | "repos-banner"
   | "contribution-banner"
   | "quote-banner";
 

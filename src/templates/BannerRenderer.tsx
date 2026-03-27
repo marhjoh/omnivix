@@ -3,7 +3,7 @@
 import { TemplateId } from "@/src/types/template";
 import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/Renderer";
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
-import { PinnedReposBannerRenderer } from "@/src/templates/pinned-repos-banner/Renderer";
+import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
 import { RenderData } from "@/src/templates/renderers/types";
 
@@ -22,8 +22,8 @@ export function BannerRenderer({
     return <GithubBannerRenderer state={state} data={data} isExport={isExport} />;
   }
 
-  if (templateId === "pinned-repos-banner") {
-    return <PinnedReposBannerRenderer state={state} data={data} isExport={isExport} />;
+  if (templateId === "repos-banner") {
+    return <ReposBannerRenderer state={state} data={data} isExport={isExport} />;
   }
 
   if (templateId === "contribution-banner") {

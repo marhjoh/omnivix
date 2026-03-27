@@ -8,7 +8,7 @@ import type { TemplateMeta } from "@/src/types/template";
 
 const templateIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "github-banner": GitGraph,
-  "pinned-repos-banner": BookMarked,
+  "repos-banner": BookMarked,
   "quote-banner": Quote,
   "contribution-banner": BarChart3,
 };
@@ -91,7 +91,7 @@ function ContributionStatsPreview() {
 
 const templatePreviews: Record<string, React.ReactNode> = {
   "github-banner": <ContributionStatsPreview />,
-  "pinned-repos-banner": <PinnedReposPreview />,
+  "repos-banner": <PinnedReposPreview />,
   "quote-banner": <QuotePreview />,
   "contribution-banner": <ContributionStatsPreview />,
 };

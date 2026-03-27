@@ -28,7 +28,7 @@ export default async function RenderPage({
   const user = typeof username === "string" && username ? await getUserSummary(username) : undefined;
   const contributions = typeof username === "string" && username ? await getContributions(username, year) : undefined;
   const repos =
-    templateId === "pinned-repos-banner" && typeof username === "string" && username
+    templateId === "repos-banner" && typeof username === "string" && username
       ? await getRepos(
           username,
           payload.state.mode === "selected" ? "selected" : "pinned",

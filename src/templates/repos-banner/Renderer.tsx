@@ -4,7 +4,7 @@ import { BannerTitle } from "@/src/banner/Text";
 import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
-export function PinnedReposBannerRenderer({
+export function ReposBannerRenderer({
   state,
   data,
   isExport = false,

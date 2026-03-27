@@ -172,7 +172,7 @@ export function ControlSidebar({
       {schema.map((field) => {
         if (field.key === "username") return null;
 
-        if (field.key === "selectedRepos" && templateId === "pinned-repos-banner" && mode === "pinned") {
+        if (field.key === "selectedRepos" && templateId === "repos-banner" && mode === "pinned") {
           return null;
         }
 

@@ -23,7 +23,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   meta: {
     id: "github-banner",
     title: "GitHub Banner",
-    description: "Username, avatar, and contribution-based hero banner.",
+    description: "Username, avatar, and contributions.",
     defaultSize: "linkedinCover",
     tags: ["GitHub", "Profile", "Contributions"],
     needsUsername: true,
@@ -106,9 +106,9 @@ export const pinnedReposDefinition: TemplateDefinition<{
   backgroundImage?: string;
 }> = {
   meta: {
-    id: "pinned-repos-banner",
-    title: "Pinned Repos Banner",
-    description: "Show pinned or selected repositories in a card strip.",
+    id: "repos-banner",
+    title: "Repos Banner",
+    description: "Languages, stars, and forks.",
     defaultSize: "linkedinCover",
     tags: ["GitHub", "Repos"],
     needsUsername: true,
@@ -173,7 +173,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
   meta: {
     id: "contribution-banner",
     title: "Contribution Banner",
-    description: "Large contribution heatmap visual with theme presets.",
+    description: "Contribution heatmap.",
     defaultSize: "linkedinCover",
     tags: ["Contributions", "Heatmap"],
     needsUsername: true,
@@ -222,7 +222,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
   meta: {
     id: "quote-banner",
     title: "Quote Banner",
-    description: "Typographic quote banner with layout presets.",
+    description: "Typographic quotes.",
     defaultSize: "linkedinCover",
     tags: ["Quote", "Typography"],
     needsUsername: false,

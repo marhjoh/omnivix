@@ -113,7 +113,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         const contributions = await fetchJson<ContributionsNormalized>(`/api/github/contributions?username=${encodeURIComponent(username)}${yearParam}`);
 
         let repos: RepoNormalized[] | undefined = undefined;
-        if (templateId === "pinned-repos-banner") {
+        if (templateId === "repos-banner") {
           const mode = String(state.mode ?? "pinned");
           const selected = String(state.selectedRepos ?? "");
           repos = await fetchJson<RepoNormalized[]>(

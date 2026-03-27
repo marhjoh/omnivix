@@ -2,7 +2,7 @@ import { ExportRequest } from "@/src/types/template";
 import { z } from "zod";
 
 export const exportRequestSchema: z.ZodType<ExportRequest> = z.object({
-  templateId: z.enum(["github-banner", "pinned-repos-banner", "contribution-banner", "quote-banner"]),
+  templateId: z.enum(["github-banner", "repos-banner", "contribution-banner", "quote-banner"]),
   size: z.enum(["xHeader", "linkedinCover"]),
   state: z.record(z.string(), z.unknown()),
   format: z.literal("png"),
