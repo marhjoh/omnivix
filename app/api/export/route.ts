@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const pngBuffer = await captureBannerPng({
       url: renderUrl,
       size: parsed.data.size,
-      pixelRatio: parsed.data.pixelRatio ?? 2,
+      pixelRatio: parsed.data.pixelRatio ?? 3,
     });
     return new NextResponse(new Uint8Array(pngBuffer), {
       status: 200,
