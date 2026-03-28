@@ -13,7 +13,7 @@ export type EditorFieldType =
   | "textarea"
   | "toggle"
   | "select"
-  | "imageUpload"
+  | "backgroundPicker"
   | "sizeSelect"
   | "range";
 
@@ -51,5 +51,5 @@ export interface ExportRequest {
   state: Record<string, unknown>;
   format: "png";
   scale: 1 | 2;
-  pixelRatio?: 1 | 2;
+  pixelRatio?: 1 | 2 | 3;
 }

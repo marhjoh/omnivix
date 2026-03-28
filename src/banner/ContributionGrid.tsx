@@ -1,3 +1,4 @@
+import type { ContributionCellShape } from "@/src/templates/definitions";
 import { ContributionsNormalized } from "@/src/github/normalize";
 import { ThemePreset } from "@/src/types/theme";
 
@@ -6,6 +7,19 @@ const MONTH_LABELS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number; ry: number } {
+  if (shape === "square") return { rx: 0, ry: 0 };
+  if (shape === "circle") {
+    const r = cellSize / 2;
+    return { rx: r, ry: r };
+  }
+  // Rounded: scale with cell so tiny cells are not perfect circles (fixed rx was rx=3 on 6px → circle)
+  const r = Math.min(cellSize * 0.22, Math.max(1.25, cellSize * 0.16));
+  const cap = cellSize / 2 - 0.001;
+  const clamped = Math.min(r, cap);
+  return { rx: clamped, ry: clamped };
+}
 
 interface ContributionGridProps {
   contributions: ContributionsNormalized;
@@ -16,6 +30,12 @@ interface ContributionGridProps {
   showDayLabels?: boolean;
   showTotal?: boolean;
   fill?: boolean;
+  /** Subtle outline so cells read clearly on busy backgrounds */
+  cellOutline?: boolean;
+  /** When set, month/day/total use these instead of theme text (theme still drives cell colors only) */
+  labelFill?: string;
+  totalFill?: string;
+  cellShape?: ContributionCellShape;
 }
 
 export function ContributionGrid({
@@ -27,7 +47,14 @@ export function ContributionGrid({
   showDayLabels = false,
   showTotal = false,
   fill = false,
+  cellOutline = true,
+  labelFill,
+  totalFill,
+  cellShape = "rounded",
 }: ContributionGridProps) {
+  const monthDayColor = labelFill ?? theme.textSecondary;
+  const footerColor = totalFill ?? theme.textSecondary;
+  const { rx, ry } = cellRadii(cellShape, cellSize);
   if (!contributions?.weeks?.length) return null;
 
   const today = new Date().toISOString().slice(0, 10);
@@ -66,32 +93,38 @@ export function ContributionGrid({
     }
   }
 
-  const dayLabelWidth = showDayLabels ? 30 : 0;
-  const monthLabelHeight = showMonthLabels ? 18 : 0;
+  const dayLabelWidth = showDayLabels ? 28 : 0;
+  const monthLabelHeight = showMonthLabels ? 20 : 0;
   const step = cellSize + gap;
   const gridW = grid.length * step - gap;
   const gridH = 7 * step - gap;
-  const totalLine = showTotal ? 22 : 0;
+  /** Room below grid for total line (font ~11px + descenders + padding) */
+  const footerHeight = showTotal ? 28 : 0;
   const svgW = dayLabelWidth + gridW;
-  const svgH = monthLabelHeight + gridH + totalLine;
+  const svgH = monthLabelHeight + gridH + footerHeight;
+  /** Stroke is centered on the rect path; pad viewBox so outer half of stroke is not clipped (obvious on XS / circle). */
+  const viewPad = cellOutline ? 1 : 0;
+  const vbW = svgW + 2 * viewPad;
+  const vbH = svgH + 2 * viewPad;
 
   return (
     <div style={{ width: fill ? "100%" : "fit-content", height: fill ? "100%" : "auto", maxWidth: "100%", overflow: "hidden" }}>
       <svg
-        width={svgW}
-        height={svgH}
-        viewBox={`0 0 ${svgW} ${svgH}`}
+        width={vbW}
+        height={vbH}
+        viewBox={`-${viewPad} -${viewPad} ${vbW} ${vbH}`}
         style={{ display: "block", width: "100%", height: fill ? "100%" : "auto" }}
-        preserveAspectRatio={fill ? "xMidYMid slice" : "xMinYMin meet"}
+        preserveAspectRatio={fill ? "xMidYMid meet" : "xMinYMin meet"}
       >
         {showMonthLabels &&
           monthLabels.map(({ label, colIndex }) => (
             <text
               key={`m-${colIndex}`}
               x={dayLabelWidth + colIndex * step}
-              y={monthLabelHeight - 5}
-              fill={theme.textSecondary}
+              y={monthLabelHeight - 6}
+              fill={monthDayColor}
               fontSize={10}
+              fontWeight={500}
               fontFamily="system-ui, -apple-system, sans-serif"
             >
               {label}
@@ -102,10 +135,11 @@ export function ContributionGrid({
           [1, 3, 5].map((row) => (
             <text
               key={`d-${row}`}
-              x={0}
-              y={monthLabelHeight + row * step + cellSize * 0.78}
-              fill={theme.textSecondary}
+              x={showDayLabels ? 2 : 0}
+              y={monthLabelHeight + row * step + cellSize * 0.72}
+              fill={monthDayColor}
               fontSize={9}
+              fontWeight={500}
               fontFamily="system-ui, -apple-system, sans-serif"
             >
               {DAY_LABELS[row]}
@@ -120,21 +154,24 @@ export function ContributionGrid({
               y={monthLabelHeight + ri * step}
               width={cellSize}
               height={cellSize}
-              rx={2}
-              ry={2}
+              rx={rx}
+              ry={ry}
               fill={cell ? theme.gridLevels[cell.level] : theme.gridLevels[0]}
+              stroke={cellOutline ? "rgba(255,255,255,0.14)" : undefined}
+              strokeWidth={cellOutline ? 0.6 : 0}
             />
           )),
         )}
 
         {showTotal && (
           <text
-            x={svgW}
-            y={monthLabelHeight + gridH + 16}
-            fill={theme.textSecondary}
+            x={svgW - 1}
+            y={monthLabelHeight + gridH + 17}
+            fill={footerColor}
             fontSize={11}
             fontFamily="system-ui, -apple-system, sans-serif"
             textAnchor="end"
+            dominantBaseline="alphabetic"
           >
             {contributions.total.toLocaleString()} contributions in the last year
           </text>

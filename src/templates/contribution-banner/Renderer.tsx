@@ -1,14 +1,16 @@
+import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { Frame } from "@/src/banner/Frame";
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
+/** Tuned so XL stays wider than L but not so wide that preview scales both to ~same on-screen cell size (high cell/svgW ratio). */
 const GRID_SIZES: Record<string, { cell: number; gap: number }> = {
   xs:   { cell: 6,  gap: 2 },
   s:    { cell: 9,  gap: 2 },
   m:    { cell: 13, gap: 3 },
   l:    { cell: 17, gap: 3 },
-  xl:   { cell: 22, gap: 4 },
+  xl:   { cell: 20, gap: 3 },
   fill: { cell: 22, gap: 4 },
 };
 
@@ -27,6 +29,7 @@ export function ContributionBannerRenderer({
   const sizeKey = (state.gridSize as string) ?? "l";
   const isFill = sizeKey === "fill";
   const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.l;
+  const cellShape = contributionCellShapeFromState(state.cellShape);
 
   if (!username) {
     return (
@@ -58,6 +61,8 @@ export function ContributionBannerRenderer({
             cellSize={sizing.cell}
             gap={sizing.gap}
             fill={isFill}
+            cellOutline={!isFill}
+            cellShape={cellShape}
           />
         ) : null}
       </div>
