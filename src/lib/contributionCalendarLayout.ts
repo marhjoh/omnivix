@@ -83,7 +83,7 @@ export function buildCalendarLayout(options: {
   monthLabels: MonthLabel[];
   columnCount: number;
 } {
-  const { weeks, months, rangeStartYmd, rangeEndYmd, renderPaddingDays = false } = options;
+  const { weeks, months, rangeEndYmd, renderPaddingDays = false } = options;
 
   if (weeks.length === 0) {
     return { placedDays: [], monthLabels: [], columnCount: 0 };
