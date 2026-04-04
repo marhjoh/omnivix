@@ -22,11 +22,13 @@ export default async function RenderPage({
 
   const size = BANNER_SIZES[payload.size];
   const username = payload.state.username;
-  const rawYear = typeof payload.state.year === "string" ? payload.state.year : undefined;
-  const currentYear = String(new Date().getFullYear());
-  const year = rawYear && rawYear !== "latest" && rawYear !== currentYear ? rawYear : undefined;
+  const rawYear =
+    typeof payload.state.year === "string" && payload.state.year.length > 0
+      ? payload.state.year
+      : String(new Date().getFullYear());
   const user = typeof username === "string" && username ? await getUserSummary(username) : undefined;
-  const contributions = typeof username === "string" && username ? await getContributions(username, year) : undefined;
+  const contributions =
+    typeof username === "string" && username ? await getContributions(username, rawYear) : undefined;
   const repos =
     templateId === "repos-banner" && typeof username === "string" && username
       ? await getRepos(

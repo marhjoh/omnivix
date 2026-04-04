@@ -185,12 +185,11 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     setLoadingContributions(true);
     setDataError(null);
 
-    const yearRaw = state.year ? String(state.year) : "";
-    const thisYear = String(new Date().getFullYear());
-    const yearParam =
-      yearRaw && yearRaw !== "latest" && yearRaw !== thisYear
-        ? `&year=${encodeURIComponent(yearRaw)}`
-        : "";
+    const yearRaw =
+      state.year != null && String(state.year).length > 0
+        ? String(state.year)
+        : String(new Date().getFullYear());
+    const yearParam = `&year=${encodeURIComponent(yearRaw)}`;
 
     void (async () => {
       try {

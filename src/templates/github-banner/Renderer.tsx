@@ -12,12 +12,7 @@ const PROFILE_MUTED = "rgba(255,255,255,0.58)";
 const GRID_OVERLAY_BG = "rgba(13, 17, 23, 0.82)";
 const GRID_OVERLAY_BORDER = "rgba(255, 255, 255, 0.1)";
 
-/**
- * cell + gap = step (week column pitch). ~53 GitHub week columns:
- *   svgW ≈ dayLabelWidth(28) + 53*step - gap
- * XL uses step 18 (15+3) so svgW ≈ 979px — under ~1000px for preview/export headroom;
- * gap 3 matches L so XL scales cells up without a looser column rhythm than L (15+4 looked “wide” vs 12+3).
- */
+/** Calendar-aligned grid: columnCount = GitHub weeks.length, cells placed by weekday row. */
 const GRID_SIZES: Record<
   string,
   { cell: number; gap: number; avatar: number; name: number; handle: number }
@@ -50,10 +45,10 @@ export function GithubBannerRenderer({
   const showDisplayName = state.showDisplayName === true;
 
   const showMonthLabels = state.showMonthLabels !== false;
-  const showDayLabels = state.showDayLabels !== false;
+  const showDayLabels = state.showDayLabels === true;
   const showTotal = state.showTotal !== false;
   const profileRight = (state.profilePosition as string) === "right";
-  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "left") as keyof typeof FLEX_ALIGN;
+  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "center") as keyof typeof FLEX_ALIGN;
   const sizeKey = (state.gridSize as string) ?? "m";
   const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.m;
   const cellShape = contributionCellShapeFromState(state.cellShape);

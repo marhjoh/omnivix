@@ -200,6 +200,10 @@ export function ControlSidebar({
         }
 
         if (field.key === "year") {
+          const contributionTemplates = templateId === "github-banner" || templateId === "contribution-banner";
+          const yearOptions = contributionTemplates
+            ? [{ value: "latest", label: "Last 365 days" }, ...years.map((y) => ({ value: y, label: y }))]
+            : years.map((y) => ({ value: y, label: y }));
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <select
@@ -208,9 +212,9 @@ export function ControlSidebar({
                 value={String(state[field.key] ?? currentYear)}
                 onChange={(e) => onChange(field.key, e.target.value)}
               >
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
+                {yearOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
                   </option>
                 ))}
               </select>

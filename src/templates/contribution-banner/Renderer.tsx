@@ -4,7 +4,6 @@ import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
-/** Tuned so XL stays wider than L but not so wide that preview scales both to ~same on-screen cell size (high cell/svgW ratio). */
 const GRID_SIZES: Record<string, { cell: number; gap: number }> = {
   xs:   { cell: 6,  gap: 2 },
   s:    { cell: 9,  gap: 2 },
@@ -61,6 +60,7 @@ export function ContributionBannerRenderer({
             cellSize={sizing.cell}
             gap={sizing.gap}
             fill={isFill}
+            renderPaddingDays={isFill}
             cellOutline={!isFill}
             cellShape={cellShape}
           />

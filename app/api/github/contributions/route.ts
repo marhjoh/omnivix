@@ -7,8 +7,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "username is required" }, { status: 400 });
   }
   const rawYear = request.nextUrl.searchParams.get("year");
-  const currentYear = String(new Date().getFullYear());
-  const year = rawYear && rawYear !== "latest" && rawYear !== currentYear ? rawYear : undefined;
+  const year = rawYear && rawYear.length > 0 ? rawYear : "latest";
   try {
     const contributions = await getContributions(username, year);
     return NextResponse.json(contributions);

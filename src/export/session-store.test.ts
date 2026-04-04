@@ -9,7 +9,7 @@ describe("export session token", () => {
       size: "xHeader",
       scale: 2,
       pixelRatio: 2,
-      state: { quote: "hello", author: "omnivix", themeId: "midnight", alignment: "left" },
+      state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },
     });
     const payload = consumeExportToken(token);
     expect(payload?.templateId).toBe("quote-banner");
@@ -23,7 +23,7 @@ describe("export session token", () => {
       size: "xHeader",
       scale: 2,
       pixelRatio: 2,
-      state: { quote: "hello", author: "omnivix", themeId: "midnight", alignment: "left" },
+      state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },
     });
     const tampered = `${token}broken`;
     expect(consumeExportToken(tampered)).toBeNull();
