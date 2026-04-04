@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root,
-[data-theme="dark"] {
+/* App chrome tokens: server sets exactly one of data-theme="dark" | "light" on <html>. */
+html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
   --surface-2: #1f2631;
@@ -19,7 +19,7 @@
   color-scheme: dark;
 }
 
-[data-theme="light"] {
+html[data-theme="light"] {
   --bg: #ffffff;
   --surface: #f6f8fa;
   --surface-2: #eef1f4;
@@ -69,12 +69,12 @@ a {
   @apply rounded-xl border border-border bg-surface transition-all duration-300;
 }
 
-.omnivix-card:hover {
+html[data-theme="dark"] .omnivix-card:hover {
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="light"] .omnivix-card:hover {
+html[data-theme="light"] .omnivix-card:hover {
   border-color: rgba(0, 0, 0, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }

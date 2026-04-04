@@ -1,34 +1,23 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { type Theme, setThemeCookieClient } from "@/src/theme/theme";
 
-type Theme = "dark" | "light";
+type ThemeContextValue = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  toggle: () => void;
+};
 
-function getSnapshot(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const stored = localStorage.getItem("omnivix:theme");
-  return stored === "light" ? "light" : "dark";
-}
-
-function getServerSnapshot(): Theme {
-  return "dark";
-}
-
-const listeners = new Set<() => void>();
-
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
-}
-
-function applyTheme(theme: Theme) {
-  localStorage.setItem("omnivix:theme", theme);
-  document.documentElement.setAttribute("data-theme", theme);
-  listeners.forEach((cb) => cb());
-}
-
-const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
+const ThemeContext = createContext<ThemeContextValue>({
   theme: "dark",
+  setTheme: () => {},
   toggle: () => {},
 });
 
@@ -36,20 +25,30 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+export function ThemeProvider({
+  children,
+  initialTheme,
+}: {
+  children: React.ReactNode;
+  initialTheme: Theme;
+}) {
+  const [theme, setThemeState] = useState<Theme>(initialTheme);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  });
+    document.documentElement.dataset.theme = theme;
+    setThemeCookieClient(theme);
+  }, [theme]);
+
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+  }, []);
 
   const toggle = useCallback(() => {
-    const next = getSnapshot() === "dark" ? "light" : "dark";
-    applyTheme(next);
+    setThemeState((t) => (t === "dark" ? "light" : "dark"));
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
       {children}
     </ThemeContext.Provider>
   );
