@@ -41,16 +41,6 @@ export const THEME_PRESETS: ThemePreset[] = [
     gridLevels: ["#152535", "#1e5580", "#2890d8", "#58a6ff", "#8ecbff"],
   },
   {
-    id: "midnight",
-    label: "Midnight",
-    background: "#0b1220",
-    surface: "#111c30",
-    textPrimary: "#e6edf3",
-    textSecondary: "#8b9bb2",
-    accent: "#2f81f7",
-    gridLevels: ["#1c2840", "#2a5080", "#388bfd", "#33b14a", "#62f078"],
-  },
-  {
     id: "sunset",
     label: "Sunset",
     background: "#1f1524",
