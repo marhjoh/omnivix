@@ -236,22 +236,27 @@ export function BackgroundImagePicker({
             )}
             Upload from device
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              setUrlDraft(undefined);
-              setUrlEditorOpen(false);
-              onChange(await fileToDataUrl(file));
-            }}
-          />
           </div>
         ) : null}
+        {/*
+          Keep this input mounted outside the dropdown: closing the menu unmounts the list, but the
+          same node must stay in the document until the user finishes the OS file picker or change
+          events can be dropped.
+        */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+            setUrlDraft(undefined);
+            setUrlEditorOpen(false);
+            onChange(await fileToDataUrl(file));
+          }}
+        />
       </div>
 
       {showUrlField ? (
