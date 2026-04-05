@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Theme } from "@/src/theme/theme";
 
 export type TemplateId =
   | "github-banner"
@@ -13,7 +14,7 @@ export type EditorFieldType =
   | "textarea"
   | "toggle"
   | "select"
-  | "imageUpload"
+  | "backgroundPicker"
   | "sizeSelect"
   | "range";
 
@@ -51,5 +52,7 @@ export interface ExportRequest {
   state: Record<string, unknown>;
   format: "png";
   scale: 1 | 2;
-  pixelRatio?: 1 | 2;
+  pixelRatio?: 1 | 2 | 3;
+  /** Matches editor app theme so PNG matches on-screen preview. */
+  uiTheme?: Theme;
 }

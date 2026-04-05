@@ -1,17 +1,59 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { templateRegistry } from "@/src/templates/registry";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
+import { computePreviewContentState } from "@/src/studio/preview";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized, ContributionsNormalized, RepoNormalized } from "@/src/github/normalize";
+import { useTheme } from "@/src/theme/ThemeProvider";
 import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
+
+type FetchSlotErrors = {
+  user: string | null;
+  contributions: string | null;
+  repos: string | null;
+};
+
+function emptyFetchErrors(): FetchSlotErrors {
+  return { user: null, contributions: null, repos: null };
+}
+
+/**
+ * Single message for preview: one slot wins per template.
+ * Contribution banner only needs contributions for the canvas; user fetch is sidebar-only.
+ */
+function previewErrorForTemplate(
+  templateId: TemplateId,
+  e: FetchSlotErrors,
+  dataReady: boolean,
+): string | null {
+  if (templateId === "contribution-banner" && dataReady) {
+    return null;
+  }
+  if (templateId === "github-banner") {
+    if (e.user) return e.user;
+    if (e.contributions) return e.contributions;
+    return null;
+  }
+  if (templateId === "contribution-banner") {
+    if (e.contributions) return e.contributions;
+    if (e.user) return e.user;
+    return null;
+  }
+  if (templateId === "repos-banner") {
+    if (e.user) return e.user;
+    if (e.repos) return e.repos;
+    return null;
+  }
+  return null;
+}
 
 function loadPersistedState(templateId: string): Record<string, unknown> | null {
   if (typeof window === "undefined") return null;
@@ -32,7 +74,17 @@ function persistState(templateId: string, state: Record<string, unknown>) {
   } catch { /* quota exceeded, ignore */ }
 }
 
+async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? res.statusText);
+  }
+  return res.json() as Promise<T>;
+}
+
 export function StudioShell({ templateId }: { templateId: TemplateId }) {
+  const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
   const needsUsername = definition.meta.needsUsername ?? false;
 
@@ -60,13 +112,72 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   }, [templateId, needsUsername]);
 
   const [data, setData] = useState<RenderData>({});
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [dataError, setDataError] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [accountCreatedYear, setAccountCreatedYear] = useState<number | null>(null);
+  const [fetchErrors, setFetchErrors] = useState<FetchSlotErrors>(emptyFetchErrors);
+  const [refetchNonce, setRefetchNonce] = useState(0);
+  const contributionsOkRef = useRef(false);
+  const contributionsUsernameRef = useRef<string | null>(null);
+  const contributionsYearRef = useRef<string | null>(null);
+
+  const needsContributions =
+    templateId === "github-banner" || templateId === "contribution-banner";
+  const needsReposFetch = templateId === "repos-banner";
+
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
   const username = (state.username as string) ?? "";
+
+  const dataReady = useMemo(() => {
+    if (!needsUsername || !username) return true;
+    if (templateId === "github-banner") {
+      return Boolean(data.user && data.contributions);
+    }
+    if (templateId === "contribution-banner") {
+      return Boolean(data.contributions);
+    }
+    if (templateId === "repos-banner") {
+      return Boolean(data.user && data.repos);
+    }
+    return true;
+  }, [
+    needsUsername,
+    username,
+    templateId,
+    data.user,
+    data.contributions,
+    data.repos,
+  ]);
+
+  const quoteText = String(state.quote ?? "");
+
+  const previewDataError = useMemo(
+    () => previewErrorForTemplate(templateId, fetchErrors, dataReady),
+    [templateId, fetchErrors, dataReady],
+  );
+
+  const previewState = useMemo(
+    () =>
+      computePreviewContentState({
+        hydrated,
+        templateId,
+        needsUsername,
+        username,
+        quoteText,
+        dataError: previewDataError,
+        dataReady,
+      }),
+    [hydrated, templateId, needsUsername, username, quoteText, previewDataError, dataReady],
+  );
+
+  const handlePreviewRetry = useCallback(() => {
+    setFetchErrors(emptyFetchErrors());
+    setRefetchNonce((n) => n + 1);
+  }, []);
+
+  useEffect(() => {
+    setFetchErrors(emptyFetchErrors());
+  }, [templateId]);
+
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [accountCreatedYear, setAccountCreatedYear] = useState<number | null>(null);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   useEffect(() => {
@@ -87,51 +198,124 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   );
 
   useEffect(() => {
-    if (!username) return;
-    const run = async () => {
+    if (!needsUsername || !username) {
+      setAccountCreatedYear(null);
+      setData((prev) => ({ ...prev, user: undefined }));
+      setFetchErrors(emptyFetchErrors());
+      return;
+    }
+
+    const ac = new AbortController();
+    setFetchErrors((prev) => ({ ...prev, user: null }));
+
+    void (async () => {
       try {
-        setDataError(null);
-        setIsLoadingData(true);
-
-        async function fetchJson<T>(url: string): Promise<T> {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? res.statusText);
-          return res.json();
-        }
-
-        const user = await fetchJson<GithubUserNormalized>(`/api/github/user-summary?username=${encodeURIComponent(username)}`);
-
+        const user = await fetchJson<GithubUserNormalized>(
+          `/api/github/user-summary?username=${encodeURIComponent(username)}`,
+          ac.signal,
+        );
+        if (ac.signal.aborted) return;
+        setData((prev) => ({ ...prev, user }));
+        setFetchErrors((prev) => ({ ...prev, user: null }));
         if (user.createdAt) {
           setAccountCreatedYear(new Date(user.createdAt).getFullYear());
         }
-
-        const yearRaw = state.year ? String(state.year) : "";
-        const thisYear = String(new Date().getFullYear());
-        const yearParam = yearRaw && yearRaw !== "latest" && yearRaw !== thisYear
-          ? `&year=${encodeURIComponent(yearRaw)}`
-          : "";
-        const contributions = await fetchJson<ContributionsNormalized>(`/api/github/contributions?username=${encodeURIComponent(username)}${yearParam}`);
-
-        let repos: RepoNormalized[] | undefined = undefined;
-        if (templateId === "repos-banner") {
-          const mode = String(state.mode ?? "pinned");
-          const selected = String(state.selectedRepos ?? "");
-          repos = await fetchJson<RepoNormalized[]>(
-            `/api/github/repos?username=${encodeURIComponent(username)}&mode=${mode}&selected=${encodeURIComponent(selected)}`,
-          );
-        }
-
-        setData({ user, contributions, repos });
-        setHasLoadedOnce(true);
       } catch (error) {
-        setDataError(error instanceof Error ? error.message : "Unable to load GitHub data");
-        setData({});
-      } finally {
-        setIsLoadingData(false);
+        if (ac.signal.aborted) return;
+        setAccountCreatedYear(null);
+        setData((prev) => ({ ...prev, user: undefined }));
+        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+        setFetchErrors((prev) => ({ ...prev, user: msg }));
       }
-    };
-    void run();
-  }, [username, state.mode, state.selectedRepos, state.year, templateId]);
+    })();
+
+    return () => ac.abort();
+  }, [needsUsername, username, refetchNonce]);
+
+  useEffect(() => {
+    if (!username || !needsContributions) {
+      contributionsOkRef.current = false;
+      contributionsUsernameRef.current = null;
+      contributionsYearRef.current = null;
+      setData((prev) => ({ ...prev, contributions: undefined }));
+      setFetchErrors((prev) => ({ ...prev, contributions: null }));
+      return;
+    }
+
+    const yearRaw =
+      state.year != null && String(state.year).length > 0
+        ? String(state.year)
+        : String(new Date().getFullYear());
+
+    const usernameChanged = contributionsUsernameRef.current !== username;
+    const yearChanged = contributionsYearRef.current !== yearRaw;
+    contributionsUsernameRef.current = username;
+    contributionsYearRef.current = yearRaw;
+    if (usernameChanged || yearChanged) {
+      contributionsOkRef.current = false;
+      setData((prev) => ({ ...prev, contributions: undefined }));
+    }
+
+    const ac = new AbortController();
+    setFetchErrors((prev) => ({ ...prev, contributions: null }));
+
+    const yearParam = `&year=${encodeURIComponent(yearRaw)}`;
+
+    void (async () => {
+      try {
+        const contributions = await fetchJson<ContributionsNormalized>(
+          `/api/github/contributions?username=${encodeURIComponent(username)}${yearParam}`,
+          ac.signal,
+        );
+        if (ac.signal.aborted) return;
+        contributionsOkRef.current = true;
+        setData((prev) => ({ ...prev, contributions }));
+        setFetchErrors((prev) => ({ ...prev, contributions: null }));
+      } catch (error) {
+        if (ac.signal.aborted) return;
+        if (!contributionsOkRef.current) {
+          setData((prev) => ({ ...prev, contributions: undefined }));
+          const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+          setFetchErrors((prev) => ({ ...prev, contributions: msg }));
+        }
+      }
+    })();
+
+    return () => ac.abort();
+  }, [username, needsContributions, state.year, refetchNonce]);
+
+  useEffect(() => {
+    if (!username || !needsReposFetch) {
+      setData((prev) => ({ ...prev, repos: undefined }));
+      setFetchErrors((prev) => ({ ...prev, repos: null }));
+      return;
+    }
+
+    const ac = new AbortController();
+    setFetchErrors((prev) => ({ ...prev, repos: null }));
+
+    const mode = String(state.mode ?? "pinned");
+    const selected = String(state.selectedRepos ?? "");
+
+    void (async () => {
+      try {
+        const repos = await fetchJson<RepoNormalized[]>(
+          `/api/github/repos?username=${encodeURIComponent(username)}&mode=${encodeURIComponent(mode)}&selected=${encodeURIComponent(selected)}`,
+          ac.signal,
+        );
+        if (ac.signal.aborted) return;
+        setData((prev) => ({ ...prev, repos }));
+        setFetchErrors((prev) => ({ ...prev, repos: null }));
+      } catch (error) {
+        if (ac.signal.aborted) return;
+        setData((prev) => ({ ...prev, repos: undefined }));
+        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+        setFetchErrors((prev) => ({ ...prev, repos: msg }));
+      }
+    })();
+
+    return () => ac.abort();
+  }, [username, needsReposFetch, state.mode, state.selectedRepos, refetchNonce]);
 
   const canExport = useMemo(
     () => definition.stateSchema.safeParse(state).success,
@@ -151,7 +335,8 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           state,
           format: "png",
           scale: 2,
-          pixelRatio: 2,
+          pixelRatio: 3,
+          uiTheme: appTheme,
         }),
       });
       if (!response.ok) return;
@@ -203,21 +388,15 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           />
         </aside>
         <main className={styles.preview}>
-          {isLoadingData && !hasLoadedOnce ? (
-            <div className={styles.loading}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/icon.svg" alt="" className={styles.loadingLogo} />
-              <span>Loading GitHub data&hellip;</span>
-            </div>
-          ) : dataError ? (
-            <div className={styles.error}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/icon.svg" alt="" className={styles.errorLogo} />
-              <p className={styles.errorTitle}>{dataError}</p>
-              <p className={styles.errorHint}>Please check the username and try again.</p>
-            </div>
-          ) : null}
-          <PreviewArtboard templateId={templateId} size={size} state={state} data={data} />
+          <PreviewArtboard
+            templateId={templateId}
+            size={size}
+            state={state}
+            data={data}
+            previewState={previewState}
+            dataError={previewDataError}
+            onRetryError={handlePreviewRetry}
+          />
         </main>
       </div>
     </div>

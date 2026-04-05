@@ -1,11 +1,19 @@
+import type { ContributionCellShape } from "@/src/templates/definitions";
 import { ContributionsNormalized } from "@/src/github/normalize";
+import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/lib/contributionCalendarLayout";
 import { ThemePreset } from "@/src/types/theme";
 
-const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number; ry: number } {
+  if (shape === "square") return { rx: 0, ry: 0 };
+  if (shape === "circle") {
+    const r = cellSize / 2;
+    return { rx: r, ry: r };
+  }
+  const r = Math.min(cellSize * 0.22, Math.max(1.25, cellSize * 0.16));
+  const cap = cellSize / 2 - 0.001;
+  const clamped = Math.min(r, cap);
+  return { rx: clamped, ry: clamped };
+}
 
 interface ContributionGridProps {
   contributions: ContributionsNormalized;
@@ -13,9 +21,20 @@ interface ContributionGridProps {
   cellSize?: number;
   gap?: number;
   showMonthLabels?: boolean;
+  /**
+   * Semantic Mon/Wed/Fri labels in the left gutter.
+   * Calendar-correct: the row labelled "Mon" contains actual Mondays.
+   */
   showDayLabels?: boolean;
   showTotal?: boolean;
+  /** Fill empty weekday slots in the first/last week with out-of-range cells. */
+  renderPaddingDays?: boolean;
+  /** Stretch SVG to fill its container (CSS only, no layout change). */
   fill?: boolean;
+  cellOutline?: boolean;
+  labelFill?: string;
+  totalFill?: string;
+  cellShape?: ContributionCellShape;
 }
 
 export function ContributionGrid({
@@ -26,72 +45,72 @@ export function ContributionGrid({
   showMonthLabels = false,
   showDayLabels = false,
   showTotal = false,
+  renderPaddingDays = false,
   fill = false,
+  cellOutline = true,
+  labelFill,
+  totalFill,
+  cellShape = "rounded",
 }: ContributionGridProps) {
-  if (!contributions?.weeks?.length) return null;
+  const monthDayColor = labelFill ?? theme.textSecondary;
+  const footerColor = totalFill ?? theme.textSecondary;
+  const { rx, ry } = cellRadii(cellShape, cellSize);
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  type Cell = { date: string; level: 0 | 1 | 2 | 3 | 4; count: number };
-
-  const grid: Array<Array<Cell | null>> = [];
-
-  for (const week of contributions.weeks) {
-    const column: Array<Cell | null> = new Array(7).fill(null);
-
-    for (const day of week.days) {
-      if (day.date > today) continue;
-      const dow = new Date(day.date + "T12:00:00").getDay();
-      column[dow] = { date: day.date, level: day.level, count: day.count };
-    }
-
-    if (column.some((d) => d !== null)) {
-      grid.push(column);
-    }
+  if (!contributions.weeks?.length) {
+    return (
+      <div
+        style={{
+          padding: "20px 16px",
+          textAlign: "center",
+          fontSize: 13,
+          lineHeight: 1.45,
+          color: monthDayColor,
+          maxWidth: 300,
+        }}
+      >
+        No contribution calendar data for this range.
+      </div>
+    );
   }
 
-  if (grid.length === 0) return null;
+  const { placedDays, monthLabels, columnCount } = buildCalendarLayout({
+    weeks: contributions.weeks,
+    months: contributions.months ?? [],
+    rangeStartYmd: contributions.rangeStartYmd,
+    rangeEndYmd: contributions.rangeEndYmd,
+    renderPaddingDays,
+  });
 
-  const monthLabels: Array<{ label: string; colIndex: number }> = [];
-  if (showMonthLabels) {
-    let prevMonth = -1;
-    for (let col = 0; col < grid.length; col++) {
-      const firstDay = grid[col].find((d) => d !== null);
-      if (!firstDay) continue;
-      const month = new Date(firstDay.date + "T12:00:00").getMonth();
-      if (month !== prevMonth) {
-        monthLabels.push({ label: MONTH_LABELS[month], colIndex: col });
-        prevMonth = month;
-      }
-    }
-  }
-
-  const dayLabelWidth = showDayLabels ? 30 : 0;
-  const monthLabelHeight = showMonthLabels ? 18 : 0;
+  const dayLabelWidth = showDayLabels ? 28 : 0;
+  const monthLabelHeight = showMonthLabels ? 20 : 0;
   const step = cellSize + gap;
-  const gridW = grid.length * step - gap;
+  const gridW = columnCount * step - gap;
   const gridH = 7 * step - gap;
-  const totalLine = showTotal ? 22 : 0;
+  const footerHeight = showTotal ? 28 : 0;
   const svgW = dayLabelWidth + gridW;
-  const svgH = monthLabelHeight + gridH + totalLine;
+  const svgH = monthLabelHeight + gridH + footerHeight;
+  const viewPad = cellOutline ? 1 : 0;
+  const vbW = svgW + 2 * viewPad;
+  const vbH = svgH + 2 * viewPad;
 
   return (
     <div style={{ width: fill ? "100%" : "fit-content", height: fill ? "100%" : "auto", maxWidth: "100%", overflow: "hidden" }}>
       <svg
-        width={svgW}
-        height={svgH}
-        viewBox={`0 0 ${svgW} ${svgH}`}
+        width={vbW}
+        height={vbH}
+        viewBox={`-${viewPad} -${viewPad} ${vbW} ${vbH}`}
         style={{ display: "block", width: "100%", height: fill ? "100%" : "auto" }}
-        preserveAspectRatio={fill ? "xMidYMid slice" : "xMinYMin meet"}
+        preserveAspectRatio={fill ? "xMidYMid meet" : "xMinYMin meet"}
       >
         {showMonthLabels &&
           monthLabels.map(({ label, colIndex }) => (
             <text
-              key={`m-${colIndex}`}
+              key={`m-${colIndex}-${label}`}
               x={dayLabelWidth + colIndex * step}
-              y={monthLabelHeight - 5}
-              fill={theme.textSecondary}
+              y={monthLabelHeight - 6}
+              fill={monthDayColor}
               fontSize={10}
+              fontWeight={500}
               fontFamily="system-ui, -apple-system, sans-serif"
             >
               {label}
@@ -99,44 +118,47 @@ export function ContributionGrid({
           ))}
 
         {showDayLabels &&
-          [1, 3, 5].map((row) => (
+          DAY_LABEL_ROWS.map(({ label, row }) => (
             <text
               key={`d-${row}`}
-              x={0}
-              y={monthLabelHeight + row * step + cellSize * 0.78}
-              fill={theme.textSecondary}
+              x={2}
+              y={monthLabelHeight + row * step + cellSize * 0.72}
+              fill={monthDayColor}
               fontSize={9}
+              fontWeight={500}
               fontFamily="system-ui, -apple-system, sans-serif"
             >
-              {DAY_LABELS[row]}
+              {label}
             </text>
           ))}
 
-        {grid.map((column, ci) =>
-          column.map((cell, ri) => (
-            <rect
-              key={`${ci}-${ri}`}
-              x={dayLabelWidth + ci * step}
-              y={monthLabelHeight + ri * step}
-              width={cellSize}
-              height={cellSize}
-              rx={2}
-              ry={2}
-              fill={cell ? theme.gridLevels[cell.level] : theme.gridLevels[0]}
-            />
-          )),
-        )}
+        {placedDays.map(({ date, level, col, row, isOutOfRange }) => (
+          <rect
+            key={date}
+            x={dayLabelWidth + col * step}
+            y={monthLabelHeight + row * step}
+            width={cellSize}
+            height={cellSize}
+            rx={rx}
+            ry={ry}
+            fill={theme.gridLevels[level]}
+            stroke={cellOutline ? "rgba(255,255,255,0.14)" : undefined}
+            strokeWidth={cellOutline ? 0.6 : 0}
+            opacity={isOutOfRange ? 0.3 : 1}
+          />
+        ))}
 
         {showTotal && (
           <text
-            x={svgW}
-            y={monthLabelHeight + gridH + 16}
-            fill={theme.textSecondary}
+            x={svgW - 1}
+            y={monthLabelHeight + gridH + 17}
+            fill={footerColor}
             fontSize={11}
             fontFamily="system-ui, -apple-system, sans-serif"
             textAnchor="end"
+            dominantBaseline="alphabetic"
           >
-            {contributions.total.toLocaleString()} contributions in the last year
+            {contributions.total.toLocaleString()} contributions
           </text>
         )}
       </svg>

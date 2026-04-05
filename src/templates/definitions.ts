@@ -1,6 +1,27 @@
 import { z } from "zod";
 import { TemplateDefinition } from "@/src/types/template";
 
+/** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
+export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
+
+export type ContributionCellShape = (typeof CONTRIBUTION_CELL_SHAPES)[number];
+
+const CONTRIBUTION_CELL_SHAPE_LABELS: Record<ContributionCellShape, string> = {
+  rounded: "Rounded",
+  square: "Square",
+  circle: "Circle",
+};
+
+export const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{ label: string; value: ContributionCellShape }> =
+  CONTRIBUTION_CELL_SHAPES.map((value) => ({ label: CONTRIBUTION_CELL_SHAPE_LABELS[value], value }));
+
+export function contributionCellShapeFromState(raw: unknown): ContributionCellShape {
+  if (typeof raw === "string" && (CONTRIBUTION_CELL_SHAPES as readonly string[]).includes(raw)) {
+    return raw as ContributionCellShape;
+  }
+  return "rounded";
+}
+
 const baseState = z.object({
   size: z.enum(["xHeader", "linkedinCover"]),
   themeId: z.string(),
@@ -13,9 +34,11 @@ export const githubBannerDefinition: TemplateDefinition<{
   showMonthLabels: boolean;
   showDayLabels: boolean;
   showTotal: boolean;
+  showDisplayName: boolean;
   profilePosition: "left" | "right";
-  gridAlign: "left" | "center" | "right";
+  gridPosition: "left" | "center" | "right";
   gridSize: string;
+  cellShape: ContributionCellShape;
   size: "xHeader" | "linkedinCover";
   themeId: string;
   backgroundImage?: string;
@@ -29,27 +52,26 @@ export const githubBannerDefinition: TemplateDefinition<{
     needsUsername: true,
   },
   schema: [
+    { key: "size", label: "Type", type: "sizeSelect" },
     { key: "themeId", label: "Theme", type: "select" },
+    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     { key: "year", label: "Year", type: "select" },
-    { key: "showMonthLabels", label: "Month Labels", type: "toggle" },
-    { key: "showDayLabels", label: "Day Labels", type: "toggle" },
-    { key: "showTotal", label: "Contribution Count", type: "toggle" },
+    {
+      key: "gridPosition",
+      label: "Grid Position",
+      type: "select",
+      options: [
+        { label: "Left", value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right", value: "right" },
+      ],
+    },
     {
       key: "profilePosition",
       label: "Profile Position",
       type: "select",
       options: [
         { label: "Left", value: "left" },
-        { label: "Right", value: "right" },
-      ],
-    },
-    {
-      key: "gridAlign",
-      label: "Alignment",
-      type: "select",
-      options: [
-        { label: "Left", value: "left" },
-        { label: "Center", value: "center" },
         { label: "Right", value: "right" },
       ],
     },
@@ -65,8 +87,16 @@ export const githubBannerDefinition: TemplateDefinition<{
         { label: "XL", value: "xl" },
       ],
     },
-    { key: "size", label: "Banner Size", type: "sizeSelect" },
-    { key: "backgroundImage", label: "Background Image", type: "imageUpload" },
+    {
+      key: "cellShape",
+      label: "Cell shape",
+      type: "select",
+      options: [...CONTRIBUTION_CELL_SHAPE_OPTIONS],
+    },
+    { key: "showMonthLabels", label: "Months", type: "toggle" },
+    { key: "showDayLabels", label: "Weekdays", type: "toggle" },
+    { key: "showTotal", label: "Contributions", type: "toggle" },
+    { key: "showDisplayName", label: "Full Name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
@@ -74,21 +104,25 @@ export const githubBannerDefinition: TemplateDefinition<{
     showMonthLabels: z.boolean().default(true),
     showDayLabels: z.boolean().default(true),
     showTotal: z.boolean().default(true),
+    showDisplayName: z.boolean().default(false),
     profilePosition: z.enum(["left", "right"]).default("left"),
-    gridAlign: z.enum(["left", "center", "right"]).default("left"),
+    gridPosition: z.enum(["left", "center", "right"]).default("center"),
     gridSize: z.string().default("m"),
+    cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
   }),
   initialState: {
     username: "",
-    themeId: "midnight",
+    themeId: "default",
     size: "linkedinCover",
     year: String(new Date().getFullYear()),
     showMonthLabels: true,
     showDayLabels: true,
     showTotal: true,
+    showDisplayName: false,
     profilePosition: "left",
-    gridAlign: "left",
+    gridPosition: "center",
     gridSize: "m",
+    cellShape: "rounded",
   },
 };
 
@@ -114,6 +148,9 @@ export const pinnedReposDefinition: TemplateDefinition<{
     needsUsername: true,
   },
   schema: [
+    { key: "size", label: "Type", type: "sizeSelect" },
+    { key: "themeId", label: "Theme", type: "select" },
+    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     {
       key: "mode",
       label: "Mode",
@@ -134,9 +171,6 @@ export const pinnedReposDefinition: TemplateDefinition<{
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
     { key: "showForks", label: "Forks", type: "toggle" },
-    { key: "themeId", label: "Theme", type: "select" },
-    { key: "size", label: "Banner Size", type: "sizeSelect" },
-    { key: "backgroundImage", label: "Background Image", type: "imageUpload" },
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
@@ -157,7 +191,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     showLanguage: true,
     showStars: true,
     showForks: true,
-    themeId: "midnight",
+    themeId: "default",
     size: "linkedinCover",
   },
 };
@@ -166,6 +200,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
   username: string;
   year: string;
   gridSize: string;
+  cellShape: ContributionCellShape;
   size: "xHeader" | "linkedinCover";
   themeId: string;
   backgroundImage?: string;
@@ -179,6 +214,10 @@ export const contributionBannerDefinition: TemplateDefinition<{
     needsUsername: true,
   },
   schema: [
+    { key: "size", label: "Type", type: "sizeSelect" },
+    { key: "themeId", label: "Theme", type: "select" },
+    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
+    { key: "year", label: "Year", type: "select" },
     {
       key: "gridSize",
       label: "Size",
@@ -192,20 +231,24 @@ export const contributionBannerDefinition: TemplateDefinition<{
         { label: "Fill", value: "fill" },
       ],
     },
-    { key: "year", label: "Year", type: "select" },
-    { key: "themeId", label: "Theme", type: "select" },
-    { key: "size", label: "Banner Size", type: "sizeSelect" },
-    { key: "backgroundImage", label: "Background Image", type: "imageUpload" },
+    {
+      key: "cellShape",
+      label: "Cell shape",
+      type: "select",
+      options: [...CONTRIBUTION_CELL_SHAPE_OPTIONS],
+    },
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
     gridSize: z.string().default("l"),
     year: z.string().default(String(new Date().getFullYear())),
+    cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
   }),
   initialState: {
     username: "",
     gridSize: "l",
-    themeId: "midnight",
+    cellShape: "rounded",
+    themeId: "default",
     size: "linkedinCover",
     year: String(new Date().getFullYear()),
   },
@@ -240,9 +283,9 @@ export const quoteBannerDefinition: TemplateDefinition<{
         { label: "Right", value: "right" },
       ],
     },
+    { key: "size", label: "Type", type: "sizeSelect" },
     { key: "themeId", label: "Theme", type: "select" },
-    { key: "size", label: "Banner Size", type: "sizeSelect" },
-    { key: "backgroundImage", label: "Background Image", type: "imageUpload" },
+    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
   ],
   stateSchema: baseState.extend({
     quote: z.string().min(1),
@@ -253,7 +296,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     quote: "Build once, ship everywhere.",
     author: "Omnivix",
     alignment: "left",
-    themeId: "midnight",
+    themeId: "default",
     size: "linkedinCover",
   },
 };

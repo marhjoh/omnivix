@@ -1,10 +1,20 @@
 import { readCache, writeCache } from "@/src/github/cache";
 import {
+  ContributionDayNormalized,
+  ContributionMonthNormalized,
+  ContributionWeekNormalized,
   ContributionsNormalized,
   GithubUserNormalized,
   RepoNormalized,
 } from "@/src/github/normalize";
+import {
+  computeLatestContributionRangeUtc,
+} from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
+
+/** TTL: latest/current year data changes within the day. Historical years are stable. */
+const TTL_SHORT = 1000 * 60 * 3; // 3 min
+const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
 
 function graphqlClient() {
   const token = process.env.GITHUB_TOKEN;
@@ -50,40 +60,70 @@ export async function getUserSummary(username: string): Promise<GithubUserNormal
     `,
     { username },
   );
-  const contributions = await getContributions(username);
+  const contributions = await getContributions(username, "latest");
   return writeCache(cacheKey, {
     login: user.user.login,
     name: user.user.name,
     avatarUrl: user.user.avatarUrl,
     followers: user.user.followers.totalCount,
     publicRepos: user.user.repositories.totalCount,
-    contributionsLastYear: contributions.total,
+    contributionsLatest365: contributions.total,
     createdAt: user.user.createdAt,
-  });
+  }, TTL_SHORT);
 }
 
 export async function getContributions(username: string, year?: string): Promise<ContributionsNormalized> {
-  const cacheKey = `gh:contrib:${username}:${year ?? "latest"}`;
+  const modeLatest = !year || year === "latest";
+  const latestRange = modeLatest ? computeLatestContributionRangeUtc(new Date()) : null;
+  const cacheKey = modeLatest
+    ? `gh:contrib:${username}:latest:${latestRange!.toYyyyMmDd}`
+    : `gh:contrib:${username}:${year}`;
+
   const cached = readCache<ContributionsNormalized>(cacheKey);
   if (cached) return cached;
 
   const client = graphqlClient();
 
-  const yearNum = year ? parseInt(year, 10) : undefined;
-  const from = yearNum ? `${yearNum}-01-01T00:00:00Z` : undefined;
-  const to = yearNum ? `${yearNum}-12-31T23:59:59Z` : undefined;
+  let from: string;
+  let to: string;
+  let rangeStartYmd: string;
+  let rangeEndYmd: string;
+  let yearNum: number | undefined;
+
+  if (modeLatest) {
+    from = latestRange!.fromIso;
+    to = latestRange!.toIso;
+    rangeStartYmd = from.slice(0, 10);
+    rangeEndYmd = to.slice(0, 10);
+  } else {
+    yearNum = parseInt(year!, 10);
+    if (Number.isNaN(yearNum) || String(yearNum).length !== 4) {
+      throw new Error(`Invalid contribution year: ${year}`);
+    }
+    from = `${yearNum}-01-01T00:00:00Z`;
+    to = `${yearNum}-12-31T23:59:59Z`;
+    rangeStartYmd = `${yearNum}-01-01`;
+    rangeEndYmd = `${yearNum}-12-31`;
+  }
 
   const response = await client<{
     user: {
       contributionsCollection: {
         contributionCalendar: {
           totalContributions: number;
+          months: Array<{
+            firstDay: string;
+            name: string;
+            totalWeeks: number;
+            year: number;
+          }>;
           weeks: Array<{
             firstDay: string;
             contributionDays: Array<{
               date: string;
               contributionCount: number;
               contributionLevel: "NONE" | "FIRST_QUARTILE" | "SECOND_QUARTILE" | "THIRD_QUARTILE" | "FOURTH_QUARTILE";
+              weekday: number;
             }>;
           }>;
         };
@@ -96,12 +136,19 @@ export async function getContributions(username: string, year?: string): Promise
           contributionsCollection(from: $from, to: $to) {
             contributionCalendar {
               totalContributions
+              months {
+                firstDay
+                name
+                totalWeeks
+                year
+              }
               weeks {
                 firstDay
                 contributionDays {
                   date
                   contributionCount
                   contributionLevel
+                  weekday
                 }
               }
             }
@@ -121,17 +168,37 @@ export async function getContributions(username: string, year?: string): Promise
   };
 
   const calendar = response.user.contributionsCollection.contributionCalendar;
+
+  const weeks: ContributionWeekNormalized[] = calendar.weeks.map((week) => ({
+    firstDay: week.firstDay,
+    days: week.contributionDays.map((day): ContributionDayNormalized => ({
+      date: day.date,
+      count: day.contributionCount,
+      level: levelToNumber[day.contributionLevel] ?? 0,
+      weekday: day.weekday as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+    })),
+  }));
+
+  const months: ContributionMonthNormalized[] = calendar.months.map((m) => ({
+    firstDay: m.firstDay,
+    name: m.name,
+    totalWeeks: m.totalWeeks,
+    year: m.year,
+  }));
+
+  const currentYear = new Date().getUTCFullYear();
+  const isHistorical = !modeLatest && yearNum != null && yearNum < currentYear;
+  const ttl = isHistorical ? TTL_LONG : TTL_SHORT;
+
   return writeCache(cacheKey, {
     total: calendar.totalContributions,
-    weeks: calendar.weeks.map((week) => ({
-      weekStart: week.firstDay,
-      days: week.contributionDays.map((day) => ({
-        date: day.date,
-        count: day.contributionCount,
-        level: levelToNumber[day.contributionLevel] ?? 0,
-      })),
-    })),
-  });
+    weeks,
+    months,
+    rangeStartYmd,
+    rangeEndYmd,
+    mode: modeLatest ? "latest" : "year",
+    year: yearNum,
+  }, ttl);
 }
 
 export async function getRepos(

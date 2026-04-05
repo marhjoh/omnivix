@@ -18,7 +18,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     textPrimary: "#e6edf3",
     textSecondary: "#8b949e",
     accent: "#3fb950",
-    gridLevels: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
+    gridLevels: ["#1a222c", "#064320", "#008c38", "#1fb950", "#45f87a"],
   },
   {
     id: "alternate",
@@ -28,7 +28,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     textPrimary: "#ffeef4",
     textSecondary: "#d6a3b5",
     accent: "#ff6b6b",
-    gridLevels: ["#2d1b23", "#5c2030", "#8b2e40", "#c84250", "#ff6b6b"],
+    gridLevels: ["#352028", "#6a2535", "#a3384a", "#e04d5c", "#ff7a7a"],
   },
   {
     id: "ocean",
@@ -38,17 +38,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     textPrimary: "#ccd6f6",
     textSecondary: "#8892b0",
     accent: "#64ffda",
-    gridLevels: ["#112240", "#1a4a6e", "#2176a5", "#58a6ff", "#79c0ff"],
-  },
-  {
-    id: "midnight",
-    label: "Midnight",
-    background: "#0b1220",
-    surface: "#111c30",
-    textPrimary: "#e6edf3",
-    textSecondary: "#8b9bb2",
-    accent: "#2f81f7",
-    gridLevels: ["#1a2438", "#264262", "#1f6feb", "#2ea043", "#56d364"],
+    gridLevels: ["#152535", "#1e5580", "#2890d8", "#58a6ff", "#8ecbff"],
   },
   {
     id: "sunset",
@@ -58,6 +48,6 @@ export const THEME_PRESETS: ThemePreset[] = [
     textPrimary: "#ffeef8",
     textSecondary: "#d8b7cb",
     accent: "#f778ba",
-    gridLevels: ["#3a283f", "#623057", "#8f3d68", "#c24973", "#ff7ea7"],
+    gridLevels: ["#3d2a45", "#6c3560", "#a04578", "#d8568a", "#ff8fb8"],
   },
 ];

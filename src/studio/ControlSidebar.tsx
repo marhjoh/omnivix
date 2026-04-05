@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { BANNER_SIZES } from "@/src/lib/sizes";
-import { fileToDataUrl } from "@/src/lib/images";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
+import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const currentYear = new Date().getFullYear();
@@ -112,13 +112,15 @@ function ThemePicker({
 function SizePicker({
   value,
   onChange,
+  label,
 }: {
   value: string;
   onChange: (size: string) => void;
+  label: string;
 }) {
   return (
     <div className="space-y-2">
-      <span className="block text-xs font-medium text-muted">Banner Size</span>
+      <span className="block text-xs font-medium text-muted">{label}</span>
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(BANNER_SIZES).map(([key, size]) => (
           <button
@@ -180,6 +182,7 @@ export function ControlSidebar({
           return (
             <SizePicker
               key={field.key}
+              label={field.label}
               value={String(state[field.key] ?? "")}
               onChange={(v) => onChange(field.key, v)}
             />
@@ -197,6 +200,10 @@ export function ControlSidebar({
         }
 
         if (field.key === "year") {
+          const contributionTemplates = templateId === "github-banner" || templateId === "contribution-banner";
+          const yearOptions = contributionTemplates
+            ? [{ value: "latest", label: "Last 365 days" }, ...years.map((y) => ({ value: y, label: y }))]
+            : years.map((y) => ({ value: y, label: y }));
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <select
@@ -205,9 +212,9 @@ export function ControlSidebar({
                 value={String(state[field.key] ?? currentYear)}
                 onChange={(e) => onChange(field.key, e.target.value)}
               >
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
+                {yearOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
                   </option>
                 ))}
               </select>
@@ -290,36 +297,15 @@ export function ControlSidebar({
           );
         }
 
-        if (field.type === "imageUpload") {
+        if (field.type === "backgroundPicker") {
           return (
-            <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <label
-                htmlFor={`upload-${field.key}`}
-                className="btn-secondary w-full cursor-pointer justify-center py-2.5 text-xs"
-              >
-                Choose Image
-              </label>
-              <input
-                id={`upload-${field.key}`}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  onChange(field.key, await fileToDataUrl(file));
-                }}
-              />
-              {Boolean(state[field.key]) && (
-                <button
-                  type="button"
-                  className="mt-1 text-xs text-muted transition-colors hover:text-danger"
-                  onClick={() => onChange(field.key, undefined)}
-                >
-                  Remove image
-                </button>
-              )}
-            </FieldWrapper>
+            <BackgroundImagePicker
+              key={field.key}
+              id={field.key}
+              label={field.label}
+              value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
+              onChange={(next) => onChange(field.key, next)}
+            />
           );
         }
 

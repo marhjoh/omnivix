@@ -6,24 +6,37 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 function ContributionGridPreview() {
+  const COLS = 53;
+  const ROWS = 7;
   const cells = useMemo(() => {
-    return Array.from({ length: 364 }).map((_, i) => {
-      const row = i % 7;
-      const col = Math.floor(i / 7);
+    return Array.from({ length: COLS * ROWS }).map((_, i) => {
+      const col = Math.floor(i / ROWS);
+      const row = i % ROWS;
       const seed = (row * 13 + col * 17 + row * col * 3) % 100;
       const opacity =
         seed < 30 ? 0.08 : seed < 50 ? 0.25 : seed < 70 ? 0.45 : seed < 85 ? 0.65 : 0.9;
-      return opacity;
+      return { col, row, opacity };
     });
   }, []);
 
   return (
-    <div className="grid grid-cols-[repeat(52,1fr)] gap-0.5">
-      {cells.map((opacity, i) => (
+    <div
+      className="gap-0.5"
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+        gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+      }}
+    >
+      {cells.map(({ col, row, opacity }, i) => (
         <div
           key={i}
           className="aspect-square rounded-[1px]"
-          style={{ backgroundColor: `rgba(34, 197, 94, ${opacity})` }}
+          style={{
+            gridColumn: col + 1,
+            gridRow: row + 1,
+            backgroundColor: `rgba(34, 197, 94, ${opacity})`,
+          }}
         />
       ))}
     </div>
@@ -111,7 +124,7 @@ export function Hero() {
                 </div>
                 <ContributionGridPreview />
                 <div className="mt-4 flex items-center justify-between text-xs text-white/60">
-                  <span>contributions in the last year</span>
+                  <span>contributions</span>
                   <span>@marhjoh</span>
                 </div>
               </div>
