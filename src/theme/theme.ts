@@ -15,5 +15,9 @@ export function parseThemeCookie(value: string | undefined): Theme {
 /** Client-only: persist for the next full page request / SSR. */
 export function setThemeCookieClient(theme: Theme): void {
   if (typeof document === "undefined") return;
-  document.cookie = `${THEME_COOKIE_NAME}=${theme}; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+  const secure = typeof window !== "undefined" && window.location.protocol === "https:";
+  const tail = secure
+    ? `Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax; Secure`
+    : `Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+  document.cookie = `${THEME_COOKIE_NAME}=${theme}; ${tail}`;
 }
