@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Coffee } from "lucide-react";
 import { getTemplates } from "@/src/templates/registry";
 import { Hero } from "@/src/landing/Hero";
+import { SITE_LINKS } from "@/src/lib/site-links";
 import { TemplateGallery } from "@/src/landing/TemplateGallery";
 import type { TemplateMeta } from "@/src/types/template";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
-import { ThemedIcon, ThemedLogo } from "@/src/theme/ThemedBrand";
+import { ThemedLogo } from "@/src/theme/ThemedBrand";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -25,22 +27,7 @@ export default function Home() {
             <ThemedLogo className="h-9 w-auto" />
           </Link>
           <nav className="flex items-center gap-1">
-            <Link href="#templates" className="btn-ghost hidden px-3 py-2 text-sm sm:inline-flex">
-              Templates
-            </Link>
             <ThemeToggle />
-            <a
-              href="https://github.com/marhjoh/omnivix"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost rounded-lg p-2"
-              aria-label="GitHub"
-            >
-              <GithubIcon className="h-[18px] w-[18px]" />
-            </a>
-            <Link href="#templates" className="btn-primary ml-2 px-4 py-2 text-sm">
-              Get Started
-            </Link>
           </nav>
         </div>
       </header>
@@ -51,25 +38,47 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border px-4 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-3">
-            <ThemedIcon className="h-6 w-6" size={24} />
-            <span className="text-sm text-muted">Omnivix &mdash; Social Banner Generator</span>
-          </div>
-          <nav className="flex items-center gap-6 text-sm text-muted">
-            <Link href="#templates" className="transition-colors hover:text-text">
-              Templates
-            </Link>
-            <a
-              href="https://github.com/marhjoh/omnivix"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 transition-colors hover:text-text"
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:justify-between">
+          <Link href="/" className="shrink-0 transition-opacity hover:opacity-80">
+            <ThemedLogo className="h-9 w-auto" />
+          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-end">
+            <p className="text-center text-sm leading-relaxed text-muted sm:text-left">
+              Maintained by{" "}
+              <a
+                href={SITE_LINKS.maintainerProfile}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-text/90 underline-offset-2 transition-colors hover:text-text hover:underline"
+              >
+                @marhjoh
+              </a>
+              .
+            </p>
+            <nav
+              className="flex flex-wrap items-center justify-center gap-2"
+              aria-label="Support and repository"
             >
-              <GithubIcon className="h-4 w-4" />
-              GitHub
-            </a>
-          </nav>
+              <a
+                href={SITE_LINKS.buyMeACoffee}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost inline-flex items-center gap-1.5 px-3 py-2 text-sm"
+              >
+                <Coffee className="h-4 w-4" aria-hidden />
+                Buy me a coffee
+              </a>
+              <a
+                href={SITE_LINKS.repo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost inline-flex items-center gap-1.5 px-3 py-2 text-sm"
+              >
+                <GithubIcon className="h-4 w-4" />
+                GitHub
+              </a>
+            </nav>
+          </div>
         </div>
       </footer>
     </div>

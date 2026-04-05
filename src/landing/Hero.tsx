@@ -2,8 +2,9 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Coffee, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { SITE_LINKS } from "@/src/lib/site-links";
 
 function ContributionGridPreview() {
   const COLS = 53;
@@ -66,9 +67,21 @@ export function Hero() {
           <span className="text-muted">for your GitHub profile</span>
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-pretty text-lg text-muted sm:text-xl">
+        <p className="mx-auto mb-6 max-w-2xl text-pretty text-lg text-muted sm:text-xl">
           Generate beautiful LinkedIn banners, Twitter headers, and README images showcasing your
           GitHub contributions, pinned repos, and custom quotes.
+        </p>
+
+        <p className="mb-8 text-center text-sm text-muted">
+          Maintained by{" "}
+          <a
+            href={SITE_LINKS.maintainerProfile}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-text/90 underline-offset-2 transition-colors hover:text-text hover:underline"
+          >
+            @marhjoh
+          </a>
         </p>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -76,9 +89,14 @@ export function Hero() {
             Start Creating
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <button type="button" className="btn-secondary h-12 px-8 text-base" disabled>
-            Learn More
-          </button>
+          <a
+            href={SITE_LINKS.buyMeACoffee}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary h-12 gap-2 px-8 text-base">
+            <Coffee className="h-4 w-4" aria-hidden />
+            Support
+          </a>
         </div>
       </motion.div>
 
