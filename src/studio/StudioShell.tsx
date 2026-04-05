@@ -116,6 +116,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   const [refetchNonce, setRefetchNonce] = useState(0);
   const contributionsOkRef = useRef(false);
   const contributionsUsernameRef = useRef<string | null>(null);
+  const contributionsYearRef = useRef<string | null>(null);
 
   const needsContributions =
     templateId === "github-banner" || templateId === "contribution-banner";
@@ -235,14 +236,22 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     if (!username || !needsContributions) {
       contributionsOkRef.current = false;
       contributionsUsernameRef.current = null;
+      contributionsYearRef.current = null;
       setData((prev) => ({ ...prev, contributions: undefined }));
       setFetchErrors((prev) => ({ ...prev, contributions: null }));
       return;
     }
 
+    const yearRaw =
+      state.year != null && String(state.year).length > 0
+        ? String(state.year)
+        : String(new Date().getFullYear());
+
     const usernameChanged = contributionsUsernameRef.current !== username;
+    const yearChanged = contributionsYearRef.current !== yearRaw;
     contributionsUsernameRef.current = username;
-    if (usernameChanged) {
+    contributionsYearRef.current = yearRaw;
+    if (usernameChanged || yearChanged) {
       contributionsOkRef.current = false;
       setData((prev) => ({ ...prev, contributions: undefined }));
     }
@@ -250,10 +259,6 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     const ac = new AbortController();
     setFetchErrors((prev) => ({ ...prev, contributions: null }));
 
-    const yearRaw =
-      state.year != null && String(state.year).length > 0
-        ? String(state.year)
-        : String(new Date().getFullYear());
     const yearParam = `&year=${encodeURIComponent(yearRaw)}`;
 
     void (async () => {
