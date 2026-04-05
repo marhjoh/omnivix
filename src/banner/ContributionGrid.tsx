@@ -56,7 +56,22 @@ export function ContributionGrid({
   const footerColor = totalFill ?? theme.textSecondary;
   const { rx, ry } = cellRadii(cellShape, cellSize);
 
-  if (!contributions.weeks?.length) return null;
+  if (!contributions.weeks?.length) {
+    return (
+      <div
+        style={{
+          padding: "20px 16px",
+          textAlign: "center",
+          fontSize: 13,
+          lineHeight: 1.45,
+          color: monthDayColor,
+          maxWidth: 300,
+        }}
+      >
+        No contribution calendar data for this range.
+      </div>
+    );
+  }
 
   const { placedDays, monthLabels, columnCount } = buildCalendarLayout({
     weeks: contributions.weeks,

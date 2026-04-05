@@ -5,6 +5,7 @@ import { templateRegistry } from "@/src/templates/registry";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
+import { computePreviewContentState } from "@/src/studio/preview";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
@@ -69,10 +70,8 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   }, [templateId, needsUsername]);
 
   const [data, setData] = useState<RenderData>({});
-  const [loadingUser, setLoadingUser] = useState(false);
-  const [loadingContributions, setLoadingContributions] = useState(false);
-  const [loadingRepos, setLoadingRepos] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [refetchNonce, setRefetchNonce] = useState(0);
   const contributionsOkRef = useRef(false);
   const contributionsUsernameRef = useRef<string | null>(null);
 
@@ -104,12 +103,27 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     data.repos,
   ]);
 
-  const isBlockingLoad =
-    needsUsername &&
-    Boolean(username) &&
-    !dataReady &&
-    !dataError &&
-    (loadingUser || loadingContributions || loadingRepos);
+  const quoteText = String(state.quote ?? "");
+
+  const previewState = useMemo(
+    () =>
+      computePreviewContentState({
+        hydrated,
+        templateId,
+        needsUsername,
+        username,
+        quoteText,
+        dataError,
+        dataReady,
+      }),
+    [hydrated, templateId, needsUsername, username, quoteText, dataError, dataReady],
+  );
+
+  const handlePreviewRetry = useCallback(() => {
+    setDataError(null);
+    setRefetchNonce((n) => n + 1);
+  }, []);
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [accountCreatedYear, setAccountCreatedYear] = useState<number | null>(null);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
@@ -139,7 +153,6 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     }
 
     const ac = new AbortController();
-    setLoadingUser(true);
     setDataError(null);
 
     void (async () => {
@@ -158,13 +171,11 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         setAccountCreatedYear(null);
         setData((prev) => ({ ...prev, user: undefined }));
         setDataError(error instanceof Error ? error.message : "Unable to load GitHub data");
-      } finally {
-        setLoadingUser(false);
       }
     })();
 
     return () => ac.abort();
-  }, [needsUsername, username]);
+  }, [needsUsername, username, refetchNonce]);
 
   useEffect(() => {
     if (!username || !needsContributions) {
@@ -182,7 +193,6 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     }
 
     const ac = new AbortController();
-    setLoadingContributions(true);
     setDataError(null);
 
     const yearRaw =
@@ -208,13 +218,11 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
             error instanceof Error ? error.message : "Unable to load GitHub data",
           );
         }
-      } finally {
-        setLoadingContributions(false);
       }
     })();
 
     return () => ac.abort();
-  }, [username, needsContributions, state.year]);
+  }, [username, needsContributions, state.year, refetchNonce]);
 
   useEffect(() => {
     if (!username || !needsReposFetch) {
@@ -223,7 +231,6 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     }
 
     const ac = new AbortController();
-    setLoadingRepos(true);
     setDataError(null);
 
     const mode = String(state.mode ?? "pinned");
@@ -241,13 +248,11 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         if (ac.signal.aborted) return;
         setData((prev) => ({ ...prev, repos: undefined }));
         setDataError(error instanceof Error ? error.message : "Unable to load GitHub data");
-      } finally {
-        setLoadingRepos(false);
       }
     })();
 
     return () => ac.abort();
-  }, [username, needsReposFetch, state.mode, state.selectedRepos]);
+  }, [username, needsReposFetch, state.mode, state.selectedRepos, refetchNonce]);
 
   const canExport = useMemo(
     () => definition.stateSchema.safeParse(state).success,
@@ -319,21 +324,15 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           />
         </aside>
         <main className={styles.preview}>
-          {isBlockingLoad ? (
-            <div className={styles.loading}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/icon.svg" alt="" className={styles.loadingLogo} />
-              <span>Loading GitHub data&hellip;</span>
-            </div>
-          ) : dataError ? (
-            <div className={styles.error}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/icon.svg" alt="" className={styles.errorLogo} />
-              <p className={styles.errorTitle}>{dataError}</p>
-              <p className={styles.errorHint}>Please check the username and try again.</p>
-            </div>
-          ) : null}
-          <PreviewArtboard templateId={templateId} size={size} state={state} data={data} />
+          <PreviewArtboard
+            templateId={templateId}
+            size={size}
+            state={state}
+            data={data}
+            previewState={previewState}
+            dataError={dataError}
+            onRetryError={handlePreviewRetry}
+          />
         </main>
       </div>
     </div>
