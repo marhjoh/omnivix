@@ -54,6 +54,7 @@ export default async function RenderPage({
         state={payload.state}
         data={{ user, contributions, repos }}
         isExport
+        uiTheme={payload.uiTheme ?? "dark"}
       />
     </main>
   );

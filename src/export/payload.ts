@@ -8,4 +8,5 @@ export const exportRequestSchema: z.ZodType<ExportRequest> = z.object({
   format: z.literal("png"),
   scale: z.union([z.literal(1), z.literal(2)]),
   pixelRatio: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  uiTheme: z.enum(["light", "dark"]).optional(),
 });

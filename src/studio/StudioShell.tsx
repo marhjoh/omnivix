@@ -10,9 +10,50 @@ import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized, ContributionsNormalized, RepoNormalized } from "@/src/github/normalize";
+import { useTheme } from "@/src/theme/ThemeProvider";
 import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
+
+type FetchSlotErrors = {
+  user: string | null;
+  contributions: string | null;
+  repos: string | null;
+};
+
+function emptyFetchErrors(): FetchSlotErrors {
+  return { user: null, contributions: null, repos: null };
+}
+
+/**
+ * Single message for preview: one slot wins per template.
+ * Contribution banner only needs contributions for the canvas; user fetch is sidebar-only.
+ */
+function previewErrorForTemplate(
+  templateId: TemplateId,
+  e: FetchSlotErrors,
+  dataReady: boolean,
+): string | null {
+  if (templateId === "contribution-banner" && dataReady) {
+    return null;
+  }
+  if (templateId === "github-banner") {
+    if (e.user) return e.user;
+    if (e.contributions) return e.contributions;
+    return null;
+  }
+  if (templateId === "contribution-banner") {
+    if (e.contributions) return e.contributions;
+    if (e.user) return e.user;
+    return null;
+  }
+  if (templateId === "repos-banner") {
+    if (e.user) return e.user;
+    if (e.repos) return e.repos;
+    return null;
+  }
+  return null;
+}
 
 function loadPersistedState(templateId: string): Record<string, unknown> | null {
   if (typeof window === "undefined") return null;
@@ -43,6 +84,7 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
 }
 
 export function StudioShell({ templateId }: { templateId: TemplateId }) {
+  const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
   const needsUsername = definition.meta.needsUsername ?? false;
 
@@ -70,7 +112,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   }, [templateId, needsUsername]);
 
   const [data, setData] = useState<RenderData>({});
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [fetchErrors, setFetchErrors] = useState<FetchSlotErrors>(emptyFetchErrors);
   const [refetchNonce, setRefetchNonce] = useState(0);
   const contributionsOkRef = useRef(false);
   const contributionsUsernameRef = useRef<string | null>(null);
@@ -105,6 +147,11 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
 
   const quoteText = String(state.quote ?? "");
 
+  const previewDataError = useMemo(
+    () => previewErrorForTemplate(templateId, fetchErrors, dataReady),
+    [templateId, fetchErrors, dataReady],
+  );
+
   const previewState = useMemo(
     () =>
       computePreviewContentState({
@@ -113,16 +160,20 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         needsUsername,
         username,
         quoteText,
-        dataError,
+        dataError: previewDataError,
         dataReady,
       }),
-    [hydrated, templateId, needsUsername, username, quoteText, dataError, dataReady],
+    [hydrated, templateId, needsUsername, username, quoteText, previewDataError, dataReady],
   );
 
   const handlePreviewRetry = useCallback(() => {
-    setDataError(null);
+    setFetchErrors(emptyFetchErrors());
     setRefetchNonce((n) => n + 1);
   }, []);
+
+  useEffect(() => {
+    setFetchErrors(emptyFetchErrors());
+  }, [templateId]);
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [accountCreatedYear, setAccountCreatedYear] = useState<number | null>(null);
@@ -149,11 +200,12 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     if (!needsUsername || !username) {
       setAccountCreatedYear(null);
       setData((prev) => ({ ...prev, user: undefined }));
+      setFetchErrors(emptyFetchErrors());
       return;
     }
 
     const ac = new AbortController();
-    setDataError(null);
+    setFetchErrors((prev) => ({ ...prev, user: null }));
 
     void (async () => {
       try {
@@ -163,6 +215,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         );
         if (ac.signal.aborted) return;
         setData((prev) => ({ ...prev, user }));
+        setFetchErrors((prev) => ({ ...prev, user: null }));
         if (user.createdAt) {
           setAccountCreatedYear(new Date(user.createdAt).getFullYear());
         }
@@ -170,7 +223,8 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         if (ac.signal.aborted) return;
         setAccountCreatedYear(null);
         setData((prev) => ({ ...prev, user: undefined }));
-        setDataError(error instanceof Error ? error.message : "Unable to load GitHub data");
+        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+        setFetchErrors((prev) => ({ ...prev, user: msg }));
       }
     })();
 
@@ -182,6 +236,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
       contributionsOkRef.current = false;
       contributionsUsernameRef.current = null;
       setData((prev) => ({ ...prev, contributions: undefined }));
+      setFetchErrors((prev) => ({ ...prev, contributions: null }));
       return;
     }
 
@@ -193,7 +248,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     }
 
     const ac = new AbortController();
-    setDataError(null);
+    setFetchErrors((prev) => ({ ...prev, contributions: null }));
 
     const yearRaw =
       state.year != null && String(state.year).length > 0
@@ -210,13 +265,13 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         if (ac.signal.aborted) return;
         contributionsOkRef.current = true;
         setData((prev) => ({ ...prev, contributions }));
+        setFetchErrors((prev) => ({ ...prev, contributions: null }));
       } catch (error) {
         if (ac.signal.aborted) return;
         if (!contributionsOkRef.current) {
           setData((prev) => ({ ...prev, contributions: undefined }));
-          setDataError(
-            error instanceof Error ? error.message : "Unable to load GitHub data",
-          );
+          const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+          setFetchErrors((prev) => ({ ...prev, contributions: msg }));
         }
       }
     })();
@@ -227,11 +282,12 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   useEffect(() => {
     if (!username || !needsReposFetch) {
       setData((prev) => ({ ...prev, repos: undefined }));
+      setFetchErrors((prev) => ({ ...prev, repos: null }));
       return;
     }
 
     const ac = new AbortController();
-    setDataError(null);
+    setFetchErrors((prev) => ({ ...prev, repos: null }));
 
     const mode = String(state.mode ?? "pinned");
     const selected = String(state.selectedRepos ?? "");
@@ -244,10 +300,12 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         );
         if (ac.signal.aborted) return;
         setData((prev) => ({ ...prev, repos }));
+        setFetchErrors((prev) => ({ ...prev, repos: null }));
       } catch (error) {
         if (ac.signal.aborted) return;
         setData((prev) => ({ ...prev, repos: undefined }));
-        setDataError(error instanceof Error ? error.message : "Unable to load GitHub data");
+        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
+        setFetchErrors((prev) => ({ ...prev, repos: msg }));
       }
     })();
 
@@ -273,6 +331,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           format: "png",
           scale: 2,
           pixelRatio: 3,
+          uiTheme: appTheme,
         }),
       });
       if (!response.ok) return;
@@ -330,7 +389,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
             state={state}
             data={data}
             previewState={previewState}
-            dataError={dataError}
+            dataError={previewDataError}
             onRetryError={handlePreviewRetry}
           />
         </main>

@@ -1,16 +1,10 @@
-import { contributionCellShapeFromState } from "@/src/templates/definitions";
-import { Frame } from "@/src/banner/Frame";
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
+import { Frame } from "@/src/banner/Frame";
+import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { BannerMuted, BannerTitle } from "@/src/banner/Text";
+import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { RenderData } from "@/src/templates/renderers/types";
-
-/** Banner chrome stays fixed; theme only recolors contribution cells (gridLevels). */
-const BANNER_BASE_BG = "#0d1117";
-const PROFILE_TEXT = "rgba(255,255,255,0.92)";
-const PROFILE_MUTED = "rgba(255,255,255,0.58)";
-const GRID_OVERLAY_BG = "rgba(13, 17, 23, 0.82)";
-const GRID_OVERLAY_BORDER = "rgba(255, 255, 255, 0.1)";
 
 /** Calendar-aligned grid: columnCount = GitHub weeks.length, cells placed by weekday row. */
 const GRID_SIZES: Record<
@@ -34,11 +28,14 @@ export function GithubBannerRenderer({
   state,
   data,
   isExport = false,
+  uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
   isExport?: boolean;
+  uiTheme?: Theme;
 }) {
+  const chrome = bannerUiChrome(uiTheme);
   const gridTheme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const username = typeof state.username === "string" ? state.username : "";
@@ -58,18 +55,33 @@ export function GithubBannerRenderer({
 
   if (!username) {
     return (
-      <Frame isExport={isExport} style={{ background: BANNER_BASE_BG, color: PROFILE_TEXT }}>
-        <div style={{ display: "grid", placeItems: "center", height: "100%", opacity: 0.35, textAlign: "center", gap: 8 }}>
+      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: chrome.baseBg, color: chrome.text }}>
+        <div
+          style={{
+            display: "grid",
+            placeItems: "center",
+            height: "100%",
+            opacity: 0.55,
+            textAlign: "center",
+            gap: 8,
+            color: chrome.textMuted,
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/icon.svg" alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
-          <p style={{ fontSize: 16 }}>Select a GitHub profile to get started</p>
+          <img src={chrome.emptyStateIconSrc} alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
+          <p style={{ fontSize: 16, color: chrome.text }}>Select a GitHub profile to get started</p>
         </div>
       </Frame>
     );
   }
 
   return (
-    <Frame backgroundImage={backgroundImage} isExport={isExport} style={{ background: BANNER_BASE_BG, color: PROFILE_TEXT }}>
+    <Frame
+      appTheme={uiTheme}
+      backgroundImage={backgroundImage}
+      isExport={isExport}
+      style={{ background: chrome.baseBg, color: chrome.text }}
+    >
       <div
         style={{
           display: "flex",
@@ -116,10 +128,10 @@ export function GithubBannerRenderer({
               <div style={{ minWidth: 0, textAlign: profileRight ? "right" : "left" }}>
                 {showDisplayName && displayName ? (
                   <>
-                    <BannerTitle style={{ fontSize: sizing.name, lineHeight: 1.15, margin: "0 0 2px", color: PROFILE_TEXT }}>
+                    <BannerTitle style={{ fontSize: sizing.name, lineHeight: 1.15, margin: "0 0 2px", color: chrome.text }}>
                       {displayName}
                     </BannerTitle>
-                    <BannerMuted style={{ fontSize: sizing.handle, color: PROFILE_MUTED, margin: 0 }}>@{login}</BannerMuted>
+                    <BannerMuted style={{ fontSize: sizing.handle, color: chrome.textMuted, margin: 0 }}>@{login}</BannerMuted>
                   </>
                 ) : (
                   <p
@@ -128,7 +140,7 @@ export function GithubBannerRenderer({
                       fontSize: sizing.handle,
                       fontWeight: 600,
                       lineHeight: 1.2,
-                      color: PROFILE_TEXT,
+                      color: chrome.text,
                       letterSpacing: "-0.02em",
                     }}
                   >
@@ -147,8 +159,8 @@ export function GithubBannerRenderer({
               overflow: "hidden",
               borderRadius: 12,
               padding: "12px 14px",
-              background: GRID_OVERLAY_BG,
-              border: `1px solid ${GRID_OVERLAY_BORDER}`,
+              background: chrome.gridOverlayBg,
+              border: `1px solid ${chrome.gridOverlayBorder}`,
               boxSizing: "border-box",
               ...(isExport
                 ? {}
@@ -168,8 +180,8 @@ export function GithubBannerRenderer({
                 showDayLabels={showDayLabels}
                 showTotal={showTotal}
                 cellOutline
-                labelFill={PROFILE_TEXT}
-                totalFill={PROFILE_TEXT}
+                labelFill={chrome.text}
+                totalFill={chrome.text}
                 cellShape={cellShape}
               />
             ) : null}

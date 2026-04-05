@@ -1,3 +1,6 @@
+"use client";
+
+import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import styles from "./preview.module.css";
 
 export function PreviewErrorState({
@@ -11,8 +14,7 @@ export function PreviewErrorState({
 }) {
   return (
     <div className={styles.stateInner} role="alert">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/icon.svg" alt="" className={styles.stateLogo} style={{ opacity: 0.55 }} />
+      <ThemedIcon className={styles.stateLogoMuted} size={44} />
       <p className={styles.errorTitle}>{message}</p>
       <p className={styles.description}>{hint}</p>
       {onRetry ? (

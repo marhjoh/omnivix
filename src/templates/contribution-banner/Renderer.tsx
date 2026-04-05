@@ -1,6 +1,7 @@
-import { contributionCellShapeFromState } from "@/src/templates/definitions";
-import { Frame } from "@/src/banner/Frame";
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
+import { Frame } from "@/src/banner/Frame";
+import { contributionCellShapeFromState } from "@/src/templates/definitions";
+import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
@@ -17,11 +18,14 @@ export function ContributionBannerRenderer({
   state,
   data,
   isExport = false,
+  uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
   isExport?: boolean;
+  uiTheme?: Theme;
 }) {
+  const chrome = bannerUiChrome(uiTheme);
   const theme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const username = typeof state.username === "string" ? state.username : "";
@@ -32,18 +36,33 @@ export function ContributionBannerRenderer({
 
   if (!username) {
     return (
-      <Frame isExport={isExport} style={{ background: theme.background, color: theme.textPrimary }}>
-        <div style={{ display: "grid", placeItems: "center", height: "100%", opacity: 0.35, textAlign: "center", gap: 8 }}>
+      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: theme.background, color: theme.textPrimary }}>
+        <div
+          style={{
+            display: "grid",
+            placeItems: "center",
+            height: "100%",
+            opacity: 0.55,
+            textAlign: "center",
+            gap: 8,
+            color: theme.textSecondary,
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/icon.svg" alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
-          <p style={{ fontSize: 16 }}>Select a GitHub profile to get started</p>
+          <img src={chrome.emptyStateIconSrc} alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
+          <p style={{ fontSize: 16, color: theme.textPrimary }}>Select a GitHub profile to get started</p>
         </div>
       </Frame>
     );
   }
 
   return (
-    <Frame backgroundImage={backgroundImage} isExport={isExport} style={{ background: theme.background, color: theme.textPrimary }}>
+    <Frame
+      appTheme={uiTheme}
+      backgroundImage={backgroundImage}
+      isExport={isExport}
+      style={{ background: theme.background, color: theme.textPrimary }}
+    >
       <div
         style={{
           display: "grid",

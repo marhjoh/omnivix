@@ -1,15 +1,18 @@
 import { Frame } from "@/src/banner/Frame";
 import { BannerMuted } from "@/src/banner/Text";
+import type { Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 export function QuoteBannerRenderer({
   state,
   isExport = false,
+  uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
   isExport?: boolean;
+  uiTheme?: Theme;
 }) {
   const theme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
@@ -21,7 +24,12 @@ export function QuoteBannerRenderer({
   const fontSize = longText ? 32 : 48;
 
   return (
-    <Frame backgroundImage={backgroundImage} isExport={isExport} style={{ background: theme.background, color: theme.textPrimary }}>
+    <Frame
+      appTheme={uiTheme}
+      backgroundImage={backgroundImage}
+      isExport={isExport}
+      style={{ background: theme.background, color: theme.textPrimary }}
+    >
       <div
         style={{
           display: "flex",

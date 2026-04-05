@@ -131,3 +131,13 @@ html[data-theme="light"] .omnivix-card:hover {
   color: var(--text);
   background: var(--surface);
 }
+
+/* Studio banner preview card: theme-aware chrome (matches app tokens). */
+html[data-theme="dark"] .omnivix-artboard {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="light"] .omnivix-artboard {
+  box-shadow: 0 10px 32px rgba(31, 35, 40, 0.08);
+  border: 1px solid var(--border);
+}

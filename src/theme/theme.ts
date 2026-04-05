@@ -1,5 +1,42 @@
 export type Theme = "light" | "dark";
 
+/** Studio + PNG export: banner chrome follows app light/dark (template `themeId` is separate). */
+export type BannerUiChrome = {
+  baseBg: string;
+  text: string;
+  textMuted: string;
+  gridOverlayBg: string;
+  gridOverlayBorder: string;
+  frameFallback: string;
+  frameBorder: string;
+  emptyStateIconSrc: string;
+};
+
+export function bannerUiChrome(t: Theme): BannerUiChrome {
+  if (t === "light") {
+    return {
+      baseBg: "#ffffff",
+      text: "#1f2328",
+      textMuted: "#656d76",
+      gridOverlayBg: "rgba(246, 248, 250, 0.94)",
+      gridOverlayBorder: "rgba(31, 35, 40, 0.12)",
+      frameFallback: "#ffffff",
+      frameBorder: "rgba(31, 35, 40, 0.12)",
+      emptyStateIconSrc: "/brand/icon-dark.svg",
+    };
+  }
+  return {
+    baseBg: "#0d1117",
+    text: "rgba(255,255,255,0.92)",
+    textMuted: "rgba(255,255,255,0.58)",
+    gridOverlayBg: "rgba(13, 17, 23, 0.82)",
+    gridOverlayBorder: "rgba(255, 255, 255, 0.1)",
+    frameFallback: "#0f172a",
+    frameBorder: "rgba(255,255,255,0.12)",
+    emptyStateIconSrc: "/brand/icon-light.svg",
+  };
+}
+
 /** App chrome only (banner template `themeId` is separate). Cookie name avoids `:` for broad client compatibility. */
 export const THEME_COOKIE_NAME = "omnivix-theme";
 
