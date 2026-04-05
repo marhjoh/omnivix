@@ -38,7 +38,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={theme}>
       <body className="bg-bg text-text antialiased">
-        <ThemeProvider key={theme} initialTheme={theme}>
+        <ThemeProvider initialTheme={theme}>
           {children}
         </ThemeProvider>
       </body>
