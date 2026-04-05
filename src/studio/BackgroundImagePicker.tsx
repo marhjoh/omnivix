@@ -57,6 +57,8 @@ export function BackgroundImagePicker({
 }) {
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const listboxRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -69,6 +71,9 @@ export function BackgroundImagePicker({
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Tracks whether the dropdown was closed via Tab so we don't steal focus from the natural tab target. */
+  const closedByTabRef = useRef(false);
+  const prevOpenRef = useRef(false);
 
   const showUrlField =
     urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
@@ -91,6 +96,27 @@ export function BackgroundImagePicker({
       if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
     };
   }, []);
+
+  /** Focus the selected (or first) option when the dropdown opens. */
+  useEffect(() => {
+    if (!open || !listboxRef.current) return;
+    const options = Array.from(
+      listboxRef.current.querySelectorAll<HTMLElement>('[role="option"]'),
+    );
+    const selected =
+      options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
+    requestAnimationFrame(() => selected?.focus());
+  }, [open]);
+
+  /** Return focus to the trigger when the dropdown closes, unless it closed via Tab. */
+  useEffect(() => {
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+    if (wasOpen && !open && !closedByTabRef.current) {
+      triggerRef.current?.focus();
+    }
+    closedByTabRef.current = false;
+  }, [open]);
 
   const uploadDisplayName =
     typeof value === "string" &&
@@ -143,6 +169,48 @@ export function BackgroundImagePicker({
 
   const grouped = groupPresets(BACKGROUND_PRESETS);
 
+  /** Keyboard handler for the listbox — implements full arrow/Home/End/Escape/Tab interaction. */
+  const handleListKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const listbox = listboxRef.current;
+    if (!listbox) return;
+    const options = Array.from(listbox.querySelectorAll<HTMLElement>('[role="option"]'));
+    const currentIdx = options.indexOf(document.activeElement as HTMLElement);
+
+    switch (e.key) {
+      case "ArrowDown": {
+        e.preventDefault();
+        const next = currentIdx < options.length - 1 ? currentIdx + 1 : 0;
+        options[next]?.focus();
+        break;
+      }
+      case "ArrowUp": {
+        e.preventDefault();
+        const prev = currentIdx > 0 ? currentIdx - 1 : options.length - 1;
+        options[prev]?.focus();
+        break;
+      }
+      case "Home": {
+        e.preventDefault();
+        options[0]?.focus();
+        break;
+      }
+      case "End": {
+        e.preventDefault();
+        options[options.length - 1]?.focus();
+        break;
+      }
+      case "Escape": {
+        setOpen(false);
+        break;
+      }
+      case "Tab": {
+        closedByTabRef.current = true;
+        setOpen(false);
+        break;
+      }
+    }
+  };
+
   const selectNone = () => {
     setUploadError(null);
     setUploadSession(null);
@@ -190,6 +258,7 @@ export function BackgroundImagePicker({
         <button
           type="button"
           id={id}
+          ref={triggerRef}
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
@@ -212,15 +281,18 @@ export function BackgroundImagePicker({
         {open ? (
           <div
             id={listId}
+            ref={listboxRef}
             role="listbox"
             aria-label="Background options"
+            onKeyDown={handleListKeyDown}
             className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
           >
             <button
               type="button"
               role="option"
+              tabIndex={-1}
               aria-selected={!value}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
               onClick={selectNone}
             >
               {!value ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : <span className="w-3.5 shrink-0" />}
@@ -239,8 +311,9 @@ export function BackgroundImagePicker({
                       key={p.id}
                       type="button"
                       role="option"
+                      tabIndex={-1}
                       aria-selected={selected}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
                       onClick={() => selectPreset(p.src)}
                     >
                       {selected ? (
@@ -260,8 +333,9 @@ export function BackgroundImagePicker({
             <button
               type="button"
               role="option"
+              tabIndex={-1}
               aria-selected={Boolean(value && isHttpImageUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
               onClick={selectEnterUrl}
             >
               {value && isHttpImageUrl(value) ? (
@@ -274,8 +348,9 @@ export function BackgroundImagePicker({
             <button
               type="button"
               role="option"
+              tabIndex={-1}
               aria-selected={Boolean(value && isDataUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
               onClick={selectUpload}
             >
               {value && isDataUrl(value) ? (

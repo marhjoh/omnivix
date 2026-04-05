@@ -42,7 +42,7 @@ export function GithubBannerRenderer({
   const showDisplayName = state.showDisplayName === true;
 
   const showMonthLabels = state.showMonthLabels !== false;
-  const showDayLabels = state.showDayLabels === true;
+  const showDayLabels = state.showDayLabels !== false;
   const showTotal = state.showTotal !== false;
   const profileRight = (state.profilePosition as string) === "right";
   const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "center") as keyof typeof FLEX_ALIGN;
