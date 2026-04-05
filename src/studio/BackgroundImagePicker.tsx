@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
-import { fileToDataUrl } from "@/src/lib/images";
+import {
+  MAX_BACKGROUND_UPLOAD_BYTES,
+  normalizeBackgroundImageFile,
+  truncateMiddle,
+} from "@/src/lib/backgroundImageUpload";
+
+/** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
+export const BACKGROUND_FILE_ACCEPT =
+  "image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif";
 
 function isHttpImageUrl(s: string) {
   return /^https?:\/\//i.test(s.trim());
@@ -13,13 +21,27 @@ function isDataUrl(s: string) {
   return s.startsWith("data:");
 }
 
-function triggerLabel(value: string | undefined): string {
+const TRIGGER_LABEL_MAX = 44;
+
+function triggerLabel(value: string | undefined, uploadedFileName: string | null): string {
   if (!value) return "None";
-  if (isDataUrl(value)) return "Uploaded image";
+  if (isDataUrl(value)) {
+    const name = uploadedFileName?.trim();
+    return name ? truncateMiddle(name, TRIGGER_LABEL_MAX) : "Uploaded image";
+  }
   const preset = presetBySrc(value);
   if (preset) return preset.label;
-  if (isHttpImageUrl(value)) return "Enter your own URL";
+  if (isHttpImageUrl(value)) return truncateMiddle(value.trim(), TRIGGER_LABEL_MAX);
   return "Custom";
+}
+
+function triggerTitle(value: string | undefined, uploadedFileName: string | null): string | undefined {
+  if (!value) return undefined;
+  if (isDataUrl(value)) {
+    const name = uploadedFileName?.trim();
+    return name || undefined;
+  }
+  return value;
 }
 
 export function BackgroundImagePicker({
@@ -39,6 +61,11 @@ export function BackgroundImagePicker({
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  /** Filename for the current data URL when this picker performed the upload (parent state is only the URL). */
+  const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
+    null,
+  );
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,6 +92,13 @@ export function BackgroundImagePicker({
     };
   }, []);
 
+  const uploadDisplayName =
+    typeof value === "string" &&
+    isDataUrl(value) &&
+    uploadSession?.dataUrl === value
+      ? uploadSession.fileName
+      : null;
+
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
@@ -87,11 +121,13 @@ export function BackgroundImagePicker({
     (raw: string) => {
       const t = raw.trim();
       if (!t) {
+        setUploadSession(null);
         onChange(undefined);
         setUrlDraft(undefined);
         return;
       }
       if (isHttpImageUrl(t)) {
+        setUploadSession(null);
         onChange(t);
         setUrlDraft(undefined);
       }
@@ -108,6 +144,8 @@ export function BackgroundImagePicker({
   const grouped = groupPresets(BACKGROUND_PRESETS);
 
   const selectNone = () => {
+    setUploadError(null);
+    setUploadSession(null);
     onChange(undefined);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
@@ -115,6 +153,8 @@ export function BackgroundImagePicker({
   };
 
   const selectPreset = (src: string) => {
+    setUploadError(null);
+    setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
@@ -122,6 +162,7 @@ export function BackgroundImagePicker({
   };
 
   const selectEnterUrl = () => {
+    setUploadError(null);
     setUrlEditorOpen(true);
     setOpen(false);
     if (typeof value === "string" && isHttpImageUrl(value)) {
@@ -132,6 +173,7 @@ export function BackgroundImagePicker({
   };
 
   const selectUpload = () => {
+    setUploadError(null);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
@@ -139,10 +181,12 @@ export function BackgroundImagePicker({
   };
 
   return (
-    <div ref={wrapRef} className="relative space-y-1.5">
-      <span className="block text-xs font-medium text-muted">{label}</span>
+    <div ref={wrapRef} className="space-y-1.5">
+      <label htmlFor={id} className="block text-xs font-medium text-muted">
+        {label}
+      </label>
 
-      <div className="relative">
+      <div className="relative space-y-1.5">
         <button
           type="button"
           id={id}
@@ -152,7 +196,12 @@ export function BackgroundImagePicker({
           onClick={() => setOpen((o) => !o)}
           className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:outline-none focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:border-[var(--accent)]"
         >
-          <span className="min-w-0 flex-1 truncate">{triggerLabel(value)}</span>
+          <span
+            className="min-w-0 flex-1 truncate"
+            title={triggerTitle(value, uploadDisplayName)}
+          >
+            {triggerLabel(value, uploadDisplayName)}
+          </span>
           {open ? (
             <ChevronUp className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />
           ) : (
@@ -167,75 +216,75 @@ export function BackgroundImagePicker({
             aria-label="Background options"
             className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
           >
-          <button
-            type="button"
-            role="option"
-            aria-selected={!value}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
-            onClick={selectNone}
-          >
-            {!value ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : <span className="w-3.5 shrink-0" />}
-            None
-          </button>
+            <button
+              type="button"
+              role="option"
+              aria-selected={!value}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              onClick={selectNone}
+            >
+              {!value ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : <span className="w-3.5 shrink-0" />}
+              None
+            </button>
 
-          {Array.from(grouped.entries()).map(([groupName, presets]) => (
-            <div key={groupName}>
-              <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
-                {groupName}
+            {Array.from(grouped.entries()).map(([groupName, presets]) => (
+              <div key={groupName}>
+                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  {groupName}
+                </div>
+                {presets.map((p) => {
+                  const selected = value === p.src;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+                      onClick={() => selectPreset(p.src)}
+                    >
+                      {selected ? (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+                      ) : (
+                        <span className="w-3.5 shrink-0" />
+                      )}
+                      {p.label}
+                    </button>
+                  );
+                })}
               </div>
-              {presets.map((p) => {
-                const selected = value === p.src;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    role="option"
-                    aria-selected={selected}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
-                    onClick={() => selectPreset(p.src)}
-                  >
-                    {selected ? (
-                      <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-                    ) : (
-                      <span className="w-3.5 shrink-0" />
-                    )}
-                    {p.label}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+            ))}
 
-          <div className="my-1 border-t border-border" />
+            <div className="my-1 border-t border-border" />
 
-          <button
-            type="button"
-            role="option"
-            aria-selected={Boolean(value && isHttpImageUrl(value))}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
-            onClick={selectEnterUrl}
-          >
-            {value && isHttpImageUrl(value) ? (
-              <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-            ) : (
-              <Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
-            )}
-            Enter your own URL
-          </button>
-          <button
-            type="button"
-            role="option"
-            aria-selected={Boolean(value && isDataUrl(value))}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
-            onClick={selectUpload}
-          >
-            {value && isDataUrl(value) ? (
-              <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-            ) : (
-              <ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
-            )}
-            Upload from device
-          </button>
+            <button
+              type="button"
+              role="option"
+              aria-selected={Boolean(value && isHttpImageUrl(value))}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              onClick={selectEnterUrl}
+            >
+              {value && isHttpImageUrl(value) ? (
+                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+              ) : (
+                <Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
+              )}
+              Image from URL
+            </button>
+            <button
+              type="button"
+              role="option"
+              aria-selected={Boolean(value && isDataUrl(value))}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface"
+              onClick={selectUpload}
+            >
+              {value && isDataUrl(value) ? (
+                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+              ) : (
+                <ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
+              )}
+              Upload from device
+            </button>
           </div>
         ) : null}
         {/*
@@ -246,21 +295,39 @@ export function BackgroundImagePicker({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={BACKGROUND_FILE_ACCEPT}
           className="hidden"
           onChange={async (e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
+            setUploadError(null);
             if (!file) return;
             setUrlDraft(undefined);
             setUrlEditorOpen(false);
-            onChange(await fileToDataUrl(file));
+            const result = await normalizeBackgroundImageFile(file);
+            if (!result.ok) {
+              setUploadError(result.error);
+              return;
+            }
+            setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
+            onChange(result.dataUrl);
           }}
         />
       </div>
 
+      {uploadError ? (
+        <p className="text-xs leading-snug text-danger" role="alert">
+          {uploadError}
+        </p>
+      ) : null}
+
+      <p className="text-[11px] leading-snug text-muted">
+        Formats: PNG, JPEG, WebP, HEIC. 
+        Max: {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB.
+      </p>
+
       {showUrlField ? (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <label htmlFor={`${id}-url`} className="block text-xs font-medium text-muted">
             Image URL
           </label>
@@ -274,6 +341,9 @@ export function BackgroundImagePicker({
             value={urlInputValue}
             onChange={(e) => onUrlChange(e.target.value)}
           />
+          <p className="text-[11px] leading-snug text-muted">
+            Note: Other sites may block hotlinking.
+          </p>
         </div>
       ) : null}
     </div>
