@@ -93,7 +93,7 @@ export function Hero() {
             href={SITE_LINKS.buyMeACoffee}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-secondary h-12 gap-2 px-8 text-base"          >
+            className="btn-secondary h-12 gap-2 px-8 text-base">
             <Coffee className="h-4 w-4" aria-hidden />
             Support
           </a>
