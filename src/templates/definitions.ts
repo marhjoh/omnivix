@@ -283,6 +283,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
   quote: string;
   author: string;
   alignment: "left" | "center" | "right";
+  quoteSize: "xs" | "s" | "m" | "l" | "xl";
   size: "xHeader" | "linkedinCover";
   themeId: string;
   backgroundImage?: string;
@@ -309,6 +310,18 @@ export const quoteBannerDefinition: TemplateDefinition<{
         { label: "Right", value: "right" },
       ],
     },
+    {
+      key: "quoteSize",
+      label: "Size",
+      type: "select",
+      options: [
+        { label: "XS", value: "xs" },
+        { label: "S", value: "s" },
+        { label: "M", value: "m" },
+        { label: "L", value: "l" },
+        { label: "XL", value: "xl" },
+      ],
+    },
     { key: "quote", label: "Quote Text", type: "textarea", required: true },
     { key: "author", label: "Author", type: "text", required: true },
   ],
@@ -316,11 +329,13 @@ export const quoteBannerDefinition: TemplateDefinition<{
     quote: z.string().min(1),
     author: z.string().min(1),
     alignment: z.enum(["left", "center", "right"]),
+    quoteSize: z.enum(["xs", "s", "m", "l", "xl"]).default("m"),
   }),
   initialState: {
     quote: "Build once, ship everywhere.",
     author: "Omnivix",
     alignment: "left",
+    quoteSize: "m",
     themeId: "default",
     size: "linkedinCover",
   },
