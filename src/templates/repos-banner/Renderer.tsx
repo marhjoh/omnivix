@@ -129,7 +129,10 @@ export function ReposBannerRenderer({
   const maxShown = mode === "selected" ? 6 : maxReposPinned;
   const repos = Array.isArray(data.repos) ? data.repos.slice(0, maxShown) : [];
   const username = typeof state.username === "string" ? state.username : "";
-  const layoutAmount = maxReposPinned;
+  const layoutAmount =
+    mode === "selected"
+      ? Math.min(6, Math.max(1, repos.length))
+      : maxReposPinned;
   const cols = reposBannerColumnCount(layoutAmount);
 
   const showDisplayName = state.showDisplayName === true;
