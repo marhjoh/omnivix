@@ -1,5 +1,6 @@
 import type { Page } from "playwright";
-import { chromium } from "playwright";
+import { chromium as playwrightChromium } from "playwright";
+import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
 import { getViewport } from "@/src/export/viewport";
 
@@ -37,7 +38,14 @@ export async function captureBannerPng({
   size: BannerSize;
   pixelRatio?: 1 | 2 | 3;
 }) {
-  const browser = await chromium.launch({ headless: true });
+  const isVercel = Boolean(process.env.VERCEL);
+  const browser = isVercel
+    ? await playwrightChromium.launch({
+        headless: true,
+        executablePath: await chromium.executablePath(),
+        args: chromium.args,
+      })
+    : await playwrightChromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
       viewport: getViewport(size, pixelRatio),
