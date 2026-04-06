@@ -1,5 +1,6 @@
 import type { Page } from "playwright";
-import { chromium } from "playwright";
+import { chromium as playwrightChromium } from "playwright";
+import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
 import { getViewport } from "@/src/export/viewport";
 
@@ -37,15 +38,34 @@ export async function captureBannerPng({
   size: BannerSize;
   pixelRatio?: 1 | 2 | 3;
 }) {
-  const browser = await chromium.launch({ headless: true });
+  const isVercel = Boolean(process.env.VERCEL);
+  const browser = isVercel
+    ? await playwrightChromium.launch({
+        headless: true,
+        executablePath: await chromium.executablePath(),
+        args: chromium.args,
+      })
+    : await playwrightChromium.launch({ headless: true });
   try {
+    const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
     const context = await browser.newContext({
       viewport: getViewport(size, pixelRatio),
       deviceScaleFactor: pixelRatio,
+      ...(bypassSecret
+        ? { extraHTTPHeaders: { "x-vercel-protection-bypass": bypassSecret } }
+        : {}),
     });
     const page = await context.newPage();
     page.setDefaultTimeout(25_000);
-    await page.goto(url, { waitUntil: "load", timeout: 25_000 });
+    const response = await page.goto(url, { waitUntil: "load", timeout: 25_000 });
+    const status = response?.status() ?? 0;
+    if (status >= 400) {
+      throw new Error(`Render page returned HTTP ${status}`);
+    }
+    const finalUrl = page.url();
+    if (finalUrl.includes("vercel.com/login")) {
+      throw new Error("Render page blocked by Vercel Deployment Protection");
+    }
     const target = page.locator(".banner-export-root");
     await target.waitFor({ state: "visible", timeout: 25_000 });
     await waitForRasterReady(page);

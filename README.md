@@ -34,7 +34,7 @@ pnpm dev
 Create `.env.local` from `.env.example`:
 
 - `GITHUB_TOKEN`: required for production GitHub data path.
-- `EXPORT_RENDER_ORIGIN`: optional origin override for export rendering.
+- `EXPORT_TOKEN_SECRET`: signs stateless export render tokens (use a long random value in production).
 
 ## Conventions
 
