@@ -1,5 +1,5 @@
 import { RepoNormalized } from "@/src/github/normalize";
-import type { ThemePreset } from "@/src/types/theme";
+import type { Theme } from "@/src/theme/theme";
 
 /** Single scale tuned for banner grid cells (readable, even rhythm). */
 const CARD = {
@@ -21,7 +21,7 @@ interface RepoCardProps {
   showLanguage?: boolean;
   showStars?: boolean;
   showForks?: boolean;
-  preset: ThemePreset;
+  uiTheme?: Theme;
 }
 
 export function RepoCard({
@@ -30,23 +30,45 @@ export function RepoCard({
   showLanguage = true,
   showStars = true,
   showForks = true,
-  preset,
+  uiTheme = "dark",
 }: RepoCardProps) {
   const hasFooter = showLanguage || showStars || showForks;
-  const borderColor = preset.gridLevels[0];
+  const cardChrome =
+    uiTheme === "light"
+      ? {
+          bg: "rgba(255, 255, 255, 0.94)",
+          border: "rgba(31, 35, 40, 0.12)",
+          title: "#1f2328",
+          body: "#656d76",
+          pillBg: "rgba(31, 35, 40, 0.06)",
+          star: "#f2cc60",
+          fork: "#b392f0",
+          shadow: "0 8px 24px rgba(31, 35, 40, 0.08)",
+        }
+      : {
+          bg: "rgba(21, 28, 40, 0.82)",
+          border: "rgba(255, 255, 255, 0.12)",
+          title: "rgba(255,255,255,0.94)",
+          body: "rgba(255,255,255,0.68)",
+          pillBg: "rgba(255, 255, 255, 0.08)",
+          star: "#f2cc60",
+          fork: "#b392f0",
+          shadow: "0 10px 26px rgba(2, 6, 23, 0.34)",
+        };
 
   return (
     <article
       style={{
-        border: `1px solid ${borderColor}`,
+        border: `1px solid ${cardChrome.border}`,
         borderRadius: CARD.radius,
         padding: `${CARD.padY}px ${CARD.padX}px`,
-        background: preset.surface,
-        color: preset.textPrimary,
+        background: cardChrome.bg,
+        color: cardChrome.title,
         minWidth: 0,
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
+        boxShadow: cardChrome.shadow,
       }}
     >
       <h4
@@ -54,7 +76,7 @@ export function RepoCard({
           fontSize: CARD.title,
           margin: 0,
           marginBottom: showDescription ? CARD.gapTitle : hasFooter ? CARD.gapTitle : 0,
-          color: preset.textPrimary,
+          color: cardChrome.title,
           fontWeight: 600,
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
@@ -71,7 +93,7 @@ export function RepoCard({
         <p
           style={{
             fontSize: CARD.body,
-            color: preset.textSecondary,
+            color: cardChrome.body,
             margin: 0,
             display: "-webkit-box",
             WebkitLineClamp: 1,
@@ -93,14 +115,23 @@ export function RepoCard({
             flexWrap: "wrap",
             gap: CARD.footerItemGap,
             fontSize: CARD.footer,
-            color: preset.textSecondary,
+            color: cardChrome.body,
             marginTop: showDescription ? CARD.gapFooter : CARD.gapTitle,
             alignItems: "center",
             lineHeight: 1.35,
           }}
         >
           {showLanguage && repo.language && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "2px 7px",
+                borderRadius: 999,
+                background: cardChrome.pillBg,
+              }}
+            >
               {repo.languageColor && (
                 <span
                   style={{
@@ -116,8 +147,16 @@ export function RepoCard({
               {repo.language}
             </span>
           )}
-          {showStars && <span style={{ whiteSpace: "nowrap" }}>★ {repo.stargazers}</span>}
-          {showForks && <span style={{ whiteSpace: "nowrap" }}>⑂ {repo.forks}</span>}
+          {showStars && (
+            <span style={{ whiteSpace: "nowrap", padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg }}>
+              <span style={{ color: cardChrome.star }}>★</span> {repo.stargazers}
+            </span>
+          )}
+          {showForks && (
+            <span style={{ whiteSpace: "nowrap", padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg }}>
+              <span style={{ color: cardChrome.fork }}>⑂</span> {repo.forks}
+            </span>
+          )}
         </div>
       )}
     </article>

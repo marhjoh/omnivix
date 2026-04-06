@@ -3,7 +3,6 @@ import { RepoCard } from "@/src/banner/RepoCard";
 import { BannerMuted, BannerTitle } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
-import { THEME_PRESETS } from "@/src/types/theme";
 import type { GithubUserNormalized } from "@/src/github/normalize";
 
 type ProfileSizing = { avatar: number; name: number; handle: number };
@@ -122,7 +121,6 @@ export function ReposBannerRenderer({
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
-  const preset = THEME_PRESETS.find((p) => p.id === state.themeId) ?? THEME_PRESETS[0];
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const mode = (state.mode === "selected" ? "selected" : "pinned") as "pinned" | "selected";
   const maxReposPinned = Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
@@ -321,7 +319,7 @@ export function ReposBannerRenderer({
               <RepoCard
                 key={repo.id}
                 repo={repo}
-                preset={preset}
+                uiTheme={uiTheme}
                 showDescription={showDescription}
                 showLanguage={showLanguage}
                 showStars={showStars}
