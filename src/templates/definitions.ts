@@ -151,7 +151,6 @@ export const pinnedReposDefinition: TemplateDefinition<{
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
-    { key: "themeId", label: "Theme", type: "select" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     {
       key: "gridPosition",
@@ -298,7 +297,6 @@ export const quoteBannerDefinition: TemplateDefinition<{
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
-    { key: "themeId", label: "Theme", type: "select" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     {
       key: "alignment",
