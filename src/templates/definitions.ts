@@ -323,11 +323,11 @@ export const quoteBannerDefinition: TemplateDefinition<{
       ],
     },
     { key: "quote", label: "Quote Text", type: "textarea", required: true },
-    { key: "author", label: "Author", type: "text", required: true },
+    { key: "author", label: "Author", type: "text" },
   ],
   stateSchema: baseState.extend({
     quote: z.string().min(1),
-    author: z.string().min(1),
+    author: z.string().default(""),
     alignment: z.enum(["left", "center", "right"]),
     quoteSize: z.enum(["xs", "s", "m", "l", "xl"]).default("m"),
   }),
