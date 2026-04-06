@@ -1,8 +1,7 @@
 import { Frame } from "@/src/banner/Frame";
 import { BannerMuted } from "@/src/banner/Text";
-import type { Theme } from "@/src/theme/theme";
+import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
-import { THEME_PRESETS } from "@/src/types/theme";
 
 export function QuoteBannerRenderer({
   state,
@@ -14,7 +13,7 @@ export function QuoteBannerRenderer({
   isExport?: boolean;
   uiTheme?: Theme;
 }) {
-  const theme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
+  const chrome = bannerUiChrome(uiTheme);
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const alignment = (state.alignment as "left" | "center" | "right") ?? "left";
   const quote = String(state.quote ?? "");
@@ -28,7 +27,7 @@ export function QuoteBannerRenderer({
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
       isExport={isExport}
-      style={{ background: theme.background, color: theme.textPrimary }}
+      style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div
         style={{
@@ -61,6 +60,7 @@ export function QuoteBannerRenderer({
             style={{
               marginTop: 16,
               fontSize: 20,
+              color: chrome.textMuted,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
