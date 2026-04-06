@@ -11,6 +11,7 @@ import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/Us
 import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized, ContributionsNormalized, RepoNormalized } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
+import { THEME_PRESETS } from "@/src/types/theme";
 import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
@@ -98,12 +99,16 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   useEffect(() => {
     const persisted = loadPersistedState(templateId);
     const storedUsername = needsUsername ? getStoredUsername() : "";
+    const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
 
     if (persisted || storedUsername) {
       setState((prev) => {
         const merged = { ...prev, ...persisted };
         if (needsUsername && storedUsername && !merged.username) {
           merged.username = storedUsername;
+        }
+        if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
+          merged.themeId = "default";
         }
         return merged;
       });
@@ -113,6 +118,9 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
 
   const [data, setData] = useState<RenderData>({});
   const [fetchErrors, setFetchErrors] = useState<FetchSlotErrors>(emptyFetchErrors);
+  const [repoCatalog, setRepoCatalog] = useState<RepoNormalized[]>([]);
+  const [repoCatalogLoading, setRepoCatalogLoading] = useState(false);
+  const [repoCatalogError, setRepoCatalogError] = useState<string | null>(null);
   const [refetchNonce, setRefetchNonce] = useState(0);
   const contributionsOkRef = useRef(false);
   const contributionsUsernameRef = useRef<string | null>(null);
@@ -317,6 +325,55 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     return () => ac.abort();
   }, [username, needsReposFetch, state.mode, state.selectedRepos, refetchNonce]);
 
+  useEffect(() => {
+    if (!username || !needsReposFetch || String(state.mode ?? "pinned") !== "selected") {
+      setRepoCatalog([]);
+      setRepoCatalogError(null);
+      setRepoCatalogLoading(false);
+      return;
+    }
+
+    const ac = new AbortController();
+    setRepoCatalogLoading(true);
+    setRepoCatalogError(null);
+
+    void (async () => {
+      try {
+        const rows = await fetchJson<RepoNormalized[]>(
+          `/api/github/repos-catalog?username=${encodeURIComponent(username)}`,
+          ac.signal,
+        );
+        if (ac.signal.aborted) return;
+        setRepoCatalog(rows);
+        setRepoCatalogError(null);
+      } catch (error) {
+        if (ac.signal.aborted) return;
+        setRepoCatalog([]);
+        setRepoCatalogError(error instanceof Error ? error.message : "Unable to load repository list");
+      } finally {
+        if (!ac.signal.aborted) setRepoCatalogLoading(false);
+      }
+    })();
+
+    return () => ac.abort();
+  }, [username, needsReposFetch, state.mode, refetchNonce]);
+
+  useEffect(() => {
+    if (templateId !== "repos-banner") return;
+    const mode = String(state.mode ?? "pinned");
+    const maxR = mode === "selected" ? 6 : Math.min(6, Math.max(1, Number(state.maxRepos)));
+    setState((prev) => {
+      const parts = String(prev.selectedRepos ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (parts.length <= maxR) return prev;
+      const next = { ...prev, selectedRepos: parts.slice(0, maxR).join(", ") };
+      persistState(templateId, next);
+      return next;
+    });
+  }, [templateId, state.maxRepos, state.selectedRepos, state.mode]);
+
   const canExport = useMemo(
     () => definition.stateSchema.safeParse(state).success,
     [definition.stateSchema, state],
@@ -385,6 +442,9 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
             templateId={templateId}
             accountCreatedYear={accountCreatedYear}
             onChange={updateState}
+            repoCatalog={repoCatalog}
+            repoCatalogLoading={repoCatalogLoading}
+            repoCatalogError={repoCatalogError}
           />
         </aside>
         <main className={styles.preview}>

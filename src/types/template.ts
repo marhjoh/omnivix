@@ -16,7 +16,8 @@ export type EditorFieldType =
   | "select"
   | "backgroundPicker"
   | "sizeSelect"
-  | "range";
+  | "range"
+  | "repoMultiSelect";
 
 export interface EditorFieldSchema {
   key: string;

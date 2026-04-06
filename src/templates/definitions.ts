@@ -128,6 +128,8 @@ export const githubBannerDefinition: TemplateDefinition<{
 
 export const pinnedReposDefinition: TemplateDefinition<{
   username: string;
+  showDisplayName: boolean;
+  gridPosition: "left" | "center" | "right";
   mode: "pinned" | "selected";
   selectedRepos: string;
   maxRepos: number;
@@ -152,21 +154,27 @@ export const pinnedReposDefinition: TemplateDefinition<{
     { key: "themeId", label: "Theme", type: "select" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     {
+      key: "gridPosition",
+      label: "Grid Position",
+      type: "select",
+      options: [
+        { label: "Left", value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right", value: "right" },
+      ],
+    },
+    { key: "showDisplayName", label: "Full Name", type: "toggle" },
+    {
       key: "mode",
       label: "Mode",
       type: "select",
       options: [
-        { label: "Pinned (auto)", value: "pinned" },
+        { label: "Pinned", value: "pinned" },
         { label: "Selected", value: "selected" },
       ],
     },
-    {
-      key: "selectedRepos",
-      label: "Repos (comma separated)",
-      type: "text",
-      placeholder: "repo-a, repo-b",
-    },
-    { key: "maxRepos", label: "Max Repos", type: "range", min: 1, max: 6, step: 1 },
+    { key: "selectedRepos", label: "Repositories", type: "repoMultiSelect" },
+    { key: "maxRepos", label: "Amount", type: "range", min: 1, max: 6, step: 1 },
     { key: "showDescription", label: "Description", type: "toggle" },
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
@@ -174,6 +182,8 @@ export const pinnedReposDefinition: TemplateDefinition<{
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
+    showDisplayName: z.boolean().default(false),
+    gridPosition: z.enum(["left", "center", "right"]).default("center"),
     mode: z.enum(["pinned", "selected"]),
     selectedRepos: z.string().default(""),
     maxRepos: z.number().min(1).max(6).default(6),
@@ -184,6 +194,8 @@ export const pinnedReposDefinition: TemplateDefinition<{
   }),
   initialState: {
     username: "",
+    showDisplayName: false,
+    gridPosition: "center",
     mode: "pinned",
     selectedRepos: "",
     maxRepos: 6,

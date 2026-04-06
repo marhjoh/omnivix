@@ -1,4 +1,19 @@
 import { RepoNormalized } from "@/src/github/normalize";
+import type { ThemePreset } from "@/src/types/theme";
+
+/** Single scale tuned for banner grid cells (readable, even rhythm). */
+const CARD = {
+  title: 15,
+  /** One-line teaser so cards stay short when description is on. */
+  body: 11,
+  footer: 11,
+  padX: 14,
+  padY: 10,
+  radius: 10,
+  gapTitle: 4,
+  gapFooter: 6,
+  footerItemGap: 8,
+} as const;
 
 interface RepoCardProps {
   repo: RepoNormalized;
@@ -6,6 +21,7 @@ interface RepoCardProps {
   showLanguage?: boolean;
   showStars?: boolean;
   showForks?: boolean;
+  preset: ThemePreset;
 }
 
 export function RepoCard({
@@ -14,34 +30,55 @@ export function RepoCard({
   showLanguage = true,
   showStars = true,
   showForks = true,
+  preset,
 }: RepoCardProps) {
   const hasFooter = showLanguage || showStars || showForks;
+  const borderColor = preset.gridLevels[0];
 
   return (
     <article
       style={{
-        border: "1px solid rgba(255,255,255,0.16)",
-        borderRadius: 12,
-        padding: 14,
-        background: "rgba(0,0,0,0.2)",
+        border: `1px solid ${borderColor}`,
+        borderRadius: CARD.radius,
+        padding: `${CARD.padY}px ${CARD.padX}px`,
+        background: preset.surface,
+        color: preset.textPrimary,
         minWidth: 0,
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      <h4 style={{ fontSize: 18, marginBottom: showDescription ? 8 : hasFooter ? 8 : 0 }}>{repo.name}</h4>
+      <h4
+        style={{
+          fontSize: CARD.title,
+          margin: 0,
+          marginBottom: showDescription ? CARD.gapTitle : hasFooter ? CARD.gapTitle : 0,
+          color: preset.textPrimary,
+          fontWeight: 600,
+          lineHeight: 1.2,
+          letterSpacing: "-0.02em",
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {repo.name}
+      </h4>
 
       {showDescription && (
         <p
           style={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.8)",
-            marginBottom: hasFooter ? 10 : 0,
+            fontSize: CARD.body,
+            color: preset.textSecondary,
+            margin: 0,
             display: "-webkit-box",
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 1,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            flex: 1,
+            lineHeight: 1.28,
+            wordBreak: "break-word",
           }}
         >
           {repo.description ?? "No description"}
@@ -49,14 +86,26 @@ export function RepoCard({
       )}
 
       {hasFooter && (
-        <div style={{ display: "flex", gap: 10, fontSize: 12, color: "rgba(255,255,255,0.78)", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: CARD.footerItemGap,
+            fontSize: CARD.footer,
+            color: preset.textSecondary,
+            marginTop: showDescription ? CARD.gapFooter : CARD.gapTitle,
+            alignItems: "center",
+            lineHeight: 1.35,
+          }}
+        >
           {showLanguage && repo.language && (
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
               {repo.languageColor && (
                 <span
                   style={{
-                    width: 8,
-                    height: 8,
+                    width: 7,
+                    height: 7,
                     borderRadius: "50%",
                     background: repo.languageColor,
                     display: "inline-block",
@@ -67,8 +116,8 @@ export function RepoCard({
               {repo.language}
             </span>
           )}
-          {showStars && <span>★ {repo.stargazers}</span>}
-          {showForks && <span>⑂ {repo.forks}</span>}
+          {showStars && <span style={{ whiteSpace: "nowrap" }}>★ {repo.stargazers}</span>}
+          {showForks && <span style={{ whiteSpace: "nowrap" }}>⑂ {repo.forks}</span>}
         </div>
       )}
     </article>

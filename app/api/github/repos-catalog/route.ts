@@ -1,0 +1,15 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getOwnerReposCatalog } from "@/src/github/client";
+
+export async function GET(request: NextRequest) {
+  const username = request.nextUrl.searchParams.get("username");
+  if (!username) {
+    return NextResponse.json({ error: "username is required" }, { status: 400 });
+  }
+  try {
+    const repos = await getOwnerReposCatalog(username);
+    return NextResponse.json(repos);
+  } catch {
+    return NextResponse.json({ error: "Unable to fetch repo data" }, { status: 502 });
+  }
+}

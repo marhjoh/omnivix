@@ -201,40 +201,48 @@ export async function getContributions(username: string, year?: string): Promise
   }, ttl);
 }
 
-export async function getRepos(
-  username: string,
-  mode: "pinned" | "selected",
-  selected: string[] = [],
-): Promise<RepoNormalized[]> {
-  const cacheKey = `gh:repos:${username}:${mode}:${selected.join(",")}`;
-  const cached = readCache<RepoNormalized[]>(cacheKey);
+type RepoGqlFields = {
+  id: string;
+  name: string;
+  description: string | null;
+  url: string;
+  stargazerCount: number;
+  forkCount: number;
+  primaryLanguage: { name: string; color: string | null } | null;
+};
+
+function normalizeRepoNode(repo: RepoGqlFields, isPinned: boolean): RepoNormalized {
+  return {
+    id: repo.id,
+    name: repo.name,
+    description: repo.description,
+    language: repo.primaryLanguage?.name ?? null,
+    languageColor: repo.primaryLanguage?.color ?? null,
+    stargazers: repo.stargazerCount,
+    forks: repo.forkCount,
+    url: repo.url,
+    isPinned,
+  };
+}
+
+type UserReposBundle = { pinned: RepoNormalized[]; ownerPublic: RepoNormalized[] };
+
+async function fetchUserReposBundle(username: string): Promise<UserReposBundle> {
+  const cacheKey = `gh:repos:bundle:v2:${username}`;
+  const cached = readCache<UserReposBundle>(cacheKey);
   if (cached) return cached;
 
   const client = graphqlClient();
   const response = await client<{
     user: {
       pinnedItems: {
-        nodes: Array<{
-          __typename: string;
-          id: string;
-          name: string;
-          description: string | null;
-          url: string;
-          stargazerCount: number;
-          forkCount: number;
-          primaryLanguage: { name: string; color: string | null } | null;
-        }>;
+        nodes: Array<
+          | ({ __typename: string } & RepoGqlFields)
+          | { __typename: string }
+        >;
       };
       repositories: {
-        nodes: Array<{
-          id: string;
-          name: string;
-          description: string | null;
-          url: string;
-          stargazerCount: number;
-          forkCount: number;
-          primaryLanguage: { name: string; color: string | null } | null;
-        }>;
+        nodes: RepoGqlFields[];
       };
     };
   }>(
@@ -284,26 +292,40 @@ export async function getRepos(
     { username },
   );
 
-  const sourceRepos =
-    mode === "pinned"
-      ? response.user.pinnedItems.nodes
-      : response.user.repositories.nodes.filter((repo) => selected.includes(repo.name));
+  const pinned: RepoNormalized[] = [];
+  for (const node of response.user.pinnedItems.nodes) {
+    if (node.__typename === "Repository" && "id" in node && "name" in node) {
+      pinned.push(normalizeRepoNode(node as RepoGqlFields, true));
+    }
+  }
 
-  const normalized = sourceRepos
-    .slice()
-    .sort((a, b) => b.stargazerCount - a.stargazerCount)
-    .slice(0, 6)
-    .map((repo) => ({
-      id: repo.id,
-      name: repo.name,
-      description: repo.description,
-      language: repo.primaryLanguage?.name ?? null,
-      languageColor: repo.primaryLanguage?.color ?? null,
-      stargazers: repo.stargazerCount,
-      forks: repo.forkCount,
-      url: repo.url,
-      isPinned: mode === "pinned",
-    }));
+  const ownerPublic = response.user.repositories.nodes.map((repo) => normalizeRepoNode(repo, false));
 
-  return writeCache(cacheKey, normalized);
+  return writeCache(cacheKey, { pinned, ownerPublic }, TTL_SHORT);
+}
+
+/** Public repos for the signed-in owner (studio picker). Cached with {@link getRepos}. */
+export async function getOwnerReposCatalog(username: string): Promise<RepoNormalized[]> {
+  const bundle = await fetchUserReposBundle(username);
+  return bundle.ownerPublic;
+}
+
+export async function getRepos(
+  username: string,
+  mode: "pinned" | "selected",
+  selected: string[] = [],
+): Promise<RepoNormalized[]> {
+  const bundle = await fetchUserReposBundle(username);
+  if (mode === "pinned") {
+    return bundle.pinned;
+  }
+  const byName = new Map(bundle.ownerPublic.map((r) => [r.name, r]));
+  const ordered: RepoNormalized[] = [];
+  for (const name of selected) {
+    const repo = byName.get(name);
+    if (repo) {
+      ordered.push({ ...repo, isPinned: false });
+    }
+  }
+  return ordered;
 }

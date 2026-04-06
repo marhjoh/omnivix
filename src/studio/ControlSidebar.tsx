@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { BANNER_SIZES } from "@/src/lib/sizes";
+import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -70,6 +71,82 @@ function FieldWrapper({
   );
 }
 
+function parseRepoSelection(raw: string): string[] {
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function RepoMultiSelect({
+  catalog,
+  loading,
+  error,
+  valueCsv,
+  maxPick,
+  onChange,
+}: {
+  catalog: RepoNormalized[];
+  loading: boolean;
+  error: string | null;
+  valueCsv: string;
+  maxPick: number;
+  onChange: (csv: string) => void;
+}) {
+  const selected = parseRepoSelection(valueCsv);
+
+  const toggle = (name: string) => {
+    const i = selected.indexOf(name);
+    let next: string[];
+    if (i >= 0) {
+      next = [...selected.slice(0, i), ...selected.slice(i + 1)];
+    } else if (selected.length >= maxPick) {
+      return;
+    } else {
+      next = [...selected, name];
+    }
+    onChange(next.join(", "));
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <span className="block text-xs font-medium text-muted">Repositories</span>
+      {loading && <p className="text-xs text-muted">Loading repository list…</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      {!loading && !error && (
+        <div className="max-h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5">
+          {catalog.length === 0 ? (
+            <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
+          ) : (
+            catalog.map((repo) => {
+              const on = selected.includes(repo.name);
+              return (
+                <button
+                  key={repo.id}
+                  type="button"
+                  onClick={() => toggle(repo.name)}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                    on ? "bg-accent/15 text-text" : "text-muted hover:bg-surface-1"
+                  }`}
+                >
+                  <span
+                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
+                      on ? "border-accent bg-accent" : "border-border"
+                    }`}
+                  >
+                    {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
+                  </span>
+                  <span className="min-w-0 truncate font-medium">{repo.name}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+      <p className="text-[10px] text-muted">
+        Up to {maxPick} · {selected.length} selected
+      </p>
+    </div>
+  );
+}
+
 function ThemePicker({
   value,
   onChange,
@@ -77,6 +154,14 @@ function ThemePicker({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
+
+  useEffect(() => {
+    if (!THEME_PRESETS.some((p) => p.id === value)) {
+      onChange("default");
+    }
+  }, [value, onChange]);
+
   return (
     <div className="space-y-2">
       <span className="block text-xs font-medium text-muted">Theme</span>
@@ -87,7 +172,7 @@ function ThemePicker({
             type="button"
             onClick={() => onChange(preset.id)}
             className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-xs transition-all ${
-              value === preset.id
+              resolvedId === preset.id
                 ? "border-accent bg-accent/10 text-text"
                 : "border-border bg-surface-2 text-muted hover:border-accent/40"
             }`}
@@ -149,12 +234,18 @@ export function ControlSidebar({
   templateId,
   accountCreatedYear,
   onChange,
+  repoCatalog = [],
+  repoCatalogLoading = false,
+  repoCatalogError = null,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
   templateId: TemplateId;
   accountCreatedYear?: number | null;
   onChange: (key: string, value: unknown) => void;
+  repoCatalog?: RepoNormalized[];
+  repoCatalogLoading?: boolean;
+  repoCatalogError?: string | null;
 }) {
   const mode = state.mode as string | undefined;
 
@@ -174,8 +265,25 @@ export function ControlSidebar({
       {schema.map((field) => {
         if (field.key === "username") return null;
 
-        if (field.key === "selectedRepos" && templateId === "repos-banner" && mode === "pinned") {
+        if (field.key === "maxRepos" && templateId === "repos-banner" && mode === "selected") {
           return null;
+        }
+
+        if (field.type === "repoMultiSelect") {
+          if (templateId !== "repos-banner" || mode !== "selected") {
+            return null;
+          }
+          return (
+            <RepoMultiSelect
+              key={field.key}
+              catalog={repoCatalog}
+              loading={repoCatalogLoading}
+              error={repoCatalogError}
+              valueCsv={String(state.selectedRepos ?? "")}
+              maxPick={6}
+              onChange={(csv) => onChange("selectedRepos", csv)}
+            />
+          );
         }
 
         if (field.type === "sizeSelect") {
