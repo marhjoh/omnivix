@@ -66,11 +66,15 @@ function loadPersistedState(templateId: string): Record<string, unknown> | null 
   }
 }
 
-function persistState(templateId: string, state: Record<string, unknown>) {
+function persistState(templateId: string, state: Record<string, unknown>, needsUsername: boolean) {
   if (typeof window === "undefined") return;
   try {
     const clone = { ...state };
     delete clone.backgroundImage;
+    if (needsUsername) {
+      // Username is global; avoid stale per-template copies.
+      delete clone.username;
+    }
     localStorage.setItem(STATE_PREFIX + templateId, JSON.stringify(clone));
   } catch { /* quota exceeded, ignore */ }
 }
@@ -104,7 +108,7 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     if (persisted || storedUsername) {
       setState((prev) => {
         const merged = { ...prev, ...persisted };
-        if (needsUsername && storedUsername && !merged.username) {
+        if (needsUsername) {
           merged.username = storedUsername;
         }
         if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
@@ -196,13 +200,16 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
 
   const updateState = useCallback(
     (key: string, value: unknown) => {
+      if (key === "username" && typeof value === "string") {
+        storeUsername(value);
+      }
       setState((prev) => {
         const next = { ...prev, [key]: value };
-        persistState(templateId, next);
+        persistState(templateId, next, needsUsername);
         return next;
       });
     },
-    [templateId],
+    [templateId, needsUsername],
   );
 
   useEffect(() => {
@@ -369,10 +376,10 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         .filter(Boolean);
       if (parts.length <= maxR) return prev;
       const next = { ...prev, selectedRepos: parts.slice(0, maxR).join(", ") };
-      persistState(templateId, next);
+      persistState(templateId, next, needsUsername);
       return next;
     });
-  }, [templateId, state.maxRepos, state.selectedRepos, state.mode]);
+  }, [templateId, state.maxRepos, state.selectedRepos, state.mode, needsUsername]);
 
   const canExport = useMemo(
     () => definition.stateSchema.safeParse(state).success,
