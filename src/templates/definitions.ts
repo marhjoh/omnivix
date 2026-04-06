@@ -296,8 +296,9 @@ export const quoteBannerDefinition: TemplateDefinition<{
     needsUsername: false,
   },
   schema: [
-    { key: "quote", label: "Quote Text", type: "textarea", required: true },
-    { key: "author", label: "Author", type: "text", required: true },
+    { key: "size", label: "Type", type: "sizeSelect" },
+    { key: "themeId", label: "Theme", type: "select" },
+    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     {
       key: "alignment",
       label: "Alignment",
@@ -308,9 +309,8 @@ export const quoteBannerDefinition: TemplateDefinition<{
         { label: "Right", value: "right" },
       ],
     },
-    { key: "size", label: "Type", type: "sizeSelect" },
-    { key: "themeId", label: "Theme", type: "select" },
-    { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
+    { key: "quote", label: "Quote Text", type: "textarea", required: true },
+    { key: "author", label: "Author", type: "text", required: true },
   ],
   stateSchema: baseState.extend({
     quote: z.string().min(1),
