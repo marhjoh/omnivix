@@ -332,7 +332,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
   initialState: {
     quote: "Build once, ship everywhere.",
     author: "Omnivix",
-    alignment: "left",
+    alignment: "center",
     quoteSize: "m",
     themeId: "default",
     size: "linkedinCover",
