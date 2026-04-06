@@ -66,7 +66,7 @@ export function QuoteBannerRenderer({
               whiteSpace: "nowrap",
             }}
           >
-            &mdash; {author}
+            - {author}
           </BannerMuted>
         )}
       </div>
