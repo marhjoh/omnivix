@@ -43,7 +43,7 @@ export function ContributionBannerRenderer({
 
   if (!username) {
     return (
-      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: theme.background, color: theme.textPrimary }}>
+      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: chrome.baseBg, color: chrome.text }}>
         <div
           style={{
             display: "grid",
@@ -52,12 +52,12 @@ export function ContributionBannerRenderer({
             opacity: 0.55,
             textAlign: "center",
             gap: 8,
-            color: theme.textSecondary,
+            color: chrome.textMuted,
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={chrome.emptyStateIconSrc} alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
-          <p style={{ fontSize: 16, color: theme.textPrimary }}>Select a GitHub profile to get started</p>
+          <p style={{ fontSize: 16, color: chrome.text }}>Select a GitHub profile to get started</p>
         </div>
       </Frame>
     );
@@ -68,7 +68,7 @@ export function ContributionBannerRenderer({
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
       isExport={isExport}
-      style={{ background: theme.background, color: theme.textPrimary }}
+      style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div
         style={{
