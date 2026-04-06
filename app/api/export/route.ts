@@ -39,8 +39,7 @@ export async function POST(request: NextRequest) {
         "Content-Disposition": `attachment; filename=\"${parsed.data.templateId}.png\"`,
       },
     });
-  } catch (error) {
-    console.error("Export failed", error);
+  } catch {
     return NextResponse.json({ error: "Unable to export banner" }, { status: 500 });
   }
 }
