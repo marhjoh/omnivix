@@ -211,6 +211,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
 export const contributionBannerDefinition: TemplateDefinition<{
   username: string;
   year: string;
+  gridPosition: "left" | "center" | "right";
   gridSize: string;
   cellShape: ContributionCellShape;
   size: "xHeader" | "linkedinCover";
@@ -230,6 +231,16 @@ export const contributionBannerDefinition: TemplateDefinition<{
     { key: "themeId", label: "Theme", type: "select" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     { key: "year", label: "Year", type: "select" },
+    {
+      key: "gridPosition",
+      label: "Grid Position",
+      type: "select",
+      options: [
+        { label: "Left", value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right", value: "right" },
+      ],
+    },
     {
       key: "gridSize",
       label: "Size",
@@ -252,12 +263,14 @@ export const contributionBannerDefinition: TemplateDefinition<{
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
+    gridPosition: z.enum(["left", "center", "right"]).default("center"),
     gridSize: z.string().default("l"),
     year: z.string().default(String(new Date().getFullYear())),
     cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
   }),
   initialState: {
     username: "",
+    gridPosition: "center",
     gridSize: "l",
     cellShape: "rounded",
     themeId: "default",

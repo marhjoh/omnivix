@@ -100,7 +100,7 @@ export function ContributionGrid({
         height={vbH}
         viewBox={`-${viewPad} -${viewPad} ${vbW} ${vbH}`}
         style={{ display: "block", width: "100%", height: fill ? "100%" : "auto" }}
-        preserveAspectRatio={fill ? "xMidYMid meet" : "xMinYMin meet"}
+        preserveAspectRatio={fill ? "xMidYMid slice" : "xMinYMin meet"}
       >
         {showMonthLabels &&
           monthLabels.map(({ label, colIndex }) => (

@@ -6,12 +6,18 @@ import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const GRID_SIZES: Record<string, { cell: number; gap: number }> = {
-  xs:   { cell: 6,  gap: 2 },
-  s:    { cell: 9,  gap: 2 },
-  m:    { cell: 13, gap: 3 },
-  l:    { cell: 17, gap: 3 },
-  xl:   { cell: 20, gap: 3 },
+  xs:   { cell: 4,  gap: 1 },
+  s:    { cell: 6,  gap: 2 },
+  m:    { cell: 8, gap: 3 },
+  l:    { cell: 12, gap: 4 },
+  xl:   { cell: 15, gap: 3 },
   fill: { cell: 22, gap: 4 },
+};
+
+const FLEX_ALIGN: Record<string, "flex-start" | "center" | "flex-end"> = {
+  left: "flex-start",
+  center: "center",
+  right: "flex-end",
 };
 
 export function ContributionBannerRenderer({
@@ -32,6 +38,7 @@ export function ContributionBannerRenderer({
   const sizeKey = (state.gridSize as string) ?? "l";
   const isFill = sizeKey === "fill";
   const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.l;
+  const gridPosition = (((state.gridPosition ?? "center") as string) || "center");
   const cellShape = contributionCellShapeFromState(state.cellShape);
 
   if (!username) {
@@ -65,8 +72,10 @@ export function ContributionBannerRenderer({
     >
       <div
         style={{
-          display: "grid",
-          placeItems: "center",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: FLEX_ALIGN[gridPosition] ?? "center",
+          flexDirection: "column",
           height: "100%",
           padding: isFill ? 0 : 16,
           overflow: "hidden",
