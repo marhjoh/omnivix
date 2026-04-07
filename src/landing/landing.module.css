@@ -1,0 +1,219 @@
+/* --- Hero --- */
+.heroMesh {
+  position: absolute;
+  inset: -25%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    radial-gradient(ellipse 55% 48% at 18% 28%, color-mix(in oklab, var(--accent) 42%, transparent), transparent 62%),
+    radial-gradient(ellipse 50% 44% at 88% 42%, color-mix(in oklab, var(--accent-hover) 38%, transparent), transparent 58%),
+    radial-gradient(ellipse 42% 38% at 52% 92%, color-mix(in oklab, var(--surface) 55%, transparent), transparent 55%);
+  animation: heroMeshDrift 20s ease-in-out infinite alternate;
+}
+
+@keyframes heroMeshDrift {
+  0% {
+    transform: translate(-2.5%, 1%) scale(1);
+  }
+  100% {
+    transform: translate(3%, -2.5%) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroMesh {
+    animation: none;
+    opacity: 0.28;
+  }
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 92%, transparent) 28%,
+    color-mix(in oklab, var(--bg) 62%, transparent) 52%,
+    color-mix(in oklab, var(--bg) 22%, transparent) 100%
+  );
+}
+
+.heroAtmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.5;
+  background: radial-gradient(
+    ellipse 90% 58% at 50% -5%,
+    color-mix(in oklab, var(--surface) 45%, transparent),
+    transparent 55%
+  );
+}
+
+.heroStripVignette {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 95% 55% at 50% 108%,
+    transparent 0%,
+    color-mix(in oklab, var(--bg) 35%, transparent) 72%,
+    color-mix(in oklab, var(--bg) 55%, transparent) 100%
+  );
+}
+
+.heroCopyFrame {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: 0;
+  border: 1px solid color-mix(in oklab, var(--border) 52%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--text) 5%, transparent);
+}
+
+.heroCopyFrame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--text) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+html[data-theme="light"] .heroCopyFrame::before {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px);
+}
+
+.heroCopyInner {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.25rem 2.25rem;
+}
+
+@media (min-width: 640px) {
+  .heroCopyInner {
+    padding: 2.5rem 2rem 2.75rem;
+  }
+}
+
+html[data-theme="light"] .heroCopyFrame {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.heroAccentBar {
+  width: 3rem;
+  height: 2px;
+  margin: 0 auto 1.25rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--accent) 70%, transparent),
+    transparent
+  );
+}
+
+@media (min-width: 640px) {
+  .heroAccentBar {
+    width: 3.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.heroWordmark {
+  display: block;
+  background: linear-gradient(
+    118deg,
+    var(--text) 8%,
+    color-mix(in oklab, var(--text) 55%, var(--accent)) 42%,
+    var(--accent-hover) 92%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 24px color-mix(in oklab, var(--accent) 38%, transparent));
+}
+
+html[data-theme="light"] .heroWordmark {
+  filter: drop-shadow(0 2px 20px color-mix(in oklab, var(--accent) 22%, transparent));
+}
+
+.heroSubline {
+  display: block;
+  margin-top: 0.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--muted) 90%, transparent);
+}
+
+@media (min-width: 640px) {
+  .heroSubline {
+    margin-top: 0.5rem;
+  }
+}
+
+html[data-theme="light"] .heroSubline {
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--text) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroAtmosphere {
+    opacity: 0.35;
+  }
+}
+
+.showcaseTile {
+  display: block;
+  height: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
+}
+
+.showcaseTile:hover {
+  border-color: color-mix(in oklab, var(--border) 80%, transparent);
+  box-shadow:
+    0 20px 40px -16px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.showcasePreview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1584 / 396;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  isolation: isolate;
+}
+
+.showcaseCaption {
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcaseTile {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+}
