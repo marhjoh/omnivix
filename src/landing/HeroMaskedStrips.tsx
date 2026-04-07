@@ -78,7 +78,7 @@ export function HeroMaskedStrips({
                 style={{ objectPosition: STRIP_FOCUS[templateId] }}
               />
             </div>
-            <span className="sr-only">{title} — preview strip</span>
+            <span className="sr-only">{title ?? templateId} — preview strip</span>
           </motion.div>
         );
       })}
