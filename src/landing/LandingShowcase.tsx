@@ -8,8 +8,8 @@ import type { TemplateId, TemplateMeta } from "@/src/types/template";
 import { landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
 
-function metaById(templates: TemplateMeta[]): Record<TemplateId, TemplateMeta> {
-  return Object.fromEntries(templates.map((m) => [m.id, m])) as Record<TemplateId, TemplateMeta>;
+function metaById(templates: TemplateMeta[]): Partial<Record<TemplateId, TemplateMeta>> {
+  return Object.fromEntries(templates.map((m) => [m.id, m])) as Partial<Record<TemplateId, TemplateMeta>>;
 }
 
 const SHOWCASE_ORDER: TemplateId[] = [
