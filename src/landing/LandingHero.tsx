@@ -3,10 +3,11 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { HeroMaskedStrips } from "@/src/landing/HeroMaskedStrips";
 import landingStyles from "@/src/landing/landing.module.css";
+import type { TemplateId } from "@/src/types/template";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
-export function LandingHero() {
+export function LandingHero({ titleById = {} }: { titleById?: Partial<Record<TemplateId, string>> }) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -14,7 +15,7 @@ export function LandingHero() {
       <div className="mx-auto max-w-5xl">
         <div className="relative min-h-[440px] overflow-hidden sm:min-h-[520px] md:min-h-[600px]">
           <div className="absolute inset-0 z-0">
-            <HeroMaskedStrips variant="underlay" />
+            <HeroMaskedStrips variant="underlay" titleById={titleById} />
           </div>
 
           <div className={landingStyles.heroMesh} aria-hidden />

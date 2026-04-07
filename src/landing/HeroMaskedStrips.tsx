@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 import { HERO_STRIP_TEMPLATE_IDS, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 
@@ -28,7 +27,13 @@ const stripHeight = {
   underlay: "h-[52px] sm:h-[58px] md:h-[68px]",
 };
 
-export function HeroMaskedStrips({ variant = "default" }: { variant?: Variant }) {
+export function HeroMaskedStrips({
+  variant = "default",
+  titleById = {},
+}: {
+  variant?: Variant;
+  titleById?: Partial<Record<TemplateId, string>>;
+}) {
   const reduceMotion = useReducedMotion();
   const isUnderlay = variant === "underlay";
 
@@ -41,7 +46,7 @@ export function HeroMaskedStrips({ variant = "default" }: { variant?: Variant })
       }
     >
       {HERO_STRIP_TEMPLATE_IDS.map((templateId, i) => {
-        const title = templateRegistry[templateId].meta.title;
+        const title = titleById[templateId];
         const src = landingPreviewSrc(templateId);
         const inset = isUnderlay ? "" : (STRIP_INSET[i] ?? "");
 
