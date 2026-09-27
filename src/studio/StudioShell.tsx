@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { templateRegistry } from "@/src/templates/registry";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
@@ -21,10 +21,6 @@ type FetchSlotErrors = {
   contributions: string | null;
   repos: string | null;
 };
-
-function emptyFetchErrors(): FetchSlotErrors {
-  return { user: null, contributions: null, repos: null };
-}
 
 /**
  * Single message for preview: one slot wins per template.
@@ -88,6 +84,84 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+type FetchResult<T> = { url: string; nonce: number; data?: T; error: string | null };
+
+/**
+ * Results are stored with the url/nonce they belong to and derived on read,
+ * so nothing has to be reset synchronously when the url changes.
+ * On error, the last data for the same url is kept.
+ */
+function useFetchJson<T>(url: string | null, nonce: number, fallbackError: string) {
+  const [result, setResult] = useState<FetchResult<T> | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+    const ac = new AbortController();
+    fetchJson<T>(url, ac.signal).then(
+      (data) => {
+        if (!ac.signal.aborted) setResult({ url, nonce, data, error: null });
+      },
+      (error) => {
+        if (ac.signal.aborted) return;
+        const message = error instanceof Error ? error.message : fallbackError;
+        setResult((prev) => ({
+          url,
+          nonce,
+          data: prev?.url === url ? prev.data : undefined,
+          error: message,
+        }));
+      },
+    );
+    return () => ac.abort();
+  }, [url, nonce, fallbackError]);
+
+  const current = url && result?.url === url ? result : null;
+  const settled = current !== null && current.nonce === nonce;
+  return {
+    data: current?.data,
+    error: settled ? current.error : null,
+    loading: url !== null && !settled,
+  };
+}
+
+const subscribeNever = () => () => {};
+
+function withPersistedState(
+  prev: Record<string, unknown>,
+  templateId: TemplateId,
+  needsUsername: boolean,
+): Record<string, unknown> {
+  const persisted = loadPersistedState(templateId);
+  const storedUsername = needsUsername ? getStoredUsername() : "";
+  if (!persisted && !storedUsername) return prev;
+
+  const merged = { ...prev, ...persisted };
+  if (needsUsername) {
+    merged.username = storedUsername;
+  }
+  const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
+  if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
+    merged.themeId = "default";
+  }
+  return clampSelectedRepos(templateId, merged);
+}
+
+/** Repos banner: keep selectedRepos within the number of repos that can be shown. */
+function clampSelectedRepos(
+  templateId: TemplateId,
+  state: Record<string, unknown>,
+): Record<string, unknown> {
+  if (templateId !== "repos-banner") return state;
+  const mode = String(state.mode ?? "pinned");
+  const maxR = mode === "selected" ? 6 : Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
+  const parts = String(state.selectedRepos ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length <= maxR) return state;
+  return { ...state, selectedRepos: parts.slice(0, maxR).join(", ") };
+}
+
 export function StudioShell({ templateId }: { templateId: TemplateId }) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
@@ -98,37 +172,16 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     return initial;
   });
 
+  // Persisted state lives in localStorage, so it is merged in on the first client render
+  // (after hydration) to keep the server and client markup identical.
+  const isClient = useSyncExternalStore(subscribeNever, () => true, () => false);
   const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const persisted = loadPersistedState(templateId);
-    const storedUsername = needsUsername ? getStoredUsername() : "";
-    const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
-
-    if (persisted || storedUsername) {
-      setState((prev) => {
-        const merged = { ...prev, ...persisted };
-        if (needsUsername) {
-          merged.username = storedUsername;
-        }
-        if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
-          merged.themeId = "default";
-        }
-        return merged;
-      });
-    }
+  if (isClient && !hydrated) {
     setHydrated(true);
-  }, [templateId, needsUsername]);
+    setState((prev) => withPersistedState(prev, templateId, needsUsername));
+  }
 
-  const [data, setData] = useState<RenderData>({});
-  const [fetchErrors, setFetchErrors] = useState<FetchSlotErrors>(emptyFetchErrors);
-  const [repoCatalog, setRepoCatalog] = useState<RepoNormalized[]>([]);
-  const [repoCatalogLoading, setRepoCatalogLoading] = useState(false);
-  const [repoCatalogError, setRepoCatalogError] = useState<string | null>(null);
   const [refetchNonce, setRefetchNonce] = useState(0);
-  const contributionsOkRef = useRef(false);
-  const contributionsUsernameRef = useRef<string | null>(null);
-  const contributionsYearRef = useRef<string | null>(null);
 
   const needsContributions =
     templateId === "github-banner" || templateId === "contribution-banner";
@@ -136,6 +189,69 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
 
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
   const username = (state.username as string) ?? "";
+
+  const yearRaw =
+    state.year != null && String(state.year).length > 0
+      ? String(state.year)
+      : String(new Date().getFullYear());
+  const repoMode = String(state.mode ?? "pinned");
+  const selectedRepos = String(state.selectedRepos ?? "");
+  const encodedUsername = encodeURIComponent(username);
+
+  const userFetch = useFetchJson<GithubUserNormalized>(
+    needsUsername && username ? `/api/github/user-summary?username=${encodedUsername}` : null,
+    refetchNonce,
+    "Unable to load GitHub data",
+  );
+  const contributionsFetch = useFetchJson<ContributionsNormalized>(
+    username && needsContributions
+      ? `/api/github/contributions?username=${encodedUsername}&year=${encodeURIComponent(yearRaw)}`
+      : null,
+    refetchNonce,
+    "Unable to load GitHub data",
+  );
+  const reposFetch = useFetchJson<RepoNormalized[]>(
+    username && needsReposFetch
+      ? `/api/github/repos?username=${encodedUsername}&mode=${encodeURIComponent(repoMode)}&selected=${encodeURIComponent(selectedRepos)}`
+      : null,
+    refetchNonce,
+    "Unable to load GitHub data",
+  );
+  const catalogFetch = useFetchJson<RepoNormalized[]>(
+    username && needsReposFetch && repoMode === "selected"
+      ? `/api/github/repos-catalog?username=${encodedUsername}`
+      : null,
+    refetchNonce,
+    "Unable to load repository list",
+  );
+
+  const user = userFetch.error ? undefined : userFetch.data;
+  const repos = reposFetch.error ? undefined : reposFetch.data;
+  // Contributions keep the last good result for the same username/year when a refetch fails.
+  const contributions = contributionsFetch.data;
+
+  const data = useMemo<RenderData>(
+    () => ({ user, contributions, repos }),
+    [user, contributions, repos],
+  );
+
+  // Errors from a previous refetchNonce are not reported, so a retry clears them immediately.
+  const fetchErrors = useMemo<FetchSlotErrors>(
+    () => ({
+      user: userFetch.error,
+      contributions: contributions ? null : contributionsFetch.error,
+      repos: reposFetch.error,
+    }),
+    [userFetch.error, contributions, contributionsFetch.error, reposFetch.error],
+  );
+
+  const accountCreatedYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : null;
+  const repoCatalog = useMemo(
+    () => (catalogFetch.error ? [] : (catalogFetch.data ?? [])),
+    [catalogFetch.error, catalogFetch.data],
+  );
+  const repoCatalogLoading = catalogFetch.loading;
+  const repoCatalogError = catalogFetch.error;
 
   const dataReady = useMemo(() => {
     if (!needsUsername || !username) return true;
@@ -180,23 +296,19 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
   );
 
   const handlePreviewRetry = useCallback(() => {
-    setFetchErrors(emptyFetchErrors());
     setRefetchNonce((n) => n + 1);
   }, []);
 
-  useEffect(() => {
-    setFetchErrors(emptyFetchErrors());
-  }, [templateId]);
-
   const [isDownloading, setIsDownloading] = useState(false);
-  const [accountCreatedYear, setAccountCreatedYear] = useState<number | null>(null);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
-  useEffect(() => {
-    if (hydrated && needsUsername && !username) {
-      setShowUsernameModal(true);
-    }
-  }, [hydrated, needsUsername, username]);
+  // Open the username prompt whenever a username becomes required but is missing.
+  const shouldPromptUsername = hydrated && needsUsername && !username;
+  const [prevShouldPromptUsername, setPrevShouldPromptUsername] = useState(false);
+  if (shouldPromptUsername !== prevShouldPromptUsername) {
+    setPrevShouldPromptUsername(shouldPromptUsername);
+    if (shouldPromptUsername) setShowUsernameModal(true);
+  }
 
   const updateState = useCallback(
     (key: string, value: unknown) => {
@@ -204,182 +316,13 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
         storeUsername(value);
       }
       setState((prev) => {
-        const next = { ...prev, [key]: value };
+        const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
         persistState(templateId, next, needsUsername);
         return next;
       });
     },
     [templateId, needsUsername],
   );
-
-  useEffect(() => {
-    if (!needsUsername || !username) {
-      setAccountCreatedYear(null);
-      setData((prev) => ({ ...prev, user: undefined }));
-      setFetchErrors(emptyFetchErrors());
-      return;
-    }
-
-    const ac = new AbortController();
-    setFetchErrors((prev) => ({ ...prev, user: null }));
-
-    void (async () => {
-      try {
-        const user = await fetchJson<GithubUserNormalized>(
-          `/api/github/user-summary?username=${encodeURIComponent(username)}`,
-          ac.signal,
-        );
-        if (ac.signal.aborted) return;
-        setData((prev) => ({ ...prev, user }));
-        setFetchErrors((prev) => ({ ...prev, user: null }));
-        if (user.createdAt) {
-          setAccountCreatedYear(new Date(user.createdAt).getFullYear());
-        }
-      } catch (error) {
-        if (ac.signal.aborted) return;
-        setAccountCreatedYear(null);
-        setData((prev) => ({ ...prev, user: undefined }));
-        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
-        setFetchErrors((prev) => ({ ...prev, user: msg }));
-      }
-    })();
-
-    return () => ac.abort();
-  }, [needsUsername, username, refetchNonce]);
-
-  useEffect(() => {
-    if (!username || !needsContributions) {
-      contributionsOkRef.current = false;
-      contributionsUsernameRef.current = null;
-      contributionsYearRef.current = null;
-      setData((prev) => ({ ...prev, contributions: undefined }));
-      setFetchErrors((prev) => ({ ...prev, contributions: null }));
-      return;
-    }
-
-    const yearRaw =
-      state.year != null && String(state.year).length > 0
-        ? String(state.year)
-        : String(new Date().getFullYear());
-
-    const usernameChanged = contributionsUsernameRef.current !== username;
-    const yearChanged = contributionsYearRef.current !== yearRaw;
-    contributionsUsernameRef.current = username;
-    contributionsYearRef.current = yearRaw;
-    if (usernameChanged || yearChanged) {
-      contributionsOkRef.current = false;
-      setData((prev) => ({ ...prev, contributions: undefined }));
-    }
-
-    const ac = new AbortController();
-    setFetchErrors((prev) => ({ ...prev, contributions: null }));
-
-    const yearParam = `&year=${encodeURIComponent(yearRaw)}`;
-
-    void (async () => {
-      try {
-        const contributions = await fetchJson<ContributionsNormalized>(
-          `/api/github/contributions?username=${encodeURIComponent(username)}${yearParam}`,
-          ac.signal,
-        );
-        if (ac.signal.aborted) return;
-        contributionsOkRef.current = true;
-        setData((prev) => ({ ...prev, contributions }));
-        setFetchErrors((prev) => ({ ...prev, contributions: null }));
-      } catch (error) {
-        if (ac.signal.aborted) return;
-        if (!contributionsOkRef.current) {
-          setData((prev) => ({ ...prev, contributions: undefined }));
-          const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
-          setFetchErrors((prev) => ({ ...prev, contributions: msg }));
-        }
-      }
-    })();
-
-    return () => ac.abort();
-  }, [username, needsContributions, state.year, refetchNonce]);
-
-  useEffect(() => {
-    if (!username || !needsReposFetch) {
-      setData((prev) => ({ ...prev, repos: undefined }));
-      setFetchErrors((prev) => ({ ...prev, repos: null }));
-      return;
-    }
-
-    const ac = new AbortController();
-    setFetchErrors((prev) => ({ ...prev, repos: null }));
-
-    const mode = String(state.mode ?? "pinned");
-    const selected = String(state.selectedRepos ?? "");
-
-    void (async () => {
-      try {
-        const repos = await fetchJson<RepoNormalized[]>(
-          `/api/github/repos?username=${encodeURIComponent(username)}&mode=${encodeURIComponent(mode)}&selected=${encodeURIComponent(selected)}`,
-          ac.signal,
-        );
-        if (ac.signal.aborted) return;
-        setData((prev) => ({ ...prev, repos }));
-        setFetchErrors((prev) => ({ ...prev, repos: null }));
-      } catch (error) {
-        if (ac.signal.aborted) return;
-        setData((prev) => ({ ...prev, repos: undefined }));
-        const msg = error instanceof Error ? error.message : "Unable to load GitHub data";
-        setFetchErrors((prev) => ({ ...prev, repos: msg }));
-      }
-    })();
-
-    return () => ac.abort();
-  }, [username, needsReposFetch, state.mode, state.selectedRepos, refetchNonce]);
-
-  useEffect(() => {
-    if (!username || !needsReposFetch || String(state.mode ?? "pinned") !== "selected") {
-      setRepoCatalog([]);
-      setRepoCatalogError(null);
-      setRepoCatalogLoading(false);
-      return;
-    }
-
-    const ac = new AbortController();
-    setRepoCatalogLoading(true);
-    setRepoCatalogError(null);
-
-    void (async () => {
-      try {
-        const rows = await fetchJson<RepoNormalized[]>(
-          `/api/github/repos-catalog?username=${encodeURIComponent(username)}`,
-          ac.signal,
-        );
-        if (ac.signal.aborted) return;
-        setRepoCatalog(rows);
-        setRepoCatalogError(null);
-      } catch (error) {
-        if (ac.signal.aborted) return;
-        setRepoCatalog([]);
-        setRepoCatalogError(error instanceof Error ? error.message : "Unable to load repository list");
-      } finally {
-        if (!ac.signal.aborted) setRepoCatalogLoading(false);
-      }
-    })();
-
-    return () => ac.abort();
-  }, [username, needsReposFetch, state.mode, refetchNonce]);
-
-  useEffect(() => {
-    if (templateId !== "repos-banner") return;
-    const mode = String(state.mode ?? "pinned");
-    const maxR = mode === "selected" ? 6 : Math.min(6, Math.max(1, Number(state.maxRepos)));
-    setState((prev) => {
-      const parts = String(prev.selectedRepos ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (parts.length <= maxR) return prev;
-      const next = { ...prev, selectedRepos: parts.slice(0, maxR).join(", ") };
-      persistState(templateId, next, needsUsername);
-      return next;
-    });
-  }, [templateId, state.maxRepos, state.selectedRepos, state.mode, needsUsername]);
 
   const canExport = useMemo(
     () => definition.stateSchema.safeParse(state).success,
