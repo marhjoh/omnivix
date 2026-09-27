@@ -21,11 +21,13 @@ function DebouncedInput({
   onChange: (value: string) => void;
 }) {
   const [localValue, setLocalValue] = useState(externalValue);
+  const [prevExternalValue, setPrevExternalValue] = useState(externalValue);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  if (externalValue !== prevExternalValue) {
+    setPrevExternalValue(externalValue);
     setLocalValue(externalValue);
-  }, [externalValue]);
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

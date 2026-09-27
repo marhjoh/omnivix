@@ -12,5 +12,5 @@ export default async function StudioPage({
   if (!(templateId in templateRegistry)) {
     notFound();
   }
-  return <StudioShell templateId={templateId as TemplateId} />;
+  return <StudioShell key={templateId} templateId={templateId as TemplateId} />;
 }
