@@ -19,7 +19,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@octokit/graphql": "^9.0.5",
-    "@sparticuz/chromium": "^143.0.4",
+    "@sparticuz/chromium": "^153.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^12.38.0",
