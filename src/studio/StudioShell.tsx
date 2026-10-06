@@ -7,6 +7,7 @@ import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview";
 import { exportBlockedReason } from "@/src/studio/exportBlockedReason";
+import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
@@ -332,16 +333,32 @@ export function StudioShell({
   const repoCatalogLoading = catalogFetch.loading;
   const repoCatalogError = catalogFetch.error;
 
+  // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
+  // the banner doesn't appear with an empty spot that fills in later on a slow connection.
+  // Preloaded even when off, so switching it on doesn't flash the loading state.
+  const avatarStatus = useImageStatus(data.user?.avatarUrl);
+  const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
+  const avatarFailed = avatarStatus === "failed";
+  const disabledFields = useMemo(
+    () => (avatarFailed ? { showAvatar: "Profile photo couldn't be loaded" } : undefined),
+    [avatarFailed],
+  );
+  // A photo that failed to load is left out, so the banner never shows a broken-image icon.
+  const renderData = useMemo<RenderData>(
+    () => (avatarFailed && data.user ? { ...data, user: { ...data.user, avatarUrl: "" } } : data),
+    [avatarFailed, data],
+  );
+
   const dataReady = useMemo(() => {
     if (!needsUsername || !username) return true;
     if (templateId === "github-banner") {
-      return Boolean(data.user && data.contributions);
+      return Boolean(data.user && data.contributions && avatarReady);
     }
     if (templateId === "contribution-banner") {
       return Boolean(data.contributions);
     }
     if (templateId === "repos-banner") {
-      return Boolean(data.user && data.repos);
+      return Boolean(data.user && data.repos && avatarReady);
     }
     return true;
   }, [
@@ -351,6 +368,7 @@ export function StudioShell({
     data.user,
     data.contributions,
     data.repos,
+    avatarReady,
   ]);
 
   const quoteText = String(state.quote ?? "");
@@ -502,6 +520,7 @@ export function StudioShell({
               repoCatalog={repoCatalog}
               repoCatalogLoading={repoCatalogLoading}
               repoCatalogError={repoCatalogError}
+              disabledFields={disabledFields}
             />
           </div>
         </aside>
@@ -517,7 +536,7 @@ export function StudioShell({
             templateId={templateId}
             size={size}
             state={state}
-            data={data}
+            data={renderData}
             previewState={previewState}
             dataError={previewDataError}
             onRetryError={handlePreviewRetry}
