@@ -102,13 +102,8 @@ html[data-theme="light"] .heroCopyFrame::before {
 .heroCopyInner {
   position: relative;
   z-index: 1;
-  padding: 2rem 1.25rem 2.25rem;
-}
-
-@media (min-width: 640px) {
-  .heroCopyInner {
-    padding: 2.5rem 2rem 2.75rem;
-  }
+  /* Fluid, like the hero type: 2rem 1rem 2.25rem on phones → 2.5rem 2rem 2.75rem on desktop. */
+  padding: clamp(2rem, 1.6rem + 1vw, 2.5rem) clamp(1rem, 0.25rem + 3vw, 2rem) clamp(2.25rem, 1.85rem + 1vw, 2.75rem);
 }
 
 html[data-theme="light"] .heroCopyFrame {
@@ -215,5 +210,155 @@ html[data-theme="light"] .heroSubline {
 @media (prefers-reduced-motion: reduce) {
   .showcaseTile {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+}
+
+/* ---------- Site header: full-width bar at the top → floating glass pill once scrolled ---------- */
+
+.siteHeader {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 3.5rem;
+}
+
+/* Full-bleed bar background, faded out when the pill takes over. */
+.siteHeader::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  transition: opacity 0.35s ease;
+}
+
+.siteHeader[data-scrolled="true"]::before {
+  opacity: 0;
+}
+
+.navBar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 72rem;
+  height: 100%;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  transition:
+    max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.siteHeader[data-scrolled="true"] .navBar {
+  top: 0.625rem;
+  height: 3.25rem;
+  max-width: min(42rem, calc(100% - 1.5rem));
+  padding: 0 0.5rem 0 1rem;
+  border-radius: 999px;
+  border-color: color-mix(in oklab, var(--border) 65%, transparent);
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    0 12px 32px -14px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="light"] .siteHeader[data-scrolled="true"] .navBar {
+  box-shadow:
+    0 12px 32px -16px rgba(31, 35, 40, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+@media (min-width: 640px) {
+  .siteHeader {
+    height: 3.75rem;
+  }
+
+  .navBar {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .siteHeader::before,
+  .navBar {
+    transition: none;
+  }
+}
+
+/* ---------- Hero 3D marquee: tilted wall of banner previews ---------- */
+
+.marquee {
+  position: relative;
+  z-index: 10;
+  height: clamp(18rem, 52vw, 34rem);
+  overflow: hidden;
+  /* Radii of 50% reach the box edges exactly, so the wall is fully faded out on every side. */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%);
+}
+
+.marqueeWall {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: max(56rem, 120%);
+  transform: translate(-50%, -50%) rotateX(50deg) rotateZ(-35deg);
+  transform-style: preserve-3d;
+}
+
+.marqueeColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: marqueeDrift 22s ease-in-out infinite alternate;
+}
+
+.marqueeColumn[data-reverse="true"] {
+  animation-duration: 28s;
+  animation-direction: alternate-reverse;
+}
+
+.marqueeCard {
+  position: relative;
+  aspect-ratio: 1584 / 396;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--border) 55%, transparent),
+    0 14px 28px -12px rgba(0, 0, 0, 0.45);
+}
+
+@keyframes marqueeDrift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-30%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeColumn,
+  .marqueeColumn[data-reverse="true"] {
+    animation: none;
   }
 }

@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
 import type { TemplateId, TemplateMeta } from "@/src/types/template";
 import { landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
@@ -22,42 +21,32 @@ const SHOWCASE_ORDER: TemplateId[] = [
 function ShowcaseCard({
   templateId,
   title,
-  index,
 }: {
   templateId: TemplateId;
   title: string;
-  index: number;
 }) {
-  const reduceMotion = useReducedMotion();
   const src = landingPreviewSrc(templateId);
 
+  // No fade-in: cards are visible in the server HTML, so the grid never looks empty while JS loads.
   return (
-    <motion.div
-      className="min-h-0 min-w-0"
-      initial={reduceMotion ? false : { opacity: 0 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.45, delay: 0.06 * index, ease: [0.22, 1, 0.36, 1] }}
+    <Link
+      href={`/studio/${templateId}`}
+      className={`group block h-full min-w-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${landingStyles.showcaseTile}`}
     >
-      <Link
-        href={`/studio/${templateId}`}
-        className={`group block h-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${landingStyles.showcaseTile}`}
-      >
-        <div className={landingStyles.showcasePreview}>
-          <Image
-            src={src}
-            alt={`${title} — exported banner preview`}
-            fill
-            sizes="(max-width: 640px) 100vw, 50vw"
-            loading={index === 0 ? "eager" : "lazy"}
-            className="object-cover object-center transition-transform duration-500 ease-out motion-reduce:transition-none motion-reduce:group-hover:scale-100 group-hover:scale-[1.02]"
-          />
-        </div>
-        <p className={`px-4 py-3.5 text-sm font-semibold tracking-tight text-text ${landingStyles.showcaseCaption}`}>
-          {title}
-        </p>
-      </Link>
-    </motion.div>
+      <div className={landingStyles.showcasePreview}>
+        <Image
+          src={src}
+          alt={`${title} — exported banner preview`}
+          fill
+          sizes="(max-width: 640px) 100vw, 50vw"
+          loading="lazy"
+          className="object-cover object-center transition-transform duration-500 ease-out motion-reduce:transition-none motion-reduce:group-hover:scale-100 group-hover:scale-[1.02]"
+        />
+      </div>
+      <p className={`px-4 py-3.5 text-sm font-semibold tracking-tight text-text ${landingStyles.showcaseCaption}`}>
+        {title}
+      </p>
+    </Link>
   );
 }
 
@@ -81,12 +70,11 @@ export function LandingShowcase({ templates }: { templates: TemplateMeta[] }) {
         </header>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-          {SHOWCASE_ORDER.map((templateId, index) => (
+          {SHOWCASE_ORDER.map((templateId) => (
             <ShowcaseCard
               key={templateId}
               templateId={templateId}
               title={byId[templateId]?.title ?? templateId}
-              index={index}
             />
           ))}
         </div>
