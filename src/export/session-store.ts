@@ -3,9 +3,18 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const DEFAULT_TTL_SECONDS = 120;
 
+/** Falls back to a fixed dev secret locally only; on Vercel a missing secret would make tokens forgeable. */
+function getSecret(): string {
+  const secret = process.env.EXPORT_TOKEN_SECRET;
+  if (secret) return secret;
+  if (process.env.VERCEL) {
+    throw new Error("EXPORT_TOKEN_SECRET is required on Vercel");
+  }
+  return "omnivix-dev-secret";
+}
+
 function sign(value: string): string {
-  const secret = process.env.EXPORT_TOKEN_SECRET ?? "omnivix-dev-secret";
-  return createHmac("sha256", secret).update(value).digest("base64url");
+  return createHmac("sha256", getSecret()).update(value).digest("base64url");
 }
 
 type TokenBody = {
