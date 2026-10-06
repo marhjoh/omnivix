@@ -55,7 +55,7 @@ export function GithubBannerRenderer({
 
   if (!username) {
     return (
-      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: chrome.baseBg, color: chrome.text }}>
+      <Frame appTheme={uiTheme} style={{ background: chrome.baseBg, color: chrome.text }}>
         <div
           style={{
             display: "grid",
@@ -79,7 +79,6 @@ export function GithubBannerRenderer({
     <Frame
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
-      isExport={isExport}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div

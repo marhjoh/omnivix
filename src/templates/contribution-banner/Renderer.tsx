@@ -23,12 +23,10 @@ const FLEX_ALIGN: Record<string, "flex-start" | "center" | "flex-end"> = {
 export function ContributionBannerRenderer({
   state,
   data,
-  isExport = false,
   uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
-  isExport?: boolean;
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
@@ -43,7 +41,7 @@ export function ContributionBannerRenderer({
 
   if (!username) {
     return (
-      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: chrome.baseBg, color: chrome.text }}>
+      <Frame appTheme={uiTheme} style={{ background: chrome.baseBg, color: chrome.text }}>
         <div
           style={{
             display: "grid",
@@ -67,7 +65,6 @@ export function ContributionBannerRenderer({
     <Frame
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
-      isExport={isExport}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div

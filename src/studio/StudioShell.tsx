@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { templateRegistry } from "@/src/templates/registry";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview";
 import { exportBlockedReason } from "@/src/studio/exportBlockedReason";
+import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
@@ -127,6 +128,15 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
 
 const subscribeNever = () => () => {};
 
+/** Keep in sync with the drawer breakpoint in studio.module.css. */
+const PHONE_QUERY = "(max-width: 767px)";
+
+function subscribePhone(onChange: () => void) {
+  const mq = window.matchMedia(PHONE_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
 function withPersistedState(
   prev: Record<string, unknown>,
   templateId: TemplateId,
@@ -163,7 +173,13 @@ function clampSelectedRepos(
   return { ...state, selectedRepos: parts.slice(0, maxR).join(", ") };
 }
 
-export function StudioShell({ templateId }: { templateId: TemplateId }) {
+export function StudioShell({
+  templateId,
+  initialSidebarCollapsed,
+}: {
+  templateId: TemplateId;
+  initialSidebarCollapsed: boolean;
+}) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
   const needsUsername = definition.meta.needsUsername ?? false;
@@ -181,6 +197,68 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     setHydrated(true);
     setState((prev) => withPersistedState(prev, templateId, needsUsername));
   }
+
+  // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarCollapsed);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const isPhone = useSyncExternalStore(
+    subscribePhone,
+    () => window.matchMedia(PHONE_QUERY).matches,
+    () => false,
+  );
+  const sidebarExpanded = isPhone ? drawerOpen : !sidebarCollapsed;
+
+  // Crossing the breakpoint keeps what the user sees: widening turns a closed drawer into a
+  // collapsed sidebar (and an open one into an open sidebar); narrowing always closes the drawer,
+  // so it never pops up over the preview by itself.
+  const [prevIsPhone, setPrevIsPhone] = useState(isPhone);
+  if (isPhone !== prevIsPhone) {
+    setPrevIsPhone(isPhone);
+    if (!isPhone) setSidebarCollapsed(!drawerOpen);
+    setDrawerOpen(false);
+  }
+
+  // The cookie lets the server render the desktop sidebar in the right state on the next load.
+  useEffect(() => {
+    setSidebarCollapsedCookieClient(sidebarCollapsed);
+  }, [sidebarCollapsed]);
+
+  // The sidebar only animates for user actions (toggle, backdrop, Escape). Without this, crossing
+  // the drawer breakpoint while resizing animates its width and the preview shrinks, then grows.
+  const [sidebarAnimating, setSidebarAnimating] = useState(false);
+  const animationTimer = useRef<number | undefined>(undefined);
+  const animateSidebar = useCallback((change: () => void) => {
+    setSidebarAnimating(true);
+    change();
+    window.clearTimeout(animationTimer.current);
+    animationTimer.current = window.setTimeout(() => setSidebarAnimating(false), 300);
+  }, []);
+  useEffect(() => () => window.clearTimeout(animationTimer.current), []);
+
+  const closeDrawer = useCallback(
+    () => animateSidebar(() => setDrawerOpen(false)),
+    [animateSidebar],
+  );
+
+  function toggleSidebar() {
+    animateSidebar(() => {
+      if (isPhone) {
+        setDrawerOpen((open) => !open);
+        return;
+      }
+      setSidebarCollapsed((collapsed) => !collapsed);
+    });
+  }
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDrawer();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [drawerOpen, closeDrawer]);
 
   const [refetchNonce, setRefetchNonce] = useState(0);
 
@@ -403,21 +481,37 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           username={username}
           needsUsername={needsUsername}
           onChangeUsername={() => setShowUsernameModal(true)}
+          sidebarExpanded={sidebarExpanded}
+          onToggleSidebar={toggleSidebar}
         />
       </header>
-      <div className={styles.content}>
-        <aside className={styles.sidebar}>
-          <ControlSidebar
-            schema={definition.schema}
-            state={state}
-            templateId={templateId}
-            accountCreatedYear={accountCreatedYear}
-            onChange={updateState}
-            repoCatalog={repoCatalog}
-            repoCatalogLoading={repoCatalogLoading}
-            repoCatalogError={repoCatalogError}
-          />
+      <div
+        className={styles.content}
+        data-sidebar-collapsed={sidebarCollapsed}
+        data-sidebar-open={drawerOpen}
+        data-sidebar-animating={sidebarAnimating}
+      >
+        <aside id="studio-sidebar" className={styles.sidebar} aria-label="Banner settings">
+          <div className={styles.sidebarInner}>
+            <ControlSidebar
+              schema={definition.schema}
+              state={state}
+              templateId={templateId}
+              accountCreatedYear={accountCreatedYear}
+              onChange={updateState}
+              repoCatalog={repoCatalog}
+              repoCatalogLoading={repoCatalogLoading}
+              repoCatalogError={repoCatalogError}
+            />
+          </div>
         </aside>
+        <button
+          type="button"
+          className={styles.backdrop}
+          onClick={closeDrawer}
+          aria-label="Close settings"
+          tabIndex={-1}
+        />
         <main className={styles.preview}>
           <PreviewArtboard
             templateId={templateId}

@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, Download, Loader2, User, X } from "lucide-react";
+import { Download, Loader2, PanelLeftClose, PanelLeftOpen, User, X } from "lucide-react";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
+import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
+import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 export function TopBar({
@@ -13,6 +15,8 @@ export function TopBar({
   username,
   needsUsername,
   onChangeUsername,
+  sidebarExpanded,
+  onToggleSidebar,
 }: {
   title: string;
   onDownload: () => void;
@@ -23,58 +27,97 @@ export function TopBar({
   username?: string;
   needsUsername?: boolean;
   onChangeUsername?: () => void;
+  sidebarExpanded: boolean;
+  onToggleSidebar: () => void;
 }) {
+  const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Link href="/" className="btn-ghost rounded-lg p-2" aria-label="Back to home">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div className="flex items-center gap-2.5">
-          <ThemedIcon className="h-7 w-7" size={28} />
-          <span className="font-medium">{title}</span>
+      {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
+      <HoverHighlightGroup layoutId="studio-left-highlight" className="flex min-w-0 items-center gap-1">
+        <HoverHighlightItem id="sidebar">
+          <button
+            type="button"
+            className={highlightItemClass}
+            onClick={onToggleSidebar}
+            aria-expanded={sidebarExpanded}
+            aria-controls="studio-sidebar"
+            aria-label={sidebarExpanded ? "Hide settings" : "Show settings"}
+            title={sidebarExpanded ? "Hide settings" : "Show settings"}
+          >
+            <SidebarIcon className="h-[18px] w-[18px]" />
+          </button>
+        </HoverHighlightItem>
+        {/*
+          What gives way as the header narrows: first the title (shown from md, truncates there),
+          then the profile pill's text (round icon button below sm). The app icon always stays,
+          and the @username never truncates except when very long.
+        */}
+        <div className="flex shrink-0 items-center gap-2.5 md:min-w-0 md:shrink">
+          {/* The app icon is the way home. */}
+          <HoverHighlightItem id="home">
+            <Link href="/" className={highlightItemClass} aria-label="Back to home" title="Back to home">
+              <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
+            </Link>
+          </HoverHighlightItem>
+          <span className="hidden truncate font-medium md:inline" title={title}>
+            {title}
+          </span>
         </div>
         {needsUsername && username && (
-          <button
-            type="button"
-            onClick={onChangeUsername}
-            className="ml-2 flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted transition-colors hover:border-accent hover:text-text"
-          >
-            <User className="h-3 w-3" />
-            @{username}
-          </button>
+          <HoverHighlightItem id="profile" className="md:ml-2">
+            <button
+              type="button"
+              onClick={onChangeUsername}
+              title={`@${username}`}
+              aria-label={`Change GitHub profile (@${username})`}
+              className={`${highlightItemClass} sm:w-auto sm:px-[9px]`}
+            >
+              <User className="h-[18px] w-[18px] shrink-0" />
+              <span className="hidden max-w-[10rem] truncate sm:inline">@{username}</span>
+            </button>
+          </HoverHighlightItem>
         )}
         {needsUsername && !username && (
-          <button
-            type="button"
-            onClick={onChangeUsername}
-            className="ml-2 flex items-center gap-1.5 rounded-full border border-accent/50 bg-accent/10 px-3 py-1 text-xs text-accent transition-colors hover:bg-accent/20"
-          >
-            <User className="h-3 w-3" />
-            Select profile
-          </button>
+          <HoverHighlightItem id="profile" className="md:ml-2">
+            {/* Accent colour: choosing a profile is the next step. */}
+            <button
+              type="button"
+              onClick={onChangeUsername}
+              title="Select profile"
+              aria-label="Select GitHub profile"
+              className={`${highlightItemBaseClass} whitespace-nowrap text-accent hover:text-accent-hover sm:w-auto sm:px-[9px]`}
+            >
+              <User className="h-[18px] w-[18px] shrink-0" />
+              <span className="hidden sm:inline">Select profile</span>
+            </button>
+          </HoverHighlightItem>
         )}
-      </div>
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
+      </HoverHighlightGroup>
+      <HoverHighlightGroup layoutId="studio-right-highlight" className="flex shrink-0 items-center gap-1">
+        <HoverHighlightItem id="theme">
+          <ThemeToggle className={highlightItemClass} />
+        </HoverHighlightItem>
         <div className="relative">
+          {/* 36px tall and round like the other header controls; icon-only on phones (aria-label keeps the name). */}
           <button
-            className="btn-primary min-w-[10rem] gap-2 text-sm"
+            className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
             onClick={onDownload}
             disabled={isDownloading || blockedReason !== null}
             title={blockedReason ?? undefined}
+            aria-label={isDownloading ? "Exporting…" : "Download PNG"}
             aria-busy={isDownloading}
             type="button"
           >
             {isDownloading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Exporting&hellip;
+                <span className="hidden sm:inline">Exporting&hellip;</span>
               </>
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                Download PNG
+                <span className="hidden sm:inline">Download PNG</span>
               </>
             )}
           </button>
@@ -95,7 +138,7 @@ export function TopBar({
             </div>
           )}
         </div>
-      </div>
+      </HoverHighlightGroup>
     </>
   );
 }

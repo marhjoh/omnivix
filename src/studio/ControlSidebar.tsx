@@ -111,7 +111,7 @@ function RepoMultiSelect({
     <div className="space-y-1.5">
       <span className="block text-xs font-medium text-muted">Repositories</span>
       {loading && <p className="text-xs text-muted">Loading repository list…</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-danger" role="alert">{error}</p>}
       {!loading && !error && (
         <div className="max-h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5">
           {catalog.length === 0 ? (
@@ -125,7 +125,7 @@ function RepoMultiSelect({
                   type="button"
                   onClick={() => toggle(repo.name)}
                   className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                    on ? "bg-accent/15 text-text" : "text-muted hover:bg-surface-1"
+                    on ? "bg-accent/15 text-text" : "text-muted hover:bg-surface"
                   }`}
                 >
                   <span

@@ -13,12 +13,10 @@ const QUOTE_SIZES: Record<string, { quote: number; author: number }> = {
 
 export function QuoteBannerRenderer({
   state,
-  isExport = false,
   uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
-  isExport?: boolean;
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
@@ -37,7 +35,6 @@ export function QuoteBannerRenderer({
     <Frame
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
-      isExport={isExport}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div

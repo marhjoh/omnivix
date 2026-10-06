@@ -31,12 +31,12 @@ export function BannerRenderer({
   }
 
   if (templateId === "repos-banner") {
-    return <ReposBannerRenderer state={state} data={data} isExport={isExport} uiTheme={uiTheme} />;
+    return <ReposBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
   }
 
   if (templateId === "contribution-banner") {
-    return <ContributionBannerRenderer state={state} data={data} isExport={isExport} uiTheme={uiTheme} />;
+    return <ContributionBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
   }
 
-  return <QuoteBannerRenderer state={state} data={data} isExport={isExport} uiTheme={uiTheme} />;
+  return <QuoteBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
 }
