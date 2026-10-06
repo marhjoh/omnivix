@@ -49,6 +49,18 @@ export function parseThemeCookie(value: string | undefined): Theme {
   return value === "light" || value === "dark" ? value : DEFAULT_THEME;
 }
 
+/**
+ * Runs in <head> before first paint: applies the theme cookie, or on a first visit the OS
+ * preference (saved to the cookie so the server renders it from then on).
+ */
+export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=document.cookie.match(/(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)/),t=m?m[1]:matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";d.setAttribute("data-theme",t);if(!m)document.cookie="${THEME_COOKIE_NAME}="+t+"; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax"+(location.protocol==="https:"?"; Secure":"")}catch(e){}})()`;
+
+/** Client-only: the theme stored in the cookie, or null if none. */
+export function readThemeCookieClient(): Theme | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`));
+  return match ? (match[1] as Theme) : null;
+}
+
 /** Client-only: persist for the next full page request / SSR. */
 export function setThemeCookieClient(theme: Theme): void {
   if (typeof document === "undefined") return;

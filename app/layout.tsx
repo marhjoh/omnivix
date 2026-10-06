@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
-import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
+import { parseThemeCookie, THEME_COOKIE_NAME, THEME_INIT_SCRIPT } from "@/src/theme/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,7 +36,11 @@ export default async function RootLayout({
   const theme = parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value);
 
   return (
-    <html lang="en" data-theme={theme}>
+    // suppressHydrationWarning: THEME_INIT_SCRIPT may change data-theme before React hydrates.
+    <html lang="en" data-theme={theme} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="bg-bg text-text antialiased">
         <ThemeProvider initialTheme={theme}>
           {children}
