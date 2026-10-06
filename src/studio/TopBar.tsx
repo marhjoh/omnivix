@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Download, Loader2, User } from "lucide-react";
+import { ArrowLeft, Download, Loader2, User, X } from "lucide-react";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
@@ -7,7 +7,9 @@ export function TopBar({
   title,
   onDownload,
   isDownloading,
-  canExport,
+  blockedReason,
+  exportError,
+  onDismissExportError,
   username,
   needsUsername,
   onChangeUsername,
@@ -15,7 +17,9 @@ export function TopBar({
   title: string;
   onDownload: () => void;
   isDownloading: boolean;
-  canExport?: boolean;
+  blockedReason: string | null;
+  exportError: string | null;
+  onDismissExportError: () => void;
   username?: string;
   needsUsername?: boolean;
   onChangeUsername?: () => void;
@@ -53,24 +57,44 @@ export function TopBar({
       </div>
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <button
-          className="btn-primary gap-2 text-sm"
-          onClick={onDownload}
-          disabled={isDownloading || canExport === false}
-          type="button"
-        >
-          {isDownloading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Exporting&hellip;
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4" />
-              Download PNG
-            </>
+        <div className="relative">
+          <button
+            className="btn-primary min-w-[10rem] gap-2 text-sm"
+            onClick={onDownload}
+            disabled={isDownloading || blockedReason !== null}
+            title={blockedReason ?? undefined}
+            aria-busy={isDownloading}
+            type="button"
+          >
+            {isDownloading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Exporting&hellip;
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download PNG
+              </>
+            )}
+          </button>
+          {exportError && (
+            <div
+              role="alert"
+              className="absolute right-0 top-full z-20 mt-2 flex w-max max-w-[min(20rem,calc(100vw-2rem))] items-start gap-2 rounded-lg border border-danger/40 bg-surface px-3 py-2 text-xs leading-snug text-danger shadow-lg"
+            >
+              <span>{exportError}</span>
+              <button
+                type="button"
+                onClick={onDismissExportError}
+                className="btn-ghost -mr-1 shrink-0 rounded p-0.5"
+                aria-label="Dismiss export error"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
           )}
-        </button>
+        </div>
       </div>
     </>
   );
