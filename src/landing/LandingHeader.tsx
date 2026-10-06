@@ -1,10 +1,14 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Coffee } from "lucide-react";
 import { SITE_LINKS } from "@/src/lib/site-links";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
-import { ThemedLogo } from "@/src/theme/ThemedBrand";
+import { ThemedIcon, ThemedLogo } from "@/src/theme/ThemedBrand";
+import styles from "@/src/landing/landing.module.css";
+import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
+import { highlightItemClass } from "@/src/ui/highlightClasses";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -14,34 +18,57 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
+function subscribeScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  return () => window.removeEventListener("scroll", onChange);
+}
+
+const NAV_LINKS = [
+  { id: "coffee", href: SITE_LINKS.buyMeACoffee, label: "Buy me a coffee", icon: <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden /> },
+  { id: "github", href: SITE_LINKS.repo, label: "GitHub", icon: <GithubIcon className="h-[18px] w-[18px] shrink-0" /> },
+] as const;
+
+/**
+ * Full-width bar at the top of the page; once scrolled it eases into a floating frosted-glass pill
+ * (CSS transitions on `data-scrolled`, see landing.module.css). The header keeps a fixed height,
+ * so the page never shifts while it animates. A highlight slides between the hovered/focused options.
+ * Labelled links use 9px side padding (the space around an 18px icon in a 36px square), so the
+ * visible gaps between options are even at every width.
+ */
 export function LandingHeader() {
+  const scrolled = useSyncExternalStore(subscribeScroll, () => window.scrollY > 24, () => false);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-bg">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:h-[3.75rem] sm:px-6">
-        <Link href="/" className="shrink-0 transition-opacity hover:opacity-85">
-          <ThemedLogo className="h-8 w-auto sm:h-9" />
+    <header className={styles.siteHeader} data-scrolled={scrolled}>
+      <div className={styles.navBar}>
+        <Link href="/" className="shrink-0 transition-opacity hover:opacity-85" aria-label="Omnivix home">
+          {/* Below 300px the wordmark would push the nav off screen; show the app icon instead. */}
+          <span className="hidden min-[300px]:contents">
+            <ThemedLogo className="h-8 w-auto sm:h-9" />
+          </span>
+          <span className="contents min-[300px]:hidden">
+            <ThemedIcon className="h-8 w-8" size={32} />
+          </span>
         </Link>
-        <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Site">
-          <a
-            href={SITE_LINKS.buyMeACoffee}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
-          >
-            <Coffee className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="hidden sm:inline">Buy me a coffee</span>
-          </a>
-          <a
-            href={SITE_LINKS.repo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
-          >
-            <GithubIcon className="h-4 w-4 shrink-0" />
-            <span className="hidden sm:inline">GitHub</span>
-          </a>
-          <ThemeToggle />
-        </nav>
+        <HoverHighlightGroup as="nav" layoutId="landing-nav-highlight" className="flex items-center gap-1.5" aria-label="Site">
+          {NAV_LINKS.map((link) => (
+            <HoverHighlightItem key={link.id} id={link.id}>
+              <a
+                href={link.href}
+                aria-label={link.label}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${highlightItemClass} sm:w-auto sm:px-[9px]`}
+              >
+                {link.icon}
+                <span className="hidden sm:inline">{link.label}</span>
+              </a>
+            </HoverHighlightItem>
+          ))}
+          <HoverHighlightItem id="theme">
+            <ThemeToggle className={highlightItemClass} />
+          </HoverHighlightItem>
+        </HoverHighlightGroup>
       </div>
     </header>
   );

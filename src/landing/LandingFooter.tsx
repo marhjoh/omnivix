@@ -2,6 +2,11 @@ import Link from "next/link";
 import { Coffee } from "lucide-react";
 import { SITE_LINKS } from "@/src/lib/site-links";
 import { ThemedLogo } from "@/src/theme/ThemedBrand";
+import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
+import { highlightItemBaseClass } from "@/src/ui/highlightClasses";
+
+/** Labelled footer links: brighter than the header's muted links, 9px side padding like it. */
+const footerLinkClass = `${highlightItemBaseClass} w-auto px-[9px] text-text/90 hover:text-text`;
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -18,41 +23,34 @@ export function LandingFooter() {
         <Link href="/" className="shrink-0 transition-opacity hover:opacity-85">
           <ThemedLogo className="h-8 w-auto sm:h-9" />
         </Link>
-        <nav
-          className="flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm leading-relaxed text-muted sm:justify-end"
+        {/* Same rounded links and sliding hover/focus highlight as the site header. */}
+        <HoverHighlightGroup
+          as="nav"
+          layoutId="footer-highlight"
+          className="flex max-w-2xl flex-wrap items-center justify-center gap-x-1.5 gap-y-2 text-sm text-muted sm:justify-end"
           aria-label="Credits, support, and repository"
         >
-          <span className="text-center sm:text-right">
-            Maintained by{" "}
-            <a
-              href={SITE_LINKS.maintainerProfile}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-text/90 underline-offset-2 transition-colors hover:text-text hover:underline"
-            >
-              @marhjoh
-            </a>
-            .
+          <span className="flex items-center">
+            <span className="pr-1">Maintained by</span>
+            <HoverHighlightItem id="maintainer">
+              <a href={SITE_LINKS.maintainerProfile} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+                @marhjoh
+              </a>
+            </HoverHighlightItem>
           </span>
-          <a
-            href={SITE_LINKS.buyMeACoffee}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
-          >
-            <Coffee className="h-4 w-4 shrink-0" aria-hidden />
-            Buy me a coffee
-          </a>
-          <a
-            href={SITE_LINKS.repo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
-          >
-            <GithubIcon className="h-4 w-4 shrink-0" aria-hidden />
-            GitHub
-          </a>
-        </nav>
+          <HoverHighlightItem id="coffee">
+            <a href={SITE_LINKS.buyMeACoffee} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+              <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />
+              Buy me a coffee
+            </a>
+          </HoverHighlightItem>
+          <HoverHighlightItem id="github">
+            <a href={SITE_LINKS.repo} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+              <GithubIcon className="h-[18px] w-[18px] shrink-0" />
+              GitHub
+            </a>
+          </HoverHighlightItem>
+        </HoverHighlightGroup>
       </div>
     </footer>
   );
