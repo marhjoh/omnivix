@@ -34,6 +34,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   showMonthLabels: boolean;
   showDayLabels: boolean;
   showTotal: boolean;
+  showAvatar: boolean;
   showDisplayName: boolean;
   profilePosition: "left" | "right";
   gridPosition: "left" | "center" | "right";
@@ -96,6 +97,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showMonthLabels", label: "Months", type: "toggle" },
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
+    { key: "showAvatar", label: "Profile photo", type: "toggle" },
     { key: "showDisplayName", label: "Full Name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
@@ -104,6 +106,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     showMonthLabels: z.boolean().default(true),
     showDayLabels: z.boolean().default(true),
     showTotal: z.boolean().default(true),
+    showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
     profilePosition: z.enum(["left", "right"]).default("left"),
     gridPosition: z.enum(["left", "center", "right"]).default("center"),
@@ -118,6 +121,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     showMonthLabels: true,
     showDayLabels: true,
     showTotal: true,
+    showAvatar: true,
     showDisplayName: false,
     profilePosition: "left",
     gridPosition: "center",
@@ -128,6 +132,7 @@ export const githubBannerDefinition: TemplateDefinition<{
 
 export const pinnedReposDefinition: TemplateDefinition<{
   username: string;
+  showAvatar: boolean;
   showDisplayName: boolean;
   gridPosition: "left" | "center" | "right";
   mode: "pinned" | "selected";
@@ -162,6 +167,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
         { label: "Right", value: "right" },
       ],
     },
+    { key: "showAvatar", label: "Profile photo", type: "toggle" },
     { key: "showDisplayName", label: "Full Name", type: "toggle" },
     {
       key: "mode",
@@ -181,6 +187,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
+    showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
     gridPosition: z.enum(["left", "center", "right"]).default("center"),
     mode: z.enum(["pinned", "selected"]),
@@ -193,6 +200,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
   }),
   initialState: {
     username: "",
+    showAvatar: true,
     showDisplayName: false,
     gridPosition: "center",
     mode: "pinned",

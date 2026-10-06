@@ -40,6 +40,7 @@ export function GithubBannerRenderer({
   const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const username = typeof state.username === "string" ? state.username : "";
   const showDisplayName = state.showDisplayName === true;
+  const showAvatar = state.showAvatar !== false;
 
   const showMonthLabels = state.showMonthLabels !== false;
   const showDayLabels = state.showDayLabels !== false;
@@ -116,7 +117,7 @@ export function GithubBannerRenderer({
                 alignItems: "center",
               }}
             >
-              {data.user?.avatarUrl ? (
+              {showAvatar && data.user?.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={data.user.avatarUrl}

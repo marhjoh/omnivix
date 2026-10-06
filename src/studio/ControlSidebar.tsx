@@ -239,6 +239,7 @@ export function ControlSidebar({
   repoCatalog = [],
   repoCatalogLoading = false,
   repoCatalogError = null,
+  disabledFields = {},
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -248,6 +249,8 @@ export function ControlSidebar({
   repoCatalog?: RepoNormalized[];
   repoCatalogLoading?: boolean;
   repoCatalogError?: string | null;
+  /** Field key → reason it is unavailable; shown as a hint, the control is disabled and shown off. */
+  disabledFields?: Partial<Record<string, string>>;
 }) {
   const mode = state.mode as string | undefined;
 
@@ -333,25 +336,38 @@ export function ControlSidebar({
         }
 
         if (field.type === "toggle") {
-          const checked = Boolean(state[field.key] ?? false);
+          const disabledReason = disabledFields[field.key];
+          // Shown off while disabled, without changing the saved value.
+          const checked = !disabledReason && Boolean(state[field.key] ?? false);
+          const hintId = disabledReason ? `${field.key}-hint` : undefined;
           return (
-            <div key={field.key} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{field.label}</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={checked}
-                onClick={() => onChange(field.key, !checked)}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                  checked ? "bg-accent" : "bg-surface-2"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-                    checked ? "translate-x-4" : "translate-x-0"
+            <div key={field.key}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted">{field.label}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={checked}
+                  aria-label={field.label}
+                  aria-describedby={hintId}
+                  disabled={Boolean(disabledReason)}
+                  onClick={() => onChange(field.key, !checked)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    checked ? "bg-accent" : "bg-surface-2"
                   }`}
-                />
-              </button>
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                      checked ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+              {disabledReason && (
+                <p id={hintId} className="mt-1 text-xs text-muted">
+                  {disabledReason}
+                </p>
+              )}
             </div>
           );
         }

@@ -40,12 +40,14 @@ function ProfileBlock({
   user,
   username,
   chrome,
+  showAvatar,
   showDisplayName,
   sizing,
 }: {
   user: GithubUserNormalized | undefined;
   username: string;
   chrome: ReturnType<typeof bannerUiChrome>;
+  showAvatar: boolean;
   showDisplayName: boolean;
   sizing: ProfileSizing;
 }) {
@@ -69,7 +71,7 @@ function ProfileBlock({
           alignItems: "center",
         }}
       >
-        {user?.avatarUrl ? (
+        {showAvatar && user?.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.avatarUrl}
@@ -132,6 +134,7 @@ export function ReposBannerRenderer({
   const cols = reposBannerColumnCount(layoutAmount);
 
   const showDisplayName = state.showDisplayName === true;
+  const showAvatar = state.showAvatar !== false;
   const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "center") as keyof typeof FLEX_ALIGN;
   const sizing = profileSizingForBannerType(state.size);
 
@@ -215,6 +218,7 @@ export function ReposBannerRenderer({
               user={user}
               username={username}
               chrome={chrome}
+              showAvatar={showAvatar}
               showDisplayName={showDisplayName}
               sizing={sizing}
             />
@@ -297,6 +301,7 @@ export function ReposBannerRenderer({
             user={user}
             username={username}
             chrome={chrome}
+            showAvatar={showAvatar}
             showDisplayName={showDisplayName}
             sizing={sizing}
           />
