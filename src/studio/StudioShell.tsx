@@ -6,6 +6,7 @@ import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview";
+import { exportBlockedReason } from "@/src/studio/exportBlockedReason";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
@@ -324,14 +325,22 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
     [templateId, needsUsername],
   );
 
-  const canExport = useMemo(
+  const stateValid = useMemo(
     () => definition.stateSchema.safeParse(state).success,
     [definition.stateSchema, state],
   );
+  const blockedReason = exportBlockedReason({ templateId, previewState, stateValid });
+
+  const [exportFailure, setExportFailure] = useState<{
+    message: string;
+    state: Record<string, unknown>;
+  } | null>(null);
+  const exportError = exportFailure?.state === state ? exportFailure.message : null;
 
   async function onDownload() {
-    if (!canExport) return;
+    if (blockedReason) return;
     setIsDownloading(true);
+    setExportFailure(null);
     try {
       const response = await fetch("/api/export", {
         method: "POST",
@@ -346,14 +355,23 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           uiTheme: appTheme,
         }),
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        setExportFailure({ message: body.error ?? "Export failed. Please try again.", state });
+        return;
+      }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = `omnivix-${templateId}-${Date.now()}.png`;
       anchor.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch {
+      setExportFailure({
+        message: "Couldn't reach the server. Check your connection and try again.",
+        state,
+      });
     } finally {
       setIsDownloading(false);
     }
@@ -378,7 +396,9 @@ export function StudioShell({ templateId }: { templateId: TemplateId }) {
           title={definition.meta.title}
           onDownload={onDownload}
           isDownloading={isDownloading}
-          canExport={canExport}
+          blockedReason={blockedReason}
+          exportError={exportError}
+          onDismissExportError={() => setExportFailure(null)}
           username={username}
           needsUsername={needsUsername}
           onChangeUsername={() => setShowUsernameModal(true)}

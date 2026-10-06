@@ -108,9 +108,10 @@ body {
     box-shadow: 0 0 16px rgba(47, 129, 247, 0.25);
   }
 
+  /* Disabled buttons keep pointer events so their title tooltip can explain why. */
   .btn-primary:disabled {
     opacity: 0.4;
-    pointer-events: none;
+    cursor: not-allowed;
   }
 
   .btn-secondary {
@@ -129,7 +130,7 @@ body {
 
   .btn-secondary:disabled {
     opacity: 0.4;
-    pointer-events: none;
+    cursor: not-allowed;
   }
 
   .btn-ghost {
@@ -144,6 +145,11 @@ body {
   .btn-ghost:hover:not(:disabled) {
     color: var(--text);
     background: var(--surface);
+  }
+
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
