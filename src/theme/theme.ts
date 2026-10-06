@@ -8,7 +8,6 @@ export type BannerUiChrome = {
   gridOverlayBg: string;
   gridOverlayBorder: string;
   frameFallback: string;
-  frameBorder: string;
   emptyStateIconSrc: string;
 };
 
@@ -21,7 +20,6 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
       gridOverlayBg: "rgba(246, 248, 250, 0.94)",
       gridOverlayBorder: "rgba(31, 35, 40, 0.12)",
       frameFallback: "#ffffff",
-      frameBorder: "rgba(31, 35, 40, 0.12)",
       emptyStateIconSrc: "/brand/icon-dark.svg",
     };
   }
@@ -32,7 +30,6 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
     gridOverlayBg: "rgba(13, 17, 23, 0.82)",
     gridOverlayBorder: "rgba(255, 255, 255, 0.1)",
     frameFallback: "#0f172a",
-    frameBorder: "rgba(255,255,255,0.12)",
     emptyStateIconSrc: "/brand/icon-light.svg",
   };
 }

@@ -1,5 +1,7 @@
 .shell {
   height: 100vh;
+  /* Dynamic viewport: excludes mobile browser toolbars. */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -13,9 +15,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  gap: 12px;
+  min-width: 0;
+  /* Compact 8px padding at every width (TopBar uses gap-1); TopBar handles the responsive changes. */
+  padding: 0 8px;
 }
-
 .content {
   display: flex;
   flex: 1;
@@ -24,13 +28,97 @@
   overflow: hidden;
 }
 
+/*
+ * Desktop: the aside animates its width; the inner panel keeps 300px so controls don't reflow.
+ * Phones: the aside is a drawer that slides over the preview.
+ * `visibility` hides closed panels from keyboard focus once the transition ends.
+ */
 .sidebar {
   width: 300px;
   flex-shrink: 0;
+  overflow: hidden;
   border-right: 1px solid var(--border);
+  background: var(--surface);
+  transition:
+    width 0.2s ease,
+    visibility 0s;
+}
+
+.sidebarInner {
+  width: 300px;
+  height: 100%;
   padding: 20px 16px;
   overflow-y: auto;
-  background: var(--surface);
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .content[data-sidebar-collapsed="true"] .sidebar {
+    width: 0;
+    border-right-width: 0;
+    visibility: hidden;
+    transition:
+      width 0.2s ease,
+      border-right-width 0s 0.2s,
+      visibility 0s 0.2s;
+  }
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    /* Matches the desktop panel width (capped at 85vw on narrow phones). */
+    width: min(300px, 85vw);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0s 0.2s;
+  }
+
+  .sidebarInner {
+    width: 100%;
+  }
+
+  .content[data-sidebar-open="true"] .sidebar {
+    transform: none;
+    visibility: visible;
+    transition:
+      transform 0.2s ease,
+      visibility 0s;
+  }
+
+  .content[data-sidebar-open="true"] .backdrop {
+    display: block;
+    position: fixed;
+    inset: 56px 0 0 0;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.45);
+    border: 0;
+    cursor: pointer;
+  }
+}
+
+/* Animate only during user actions (StudioShell sets data-sidebar-animating); window resizes that
+   cross the breakpoint switch instantly. Must come after the rules above to win on source order. */
+.content:not([data-sidebar-animating="true"]) .sidebar {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .content[data-sidebar-collapsed="true"] .sidebar,
+  .content[data-sidebar-open="true"] .sidebar {
+    transition: none;
+  }
 }
 
 .preview {
@@ -43,7 +131,8 @@
   justify-content: center;
   overflow: auto;
   background: rgba(0, 0, 0, 0.15);
-  padding: 32px;
+  /* Fluid: 16px on phones → 32px from 800px (no jump at the 768px sidebar breakpoint). */
+  padding: clamp(16px, 4vw, 32px);
 }
 
 :global(.field-input) {
@@ -64,17 +153,15 @@
   box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.15);
 }
 
+/* Size is set inline by PreviewArtboard (banner size × fit scale). */
 :global(.omnivix-artboard) {
-  width: min(100%, 1200px);
-  max-width: 100%;
-  aspect-ratio: var(--banner-width) / var(--banner-height);
-  max-height: 100%;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
   border-radius: 12px;
 }
 
-:global(.omnivix-safe-area) {
-  display: none;
+/* Loading/empty/error copy needs more room than a scaled-down LinkedIn banner on phones. */
+:global(.omnivix-artboard:not([data-state="ready"])) {
+  min-height: min(220px, 100%);
 }

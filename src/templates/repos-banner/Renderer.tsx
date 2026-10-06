@@ -112,12 +112,10 @@ function ProfileBlock({
 export function ReposBannerRenderer({
   state,
   data,
-  isExport = false,
   uiTheme = "dark",
 }: {
   state: Record<string, unknown>;
   data: RenderData;
-  isExport?: boolean;
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
@@ -144,7 +142,7 @@ export function ReposBannerRenderer({
 
   if (!username) {
     return (
-      <Frame appTheme={uiTheme} isExport={isExport} style={{ background: chrome.baseBg, color: chrome.text }}>
+      <Frame appTheme={uiTheme} style={{ background: chrome.baseBg, color: chrome.text }}>
         <div
           style={{
             display: "flex",
@@ -188,7 +186,6 @@ export function ReposBannerRenderer({
       <Frame
         appTheme={uiTheme}
         backgroundImage={backgroundImage}
-        isExport={isExport}
         style={{ background: chrome.baseBg, color: chrome.text }}
       >
         <div
@@ -272,7 +269,6 @@ export function ReposBannerRenderer({
     <Frame
       appTheme={uiTheme}
       backgroundImage={backgroundImage}
-      isExport={isExport}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div
