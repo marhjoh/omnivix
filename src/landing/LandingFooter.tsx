@@ -38,7 +38,7 @@ export function LandingFooter() {
             href={SITE_LINKS.buyMeACoffee}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
           >
             <Coffee className="h-4 w-4 shrink-0" aria-hidden />
             Buy me a coffee
@@ -47,7 +47,7 @@ export function LandingFooter() {
             href={SITE_LINKS.repo}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40"
           >
             <GithubIcon className="h-4 w-4 shrink-0" aria-hidden />
             GitHub

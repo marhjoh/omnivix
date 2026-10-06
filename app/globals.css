@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+}
 
 /* App chrome tokens: server sets exactly one of data-theme="dark" | "light" on <html>. */
 html[data-theme="dark"] {
@@ -54,82 +65,86 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+@layer base {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+@layer components {
+  .omnivix-card {
+    @apply rounded-xl border border-border bg-surface transition-all duration-300;
+  }
 
-.omnivix-card {
-  @apply rounded-xl border border-border bg-surface transition-all duration-300;
-}
+  html[data-theme="dark"] .omnivix-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
 
-html[data-theme="dark"] .omnivix-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
+  html[data-theme="light"] .omnivix-card:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
 
-html[data-theme="light"] .omnivix-card:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-}
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
 
-.btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
-  background: var(--accent);
-  border: 1px solid var(--accent);
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.15s;
-}
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 16px rgba(47, 129, 247, 0.25);
+  }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  box-shadow: 0 0 16px rgba(47, 129, 247, 0.25);
-}
+  .btn-primary:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 
-.btn-primary:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
 
-.btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  cursor: pointer;
-  transition: all 0.15s;
-}
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--surface-2);
+    border-color: var(--accent);
+  }
 
-.btn-secondary:hover:not(:disabled) {
-  background: var(--surface-2);
-  border-color: var(--accent);
-}
+  .btn-secondary:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 
-.btn-secondary:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
 
-.btn-ghost {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  color: var(--text);
-  background: var(--surface);
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--surface);
+  }
 }
 
 /* Studio banner preview card: theme-aware chrome (matches app tokens). */

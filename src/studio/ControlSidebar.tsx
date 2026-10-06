@@ -129,7 +129,7 @@ function RepoMultiSelect({
                   }`}
                 >
                   <span
-                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
+                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[var(--radius)] border ${
                       on ? "border-accent bg-accent" : "border-border"
                     }`}
                   >
@@ -184,7 +184,7 @@ function ThemePicker({
               {preset.gridLevels.map((color, i) => (
                 <div
                   key={i}
-                  className="h-4 w-4 rounded-sm"
+                  className="h-4 w-4 rounded-xs"
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -347,7 +347,7 @@ export function ControlSidebar({
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
                     checked ? "translate-x-4" : "translate-x-0"
                   }`}
                 />
