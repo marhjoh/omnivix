@@ -41,7 +41,7 @@ function ShowcaseCard({
     >
       <Link
         href={`/studio/${templateId}`}
-        className={`group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${landingStyles.showcaseTile}`}
+        className={`group block h-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${landingStyles.showcaseTile}`}
       >
         <div className={landingStyles.showcasePreview}>
           <Image

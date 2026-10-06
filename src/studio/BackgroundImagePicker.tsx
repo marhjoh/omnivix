@@ -263,7 +263,7 @@ export function BackgroundImagePicker({
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
           onClick={() => setOpen((o) => !o)}
-          className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:outline-none focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:border-[var(--accent)]"
+          className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:outline-hidden focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:border-[var(--accent)]"
         >
           <span
             className="min-w-0 flex-1 truncate"
@@ -292,7 +292,7 @@ export function BackgroundImagePicker({
               role="option"
               tabIndex={-1}
               aria-selected={!value}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
               onClick={selectNone}
             >
               {!value ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : <span className="w-3.5 shrink-0" />}
@@ -313,7 +313,7 @@ export function BackgroundImagePicker({
                       role="option"
                       tabIndex={-1}
                       aria-selected={selected}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
                       onClick={() => selectPreset(p.src)}
                     >
                       {selected ? (
@@ -335,7 +335,7 @@ export function BackgroundImagePicker({
               role="option"
               tabIndex={-1}
               aria-selected={Boolean(value && isHttpImageUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
               onClick={selectEnterUrl}
             >
               {value && isHttpImageUrl(value) ? (
@@ -350,7 +350,7 @@ export function BackgroundImagePicker({
               role="option"
               tabIndex={-1}
               aria-selected={Boolean(value && isDataUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-none"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
               onClick={selectUpload}
             >
               {value && isDataUrl(value) ? (

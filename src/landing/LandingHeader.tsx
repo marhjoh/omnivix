@@ -26,7 +26,7 @@ export function LandingHeader() {
             href={SITE_LINKS.buyMeACoffee}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
+            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
           >
             <Coffee className="h-4 w-4 shrink-0" aria-hidden />
             <span className="hidden sm:inline">Buy me a coffee</span>
@@ -35,7 +35,7 @@ export function LandingHeader() {
             href={SITE_LINKS.repo}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
+            className="btn-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40 sm:px-3"
           >
             <GithubIcon className="h-4 w-4 shrink-0" />
             <span className="hidden sm:inline">GitHub</span>

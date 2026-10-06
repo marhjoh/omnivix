@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 const externalActionClass =
-  "group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-medium shadow-sm transition-[border-color,background-color,box-shadow,color] hover:border-accent hover:bg-accent/10 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(47,129,247,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]";
+  "group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-medium shadow-xs transition-[border-color,background-color,box-shadow,color] hover:border-accent hover:bg-accent/10 hover:shadow-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[rgba(47,129,247,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]";
 
 const STORAGE_KEY = "omnivix:github-username";
 
@@ -57,7 +57,7 @@ export function UsernameModal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={onCancel} />
           <motion.div
             className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface p-8"
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -78,7 +78,7 @@ export function UsernameModal({
                 <span className="select-none text-sm text-muted">https://github.com/</span>
                 <input
                   type="text"
-                  className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-none"
+                  className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-hidden"
                   value={value}
                   onChange={(e) => setValue(parseInput(e.target.value))}
                   autoFocus
