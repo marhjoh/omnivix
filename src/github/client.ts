@@ -13,6 +13,7 @@ import {
 import { graphql } from "@octokit/graphql";
 
 /** TTL: latest/current year data changes within the day. Historical years are stable. */
+// The landing FAQ (src/landing/landingContent.ts) states these durations; update it if they change.
 const TTL_SHORT = 1000 * 60 * 3; // 3 min
 const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
 

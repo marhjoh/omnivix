@@ -54,7 +54,7 @@ export const FAQ = [
   {
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:
-      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is cached on the server for up to five minutes and never saved to a database.",
+      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is kept in server memory for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database.",
   },
   {
     question: "Can I use my own background image?",
