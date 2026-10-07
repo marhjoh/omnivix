@@ -37,7 +37,7 @@
 
 <table>
   <tr>
-    <th>Landing page</th>
+    <th>Landing page, dark mode</th>
     <th>Studio, light mode</th>
   </tr>
   <tr>
