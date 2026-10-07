@@ -1,7 +1,7 @@
 {
   "name": "Omnivix",
   "short_name": "Omnivix",
-  "description": "Template-driven social banner generator",
+  "description": "Create LinkedIn and X banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.",
   "theme_color": "#040A1C",
   "background_color": "#040A1C",
   "display": "standalone",
