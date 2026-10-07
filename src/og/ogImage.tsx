@@ -3,6 +3,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 import { SITE_TAGLINE } from "@/src/lib/site";
 import type { TemplateId } from "@/src/types/template";
 
@@ -11,7 +12,7 @@ import type { TemplateId } from "@/src/types/template";
 // of public/landing/*.webp. Regenerate them when the landing banners change.
 
 export const OG_SIZE = { width: 1200, height: 630 };
-export const OG_CONTENT_TYPE = "image/png";
+export const OG_CONTENT_TYPE = "image/jpeg";
 
 const COLORS = {
   bg: "#0d1117",
@@ -42,6 +43,24 @@ const assets = Promise.all([
   logo,
 }));
 
+// ImageResponse only outputs PNG, 200-800 KB for these images. Messenger and WhatsApp skip
+// large preview images, so re-encode as JPEG. Runs at build time, since the images are prerendered.
+// Baseline, not progressive (mozjpeg: true forces progressive), for the widest crawler support.
+async function toJpeg(png: ImageResponse) {
+  const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
+    .jpeg({
+      quality: 85,
+      trellisQuantisation: true,
+      overshootDeringing: true,
+      optimiseCoding: true,
+      quantisationTable: 3,
+    })
+    .toBuffer();
+  return new Response(new Uint8Array(jpeg), {
+    headers: { "Content-Type": OG_CONTENT_TYPE },
+  });
+}
+
 function bannerSrc(templateId: TemplateId) {
   return dataUri(join(ogDir, "banners", `${templateId}.jpg`), "image/jpeg");
 }
@@ -71,8 +90,8 @@ export async function renderSiteOgImage() {
     (["github-banner", "contribution-banner", "quote-banner"] as const).map(bannerSrc),
   );
 
-  return new ImageResponse(
-    (
+  return toJpeg(
+    new ImageResponse(
       <div style={frame}>
         <div
           style={{
@@ -116,9 +135,9 @@ export async function renderSiteOgImage() {
             </div>
           </div>
         </div>
-      </div>
+      </div>,
+      { ...OG_SIZE, fonts },
     ),
-    { ...OG_SIZE, fonts },
   );
 }
 
@@ -130,8 +149,8 @@ export async function renderTemplateOgImage(
 ) {
   const [{ fonts, logo }, banner] = await Promise.all([assets, bannerSrc(templateId)]);
 
-  return new ImageResponse(
-    (
+  return toJpeg(
+    new ImageResponse(
       <div style={{ ...frame, flexDirection: "column", padding: 48 }}>
         <img alt="" src={logo} width={180} height={Math.round(180 * LOGO_RATIO)} />
         <div style={{ display: "flex", flexDirection: "column", marginTop: 36, gap: 8 }}>
@@ -147,8 +166,8 @@ export async function renderTemplateOgImage(
           height={276}
           style={{ ...bannerStyle, position: "absolute", left: 48, bottom: 40 }}
         />
-      </div>
+      </div>,
+      { ...OG_SIZE, fonts },
     ),
-    { ...OG_SIZE, fonts },
   );
 }
