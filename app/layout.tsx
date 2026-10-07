@@ -39,6 +39,8 @@ export const metadata: Metadata = {
     apple: "/brand/apple-touch-icon.png",
   },
   manifest: "/brand/site.webmanifest",
+  // Google Search Console ownership check; removing it unverifies the site.
+  verification: { google: "CH99E0UrpoR3FTE5rj6SxDSvMADkuXfctdmwFNyYhlo" },
 };
 
 export default async function RootLayout({
