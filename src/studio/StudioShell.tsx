@@ -15,6 +15,7 @@ import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized, ContributionsNormalized, RepoNormalized } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { THEME_PRESETS } from "@/src/types/theme";
+import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
 import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
@@ -447,7 +448,7 @@ export function StudioShell({
           state,
           format: "png",
           scale: 2,
-          pixelRatio: 3,
+          pixelRatio: EXPORT_PIXEL_RATIO,
           uiTheme: appTheme,
         }),
       });
