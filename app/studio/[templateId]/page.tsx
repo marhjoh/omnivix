@@ -23,6 +23,7 @@ export async function generateMetadata({
   return {
     title: meta.title,
     description,
+    alternates: { canonical: url },
     openGraph: {
       type: "website",
       siteName: SITE_NAME,

@@ -36,7 +36,8 @@ function ShowcaseCard({
       <div className={landingStyles.showcasePreview}>
         <Image
           src={src}
-          alt={`${title} — exported banner preview`}
+          // Decorative: the caption names the link.
+          alt=""
           fill
           sizes="(max-width: 640px) 100vw, 50vw"
           loading="lazy"
