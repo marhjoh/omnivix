@@ -64,3 +64,10 @@ Contributions are welcome. A few guidelines:
 
 - Maintained by [@marhjoh](https://github.com/marhjoh). 
 - See [contributors](https://github.com/marhjoh/omnivix/graphs/contributors) for everyone who has helped shape the project.
+
+## License
+
+[MIT](LICENSE). This covers the code, not these third-party files, which keep their own licences:
+
+- Background photos in `public/backgrounds/`: [Unsplash License](https://unsplash.com/license)
+- Inter font in `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org)
