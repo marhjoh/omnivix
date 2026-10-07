@@ -102,7 +102,8 @@ export async function renderSiteOgImage() {
             flexDirection: "column",
             justifyContent: "space-between",
             width: 600,
-            padding: "64px 0 64px 64px",
+            // Extra bottom padding: X overlays the page title on the bottom-left corner.
+            padding: "64px 0 136px 64px",
           }}
         >
           <img alt="" src={logo} width={240} height={Math.round(240 * LOGO_RATIO)} />
