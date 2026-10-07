@@ -60,7 +60,9 @@ export function TopBar({
               <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
             </Link>
           </HoverHighlightItem>
-          <span className="hidden truncate font-medium md:inline" title={title}>
+          {/* The visible title below only shows from md, so the h1 is a hidden copy. */}
+          <h1 className="sr-only">{title}</h1>
+          <span className="hidden truncate font-medium md:inline" title={title} aria-hidden>
             {title}
           </span>
         </div>

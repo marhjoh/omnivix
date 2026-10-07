@@ -7,9 +7,8 @@ export const SITE_DESCRIPTION =
   "Create LinkedIn and X banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.";
 
 /**
- * Absolute base URL for metadata (Open Graph image links must be absolute).
- * Vercel sets VERCEL_PROJECT_PRODUCTION_URL (hostname only) on every deployment,
- * so previews also point link previews at production.
+ * Absolute base URL for metadata, which needs absolute URLs. Vercel sets
+ * VERCEL_PROJECT_PRODUCTION_URL (hostname only) on every deployment, previews included.
  */
 export function getSiteUrl(): URL {
   const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;

@@ -7,7 +7,6 @@ import sharp from "sharp";
 import { SITE_TAGLINE } from "@/src/lib/site";
 import type { TemplateId } from "@/src/types/template";
 
-// Shared by app/opengraph-image.tsx and app/studio/[templateId]/opengraph-image.tsx.
 // ImageResponse (Satori) can't decode WebP, so src/og/banners holds 1200px JPEG copies
 // of public/landing/*.webp. Regenerate them when the landing banners change.
 
@@ -21,7 +20,7 @@ const COLORS = {
   accent: "#2f81f7",
 };
 
-// Logo is 968×274.
+// public/brand/logo.svg is 968×274.
 const LOGO_RATIO = 274 / 968;
 
 const ogDir = join(process.cwd(), "src/og");
@@ -43,9 +42,8 @@ const assets = Promise.all([
   logo,
 }));
 
-// ImageResponse only outputs PNG, 200-800 KB for these images. Messenger and WhatsApp skip
-// large preview images, so re-encode as JPEG. Runs at build time, since the images are prerendered.
-// Baseline, not progressive (mozjpeg: true forces progressive), for the widest crawler support.
+// ImageResponse only outputs PNG, and Messenger and Slack showed no image at those sizes.
+// Re-encode as baseline JPEG (mozjpeg: true would force progressive). Runs once, at build time.
 async function toJpeg(png: ImageResponse) {
   const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
     .jpeg({

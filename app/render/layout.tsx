@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+// Headless page the export API screenshots; keep it out of search results.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 const renderRouteGlobalCss = `
 body:has([data-omnivix-render-root]) {
   margin: 0 !important;
