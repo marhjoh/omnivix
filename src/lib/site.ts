@@ -6,6 +6,8 @@ export const SITE_TAGLINE = "Create profile banners you actually want to use";
 export const SITE_DESCRIPTION =
   "Create LinkedIn and X banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.";
 
+export const SITE_LICENSE = { name: "MIT", url: "https://opensource.org/licenses/MIT" } as const;
+
 /**
  * Absolute base URL for metadata, which needs absolute URLs. Vercel sets
  * VERCEL_PROJECT_PRODUCTION_URL (hostname only) on every deployment, previews included.
