@@ -147,15 +147,7 @@ Titles, descriptions and Open Graph images are set per page. The landing page's 
 
 ## Contributing
 
-Contributions are welcome. A few guidelines:
-
-- Open an issue first for larger changes or new templates, so the direction is agreed early.
-- Use `pnpm` only; `pnpm-lock.yaml` is the source of truth.
-- Keep route handlers thin; put logic in `src/*`.
-- Put template-specific code in `src/templates/<template-id>/` and render it through the shared renderer (see [One renderer for preview and export](#one-renderer-for-preview-and-export)), not a separate export-only version.
-- Derive values during render instead of copying them into state with `useEffect` + `setState`.
-- Upgrade `playwright` and `@sparticuz/chromium` together (see [Export flow](#export-flow)).
-- Keep PRs small and focused, and run `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` before opening one.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, code guidelines and how to open a pull request.
 
 ## Author
 
