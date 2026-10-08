@@ -1,6 +1,6 @@
 # Contributing
 
-For setup, see [Getting started](README.md#getting-started).
+For setup, see [Getting started](README.md#getting-started). By taking part, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Before you start
 
