@@ -22,5 +22,18 @@ Open an issue first for larger changes or new templates, so the direction is agr
 ## Pull requests
 
 - Keep PRs small and focused, and link the issue they close.
-- Run `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` first. CI doesn't run `build`.
 - Add screenshots for UI changes.
+
+## Checks
+
+CI runs every check below on each pull request, and a PR must pass all of them before it's merged. To reproduce a failure locally, run the same command:
+
+| Check      | Command             | Fix                                   |
+| ---------- | ------------------- | ------------------------------------- |
+| Formatting | `pnpm format:check` | `pnpm format`                         |
+| Lint       | `pnpm lint`         | `pnpm lint --fix` for the simple ones |
+| Types      | `pnpm typecheck`    |                                       |
+| Tests      | `pnpm test`         | add `--coverage` for the summary      |
+| Build      | `pnpm build`        |                                       |
+
+`pnpm build` doesn't need `.env.local`, because secrets are only read at request time.

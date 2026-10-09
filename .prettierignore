@@ -1,0 +1,12 @@
+# Generated
+.next
+out
+build
+coverage
+next-env.d.ts
+pnpm-lock.yaml
+*.tsbuildinfo
+
+# Test artifacts
+playwright-report
+test-results
