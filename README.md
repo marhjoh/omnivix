@@ -65,37 +65,37 @@ Without a `GITHUB_TOKEN`, the landing page and the Quote Banner still work, but 
 
 ### Environment variables
 
-| Variable | Needed | What it's for |
-| --- | --- | --- |
-| `GITHUB_TOKEN` | For the GitHub templates | GitHub API token for reading public profiles, repos and contributions. Either a classic token with no scopes, or a fine-grained token with read-only access to public repositories, works. |
-| `EXPORT_TOKEN_SECRET` | On Vercel | Signs the short-lived export tokens. Locally, a fixed development secret is used if it's missing; on Vercel the export fails without it. Use a long random string. |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export's headless browser open `/render` on a protected deployment (usually Preview). Vercel sets it when *Protection Bypass for Automation* is enabled under **Settings → Deployment Protection**. |
+| Variable                          | Needed                          | What it's for                                                                                                                                                                                                |
+| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GITHUB_TOKEN`                    | For the GitHub templates        | GitHub API token for reading public profiles, repos and contributions. Either a classic token with no scopes, or a fine-grained token with read-only access to public repositories, works.                   |
+| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Locally, a fixed development secret is used if it's missing; on Vercel the export fails without it. Use a long random string.                                           |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export's headless browser open `/render` on a protected deployment (usually Preview). Vercel sets it when _Protection Bypass for Automation_ is enabled under **Settings → Deployment Protection**. |
 
 On Vercel, set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Production** and the **Preview** environments, or exports and GitHub data fail on preview deployments. `VERCEL_PROJECT_PRODUCTION_URL` and `VERCEL_URL` are set by Vercel automatically and are used for absolute URLs in metadata and for the export's render URL.
 
 ### Scripts
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Development server on port 3000 |
-| `pnpm build` / `pnpm start` | Production build and server |
-| `pnpm lint` | ESLint |
-| `pnpm typecheck` | TypeScript, no emit |
-| `pnpm test` | Unit tests (Vitest) |
+| Command                     | What it does                    |
+| --------------------------- | ------------------------------- |
+| `pnpm dev`                  | Development server on port 3000 |
+| `pnpm build` / `pnpm start` | Production build and server     |
+| `pnpm lint`                 | ESLint                          |
+| `pnpm typecheck`            | TypeScript, no emit             |
+| `pnpm test`                 | Unit tests (Vitest)             |
 
 CI runs `lint`, `typecheck` and `test` on every pull request.
 
 ## Routes
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Landing page: hero, template showcase, how it works, FAQ |
-| `/studio/[templateId]` | The editor for one template |
-| `/render/[templateId]` | Headless page the export screenshots; needs a valid export token |
-| `POST /api/export` | Renders a banner and returns the PNG |
-| `/api/github/user-summary`, `/contributions`, `/repos`, `/repos-catalog` | GitHub data for the studio |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt` | Crawl rules, sitemap and a summary for AI assistants |
+| Route                                                                    | Purpose                                                          |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `/`                                                                      | Landing page: hero, template showcase, how it works, FAQ         |
+| `/studio/[templateId]`                                                   | The editor for one template                                      |
+| `/render/[templateId]`                                                   | Headless page the export screenshots; needs a valid export token |
+| `POST /api/export`                                                       | Renders a banner and returns the PNG                             |
+| `/api/github/user-summary`, `/contributions`, `/repos`, `/repos-catalog` | GitHub data for the studio                                       |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time                     |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI assistants             |
 
 ## Architecture
 

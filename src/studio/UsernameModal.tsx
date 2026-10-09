@@ -89,13 +89,14 @@ export function UsernameModal({
                   What&apos;s your GitHub username?
                 </h2>
                 <p className="text-sm text-muted">
-                  We&apos;ll use your <strong className="text-text">public data</strong> to personalize your banner.
+                  We&apos;ll use your <strong className="text-text">public data</strong> to
+                  personalize your banner.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-3 flex items-center rounded-md border border-border bg-surface-2 px-3">
-                  <span className="select-none text-sm text-muted">https://github.com/</span>
+                  <span className="text-sm text-muted select-none">https://github.com/</span>
                   <input
                     type="text"
                     className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-hidden"
@@ -141,7 +142,11 @@ export function UsernameModal({
                   >
                     Select Profile
                   </button>
-                  <button type="button" onClick={onCancel} className="btn-secondary w-full justify-center py-3">
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="btn-secondary w-full justify-center py-3"
+                  >
                     Cancel
                   </button>
                 </div>

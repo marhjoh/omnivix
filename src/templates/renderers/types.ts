@@ -1,4 +1,8 @@
-import { ContributionsNormalized, GithubUserNormalized, RepoNormalized } from "@/src/github/normalize";
+import {
+  ContributionsNormalized,
+  GithubUserNormalized,
+  RepoNormalized,
+} from "@/src/github/normalize";
 
 export interface RenderData {
   user?: GithubUserNormalized;

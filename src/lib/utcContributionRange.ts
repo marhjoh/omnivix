@@ -55,4 +55,3 @@ export function computeLatestContributionRangeUtc(anchor: Date): {
     toYyyyMmDd,
   };
 }
-

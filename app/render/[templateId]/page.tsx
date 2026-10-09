@@ -26,9 +26,12 @@ export default async function RenderPage({
     typeof payload.state.year === "string" && payload.state.year.length > 0
       ? payload.state.year
       : String(new Date().getFullYear());
-  const user = typeof username === "string" && username ? await getUserSummary(username) : undefined;
+  const user =
+    typeof username === "string" && username ? await getUserSummary(username) : undefined;
   const contributions =
-    typeof username === "string" && username ? await getContributions(username, rawYear) : undefined;
+    typeof username === "string" && username
+      ? await getContributions(username, rawYear)
+      : undefined;
   const repos =
     templateId === "repos-banner" && typeof username === "string" && username
       ? await getRepos(

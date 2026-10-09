@@ -34,7 +34,10 @@ export function TopBar({
   return (
     <>
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
-      <HoverHighlightGroup layoutId="studio-left-highlight" className="flex min-w-0 items-center gap-1">
+      <HoverHighlightGroup
+        layoutId="studio-left-highlight"
+        className="flex min-w-0 items-center gap-1"
+      >
         <HoverHighlightItem id="sidebar">
           <button
             type="button"
@@ -56,7 +59,12 @@ export function TopBar({
         <div className="flex shrink-0 items-center gap-2.5 md:min-w-0 md:shrink">
           {/* The app icon is the way home. */}
           <HoverHighlightItem id="home">
-            <Link href="/" className={highlightItemClass} aria-label="Back to home" title="Back to home">
+            <Link
+              href="/"
+              className={highlightItemClass}
+              aria-label="Back to home"
+              title="Back to home"
+            >
               <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
             </Link>
           </HoverHighlightItem>
@@ -96,7 +104,10 @@ export function TopBar({
           </HoverHighlightItem>
         )}
       </HoverHighlightGroup>
-      <HoverHighlightGroup layoutId="studio-right-highlight" className="flex shrink-0 items-center gap-1">
+      <HoverHighlightGroup
+        layoutId="studio-right-highlight"
+        className="flex shrink-0 items-center gap-1"
+      >
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
@@ -126,7 +137,7 @@ export function TopBar({
           {exportError && (
             <div
               role="alert"
-              className="absolute right-0 top-full z-20 mt-2 flex w-max max-w-[min(20rem,calc(100vw-2rem))] items-start gap-2 rounded-lg border border-danger/40 bg-surface px-3 py-2 text-xs leading-snug text-danger shadow-lg"
+              className="absolute top-full right-0 z-20 mt-2 flex w-max max-w-[min(20rem,calc(100vw-2rem))] items-start gap-2 rounded-lg border border-danger/40 bg-surface px-3 py-2 text-xs leading-snug text-danger shadow-lg"
             >
               <span>{exportError}</span>
               <button

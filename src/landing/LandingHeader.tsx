@@ -24,8 +24,18 @@ function subscribeScroll(onChange: () => void) {
 }
 
 const NAV_LINKS = [
-  { id: "coffee", href: SITE_LINKS.buyMeACoffee, label: "Buy me a coffee", icon: <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden /> },
-  { id: "github", href: SITE_LINKS.repo, label: "GitHub", icon: <GithubIcon className="h-[18px] w-[18px] shrink-0" /> },
+  {
+    id: "coffee",
+    href: SITE_LINKS.buyMeACoffee,
+    label: "Buy me a coffee",
+    icon: <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />,
+  },
+  {
+    id: "github",
+    href: SITE_LINKS.repo,
+    label: "GitHub",
+    icon: <GithubIcon className="h-[18px] w-[18px] shrink-0" />,
+  },
 ] as const;
 
 /**
@@ -36,12 +46,20 @@ const NAV_LINKS = [
  * visible gaps between options are even at every width.
  */
 export function LandingHeader() {
-  const scrolled = useSyncExternalStore(subscribeScroll, () => window.scrollY > 24, () => false);
+  const scrolled = useSyncExternalStore(
+    subscribeScroll,
+    () => window.scrollY > 24,
+    () => false,
+  );
 
   return (
     <header className={styles.siteHeader} data-scrolled={scrolled}>
       <div className={styles.navBar}>
-        <Link href="/" className="shrink-0 transition-opacity hover:opacity-85" aria-label="Omnivix home">
+        <Link
+          href="/"
+          className="shrink-0 transition-opacity hover:opacity-85"
+          aria-label="Omnivix home"
+        >
           {/* Below 300px the wordmark would push the nav off screen; show the app icon instead. */}
           <span className="hidden min-[300px]:contents">
             <ThemedLogo className="h-8 w-auto sm:h-9" />
@@ -50,7 +68,12 @@ export function LandingHeader() {
             <ThemedIcon className="h-8 w-8" size={32} />
           </span>
         </Link>
-        <HoverHighlightGroup as="nav" layoutId="landing-nav-highlight" className="flex items-center gap-1.5" aria-label="Site">
+        <HoverHighlightGroup
+          as="nav"
+          layoutId="landing-nav-highlight"
+          className="flex items-center gap-1.5"
+          aria-label="Site"
+        >
           {NAV_LINKS.map((link) => (
             <HoverHighlightItem key={link.id} id={link.id}>
               <a

@@ -148,12 +148,26 @@ export function RepoCard({
             </span>
           )}
           {showStars && (
-            <span style={{ whiteSpace: "nowrap", padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg }}>
+            <span
+              style={{
+                whiteSpace: "nowrap",
+                padding: "2px 7px",
+                borderRadius: 999,
+                background: cardChrome.pillBg,
+              }}
+            >
               <span style={{ color: cardChrome.star }}>★</span> {repo.stargazers}
             </span>
           )}
           {showForks && (
-            <span style={{ whiteSpace: "nowrap", padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg }}>
+            <span
+              style={{
+                whiteSpace: "nowrap",
+                padding: "2px 7px",
+                borderRadius: 999,
+                background: cardChrome.pillBg,
+              }}
+            >
               <span style={{ color: cardChrome.fork }}>⑂</span> {repo.forks}
             </span>
           )}

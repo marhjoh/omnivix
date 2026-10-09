@@ -3,7 +3,12 @@ import type { TemplateId } from "@/src/types/template";
 import { landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import styles from "@/src/landing/landing.module.css";
 
-const TEMPLATES: TemplateId[] = ["github-banner", "repos-banner", "quote-banner", "contribution-banner"];
+const TEMPLATES: TemplateId[] = [
+  "github-banner",
+  "repos-banner",
+  "quote-banner",
+  "contribution-banner",
+];
 const CARDS_PER_COLUMN = 6;
 const COLUMNS = 4;
 
@@ -27,7 +32,14 @@ export function HeroMarquee() {
               <div key={j} className={styles.marqueeCard}>
                 {/* Eager: only 4 distinct URLs (fetched once each), and cards drifting into view
                     shouldn't pop in while they load. */}
-                <Image src={landingPreviewSrc(templateId)} alt="" fill sizes="400px" loading="eager" className="object-cover" />
+                <Image
+                  src={landingPreviewSrc(templateId)}
+                  alt=""
+                  fill
+                  sizes="400px"
+                  loading="eager"
+                  className="object-cover"
+                />
               </div>
             ))}
           </div>

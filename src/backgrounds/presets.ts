@@ -14,14 +14,49 @@ export interface BackgroundPreset {
 
 export const BACKGROUND_PRESETS: BackgroundPreset[] = [
   { id: "chicago", label: "Chicago", group: "Skylines", src: "/backgrounds/chicago.jpg" },
-  { id: "los-angeles", label: "Los Angeles", group: "Skylines", src: "/backgrounds/los-angeles.jpg" },
+  {
+    id: "los-angeles",
+    label: "Los Angeles",
+    group: "Skylines",
+    src: "/backgrounds/los-angeles.jpg",
+  },
   { id: "montreal", label: "Montreal", group: "Skylines", src: "/backgrounds/montreal.jpg" },
-  { id: "new-york-day", label: "New York (Day)", group: "Skylines", src: "/backgrounds/new-york-day.jpg" },
-  { id: "new-york-night", label: "New York (Night)", group: "Skylines", src: "/backgrounds/new-york-night.jpg" },
-  { id: "seattle-day", label: "Seattle (Day)", group: "Skylines", src: "/backgrounds/seattle-day.jpg" },
-  { id: "seattle-night", label: "Seattle (Night)", group: "Skylines", src: "/backgrounds/seattle-night.jpg" },
-  { id: "toronto-day", label: "Toronto (Day)", group: "Skylines", src: "/backgrounds/toronto-day.jpg" },
-  { id: "toronto-night", label: "Toronto (Night)", group: "Skylines", src: "/backgrounds/toronto-night.jpg" },
+  {
+    id: "new-york-day",
+    label: "New York (Day)",
+    group: "Skylines",
+    src: "/backgrounds/new-york-day.jpg",
+  },
+  {
+    id: "new-york-night",
+    label: "New York (Night)",
+    group: "Skylines",
+    src: "/backgrounds/new-york-night.jpg",
+  },
+  {
+    id: "seattle-day",
+    label: "Seattle (Day)",
+    group: "Skylines",
+    src: "/backgrounds/seattle-day.jpg",
+  },
+  {
+    id: "seattle-night",
+    label: "Seattle (Night)",
+    group: "Skylines",
+    src: "/backgrounds/seattle-night.jpg",
+  },
+  {
+    id: "toronto-day",
+    label: "Toronto (Day)",
+    group: "Skylines",
+    src: "/backgrounds/toronto-day.jpg",
+  },
+  {
+    id: "toronto-night",
+    label: "Toronto (Night)",
+    group: "Skylines",
+    src: "/backgrounds/toronto-night.jpg",
+  },
   { id: "vancouver", label: "Vancouver", group: "Skylines", src: "/backgrounds/vancouver.jpg" },
 ];
 

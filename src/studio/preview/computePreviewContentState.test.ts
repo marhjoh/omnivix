@@ -12,9 +12,9 @@ describe("computePreviewContentState", () => {
   };
 
   it("returns loading before hydration", () => {
-    expect(
-      computePreviewContentState({ ...base, hydrated: false, dataReady: false }),
-    ).toBe("loading");
+    expect(computePreviewContentState({ ...base, hydrated: false, dataReady: false })).toBe(
+      "loading",
+    );
   });
 
   it("returns empty when username required but missing", () => {
@@ -40,15 +40,13 @@ describe("computePreviewContentState", () => {
   });
 
   it("returns loading when username set but data not ready", () => {
-    expect(
-      computePreviewContentState({ ...base, hydrated: true, dataReady: false }),
-    ).toBe("loading");
+    expect(computePreviewContentState({ ...base, hydrated: true, dataReady: false })).toBe(
+      "loading",
+    );
   });
 
   it("returns ready when data ready", () => {
-    expect(
-      computePreviewContentState({ ...base, hydrated: true, dataReady: true }),
-    ).toBe("ready");
+    expect(computePreviewContentState({ ...base, hydrated: true, dataReady: true })).toBe("ready");
   });
 
   it("quote-banner empty when quote trimmed empty", () => {

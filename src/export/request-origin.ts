@@ -7,8 +7,7 @@ import type { NextRequest } from "next/server";
  */
 export function getPublicOrigin(request: NextRequest): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
-  const host =
-    forwardedHost?.split(",")[0]?.trim() || request.headers.get("host")?.trim();
+  const host = forwardedHost?.split(",")[0]?.trim() || request.headers.get("host")?.trim();
 
   const forwardedProto = request.headers.get("x-forwarded-proto");
   const proto =

@@ -34,7 +34,9 @@ export function landingJsonLd() {
         image: new URL("/opengraph-image", siteUrl).toString(),
         featureList: [
           ...getTemplates().map(({ meta }) => `${meta.title}: ${meta.description}`),
-          ...Object.values(BANNER_SIZES).map((s) => `${s.label} banner (${s.width} × ${s.height} px)`),
+          ...Object.values(BANNER_SIZES).map(
+            (s) => `${s.label} banner (${s.width} × ${s.height} px)`,
+          ),
         ],
         creator: { "@type": "Person", name: "marhjoh", url: SITE_LINKS.maintainerProfile },
         sameAs: [SITE_LINKS.repo],

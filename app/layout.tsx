@@ -58,9 +58,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="bg-bg text-text antialiased">
-        <ThemeProvider initialTheme={theme}>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
       </body>
     </html>
   );

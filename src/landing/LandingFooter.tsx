@@ -33,19 +33,34 @@ export function LandingFooter() {
           <span className="flex items-center">
             <span className="pr-1">Maintained by</span>
             <HoverHighlightItem id="maintainer">
-              <a href={SITE_LINKS.maintainerProfile} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+              <a
+                href={SITE_LINKS.maintainerProfile}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={footerLinkClass}
+              >
                 @marhjoh
               </a>
             </HoverHighlightItem>
           </span>
           <HoverHighlightItem id="coffee">
-            <a href={SITE_LINKS.buyMeACoffee} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+            <a
+              href={SITE_LINKS.buyMeACoffee}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerLinkClass}
+            >
               <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />
               Buy me a coffee
             </a>
           </HoverHighlightItem>
           <HoverHighlightItem id="github">
-            <a href={SITE_LINKS.repo} target="_blank" rel="noopener noreferrer" className={footerLinkClass}>
+            <a
+              href={SITE_LINKS.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerLinkClass}
+            >
               <GithubIcon className="h-[18px] w-[18px] shrink-0" />
               GitHub
             </a>

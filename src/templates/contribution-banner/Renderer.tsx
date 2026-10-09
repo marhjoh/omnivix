@@ -6,11 +6,11 @@ import { RenderData } from "@/src/templates/renderers/types";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const GRID_SIZES: Record<string, { cell: number; gap: number }> = {
-  xs:   { cell: 4,  gap: 1 },
-  s:    { cell: 6,  gap: 2 },
-  m:    { cell: 8, gap: 3 },
-  l:    { cell: 12, gap: 4 },
-  xl:   { cell: 15, gap: 3 },
+  xs: { cell: 4, gap: 1 },
+  s: { cell: 6, gap: 2 },
+  m: { cell: 8, gap: 3 },
+  l: { cell: 12, gap: 4 },
+  xl: { cell: 15, gap: 3 },
   fill: { cell: 22, gap: 4 },
 };
 
@@ -31,12 +31,13 @@ export function ContributionBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const theme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
-  const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const backgroundImage =
+    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const username = typeof state.username === "string" ? state.username : "";
   const sizeKey = (state.gridSize as string) ?? "l";
   const isFill = sizeKey === "fill";
   const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.l;
-  const gridPosition = (((state.gridPosition ?? "center") as string) || "center");
+  const gridPosition = ((state.gridPosition ?? "center") as string) || "center";
   const cellShape = contributionCellShapeFromState(state.cellShape);
 
   if (!username) {
@@ -54,7 +55,11 @@ export function ContributionBannerRenderer({
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={chrome.emptyStateIconSrc} alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
+          <img
+            src={chrome.emptyStateIconSrc}
+            alt=""
+            style={{ width: 40, height: 40, margin: "0 auto" }}
+          />
           <p style={{ fontSize: 16, color: chrome.text }}>Select a GitHub profile to get started</p>
         </div>
       </Frame>

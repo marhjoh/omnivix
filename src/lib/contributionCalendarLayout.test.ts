@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildCalendarLayout,
-  DAY_LABEL_ROWS,
-} from "./contributionCalendarLayout";
+import { buildCalendarLayout, DAY_LABEL_ROWS } from "./contributionCalendarLayout";
 import type {
   ContributionWeekNormalized,
   ContributionMonthNormalized,
@@ -69,7 +66,10 @@ function buildWeeksForRange(rangeStart: string, rangeEnd: string): ContributionW
  * Build weeks where firstDay is always the Sunday on or before rangeStart
  * (an alternate possible GitHub behavior).
  */
-function buildSundayAlignedWeeksForRange(rangeStart: string, rangeEnd: string): ContributionWeekNormalized[] {
+function buildSundayAlignedWeeksForRange(
+  rangeStart: string,
+  rangeEnd: string,
+): ContributionWeekNormalized[] {
   const rangeStartMs = parseYmd(rangeStart);
   const rangeEndMs = parseYmd(rangeEnd);
   const startWd = weekdayFromYmd(rangeStart);
@@ -96,8 +96,18 @@ function buildSundayAlignedWeeksForRange(rangeStart: string, rangeEnd: string): 
 
 function monthsForYear(year: number): ContributionMonthNormalized[] {
   const names = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   return Array.from({ length: 12 }, (_, i) => ({
     firstDay: `${year}-${String(i + 1).padStart(2, "0")}-01`,

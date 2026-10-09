@@ -51,9 +51,7 @@ export async function captureBannerPng({
     const context = await browser.newContext({
       viewport: getViewport(size, pixelRatio),
       deviceScaleFactor: pixelRatio,
-      ...(bypassSecret
-        ? { extraHTTPHeaders: { "x-vercel-protection-bypass": bypassSecret } }
-        : {}),
+      ...(bypassSecret ? { extraHTTPHeaders: { "x-vercel-protection-bypass": bypassSecret } } : {}),
     });
     const page = await context.newPage();
     page.setDefaultTimeout(25_000);

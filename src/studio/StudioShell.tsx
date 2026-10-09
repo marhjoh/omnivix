@@ -12,7 +12,11 @@ import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
 import { RenderData } from "@/src/templates/renderers/types";
-import type { GithubUserNormalized, ContributionsNormalized, RepoNormalized } from "@/src/github/normalize";
+import type {
+  GithubUserNormalized,
+  ContributionsNormalized,
+  RepoNormalized,
+} from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
@@ -76,7 +80,9 @@ function persistState(templateId: string, state: Record<string, unknown>, needsU
       delete clone.username;
     }
     localStorage.setItem(STATE_PREFIX + templateId, JSON.stringify(clone));
-  } catch { /* quota exceeded, ignore */ }
+  } catch {
+    /* quota exceeded, ignore */
+  }
 }
 
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
@@ -193,7 +199,11 @@ export function StudioShell({
 
   // Persisted state lives in localStorage, so it is merged in on the first client render
   // (after hydration) to keep the server and client markup identical.
-  const isClient = useSyncExternalStore(subscribeNever, () => true, () => false);
+  const isClient = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
   const [hydrated, setHydrated] = useState(false);
   if (isClient && !hydrated) {
     setHydrated(true);
@@ -264,8 +274,7 @@ export function StudioShell({
 
   const [refetchNonce, setRefetchNonce] = useState(0);
 
-  const needsContributions =
-    templateId === "github-banner" || templateId === "contribution-banner";
+  const needsContributions = templateId === "github-banner" || templateId === "contribution-banner";
   const needsReposFetch = templateId === "repos-banner";
 
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
@@ -362,15 +371,7 @@ export function StudioShell({
       return Boolean(data.user && data.repos && avatarReady);
     }
     return true;
-  }, [
-    needsUsername,
-    username,
-    templateId,
-    data.user,
-    data.contributions,
-    data.repos,
-    avatarReady,
-  ]);
+  }, [needsUsername, username, templateId, data.user, data.contributions, data.repos, avatarReady]);
 
   const quoteText = String(state.quote ?? "");
 

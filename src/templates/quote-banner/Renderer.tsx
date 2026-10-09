@@ -20,7 +20,8 @@ export function QuoteBannerRenderer({
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
-  const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const backgroundImage =
+    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const alignment = (state.alignment as "left" | "center" | "right") ?? "left";
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
@@ -28,7 +29,9 @@ export function QuoteBannerRenderer({
   const quoteScale = QUOTE_SIZES[quoteSizeKey] ?? QUOTE_SIZES.m;
 
   const longText = quote.length > 120;
-  const quoteFontSize = longText ? Math.max(24, Math.round(quoteScale.quote * 0.7)) : quoteScale.quote;
+  const quoteFontSize = longText
+    ? Math.max(24, Math.round(quoteScale.quote * 0.7))
+    : quoteScale.quote;
   const authorFontSize = Math.max(12, Math.round(quoteScale.author));
 
   return (

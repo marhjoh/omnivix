@@ -54,7 +54,9 @@ export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement
 
 /** Client-only: the theme stored in the cookie, or null if none. */
 export function readThemeCookieClient(): Theme | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`));
+  const match = document.cookie.match(
+    new RegExp(`(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`),
+  );
   return match ? (match[1] as Theme) : null;
 }
 

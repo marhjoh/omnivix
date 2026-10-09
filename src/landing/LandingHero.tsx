@@ -20,7 +20,7 @@ export function LandingHero() {
             <div className={landingStyles.heroScrim} aria-hidden />
             <div className={landingStyles.heroStripVignette} aria-hidden />
 
-            <div className="relative z-10 flex flex-col items-center pb-6 pt-10 text-center sm:pb-8 sm:pt-16 md:pt-20">
+            <div className="relative z-10 flex flex-col items-center pt-10 pb-6 text-center sm:pt-16 sm:pb-8 md:pt-20">
               <motion.div
                 className={landingStyles.heroCopyFrame}
                 initial={{ y: 16 }}
@@ -29,7 +29,7 @@ export function LandingHero() {
               >
                 <div className={landingStyles.heroCopyInner}>
                   <motion.p
-                    className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted sm:mb-5"
+                    className="mb-4 text-[11px] font-semibold tracking-[0.22em] text-muted uppercase sm:mb-5"
                     initial={{ y: 8 }}
                     animate={{ y: 0 }}
                     transition={{ duration: 0.45, delay: 0.06, ease: easeOut }}
@@ -46,7 +46,7 @@ export function LandingHero() {
                     transition={{ duration: 0.55, delay: 0.1, ease: easeOut }}
                   >
                     <span
-                      className={`${landingStyles.heroWordmark} text-[clamp(1.75rem,1.075rem+6.85vw,4.5rem)] font-bold leading-[0.97]`}
+                      className={`${landingStyles.heroWordmark} text-[clamp(1.75rem,1.075rem+6.85vw,4.5rem)] leading-[0.97] font-bold`}
                     >
                       Omnivix
                     </span>
@@ -55,7 +55,7 @@ export function LandingHero() {
                     >
                       a banner generator
                     </span>
-                    <span className="mx-auto mt-5 block max-w-md text-pretty text-[clamp(1rem,0.9rem+0.4vw,1.125rem)] font-medium leading-relaxed tracking-normal text-muted sm:mt-6">
+                    <span className="mx-auto mt-5 block max-w-md text-[clamp(1rem,0.9rem+0.4vw,1.125rem)] leading-relaxed font-medium tracking-normal text-pretty text-muted sm:mt-6">
                       Create profile banners you actually want to use
                     </span>
                   </motion.h1>
