@@ -11,6 +11,8 @@ import type { TemplateId } from "@/src/types/template";
 // of public/landing/*.webp. Regenerate them when the landing banners change.
 
 export const OG_SIZE = { width: 1200, height: 630 };
+// GitHub's recommended repository social preview size (Settings → General → Social preview).
+export const GITHUB_SOCIAL_PREVIEW_SIZE = { width: 1280, height: 640 };
 export const OG_CONTENT_TYPE = "image/jpeg";
 
 const COLORS = {
@@ -81,8 +83,11 @@ const bannerStyle = {
   boxShadow: "0 24px 48px #00000080",
 } as const;
 
-/** Site-wide preview: logo, tagline and a tilted stack of template banners. */
-export async function renderSiteOgImage() {
+/**
+ * Site-wide preview: logo, tagline and a tilted stack of template banners. Also used,
+ * at GITHUB_SOCIAL_PREVIEW_SIZE, for the repository's social preview (scripts/social-preview.mts).
+ */
+export async function renderSiteOgImage(size: { width: number; height: number } = OG_SIZE) {
   const { fonts, logo } = await assets;
   const banners = await Promise.all(
     (["github-banner", "contribution-banner", "quote-banner"] as const).map(bannerSrc),
@@ -134,7 +139,7 @@ export async function renderSiteOgImage() {
           </div>
         </div>
       </div>,
-      { ...OG_SIZE, fonts },
+      { ...size, fonts },
     ),
   );
 }
