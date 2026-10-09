@@ -84,8 +84,10 @@
       visibility 0s 0.2s;
   }
 
+  /* Swipes past the drawer's top/bottom would otherwise chain to the page behind it. */
   .sidebarInner {
     width: 100%;
+    overscroll-behavior: contain;
   }
 
   .content[data-sidebar-open="true"] .sidebar {
@@ -104,6 +106,8 @@
     background: rgba(0, 0, 0, 0.45);
     border: 0;
     cursor: pointer;
+    /* Taps still close the drawer; swipes on it don't scroll the page. */
+    touch-action: none;
   }
 }
 
