@@ -63,6 +63,6 @@ export const FAQ = [
   {
     question: "Why are some of my contributions missing?",
     answer:
-      "Omnivix shows the same contributions as your GitHub profile. Contributions to private repositories on github.com count once you turn on “Include private contributions on my profile” at https://github.com/settings/profile, and only the counts are shown, never repository names or code. Some work never counts, and no setting changes that: commits on a separate work account, on GitLab or GitHub Enterprise Server, made with an email address that isn't linked to your GitHub account, or not on the repository's default branch. This year's contributions are cached for 3 minutes, so a change can take up to 3 minutes to show. GitHub explains the rules at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
+      "Omnivix shows the same contributions as your GitHub profile. Private repositories count once you turn on “Include private contributions on my profile” at https://github.com/settings/profile, and only the counts are shown. Work on a separate account, GitLab, GitHub Enterprise Server, an unlinked email address or a non-default branch never counts. Changes can take up to 3 minutes to show. More at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
   },
 ] as const;
