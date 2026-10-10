@@ -30,7 +30,13 @@ export function ThemedLogo({ className = "h-9 w-auto" }: { className?: string })
   );
 }
 
-export function ThemedIcon({ className = "h-6 w-6", size = 24 }: { className?: string; size?: number }) {
+export function ThemedIcon({
+  className = "h-6 w-6",
+  size = 24,
+}: {
+  className?: string;
+  size?: number;
+}) {
   return (
     <>
       {(["dark", "light"] as const).map((theme) => (

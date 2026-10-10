@@ -94,7 +94,14 @@ export function ContributionGrid({
   const vbH = svgH + 2 * viewPad;
 
   return (
-    <div style={{ width: fill ? "100%" : "fit-content", height: fill ? "100%" : "auto", maxWidth: "100%", overflow: "hidden" }}>
+    <div
+      style={{
+        width: fill ? "100%" : "fit-content",
+        height: fill ? "100%" : "auto",
+        maxWidth: "100%",
+        overflow: "hidden",
+      }}
+    >
       <svg
         width={vbW}
         height={vbH}

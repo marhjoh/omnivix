@@ -7,9 +7,7 @@ import {
   GithubUserNormalized,
   RepoNormalized,
 } from "@/src/github/normalize";
-import {
-  computeLatestContributionRangeUtc,
-} from "@/src/lib/utcContributionRange";
+import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
 
 /** TTL: latest/current year data changes within the day. Historical years are stable. */
@@ -62,18 +60,25 @@ export async function getUserSummary(username: string): Promise<GithubUserNormal
     { username },
   );
   const contributions = await getContributions(username, "latest");
-  return writeCache(cacheKey, {
-    login: user.user.login,
-    name: user.user.name,
-    avatarUrl: user.user.avatarUrl,
-    followers: user.user.followers.totalCount,
-    publicRepos: user.user.repositories.totalCount,
-    contributionsLatest365: contributions.total,
-    createdAt: user.user.createdAt,
-  }, TTL_SHORT);
+  return writeCache(
+    cacheKey,
+    {
+      login: user.user.login,
+      name: user.user.name,
+      avatarUrl: user.user.avatarUrl,
+      followers: user.user.followers.totalCount,
+      publicRepos: user.user.repositories.totalCount,
+      contributionsLatest365: contributions.total,
+      createdAt: user.user.createdAt,
+    },
+    TTL_SHORT,
+  );
 }
 
-export async function getContributions(username: string, year?: string): Promise<ContributionsNormalized> {
+export async function getContributions(
+  username: string,
+  year?: string,
+): Promise<ContributionsNormalized> {
   const modeLatest = !year || year === "latest";
   const latestRange = modeLatest ? computeLatestContributionRangeUtc(new Date()) : null;
   const cacheKey = modeLatest
@@ -123,7 +128,12 @@ export async function getContributions(username: string, year?: string): Promise
             contributionDays: Array<{
               date: string;
               contributionCount: number;
-              contributionLevel: "NONE" | "FIRST_QUARTILE" | "SECOND_QUARTILE" | "THIRD_QUARTILE" | "FOURTH_QUARTILE";
+              contributionLevel:
+                | "NONE"
+                | "FIRST_QUARTILE"
+                | "SECOND_QUARTILE"
+                | "THIRD_QUARTILE"
+                | "FOURTH_QUARTILE";
               weekday: number;
             }>;
           }>;
@@ -191,15 +201,19 @@ export async function getContributions(username: string, year?: string): Promise
   const isHistorical = !modeLatest && yearNum != null && yearNum < currentYear;
   const ttl = isHistorical ? TTL_LONG : TTL_SHORT;
 
-  return writeCache(cacheKey, {
-    total: calendar.totalContributions,
-    weeks,
-    months,
-    rangeStartYmd,
-    rangeEndYmd,
-    mode: modeLatest ? "latest" : "year",
-    year: yearNum,
-  }, ttl);
+  return writeCache(
+    cacheKey,
+    {
+      total: calendar.totalContributions,
+      weeks,
+      months,
+      rangeStartYmd,
+      rangeEndYmd,
+      mode: modeLatest ? "latest" : "year",
+      year: yearNum,
+    },
+    ttl,
+  );
 }
 
 type RepoGqlFields = {
@@ -237,10 +251,7 @@ async function fetchUserReposBundle(username: string): Promise<UserReposBundle> 
   const response = await client<{
     user: {
       pinnedItems: {
-        nodes: Array<
-          | ({ __typename: string } & RepoGqlFields)
-          | { __typename: string }
-        >;
+        nodes: Array<({ __typename: string } & RepoGqlFields) | { __typename: string }>;
       };
       repositories: {
         nodes: RepoGqlFields[];
@@ -300,7 +311,9 @@ async function fetchUserReposBundle(username: string): Promise<UserReposBundle> 
     }
   }
 
-  const ownerPublic = response.user.repositories.nodes.map((repo) => normalizeRepoNode(repo, false));
+  const ownerPublic = response.user.repositories.nodes.map((repo) =>
+    normalizeRepoNode(repo, false),
+  );
 
   return writeCache(cacheKey, { pinned, ownerPublic }, TTL_SHORT);
 }

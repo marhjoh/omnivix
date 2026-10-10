@@ -76,14 +76,24 @@ function ProfileBlock({
           <img
             src={user.avatarUrl}
             alt=""
-            style={{ width: sizing.avatar, height: sizing.avatar, borderRadius: "50%", flexShrink: 0 }}
+            style={{
+              width: sizing.avatar,
+              height: sizing.avatar,
+              borderRadius: "50%",
+              flexShrink: 0,
+            }}
           />
         ) : null}
         <div style={{ minWidth: 0, textAlign: "left" }}>
           {showDisplayName && displayName ? (
             <>
               <BannerTitle
-                style={{ fontSize: sizing.name, lineHeight: 1.15, margin: "0 0 2px", color: chrome.text }}
+                style={{
+                  fontSize: sizing.name,
+                  lineHeight: 1.15,
+                  margin: "0 0 2px",
+                  color: chrome.text,
+                }}
               >
                 {displayName}
               </BannerTitle>
@@ -121,21 +131,21 @@ export function ReposBannerRenderer({
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
-  const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const backgroundImage =
+    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const mode = (state.mode === "selected" ? "selected" : "pinned") as "pinned" | "selected";
   const maxReposPinned = Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
   const maxShown = mode === "selected" ? 6 : maxReposPinned;
   const repos = Array.isArray(data.repos) ? data.repos.slice(0, maxShown) : [];
   const username = typeof state.username === "string" ? state.username : "";
   const layoutAmount =
-    mode === "selected"
-      ? Math.min(6, Math.max(1, repos.length))
-      : maxReposPinned;
+    mode === "selected" ? Math.min(6, Math.max(1, repos.length)) : maxReposPinned;
   const cols = reposBannerColumnCount(layoutAmount);
 
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
-  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "center") as keyof typeof FLEX_ALIGN;
+  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) ||
+    "center") as keyof typeof FLEX_ALIGN;
   const sizing = profileSizingForBannerType(state.size);
 
   const showDescription = state.showDescription !== false;

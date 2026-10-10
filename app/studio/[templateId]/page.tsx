@@ -39,11 +39,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function StudioPage({
-  params,
-}: {
-  params: Promise<{ templateId: string }>;
-}) {
+export default async function StudioPage({ params }: { params: Promise<{ templateId: string }> }) {
   const { templateId } = await params;
   if (!(templateId in templateRegistry)) {
     notFound();

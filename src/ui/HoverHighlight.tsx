@@ -3,7 +3,11 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { MotionConfig, motion } from "framer-motion";
 
-type GroupState = { active: string | null; setActive: (id: string | null) => void; layoutId: string };
+type GroupState = {
+  active: string | null;
+  setActive: (id: string | null) => void;
+  layoutId: string;
+};
 const GroupContext = createContext<GroupState | null>(null);
 
 /**

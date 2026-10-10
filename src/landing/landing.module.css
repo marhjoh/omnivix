@@ -6,9 +6,21 @@
   pointer-events: none;
   opacity: 0.5;
   background:
-    radial-gradient(ellipse 55% 48% at 18% 28%, color-mix(in oklab, var(--accent) 42%, transparent), transparent 62%),
-    radial-gradient(ellipse 50% 44% at 88% 42%, color-mix(in oklab, var(--accent-hover) 38%, transparent), transparent 58%),
-    radial-gradient(ellipse 42% 38% at 52% 92%, color-mix(in oklab, var(--surface) 55%, transparent), transparent 55%);
+    radial-gradient(
+      ellipse 55% 48% at 18% 28%,
+      color-mix(in oklab, var(--accent) 42%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 50% 44% at 88% 42%,
+      color-mix(in oklab, var(--accent-hover) 38%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 42% 38% at 52% 92%,
+      color-mix(in oklab, var(--surface) 55%, transparent),
+      transparent 55%
+    );
   animation: heroMeshDrift 20s ease-in-out infinite alternate;
 }
 
@@ -103,7 +115,8 @@ html[data-theme="light"] .heroCopyFrame::before {
   position: relative;
   z-index: 1;
   /* Fluid, like the hero type: 2rem 1rem 2.25rem on phones → 2.5rem 2rem 2.75rem on desktop. */
-  padding: clamp(2rem, 1.6rem + 1vw, 2.5rem) clamp(1rem, 0.25rem + 3vw, 2rem) clamp(2.25rem, 1.85rem + 1vw, 2.75rem);
+  padding: clamp(2rem, 1.6rem + 1vw, 2.5rem) clamp(1rem, 0.25rem + 3vw, 2rem)
+    clamp(2.25rem, 1.85rem + 1vw, 2.75rem);
 }
 
 html[data-theme="light"] .heroCopyFrame {
@@ -209,7 +222,9 @@ html[data-theme="light"] .heroSubline {
 
 @media (prefers-reduced-motion: reduce) {
   .showcaseTile {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 }
 

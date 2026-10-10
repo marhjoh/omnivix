@@ -12,8 +12,13 @@ const CONTRIBUTION_CELL_SHAPE_LABELS: Record<ContributionCellShape, string> = {
   circle: "Circle",
 };
 
-export const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{ label: string; value: ContributionCellShape }> =
-  CONTRIBUTION_CELL_SHAPES.map((value) => ({ label: CONTRIBUTION_CELL_SHAPE_LABELS[value], value }));
+export const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{
+  label: string;
+  value: ContributionCellShape;
+}> = CONTRIBUTION_CELL_SHAPES.map((value) => ({
+  label: CONTRIBUTION_CELL_SHAPE_LABELS[value],
+  value,
+}));
 
 export function contributionCellShapeFromState(raw: unknown): ContributionCellShape {
   if (typeof raw === "string" && (CONTRIBUTION_CELL_SHAPES as readonly string[]).includes(raw)) {

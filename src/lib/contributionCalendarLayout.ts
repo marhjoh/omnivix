@@ -139,9 +139,10 @@ export function buildCalendarLayout(options: {
   for (const month of months) {
     const firstDayMs = utcDayMs(month.firstDay);
     if (firstDayMs > rangeEndMs) continue;
-    const colIndex = firstDayMs < gridStartMs
-      ? 0
-      : Math.min(Math.floor((firstDayMs - gridStartMs) / MS_PER_WEEK), columnCount - 1);
+    const colIndex =
+      firstDayMs < gridStartMs
+        ? 0
+        : Math.min(Math.floor((firstDayMs - gridStartMs) / MS_PER_WEEK), columnCount - 1);
     if (colIndex < prevColIndex + 2 && prevColIndex !== -Infinity) continue;
     monthLabels.push({ label: month.name.slice(0, 3), colIndex });
     prevColIndex = colIndex;

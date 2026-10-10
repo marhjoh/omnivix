@@ -13,7 +13,7 @@ function AnswerText({ text }: { text: string }) {
         href={part}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-sm text-accent underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/45"
+        className="rounded-sm text-accent underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:outline-hidden"
       >
         {part.replace(/^https:\/\//, "")}
       </a>
@@ -26,7 +26,11 @@ function AnswerText({ text }: { text: string }) {
 // <details> keeps every answer in the server HTML, so crawlers read it without running JS.
 export function LandingFaq() {
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-[5.5rem] bg-bg px-4 pb-20 sm:pb-24 md:scroll-mt-24">
+    <section
+      id="faq"
+      aria-labelledby="faq-heading"
+      className="scroll-mt-[5.5rem] bg-bg px-4 pb-20 sm:pb-24 md:scroll-mt-24"
+    >
       <div className="mx-auto max-w-3xl">
         <h2
           id="faq-heading"
@@ -37,7 +41,7 @@ export function LandingFaq() {
         <div className="divide-y divide-border/60 rounded-xl border border-border/60 bg-surface/40">
           {FAQ.map(({ question, answer }) => (
             <details key={question} className="group px-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md py-4 font-medium text-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/45 [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md py-4 font-medium text-text focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:outline-hidden [&::-webkit-details-marker]:hidden">
                 {question}
                 <ChevronDown
                   aria-hidden

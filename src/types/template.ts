@@ -1,11 +1,7 @@
 import { z } from "zod";
 import type { Theme } from "@/src/theme/theme";
 
-export type TemplateId =
-  | "github-banner"
-  | "repos-banner"
-  | "contribution-banner"
-  | "quote-banner";
+export type TemplateId = "github-banner" | "repos-banner" | "contribution-banner" | "quote-banner";
 
 export type BannerSize = "xHeader" | "linkedinCover";
 

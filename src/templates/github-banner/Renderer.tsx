@@ -37,7 +37,8 @@ export function GithubBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const gridTheme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
-  const backgroundImage = typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const backgroundImage =
+    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
   const username = typeof state.username === "string" ? state.username : "";
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
@@ -46,7 +47,8 @@ export function GithubBannerRenderer({
   const showDayLabels = state.showDayLabels !== false;
   const showTotal = state.showTotal !== false;
   const profileRight = (state.profilePosition as string) === "right";
-  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) || "center") as keyof typeof FLEX_ALIGN;
+  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) ||
+    "center") as keyof typeof FLEX_ALIGN;
   const sizeKey = (state.gridSize as string) ?? "m";
   const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.m;
   const cellShape = contributionCellShapeFromState(state.cellShape);
@@ -69,7 +71,11 @@ export function GithubBannerRenderer({
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={chrome.emptyStateIconSrc} alt="" style={{ width: 40, height: 40, margin: "0 auto" }} />
+          <img
+            src={chrome.emptyStateIconSrc}
+            alt=""
+            style={{ width: 40, height: 40, margin: "0 auto" }}
+          />
           <p style={{ fontSize: 16, color: chrome.text }}>Select a GitHub profile to get started</p>
         </div>
       </Frame>
@@ -122,16 +128,32 @@ export function GithubBannerRenderer({
                 <img
                   src={data.user.avatarUrl}
                   alt=""
-                  style={{ width: sizing.avatar, height: sizing.avatar, borderRadius: "50%", flexShrink: 0 }}
+                  style={{
+                    width: sizing.avatar,
+                    height: sizing.avatar,
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                  }}
                 />
               ) : null}
               <div style={{ minWidth: 0, textAlign: profileRight ? "right" : "left" }}>
                 {showDisplayName && displayName ? (
                   <>
-                    <BannerTitle style={{ fontSize: sizing.name, lineHeight: 1.15, margin: "0 0 2px", color: chrome.text }}>
+                    <BannerTitle
+                      style={{
+                        fontSize: sizing.name,
+                        lineHeight: 1.15,
+                        margin: "0 0 2px",
+                        color: chrome.text,
+                      }}
+                    >
                       {displayName}
                     </BannerTitle>
-                    <BannerMuted style={{ fontSize: sizing.handle, color: chrome.textMuted, margin: 0 }}>@{login}</BannerMuted>
+                    <BannerMuted
+                      style={{ fontSize: sizing.handle, color: chrome.textMuted, margin: 0 }}
+                    >
+                      @{login}
+                    </BannerMuted>
                   </>
                 ) : (
                   <p

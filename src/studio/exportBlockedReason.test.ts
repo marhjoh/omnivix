@@ -21,23 +21,21 @@ describe("exportBlockedReason", () => {
   });
 
   it("uses the empty-state title for the template", () => {
-    expect(exportBlockedReason({ ...base, previewState: "empty" })).toBe(
-      "Choose a GitHub profile",
-    );
+    expect(exportBlockedReason({ ...base, previewState: "empty" })).toBe("Choose a GitHub profile");
     expect(
       exportBlockedReason({ ...base, templateId: "quote-banner", previewState: "empty" }),
     ).toBe("Add your quote");
   });
 
   it("prefers the preview reason over invalid state", () => {
-    expect(
-      exportBlockedReason({ ...base, previewState: "empty", stateValid: false }),
-    ).toBe("Choose a GitHub profile");
+    expect(exportBlockedReason({ ...base, previewState: "empty", stateValid: false })).toBe(
+      "Choose a GitHub profile",
+    );
   });
 
   it("blocks when state is invalid and the preview is ready", () => {
-    expect(
-      exportBlockedReason({ ...base, previewState: "ready", stateValid: false }),
-    ).toBe("Some settings are invalid");
+    expect(exportBlockedReason({ ...base, previewState: "ready", stateValid: false })).toBe(
+      "Some settings are invalid",
+    );
   });
 });

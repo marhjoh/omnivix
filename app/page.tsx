@@ -20,7 +20,9 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(landingJsonLd()).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(landingJsonLd()).replace(/</g, "\\u003c"),
+        }}
       />
       <LandingHeader />
       <main className="flex-1">

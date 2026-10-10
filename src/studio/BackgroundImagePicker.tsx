@@ -35,7 +35,10 @@ function triggerLabel(value: string | undefined, uploadedFileName: string | null
   return "Custom";
 }
 
-function triggerTitle(value: string | undefined, uploadedFileName: string | null): string | undefined {
+function triggerTitle(
+  value: string | undefined,
+  uploadedFileName: string | null,
+): string | undefined {
   if (!value) return undefined;
   if (isDataUrl(value)) {
     const name = uploadedFileName?.trim();
@@ -75,8 +78,7 @@ export function BackgroundImagePicker({
   const closedByTabRef = useRef(false);
   const prevOpenRef = useRef(false);
 
-  const showUrlField =
-    urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
+  const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
 
   const urlInputValue =
     urlDraft !== undefined
@@ -100,9 +102,7 @@ export function BackgroundImagePicker({
   /** Focus the selected (or first) option when the dropdown opens. */
   useEffect(() => {
     if (!open || !listboxRef.current) return;
-    const options = Array.from(
-      listboxRef.current.querySelectorAll<HTMLElement>('[role="option"]'),
-    );
+    const options = Array.from(listboxRef.current.querySelectorAll<HTMLElement>('[role="option"]'));
     const selected =
       options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
     requestAnimationFrame(() => selected?.focus());
@@ -119,9 +119,7 @@ export function BackgroundImagePicker({
   }, [open]);
 
   const uploadDisplayName =
-    typeof value === "string" &&
-    isDataUrl(value) &&
-    uploadSession?.dataUrl === value
+    typeof value === "string" && isDataUrl(value) && uploadSession?.dataUrl === value
       ? uploadSession.fileName
       : null;
 
@@ -263,12 +261,9 @@ export function BackgroundImagePicker({
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
           onClick={() => setOpen((o) => !o)}
-          className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:outline-hidden focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:border-[var(--accent)]"
+          className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:border-[var(--accent)] focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:outline-hidden"
         >
-          <span
-            className="min-w-0 flex-1 truncate"
-            title={triggerTitle(value, uploadDisplayName)}
-          >
+          <span className="min-w-0 flex-1 truncate" title={triggerTitle(value, uploadDisplayName)}>
             {triggerLabel(value, uploadDisplayName)}
           </span>
           {open ? (
@@ -285,7 +280,7 @@ export function BackgroundImagePicker({
             role="listbox"
             aria-label="Background options"
             onKeyDown={handleListKeyDown}
-            className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
+            className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
           >
             <button
               type="button"
@@ -295,13 +290,17 @@ export function BackgroundImagePicker({
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
               onClick={selectNone}
             >
-              {!value ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : <span className="w-3.5 shrink-0" />}
+              {!value ? (
+                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+              ) : (
+                <span className="w-3.5 shrink-0" />
+              )}
               None
             </button>
 
             {Array.from(grouped.entries()).map(([groupName, presets]) => (
               <div key={groupName}>
-                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                <div className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-muted uppercase">
                   {groupName}
                 </div>
                 {presets.map((p) => {
@@ -397,8 +396,7 @@ export function BackgroundImagePicker({
       ) : null}
 
       <p className="text-[11px] leading-snug text-muted">
-        Formats: PNG, JPEG, WebP, HEIC. 
-        Max: {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB.
+        Formats: PNG, JPEG, WebP, HEIC. Max: {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB.
       </p>
 
       {showUrlField ? (

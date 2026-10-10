@@ -74,7 +74,10 @@ function FieldWrapper({
 }
 
 function parseRepoSelection(raw: string): string[] {
-  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 function RepoMultiSelect({
@@ -111,7 +114,11 @@ function RepoMultiSelect({
     <div className="space-y-1.5">
       <span className="block text-xs font-medium text-muted">Repositories</span>
       {loading && <p className="text-xs text-muted">Loading repository list…</p>}
-      {error && <p className="text-xs text-danger" role="alert">{error}</p>}
+      {error && (
+        <p className="text-xs text-danger" role="alert">
+          {error}
+        </p>
+      )}
       {!loading && !error && (
         <div className="max-h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5">
           {catalog.length === 0 ? (
@@ -149,13 +156,7 @@ function RepoMultiSelect({
   );
 }
 
-function ThemePicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (id: string) => void;
-}) {
+function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
 
   useEffect(() => {
@@ -182,11 +183,7 @@ function ThemePicker({
             <span className="font-medium">{preset.label}</span>
             <div className="ml-auto flex gap-1">
               {preset.gridLevels.map((color, i) => (
-                <div
-                  key={i}
-                  className="h-4 w-4 rounded-xs"
-                  style={{ backgroundColor: color }}
-                />
+                <div key={i} className="h-4 w-4 rounded-xs" style={{ backgroundColor: color }} />
               ))}
             </div>
           </button>
@@ -222,7 +219,9 @@ function SizePicker({
           >
             <span className="text-lg">{size.icon === "linkedin" ? "in" : "𝕏"}</span>
             <span className="font-medium">{size.label}</span>
-            <span className="text-[10px] opacity-60">{size.width}×{size.height}</span>
+            <span className="text-[10px] opacity-60">
+              {size.width}×{size.height}
+            </span>
           </button>
         ))}
       </div>
@@ -255,9 +254,8 @@ export function ControlSidebar({
   const mode = state.mode as string | undefined;
 
   const startYear = accountCreatedYear ?? currentYear - 9;
-  const years = Array.from(
-    { length: currentYear - startYear + 1 },
-    (_, i) => String(currentYear - i),
+  const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
+    String(currentYear - i),
   );
 
   return (
@@ -313,9 +311,13 @@ export function ControlSidebar({
         }
 
         if (field.key === "year") {
-          const contributionTemplates = templateId === "github-banner" || templateId === "contribution-banner";
+          const contributionTemplates =
+            templateId === "github-banner" || templateId === "contribution-banner";
           const yearOptions = contributionTemplates
-            ? [{ value: "latest", label: "Last 365 days" }, ...years.map((y) => ({ value: y, label: y }))]
+            ? [
+                { value: "latest", label: "Last 365 days" },
+                ...years.map((y) => ({ value: y, label: y })),
+              ]
             : years.map((y) => ({ value: y, label: y }));
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
@@ -429,7 +431,9 @@ export function ControlSidebar({
               key={field.key}
               id={field.key}
               label={field.label}
-              value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
+              value={
+                typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
+              }
               onChange={(next) => onChange(field.key, next)}
             />
           );
