@@ -52,12 +52,17 @@ export const FAQ = [
     answer: `LinkedIn cover image (${px(linkedinCover)}) and X header (${px(xHeader)}). Banners download as PNG at ${EXPORT_PIXEL_RATIO}× resolution, for example ${linkedinCover.width * EXPORT_PIXEL_RATIO} × ${linkedinCover.height * EXPORT_PIXEL_RATIO} px for LinkedIn, so they stay sharp on high-resolution screens.`,
   },
   {
+    question: "Can I use my own background image?",
+    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds or upload your own PNG, JPEG, WebP or HEIC image. Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+  },
+  {
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:
       "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is kept in server memory for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database.",
   },
   {
-    question: "Can I use my own background image?",
-    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds or upload your own PNG, JPEG, WebP or HEIC image. Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+    question: "Why are some of my contributions missing?",
+    answer:
+      "Omnivix shows the same contributions as your GitHub profile. Private repositories count once you turn on “Include private contributions on my profile” at https://github.com/settings/profile, and only the counts are shown. Work on a separate account, GitLab, GitHub Enterprise Server, an unlinked email address or a non-default branch never counts. Changes can take up to 3 minutes to show. More at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
   },
 ] as const;
