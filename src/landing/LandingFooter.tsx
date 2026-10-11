@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Coffee } from "lucide-react";
+import { APP_RELEASE_URL, APP_VERSION } from "@/src/lib/app-version";
 import { SITE_LINKS } from "@/src/lib/site-links";
 import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
@@ -28,7 +29,7 @@ export function LandingFooter() {
           as="nav"
           layoutId="footer-highlight"
           className="flex max-w-2xl flex-wrap items-center justify-center gap-x-1.5 gap-y-2 text-sm text-muted sm:justify-end"
-          aria-label="Credits, support, and repository"
+          aria-label="Credits, support, repository, and release notes"
         >
           <span className="flex items-center">
             <span className="pr-1">Maintained by</span>
@@ -63,6 +64,17 @@ export function LandingFooter() {
             >
               <GithubIcon className="h-[18px] w-[18px] shrink-0" />
               GitHub
+            </a>
+          </HoverHighlightItem>
+          <HoverHighlightItem id="version">
+            <a
+              href={APP_RELEASE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${footerLinkClass} tabular-nums`}
+              aria-label={`Release notes for version ${APP_VERSION}`}
+            >
+              v{APP_VERSION}
             </a>
           </HoverHighlightItem>
         </HoverHighlightGroup>
