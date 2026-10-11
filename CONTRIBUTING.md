@@ -24,6 +24,12 @@ Open an issue first for larger changes or new templates, so the direction is agr
 - Keep PRs small and focused, and link the issue they close.
 - Add screenshots for UI changes.
 
+## Releases
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please) and follow [Semantic Versioning](https://semver.org). Commit types decide the next version: `fix:` bumps the patch, `feat:` the minor, and a breaking change (`feat!:` or a `BREAKING CHANGE:` footer) the major. Other types, like `docs:` and `chore:`, don't trigger a release.
+
+After a merge to `main` with a `feat:` or `fix:` commit, the release workflow opens a release PR and merges it once CI passes. That bumps `package.json`, updates `CHANGELOG.md`, tags `vX.Y.Z` and publishes a GitHub Release with the notes. Don't edit the version or the changelog by hand.
+
 ## Checks
 
 CI runs every check below on each pull request, and a PR must pass all of them before it's merged. To reproduce a failure locally, run the same command:
