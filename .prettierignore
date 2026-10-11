@@ -4,6 +4,7 @@ out
 build
 coverage
 next-env.d.ts
+CHANGELOG.md
 pnpm-lock.yaml
 *.tsbuildinfo
 
