@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 
 export type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
+/** Outcome per src for the browser session, so a remount doesn't wait on an image already seen. */
+const knownStatus = new Map<string, "loaded" | "failed">();
+
 /**
  * Preloads `src` and reports its status, so the preview can wait for an image (instead of showing
  * the banner with an empty spot that fills in later on slow networks) and skip it if it fails.
@@ -13,8 +16,12 @@ export function useImageStatus(src: string | undefined): ImageStatus {
   useEffect(() => {
     if (!src) return;
     const img = new Image();
-    img.onload = () => setResult({ src, status: "loaded" });
-    img.onerror = () => setResult({ src, status: "failed" });
+    const settle = (status: "loaded" | "failed") => {
+      knownStatus.set(src, status);
+      setResult({ src, status });
+    };
+    img.onload = () => settle("loaded");
+    img.onerror = () => settle("failed");
     img.src = src;
     return () => {
       img.onload = null;
@@ -23,5 +30,5 @@ export function useImageStatus(src: string | undefined): ImageStatus {
   }, [src]);
 
   if (!src) return "none";
-  return result?.src === src ? result.status : "loading";
+  return result?.src === src ? result.status : (knownStatus.get(src) ?? "loading");
 }
