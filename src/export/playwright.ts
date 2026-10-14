@@ -3,6 +3,18 @@ import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
 import { getViewport } from "@/src/export/viewport";
+import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
+
+/** `FitContent` sizes content in the browser after hydration, so wait for every fit to finish. */
+async function waitForContentFit(page: Page) {
+  await page.waitForFunction(
+    (attribute) =>
+      [...document.querySelectorAll(`[${attribute}]`)].every(
+        (el) => el.getAttribute(attribute) === "ready",
+      ),
+    FIT_STATUS_ATTRIBUTE,
+  );
+}
 
 async function waitForRasterReady(page: Page) {
   await page.evaluate(async () => {
@@ -67,6 +79,7 @@ export async function captureBannerPng({
     const target = page.locator(".banner-export-root");
     await target.waitFor({ state: "visible", timeout: 25_000 });
     await waitForRasterReady(page);
+    await waitForContentFit(page);
     const screenshot = await target.screenshot({
       type: "png",
       animations: "disabled",

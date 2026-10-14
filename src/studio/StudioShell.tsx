@@ -165,6 +165,12 @@ function withPersistedState(
 
   const merged = { ...prev, ...persisted };
   merged.size = normalizeBannerSize(merged.size, prev.size as BannerSize);
+  // A saved choice the field no longer offers falls back to the template default.
+  for (const field of templateRegistry[templateId].schema) {
+    if (field.options && !field.options.some((option) => option.value === merged[field.key])) {
+      merged[field.key] = prev[field.key];
+    }
+  }
   if (needsUsername) {
     merged.username = storedUsername;
   }
@@ -359,9 +365,13 @@ export function StudioShell({
   const avatarStatus = useImageStatus(data.user?.avatarUrl);
   const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
+  const fill = state.contentSize === "fill";
   const disabledFields = useMemo(
-    () => (avatarFailed ? { showAvatar: "Profile photo couldn't be loaded" } : undefined),
-    [avatarFailed],
+    () => ({
+      ...(avatarFailed && { showAvatar: "Profile photo couldn't be loaded" }),
+      ...(fill && { alignment: "Fill covers the whole banner" }),
+    }),
+    [avatarFailed, fill],
   );
   // A photo that failed to load is left out, so the banner never shows a broken-image icon.
   const renderData = useMemo<RenderData>(

@@ -408,13 +408,17 @@ export function ControlSidebar({
         }
 
         if (field.type === "select") {
+          const disabledReason = disabledFields[field.key];
+          const hintId = disabledReason ? `${field.key}-hint` : undefined;
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <select
                 id={field.key}
-                className="field-input"
+                className="field-input disabled:cursor-not-allowed disabled:opacity-50"
                 value={String(state[field.key] ?? "")}
                 onChange={(e) => onChange(field.key, e.target.value)}
+                disabled={Boolean(disabledReason)}
+                aria-describedby={hintId}
               >
                 {field.options?.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -422,6 +426,11 @@ export function ControlSidebar({
                   </option>
                 ))}
               </select>
+              {disabledReason && (
+                <p id={hintId} className="mt-1 text-xs text-muted">
+                  {disabledReason}
+                </p>
+              )}
             </FieldWrapper>
           );
         }
