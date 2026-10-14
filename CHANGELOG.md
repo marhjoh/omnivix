@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/marhjoh/omnivix/compare/v1.3.0...v1.3.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* use the same dropdown for every studio setting ([789aa27](https://github.com/marhjoh/omnivix/commit/789aa27fe3353eed5fe6da7dd62ed8859ec79edf))
+* use the same dropdown for every studio setting ([594019f](https://github.com/marhjoh/omnivix/commit/594019f3e682142c32091094615f7a6c0bbd706b))
+
 ## [1.3.0](https://github.com/marhjoh/omnivix/compare/v1.2.0...v1.3.0) (2026-10-14)
 
 
