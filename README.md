@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  Create LinkedIn and X banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.
+  Create LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.
   <br />
   <strong><a href="https://omnivix.vercel.app">omnivix.vercel.app</a></strong>
 </p>
@@ -22,7 +22,7 @@
   - **Repos Banner:** pinned or hand-picked repositories with languages, stars and forks
   - **Contribution Banner:** a large contribution heatmap
   - **Quote Banner:** a quote and author; needs no GitHub username
-- **Two sizes:** LinkedIn cover (1584 × 396) and X header (1500 × 500)
+- **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
 - **Backgrounds:** 10 built-in city photos, or upload your own (PNG, JPEG, WebP or HEIC, up to 12 MB)
 - **Customisation:** colour themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
 - **Export:** a PNG at 3× resolution (for example 4752 × 1188 for LinkedIn)

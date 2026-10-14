@@ -20,6 +20,7 @@ import type {
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
+import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
@@ -163,6 +164,7 @@ function withPersistedState(
   if (!persisted && !storedUsername) return prev;
 
   const merged = { ...prev, ...persisted };
+  merged.size = normalizeBannerSize(merged.size, prev.size as BannerSize);
   if (needsUsername) {
     merged.username = storedUsername;
   }
@@ -470,8 +472,8 @@ export function StudioShell({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      const sizeSlug = size.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
-      anchor.download = `omnivix-${templateId}-${sizeSlug}.png`;
+      const ratioSlug = BANNER_SIZES[size].label.replace(":", "x");
+      anchor.download = `omnivix-${templateId}-${ratioSlug}.png`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {

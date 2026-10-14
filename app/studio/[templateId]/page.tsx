@@ -17,7 +17,7 @@ export async function generateMetadata({
     return {};
   }
   const { meta } = templateRegistry[templateId as TemplateId];
-  const description = `${meta.description} Create a ${meta.title} for LinkedIn and X. Free, no sign-up.`;
+  const description = `${meta.description} Create a ${meta.title} for LinkedIn, X, Bluesky, Twitch and more. Free, no sign-up.`;
   const url = `/studio/${templateId}`;
   // openGraph/twitter replace the layout's objects rather than merging, so set every field.
   return {

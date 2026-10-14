@@ -2,6 +2,8 @@
 
 import { MotionConfig, motion } from "framer-motion";
 import { HeroMarquee } from "@/src/landing/HeroMarquee";
+import { BANNER_PLATFORMS } from "@/src/lib/sizes";
+import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import landingStyles from "@/src/landing/landing.module.css";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -29,12 +31,17 @@ export function LandingHero() {
               >
                 <div className={landingStyles.heroCopyInner}>
                   <motion.p
-                    className="mb-4 text-[11px] font-semibold tracking-[0.22em] text-muted uppercase sm:mb-5"
+                    className="mb-4 flex flex-wrap items-center justify-center gap-3 text-muted sm:mb-5"
                     initial={{ y: 8 }}
                     animate={{ y: 0 }}
                     transition={{ duration: 0.45, delay: 0.06, ease: easeOut }}
                   >
-                    LinkedIn · X
+                    <span className="sr-only">
+                      For {BANNER_PLATFORMS.map((platform) => platform.name).join(", ")}
+                    </span>
+                    {BANNER_PLATFORMS.map((platform) => (
+                      <PlatformIcon key={platform.name} icon={platform.icon} size={16} />
+                    ))}
                   </motion.p>
 
                   <div className={landingStyles.heroAccentBar} aria-hidden />

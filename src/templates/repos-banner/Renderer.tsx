@@ -1,4 +1,6 @@
 import { Frame } from "@/src/banner/Frame";
+import { normalizeBannerSize } from "@/src/lib/sizes";
+import type { BannerSize } from "@/src/types/template";
 import { RepoCard } from "@/src/banner/RepoCard";
 import { BannerMuted, BannerTitle } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
@@ -8,13 +10,14 @@ import type { GithubUserNormalized } from "@/src/github/normalize";
 type ProfileSizing = { avatar: number; name: number; handle: number };
 
 /** Profile avatar / name: tied to banner Type only (no extra size control). */
-const PROFILE_BY_BANNER_TYPE: Record<"xHeader" | "linkedinCover", ProfileSizing> = {
-  xHeader: { avatar: 24, name: 12, handle: 11 },
-  linkedinCover: { avatar: 28, name: 13, handle: 12 },
+const PROFILE_BY_BANNER_TYPE: Record<BannerSize, ProfileSizing> = {
+  wide: { avatar: 28, name: 13, handle: 12 },
+  header: { avatar: 24, name: 12, handle: 11 },
+  card: { avatar: 24, name: 12, handle: 11 },
 };
 
 function profileSizingForBannerType(size: unknown): ProfileSizing {
-  return size === "xHeader" ? PROFILE_BY_BANNER_TYPE.xHeader : PROFILE_BY_BANNER_TYPE.linkedinCover;
+  return PROFILE_BY_BANNER_TYPE[normalizeBannerSize(size)];
 }
 
 const FLEX_ALIGN: Record<string, string> = {
