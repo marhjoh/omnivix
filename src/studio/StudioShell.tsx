@@ -97,6 +97,12 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
 type FetchResult<T> = { url: string; nonce: number; data?: T; error: string | null };
 
 /**
+ * Last successful response per url, kept for the browser session. Returning to the studio, or to a
+ * year or user shown before, renders that data at once while it is fetched again.
+ */
+const lastFetched = new Map<string, unknown>();
+
+/**
  * Results are stored with the url/nonce they belong to and derived on read,
  * so nothing has to be reset synchronously when the url changes.
  * On error, the last data for the same url is kept.
@@ -109,7 +115,9 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
     const ac = new AbortController();
     fetchJson<T>(url, ac.signal).then(
       (data) => {
-        if (!ac.signal.aborted) setResult({ url, nonce, data, error: null });
+        if (ac.signal.aborted) return;
+        lastFetched.set(url, data);
+        setResult({ url, nonce, data, error: null });
       },
       (error) => {
         if (ac.signal.aborted) return;
@@ -128,7 +136,7 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
   const current = url && result?.url === url ? result : null;
   const settled = current !== null && current.nonce === nonce;
   return {
-    data: current?.data,
+    data: current?.data ?? (url ? (lastFetched.get(url) as T | undefined) : undefined),
     error: settled ? current.error : null,
     loading: url !== null && !settled,
   };
