@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/marhjoh/omnivix/compare/v1.0.0...v1.0.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* show the studio preview without flashing when returning ([84d8601](https://github.com/marhjoh/omnivix/commit/84d8601ebe912ba1ba9d07c660e15520c76bd3d7))
+* show the studio preview without flashing when returning ([fceb0fc](https://github.com/marhjoh/omnivix/commit/fceb0fc28bad30cccba3c64949998916252f2aeb))
+
 ## [1.0.0](https://github.com/marhjoh/omnivix/compare/v0.1.0...v1.0.0) (2026-10-11)
 
 
