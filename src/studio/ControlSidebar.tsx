@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
+import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
@@ -205,25 +206,39 @@ function SizePicker({
   return (
     <div className="space-y-2">
       <span className="block text-xs font-medium text-muted">{label}</span>
-      <div className="grid grid-cols-2 gap-2">
-        {Object.entries(BANNER_SIZES).map(([key, size]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange(key)}
-            className={`flex flex-col items-center gap-1 rounded-lg border px-3 py-3 text-xs transition-all ${
-              value === key
-                ? "border-accent bg-accent/10 text-text"
-                : "border-border bg-surface-2 text-muted hover:border-accent/40"
-            }`}
-          >
-            <span className="text-lg">{size.icon === "linkedin" ? "in" : "𝕏"}</span>
-            <span className="font-medium">{size.label}</span>
-            <span className="text-[10px] opacity-60">
-              {size.width}×{size.height}
-            </span>
-          </button>
-        ))}
+      <div className="grid grid-cols-3 gap-2">
+        {BANNER_SIZE_KEYS.map((key) => {
+          const format = BANNER_SIZES[key];
+          const platforms = format.platforms.map((p) => p.name).join(", ");
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onChange(key)}
+              aria-pressed={value === key}
+              aria-label={`${format.label}: ${platforms}`}
+              className={`flex flex-col items-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs transition-all ${
+                value === key
+                  ? "border-accent bg-accent/10 text-text"
+                  : "border-border bg-surface-2 text-muted hover:border-accent/40"
+              }`}
+            >
+              <span className="flex h-6 items-center">
+                <span
+                  aria-hidden
+                  className="block rounded-[2px] border border-current opacity-70"
+                  style={{ width: 40, aspectRatio: `${format.width} / ${format.height}` }}
+                />
+              </span>
+              <span className="font-medium">{format.label}</span>
+              <span className="flex flex-wrap justify-center gap-1 opacity-70">
+                {format.platforms.map((platform) => (
+                  <PlatformIcon key={platform.name} icon={platform.icon} />
+                ))}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

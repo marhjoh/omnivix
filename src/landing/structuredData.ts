@@ -35,7 +35,7 @@ export function landingJsonLd() {
         featureList: [
           ...getTemplates().map(({ meta }) => `${meta.title}: ${meta.description}`),
           ...Object.values(BANNER_SIZES).map(
-            (s) => `${s.label} banner (${s.width} × ${s.height} px)`,
+            (s) => `${s.label} banner for ${s.platforms.map((p) => p.name).join(", ")}`,
           ),
         ],
         creator: { "@type": "Person", name: "marhjoh", url: SITE_LINKS.maintainerProfile },

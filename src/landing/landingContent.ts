@@ -7,10 +7,13 @@ import { SITE_LINKS } from "@/src/lib/site-links";
 // Single source for the landing page's "How it works" and FAQ, the FAQPage JSON-LD and /llms.txt.
 // Keep each answer self-contained: AI answers and search snippets quote single passages.
 
-const { linkedinCover, xHeader } = BANNER_SIZES;
-
-function px(size: { width: number; height: number }) {
-  return `${size.width} × ${size.height} px`;
+function bannerFormatsSummary() {
+  return Object.values(BANNER_SIZES)
+    .map(
+      (f) =>
+        `${f.label} (${f.width} × ${f.height} px) for ${f.platforms.map((p) => p.name).join(", ")}`,
+    )
+    .join("; ");
 }
 
 export const HOW_IT_WORKS = [
@@ -24,7 +27,7 @@ export const HOW_IT_WORKS = [
   },
   {
     title: "Customise and download",
-    body: "Choose a background and layout, then download a sharp PNG sized for your LinkedIn cover or X header.",
+    body: "Choose a background and layout, then download a sharp PNG sized for LinkedIn, X, Bluesky, Twitch and more.",
   },
 ] as const;
 
@@ -32,7 +35,7 @@ export const FAQ = [
   {
     question: "What is Omnivix?",
     answer:
-      "Omnivix is a free web app that creates LinkedIn cover images and X (Twitter) header images from your GitHub profile, repositories and contributions, or from a quote you choose.",
+      "Omnivix is a free web app that creates profile banners for LinkedIn, X (Twitter), Bluesky, Twitch and more from your GitHub profile, repositories and contributions, or from a quote you choose.",
   },
   {
     question: "Is Omnivix free?",
@@ -49,7 +52,7 @@ export const FAQ = [
   },
   {
     question: "Which banner sizes does Omnivix support?",
-    answer: `LinkedIn cover image (${px(linkedinCover)}) and X header (${px(xHeader)}). Banners download as PNG at ${EXPORT_PIXEL_RATIO}× resolution, for example ${linkedinCover.width * EXPORT_PIXEL_RATIO} × ${linkedinCover.height * EXPORT_PIXEL_RATIO} px for LinkedIn, so they stay sharp on high-resolution screens.`,
+    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG at ${EXPORT_PIXEL_RATIO}× resolution, so they stay sharp on high-resolution screens.`,
   },
   {
     question: "Can I use my own background image?",

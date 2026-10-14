@@ -134,7 +134,8 @@ export async function renderSiteOgImage(size: { width: number; height: number } 
               {SITE_TAGLINE}
             </div>
             <div style={{ fontSize: 26, color: COLORS.muted, lineHeight: 1.35 }}>
-              LinkedIn and X banners from your GitHub profile, repos and contributions.
+              LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos and
+              contributions.
             </div>
           </div>
         </div>
@@ -159,7 +160,7 @@ export async function renderTemplateOgImage(
         <div style={{ display: "flex", flexDirection: "column", marginTop: 36, gap: 8 }}>
           <div style={{ fontSize: 64, fontWeight: 700, letterSpacing: -1.5 }}>{title}</div>
           <div style={{ fontSize: 30, color: COLORS.muted }}>
-            {`${description} For LinkedIn and X.`}
+            {`${description} For LinkedIn, X, Bluesky, Twitch and more.`}
           </div>
         </div>
         <img

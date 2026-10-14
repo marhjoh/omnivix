@@ -4,7 +4,7 @@ import { createExportToken, consumeExportToken } from "./session-store";
 const samplePayload = {
   templateId: "quote-banner" as const,
   format: "png" as const,
-  size: "xHeader" as const,
+  size: "header" as const,
   scale: 2 as const,
   pixelRatio: 2 as const,
   state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },

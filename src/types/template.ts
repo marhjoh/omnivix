@@ -1,9 +1,10 @@
 import { z } from "zod";
+import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
 
 export type TemplateId = "github-banner" | "repos-banner" | "contribution-banner" | "quote-banner";
 
-export type BannerSize = "xHeader" | "linkedinCover";
+export type { BannerSize };
 
 export type EditorFieldType =
   | "text"

@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { TemplateDefinition } from "@/src/types/template";
+import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { BannerSize, TemplateDefinition } from "@/src/types/template";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -28,7 +29,7 @@ export function contributionCellShapeFromState(raw: unknown): ContributionCellSh
 }
 
 const baseState = z.object({
-  size: z.enum(["xHeader", "linkedinCover"]),
+  size: z.enum(BANNER_SIZE_KEYS),
   themeId: z.string(),
   backgroundImage: z.string().optional(),
 });
@@ -45,7 +46,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   gridPosition: "left" | "center" | "right";
   gridSize: string;
   cellShape: ContributionCellShape;
-  size: "xHeader" | "linkedinCover";
+  size: BannerSize;
   themeId: string;
   backgroundImage?: string;
 }> = {
@@ -53,7 +54,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     id: "github-banner",
     title: "GitHub Banner",
     description: "Username, avatar, and contributions.",
-    defaultSize: "linkedinCover",
+    defaultSize: "wide",
     tags: ["GitHub", "Profile", "Contributions"],
     needsUsername: true,
   },
@@ -121,7 +122,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   initialState: {
     username: "",
     themeId: "default",
-    size: "linkedinCover",
+    size: "wide",
     year: String(new Date().getFullYear()),
     showMonthLabels: true,
     showDayLabels: true,
@@ -147,7 +148,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
   showLanguage: boolean;
   showStars: boolean;
   showForks: boolean;
-  size: "xHeader" | "linkedinCover";
+  size: BannerSize;
   themeId: string;
   backgroundImage?: string;
 }> = {
@@ -155,7 +156,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     id: "repos-banner",
     title: "Repos Banner",
     description: "Languages, stars, and forks.",
-    defaultSize: "linkedinCover",
+    defaultSize: "wide",
     tags: ["GitHub", "Repos"],
     needsUsername: true,
   },
@@ -216,7 +217,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     showStars: true,
     showForks: true,
     themeId: "default",
-    size: "linkedinCover",
+    size: "wide",
   },
 };
 
@@ -226,7 +227,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
   gridPosition: "left" | "center" | "right";
   gridSize: string;
   cellShape: ContributionCellShape;
-  size: "xHeader" | "linkedinCover";
+  size: BannerSize;
   themeId: string;
   backgroundImage?: string;
 }> = {
@@ -234,7 +235,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     id: "contribution-banner",
     title: "Contribution Banner",
     description: "Contribution heatmap.",
-    defaultSize: "linkedinCover",
+    defaultSize: "wide",
     tags: ["Contributions", "Heatmap"],
     needsUsername: true,
   },
@@ -286,7 +287,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     gridSize: "l",
     cellShape: "rounded",
     themeId: "default",
-    size: "linkedinCover",
+    size: "wide",
     year: String(new Date().getFullYear()),
   },
 };
@@ -296,7 +297,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
   author: string;
   alignment: "left" | "center" | "right";
   quoteSize: "xs" | "s" | "m" | "l" | "xl";
-  size: "xHeader" | "linkedinCover";
+  size: BannerSize;
   themeId: string;
   backgroundImage?: string;
 }> = {
@@ -304,7 +305,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     id: "quote-banner",
     title: "Quote Banner",
     description: "Typographic quotes.",
-    defaultSize: "linkedinCover",
+    defaultSize: "wide",
     tags: ["Quote", "Typography"],
     needsUsername: false,
   },
@@ -348,6 +349,6 @@ export const quoteBannerDefinition: TemplateDefinition<{
     alignment: "center",
     quoteSize: "m",
     themeId: "default",
-    size: "linkedinCover",
+    size: "wide",
   },
 };

@@ -1,3 +1,5 @@
+import { isOneOf } from "@/src/lib/isOneOf";
+
 /**
  * Client-side background upload policy: static raster images only (no GIF / animation).
  * HEIC/HEIF is converted in-browser (see `heic2any`) before `createImageBitmap`.
@@ -59,7 +61,7 @@ export function validateBackgroundUploadMeta(file: File): string | null {
     return SUPPORTED_BACKGROUND_FORMATS_MESSAGE;
   }
 
-  if (type && !(ALLOWED_IMAGE_MIME_TYPES as readonly string[]).includes(type)) {
+  if (type && !isOneOf(ALLOWED_IMAGE_MIME_TYPES, type)) {
     // HEIC sometimes ships as octet-stream or an empty type; trust the extension in those cases.
     const heicByName = /\.(heic|heif)$/i.test(name);
     if (!(heicByName && type === "application/octet-stream")) {
