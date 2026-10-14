@@ -2,7 +2,7 @@ import Image from "next/image";
 
 /*
  * Both variants are rendered; CSS on <html data-theme> shows one (see globals.css). That way the
- * logo switches in the same frame as the colours, and is right before React hydrates.
+ * logo switches in the same frame as the colors, and is right before React hydrates.
  * The "light" artwork is the one drawn for dark backgrounds.
  */
 

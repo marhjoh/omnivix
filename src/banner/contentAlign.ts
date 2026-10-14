@@ -16,7 +16,7 @@ export const FLEX_ALIGN: Record<ContentAlign, "flex-start" | "center" | "flex-en
   right: "flex-end",
 };
 
-/** Centred unless the setting is a valid alignment. */
+/** Centered unless the setting is a valid alignment. */
 export function normalizeContentAlign(raw: unknown): ContentAlign {
   return isOneOf(CONTENT_ALIGNS, raw) ? raw : "center";
 }

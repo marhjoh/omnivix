@@ -6,7 +6,7 @@ import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass } from "@/src/ui/highlightClasses";
 
-/** Labelled footer links: brighter than the header's muted links, 9px side padding like it. */
+/** Labeled footer links: brighter than the header's muted links, 9px side padding like it. */
 const footerLinkClass = `${highlightItemBaseClass} w-auto px-[9px] text-text/90 hover:text-text`;
 
 function GithubIcon({ className }: { className?: string }) {
