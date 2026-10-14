@@ -6,7 +6,7 @@ import { isOneOf } from "@/src/lib/isOneOf";
  * `accept` on file inputs is a hint only — always validate here.
  */
 
-export const ALLOWED_IMAGE_MIME_TYPES = [
+const ALLOWED_IMAGE_MIME_TYPES = [
   "image/png",
   "image/jpeg",
   "image/webp",
@@ -18,9 +18,9 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
 export const MAX_BACKGROUND_UPLOAD_BYTES = 12 * 1024 * 1024;
 
 /** Longest edge after normalization (px). */
-export const MAX_BACKGROUND_OUTPUT_DIMENSION = 2048;
+const MAX_BACKGROUND_OUTPUT_DIMENSION = 2048;
 
-export const BACKGROUND_JPEG_QUALITY = 0.88;
+const BACKGROUND_JPEG_QUALITY = 0.88;
 
 /** User-facing line when a file fails validation or decode (no “not supported” callouts). */
 export const SUPPORTED_BACKGROUND_FORMATS_MESSAGE =

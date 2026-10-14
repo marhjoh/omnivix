@@ -8,7 +8,7 @@ function pad2(n: number): string {
 }
 
 /** `YYYY-MM-DD` from a UTC-midnight-aligned timestamp (ms). */
-export function ymdFromUtcMs(ms: number): string {
+function ymdFromUtcMs(ms: number): string {
   const d = new Date(ms);
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
 }
