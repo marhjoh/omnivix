@@ -30,12 +30,15 @@ function ProfileBlock({
   chrome,
   showAvatar,
   showDisplayName,
+  right,
 }: {
   user: GithubUserNormalized | undefined;
   username: string;
   chrome: ReturnType<typeof bannerUiChrome>;
   showAvatar: boolean;
   showDisplayName: boolean;
+  /** Profile Position: on the right edge of the content instead of the left. */
+  right: boolean;
 }) {
   const login = user?.login ?? username;
   const displayName = user?.name?.trim();
@@ -44,10 +47,9 @@ function ProfileBlock({
     <div
       style={{
         display: "flex",
-        width: "max-content",
-        maxWidth: "100%",
+        width: "100%",
         minWidth: 0,
-        justifyContent: "flex-start",
+        justifyContent: right ? "flex-end" : "flex-start",
       }}
     >
       <div
@@ -70,7 +72,7 @@ function ProfileBlock({
             }}
           />
         ) : null}
-        <div style={{ minWidth: 0, textAlign: "left" }}>
+        <div style={{ minWidth: 0, textAlign: right ? "right" : "left" }}>
           {showDisplayName && displayName ? (
             <>
               <BannerTitle
@@ -132,6 +134,7 @@ export function ReposBannerRenderer({
 
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
+  const profileRight = state.profilePosition === "right";
   const alignment = normalizeContentAlign(state.alignment);
   const contentSize = normalizeContentSize(state.contentSize);
 
@@ -217,6 +220,7 @@ export function ReposBannerRenderer({
               chrome={chrome}
               showAvatar={showAvatar}
               showDisplayName={showDisplayName}
+              right={profileRight}
             />
             <div
               style={{
@@ -279,6 +283,7 @@ export function ReposBannerRenderer({
             chrome={chrome}
             showAvatar={showAvatar}
             showDisplayName={showDisplayName}
+            right={profileRight}
           />
           <div
             style={{

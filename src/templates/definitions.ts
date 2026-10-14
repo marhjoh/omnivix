@@ -55,6 +55,19 @@ const alignmentField: EditorFieldSchema = {
 
 const alignmentState = z.enum(CONTENT_ALIGNS).default("center");
 
+/** Which side of the content the avatar and name sit on (GitHub and repos banners). */
+const profilePositionField: EditorFieldSchema = {
+  key: "profilePosition",
+  label: "Profile Position",
+  type: "select",
+  options: [
+    { label: "Left", value: "left" },
+    { label: "Right", value: "right" },
+  ],
+};
+
+const profilePositionState = z.enum(["left", "right"]).default("left");
+
 /** See `src/banner/contentSize.ts`. */
 const contentSizeField: EditorFieldSchema = {
   key: "contentSize",
@@ -95,15 +108,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     { key: "year", label: "Year", type: "select" },
     alignmentField,
-    {
-      key: "profilePosition",
-      label: "Profile Position",
-      type: "select",
-      options: [
-        { label: "Left", value: "left" },
-        { label: "Right", value: "right" },
-      ],
-    },
+    profilePositionField,
     contentSizeField,
     {
       key: "cellShape",
@@ -125,7 +130,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     showTotal: z.boolean().default(true),
     showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
-    profilePosition: z.enum(["left", "right"]).default("left"),
+    profilePosition: profilePositionState,
     alignment: alignmentState,
     contentSize: contentSizeState,
     cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
@@ -151,6 +156,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
   username: string;
   showAvatar: boolean;
   showDisplayName: boolean;
+  profilePosition: "left" | "right";
   alignment: ContentAlign;
   mode: "pinned" | "selected";
   selectedRepos: string;
@@ -176,6 +182,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     { key: "size", label: "Type", type: "sizeSelect" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     alignmentField,
+    profilePositionField,
     contentSizeField,
     { key: "showAvatar", label: "Profile photo", type: "toggle" },
     { key: "showDisplayName", label: "Full Name", type: "toggle" },
@@ -199,6 +206,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     username: z.string().min(1),
     showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
+    profilePosition: profilePositionState,
     alignment: alignmentState,
     mode: z.enum(["pinned", "selected"]),
     selectedRepos: z.string().default(""),
@@ -213,6 +221,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     username: "",
     showAvatar: true,
     showDisplayName: false,
+    profilePosition: "left",
     alignment: "center",
     mode: "pinned",
     selectedRepos: "",
