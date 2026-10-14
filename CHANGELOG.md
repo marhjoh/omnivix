@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/marhjoh/omnivix/compare/v1.2.0...v1.3.0) (2026-10-14)
+
+
+### Features
+
+* add profile position to the repos banner ([1ee54fd](https://github.com/marhjoh/omnivix/commit/1ee54fdbb88082cdf70fc442f7c40c89ae42a91d))
+* add profile position to the repos banner ([9dfecfe](https://github.com/marhjoh/omnivix/commit/9dfecfe9038fdb1d45c9363644685ba15450bb7e))
+
 ## [1.2.0](https://github.com/marhjoh/omnivix/compare/v1.1.0...v1.2.0) (2026-10-14)
 
 
