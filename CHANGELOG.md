@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/marhjoh/omnivix/compare/v1.0.1...v1.1.0) (2026-10-14)
+
+
+### Features
+
+* group banner sizes by aspect ratio ([458aaaa](https://github.com/marhjoh/omnivix/commit/458aaaaa9bdd8346c0956faaa921d4eca9f745d6))
+* group banner sizes by aspect ratio ([2894b17](https://github.com/marhjoh/omnivix/commit/2894b174a220a8cb5cca84d91b4c87ef56607c71))
+
 ## [1.0.1](https://github.com/marhjoh/omnivix/compare/v1.0.0...v1.0.1) (2026-10-14)
 
 
