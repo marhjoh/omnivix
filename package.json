@@ -26,7 +26,7 @@
     "@sparticuz/chromium": "^153.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "framer-motion": "^12.38.0",
+    "framer-motion": "^14.1.0",
     "heic2any": "^0.0.4",
     "lucide-react": "^1.55.0",
     "next": "16.4.0",
