@@ -1,13 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronUp, ImagePlus, Link2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import {
   MAX_BACKGROUND_UPLOAD_BYTES,
   normalizeBackgroundImageFile,
   truncateMiddle,
 } from "@/src/lib/backgroundImageUpload";
+import {
+  DropdownGroupLabel,
+  DropdownRoot,
+  DropdownList,
+  DropdownOption,
+  DropdownTrigger,
+  useDropdown,
+} from "@/src/ui/Dropdown";
 
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
 const BACKGROUND_FILE_ACCEPT =
@@ -58,13 +66,9 @@ export function BackgroundImagePicker({
   value: string | undefined;
   onChange: (next: string | undefined) => void;
 }) {
-  const listId = useId();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const listboxRef = useRef<HTMLDivElement>(null);
+  const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   /** Filename for the current data URL when this picker performed the upload (parent state is only the URL). */
@@ -74,9 +78,6 @@ export function BackgroundImagePicker({
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** Tracks whether the dropdown was closed via Tab so we don't steal focus from the natural tab target. */
-  const closedByTabRef = useRef(false);
-  const prevOpenRef = useRef(false);
 
   const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
 
@@ -99,47 +100,10 @@ export function BackgroundImagePicker({
     };
   }, []);
 
-  /** Focus the selected (or first) option when the dropdown opens. */
-  useEffect(() => {
-    if (!open || !listboxRef.current) return;
-    const options = Array.from(listboxRef.current.querySelectorAll<HTMLElement>('[role="option"]'));
-    const selected =
-      options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
-    requestAnimationFrame(() => selected?.focus());
-  }, [open]);
-
-  /** Return focus to the trigger when the dropdown closes, unless it closed via Tab. */
-  useEffect(() => {
-    const wasOpen = prevOpenRef.current;
-    prevOpenRef.current = open;
-    if (wasOpen && !open && !closedByTabRef.current) {
-      triggerRef.current?.focus();
-    }
-    closedByTabRef.current = false;
-  }, [open]);
-
   const uploadDisplayName =
     typeof value === "string" && isDataUrl(value) && uploadSession?.dataUrl === value
       ? uploadSession.fileName
       : null;
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
 
   const pushUrlToParent = useCallback(
     (raw: string) => {
@@ -167,55 +131,13 @@ export function BackgroundImagePicker({
 
   const grouped = groupPresets(BACKGROUND_PRESETS);
 
-  /** Keyboard handler for the listbox — implements full arrow/Home/End/Escape/Tab interaction. */
-  const handleListKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const listbox = listboxRef.current;
-    if (!listbox) return;
-    const options = Array.from(listbox.querySelectorAll<HTMLElement>('[role="option"]'));
-    const currentIdx = options.indexOf(document.activeElement as HTMLElement);
-
-    switch (e.key) {
-      case "ArrowDown": {
-        e.preventDefault();
-        const next = currentIdx < options.length - 1 ? currentIdx + 1 : 0;
-        options[next]?.focus();
-        break;
-      }
-      case "ArrowUp": {
-        e.preventDefault();
-        const prev = currentIdx > 0 ? currentIdx - 1 : options.length - 1;
-        options[prev]?.focus();
-        break;
-      }
-      case "Home": {
-        e.preventDefault();
-        options[0]?.focus();
-        break;
-      }
-      case "End": {
-        e.preventDefault();
-        options[options.length - 1]?.focus();
-        break;
-      }
-      case "Escape": {
-        setOpen(false);
-        break;
-      }
-      case "Tab": {
-        closedByTabRef.current = true;
-        setOpen(false);
-        break;
-      }
-    }
-  };
-
   const selectNone = () => {
     setUploadError(null);
     setUploadSession(null);
     onChange(undefined);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
-    setOpen(false);
+    dropdown.close();
   };
 
   const selectPreset = (src: string) => {
@@ -224,13 +146,13 @@ export function BackgroundImagePicker({
     onChange(src);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
-    setOpen(false);
+    dropdown.close();
   };
 
   const selectEnterUrl = () => {
     setUploadError(null);
     setUrlEditorOpen(true);
-    setOpen(false);
+    dropdown.close();
     if (typeof value === "string" && isHttpImageUrl(value)) {
       setUrlDraft(undefined);
     } else {
@@ -243,124 +165,57 @@ export function BackgroundImagePicker({
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
-    setOpen(false);
+    dropdown.close();
   };
 
   return (
-    <div ref={wrapRef} className="space-y-1.5">
+    <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-medium text-muted">
         {label}
       </label>
 
-      <div className="relative space-y-1.5">
-        <button
-          type="button"
-          id={id}
-          ref={triggerRef}
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-controls={open ? listId : undefined}
-          onClick={() => setOpen((o) => !o)}
-          className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:border-[var(--accent)] focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:outline-hidden"
-        >
-          <span className="min-w-0 flex-1 truncate" title={triggerTitle(value, uploadDisplayName)}>
-            {triggerLabel(value, uploadDisplayName)}
-          </span>
-          {open ? (
-            <ChevronUp className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />
-          ) : (
-            <ChevronDown className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />
-          )}
-        </button>
+      <DropdownRoot dropdown={dropdown} className="relative space-y-1.5">
+        <DropdownTrigger dropdown={dropdown} title={triggerTitle(value, uploadDisplayName)}>
+          {triggerLabel(value, uploadDisplayName)}
+        </DropdownTrigger>
 
-        {open ? (
-          <div
-            id={listId}
-            ref={listboxRef}
-            role="listbox"
-            aria-label="Background options"
-            onKeyDown={handleListKeyDown}
-            className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
+        <DropdownList dropdown={dropdown} label="Background options">
+          <DropdownOption selected={!value} onSelect={selectNone}>
+            None
+          </DropdownOption>
+
+          {Array.from(grouped.entries()).map(([groupName, presets]) => (
+            <div key={groupName}>
+              <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
+              {presets.map((p) => (
+                <DropdownOption
+                  key={p.id}
+                  selected={value === p.src}
+                  onSelect={() => selectPreset(p.src)}
+                >
+                  {p.label}
+                </DropdownOption>
+              ))}
+            </div>
+          ))}
+
+          <div className="my-1 border-t border-border" />
+
+          <DropdownOption
+            selected={Boolean(value && isHttpImageUrl(value))}
+            icon={<Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
+            onSelect={selectEnterUrl}
           >
-            <button
-              type="button"
-              role="option"
-              tabIndex={-1}
-              aria-selected={!value}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
-              onClick={selectNone}
-            >
-              {!value ? (
-                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-              ) : (
-                <span className="w-3.5 shrink-0" />
-              )}
-              None
-            </button>
-
-            {Array.from(grouped.entries()).map(([groupName, presets]) => (
-              <div key={groupName}>
-                <div className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-muted uppercase">
-                  {groupName}
-                </div>
-                {presets.map((p) => {
-                  const selected = value === p.src;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      role="option"
-                      tabIndex={-1}
-                      aria-selected={selected}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
-                      onClick={() => selectPreset(p.src)}
-                    >
-                      {selected ? (
-                        <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-                      ) : (
-                        <span className="w-3.5 shrink-0" />
-                      )}
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-
-            <div className="my-1 border-t border-border" />
-
-            <button
-              type="button"
-              role="option"
-              tabIndex={-1}
-              aria-selected={Boolean(value && isHttpImageUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
-              onClick={selectEnterUrl}
-            >
-              {value && isHttpImageUrl(value) ? (
-                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-              ) : (
-                <Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
-              )}
-              Image from URL
-            </button>
-            <button
-              type="button"
-              role="option"
-              tabIndex={-1}
-              aria-selected={Boolean(value && isDataUrl(value))}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
-              onClick={selectUpload}
-            >
-              {value && isDataUrl(value) ? (
-                <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-              ) : (
-                <ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
-              )}
-              Upload from device
-            </button>
-          </div>
-        ) : null}
+            Image from URL
+          </DropdownOption>
+          <DropdownOption
+            selected={Boolean(value && isDataUrl(value))}
+            icon={<ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
+            onSelect={selectUpload}
+          >
+            Upload from device
+          </DropdownOption>
+        </DropdownList>
         {/*
           Keep this input mounted outside the dropdown: closing the menu unmounts the list, but the
           same node must stay in the document until the user finishes the OS file picker or change
@@ -387,7 +242,7 @@ export function BackgroundImagePicker({
             onChange(result.dataUrl);
           }}
         />
-      </div>
+      </DropdownRoot>
 
       {uploadError ? (
         <p className="text-xs leading-snug text-danger" role="alert">
