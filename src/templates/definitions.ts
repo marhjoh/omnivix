@@ -27,7 +27,7 @@ const CONTRIBUTION_CELL_SHAPE_LABELS: Record<ContributionCellShape, string> = {
   circle: "Circle",
 };
 
-export const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{
+const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{
   label: string;
   value: ContributionCellShape;
 }> = CONTRIBUTION_CELL_SHAPES.map((value) => ({

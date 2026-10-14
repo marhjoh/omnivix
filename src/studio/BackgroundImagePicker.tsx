@@ -10,7 +10,7 @@ import {
 } from "@/src/lib/backgroundImageUpload";
 
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
-export const BACKGROUND_FILE_ACCEPT =
+const BACKGROUND_FILE_ACCEPT =
   "image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif";
 
 function isHttpImageUrl(s: string) {

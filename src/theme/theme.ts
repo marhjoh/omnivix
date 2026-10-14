@@ -37,7 +37,7 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
 /** App chrome only (banner template `themeId` is separate). Cookie name avoids `:` for broad client compatibility. */
 export const THEME_COOKIE_NAME = "omnivix-theme";
 
-export const DEFAULT_THEME: Theme = "dark";
+const DEFAULT_THEME: Theme = "dark";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 

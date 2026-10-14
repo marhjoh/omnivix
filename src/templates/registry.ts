@@ -1,4 +1,3 @@
-import { TemplateId } from "@/src/types/template";
 import {
   contributionBannerDefinition,
   githubBannerDefinition,
@@ -12,10 +11,6 @@ export const templateRegistry = {
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
 } as const;
-
-export function getTemplate(templateId: TemplateId) {
-  return templateRegistry[templateId];
-}
 
 export function getTemplates() {
   return Object.values(templateRegistry);
