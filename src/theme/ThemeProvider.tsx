@@ -33,7 +33,7 @@ export function useTheme() {
 
 /*
  * <html data-theme> is the source of truth: the inline script in the root layout sets it before
- * first paint, and CSS (colours, themed logos) follows it directly. React state mirrors it.
+ * first paint, and CSS (colors, themed logos) follows it directly. React state mirrors it.
  */
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -46,9 +46,9 @@ function getDomTheme(): Theme {
 }
 
 /**
- * Switches instantly: elements with colour transitions (buttons, pills, sidebar controls) would
- * otherwise animate from the old theme's colours to the new ones, flashing in-between and hover
- * colours. Transitions are disabled for the switch and restored once React has re-rendered.
+ * Switches instantly: elements with color transitions (buttons, pills, sidebar controls) would
+ * otherwise animate from the old theme's colors to the new ones, flashing in-between and hover
+ * colors. Transitions are disabled for the switch and restored once React has re-rendered.
  */
 function applyTheme(theme: Theme) {
   const noTransitions = document.createElement("style");

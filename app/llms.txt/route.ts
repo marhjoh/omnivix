@@ -30,7 +30,7 @@ export function GET() {
     ...FAQ.flatMap(({ question, answer }) => [`### ${question}`, "", answer, ""]),
     "## Links",
     "",
-    `- [Source code](${SITE_LINKS.repo}) (${SITE_LICENSE.name} licence)`,
+    `- [Source code](${SITE_LINKS.repo}) (${SITE_LICENSE.name} license)`,
     `- [Maintainer](${SITE_LINKS.maintainerProfile})`,
     "",
   ].join("\n");

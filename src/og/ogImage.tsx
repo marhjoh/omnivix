@@ -50,10 +50,10 @@ async function toJpeg(png: ImageResponse) {
   const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
     .jpeg({
       quality: 85,
-      trellisQuantisation: true,
+      trellisQuantisation: true, // only british spelling is accepted in the options
       overshootDeringing: true,
-      optimiseCoding: true,
-      quantisationTable: 3,
+      optimizeCoding: true,
+      quantizationTable: 3,
     })
     .toBuffer();
   return new Response(new Uint8Array(jpeg), {

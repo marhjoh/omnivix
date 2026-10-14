@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  Create LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos, contributions or a favourite quote. Free, no sign-up.
+  Create LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos, contributions or a favorite quote. Free, no sign-up.
   <br />
   <strong><a href="https://omnivix.vercel.app">omnivix.vercel.app</a></strong>
 </p>
@@ -24,7 +24,7 @@
   - **Quote Banner:** a quote and author; needs no GitHub username
 - **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
 - **Backgrounds:** 10 built-in city photos, or upload your own (PNG, JPEG, WebP or HEIC, up to 12 MB)
-- **Customisation:** colour themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
+- **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
 - **Export:** a PNG at 3× resolution (for example 4752 × 1188 for LinkedIn)
 - **Studio:** light and dark mode, and works on phones as well as desktop
 - **Privacy:** no sign-in, and only public GitHub data
@@ -106,7 +106,7 @@ app/                 Routes (App Router): pages, API handlers, metadata files
 src/templates/       Template definitions (fields, state schema, defaults), registry and renderers
 src/studio/          Studio UI: shell, sidebar, preview
 src/export/          Export: token signing, render URL, Playwright capture
-src/github/          GitHub GraphQL client, normalisation and in-memory cache
+src/github/          GitHub GraphQL client, normalization and in-memory cache
 src/landing/         Landing page sections and the shared FAQ copy
 src/og/              Link-preview image rendering
 src/theme/           Light/dark theme
@@ -139,7 +139,7 @@ The settings travel in the URL, so very large uploaded backgrounds can exceed th
 
 ### GitHub data
 
-`src/github/client.ts` queries GitHub's GraphQL API with `GITHUB_TOKEN` and normalises the results into stable types. Results are cached briefly in server memory to stay within GitHub's rate limits (durations in `client.ts`). Nothing is stored in a database.
+`src/github/client.ts` queries GitHub's GraphQL API with `GITHUB_TOKEN` and normalizes the results into stable types. Results are cached briefly in server memory to stay within GitHub's rate limits (durations in `client.ts`). Nothing is stored in a database.
 
 ### Theme
 
@@ -160,7 +160,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, cod
 
 ## License
 
-[MIT](LICENSE). This covers the code, not these third-party files, which keep their own licences:
+[MIT](LICENSE). This covers the code, not these third-party files, which keep their own licenses:
 
 - Background photos in `public/backgrounds/`: [Unsplash License](https://unsplash.com/license)
 - Inter font in `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org)

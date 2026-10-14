@@ -90,7 +90,7 @@ export function TopBar({
         )}
         {needsUsername && !username && (
           <HoverHighlightItem id="profile" className="md:ml-2">
-            {/* Accent colour: choosing a profile is the next step. */}
+            {/* Accent color: choosing a profile is the next step. */}
             <button
               type="button"
               onClick={onChangeUsername}

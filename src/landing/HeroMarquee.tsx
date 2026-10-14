@@ -12,7 +12,7 @@ const TEMPLATES: TemplateId[] = [
 const CARDS_PER_COLUMN = 6;
 const COLUMNS = 4;
 
-/** Each column starts at a different template, so neighbouring cards never repeat. */
+/** Each column starts at a different template, so neighboring cards never repeat. */
 const columns = Array.from({ length: COLUMNS }, (_, col) =>
   Array.from({ length: CARDS_PER_COLUMN }, (_, row) => TEMPLATES[(col + row) % TEMPLATES.length]),
 );

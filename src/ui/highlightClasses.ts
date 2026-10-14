@@ -7,5 +7,5 @@
 export const highlightItemBaseClass =
   "relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40";
 
-/** Default (muted) colouring; use highlightItemBaseClass with your own text colour for accents. */
+/** Default (muted) coloring; use highlightItemBaseClass with your own text color for accents. */
 export const highlightItemClass = `${highlightItemBaseClass} text-muted hover:text-text`;

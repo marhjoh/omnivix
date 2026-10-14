@@ -26,7 +26,7 @@ export const HOW_IT_WORKS = [
     body: "Omnivix loads your public GitHub data. No sign-in needed, and the quote template needs no username at all.",
   },
   {
-    title: "Customise and download",
+    title: "Customize and download",
     body: "Choose a background and layout, then download a sharp PNG sized for LinkedIn, X, Bluesky, Twitch and more.",
   },
 ] as const;
@@ -43,7 +43,7 @@ export const FAQ = [
   },
   {
     question: "Is Omnivix open source?",
-    answer: `Yes. Omnivix is open source under the ${SITE_LICENSE.name} licence, and the code is on GitHub at ${SITE_LINKS.repo}.`,
+    answer: `Yes. Omnivix is open source under the ${SITE_LICENSE.name} license, and the code is on GitHub at ${SITE_LINKS.repo}.`,
   },
   {
     question: "Do I need to sign in with GitHub?",

@@ -23,7 +23,7 @@ interface ContributionGridProps {
   showMonthLabels?: boolean;
   /**
    * Semantic Mon/Wed/Fri labels in the left gutter.
-   * Calendar-correct: the row labelled "Mon" contains actual Mondays.
+   * Calendar-correct: the row labeled "Mon" contains actual Mondays.
    */
   showDayLabels?: boolean;
   showTotal?: boolean;

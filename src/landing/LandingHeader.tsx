@@ -42,7 +42,7 @@ const NAV_LINKS = [
  * Full-width bar at the top of the page; once scrolled it eases into a floating frosted-glass pill
  * (CSS transitions on `data-scrolled`, see landing.module.css). The header keeps a fixed height,
  * so the page never shifts while it animates. A highlight slides between the hovered/focused options.
- * Labelled links use 9px side padding (the space around an 18px icon in a 36px square), so the
+ * Labeled links use 9px side padding (the space around an 18px icon in a 36px square), so the
  * visible gaps between options are even at every width.
  */
 export function LandingHeader() {
