@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/marhjoh/omnivix/compare/v1.1.0...v1.2.0) (2026-10-14)
+
+
+### Features
+
+* fit template content to the banner with shared size and alignme… ([8620eb8](https://github.com/marhjoh/omnivix/commit/8620eb82d6eeac688d3c6539369552606b2a6874))
+* fit template content to the banner with shared size and alignment controls ([ffd6038](https://github.com/marhjoh/omnivix/commit/ffd6038b72375e1680e8be3822b09d05d269a4a3))
+
 ## [1.1.0](https://github.com/marhjoh/omnivix/compare/v1.0.1...v1.1.0) (2026-10-14)
 
 
