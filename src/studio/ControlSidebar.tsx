@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
+import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
@@ -336,18 +337,13 @@ export function ControlSidebar({
             : years.map((y) => ({ value: y, label: y }));
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <select
+              <Select
                 id={field.key}
-                className="field-input"
+                label={field.label}
                 value={String(state[field.key] ?? currentYear)}
-                onChange={(e) => onChange(field.key, e.target.value)}
-              >
-                {yearOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                options={yearOptions}
+                onChange={(value) => onChange(field.key, value)}
+              />
             </FieldWrapper>
           );
         }
@@ -412,20 +408,15 @@ export function ControlSidebar({
           const hintId = disabledReason ? `${field.key}-hint` : undefined;
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <select
+              <Select
                 id={field.key}
-                className="field-input disabled:cursor-not-allowed disabled:opacity-50"
+                label={field.label}
                 value={String(state[field.key] ?? "")}
-                onChange={(e) => onChange(field.key, e.target.value)}
+                options={field.options ?? []}
+                onChange={(value) => onChange(field.key, value)}
                 disabled={Boolean(disabledReason)}
-                aria-describedby={hintId}
-              >
-                {field.options?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                describedBy={hintId}
+              />
               {disabledReason && (
                 <p id={hintId} className="mt-1 text-xs text-muted">
                   {disabledReason}
