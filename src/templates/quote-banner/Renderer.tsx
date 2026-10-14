@@ -1,9 +1,13 @@
 import { Frame } from "@/src/banner/Frame";
+import { normalizeContentAlign } from "@/src/banner/contentAlign";
+import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { BannerMuted } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
+import { quoteBannerDefinition } from "@/src/templates/definitions";
 import { RenderData } from "@/src/templates/renderers/types";
 
-const QUOTE_SIZES: Record<string, { quote: number; author: number }> = {
+/** Fixed type sizes: the quote keeps its own scale rather than fitting to the banner. */
+const QUOTE_SIZES: Record<ContentSize, { quote: number; author: number }> = {
   xs: { quote: 28, author: 14 },
   s: { quote: 36, author: 16 },
   m: { quote: 48, author: 20 },
@@ -22,11 +26,13 @@ export function QuoteBannerRenderer({
   const chrome = bannerUiChrome(uiTheme);
   const backgroundImage =
     typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
-  const alignment = (state.alignment as "left" | "center" | "right") ?? "left";
+  const alignment = normalizeContentAlign(state.alignment);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
-  const quoteSizeKey = (state.quoteSize as string) ?? "m";
-  const quoteScale = QUOTE_SIZES[quoteSizeKey] ?? QUOTE_SIZES.m;
+  const quoteScale =
+    QUOTE_SIZES[
+      normalizeContentSize(state.contentSize, quoteBannerDefinition.initialState.contentSize)
+    ];
 
   const longText = quote.length > 120;
   const quoteFontSize = longText

@@ -122,11 +122,15 @@ The studio preview and the exported PNG use the same component tree: `src/templa
 
 The preview renders the banner at its real export size (for example 1584 × 396) and scales it down with a CSS `transform` to fit the available space (`src/studio/PreviewArtboard.tsx`, `src/studio/preview/fitScale.ts`). Layout and text wrapping are therefore identical to the export at any window size.
 
+### Content sizing
+
+The GitHub, contribution and repos banners lay out their content at a fixed natural size and scale it to the banner (`src/banner/FitContent.tsx`). XL is the largest size that fits the banner minus a margin, and each step down to XS is 80% of the one above, so every size works in every format. The quote banner uses fixed type sizes instead.
+
 ### Export flow
 
 1. The studio posts the template, size and settings to `POST /api/export`.
 2. The server puts them in a stateless, HMAC-signed token that expires after 2 minutes. It's stateless because the API route and the render page can run on different serverless instances.
-3. Playwright opens `/render/[templateId]?token=…` at the banner's size with a pixel ratio of 3, waits for fonts and images, and screenshots `.banner-export-root`.
+3. Playwright opens `/render/[templateId]?token=…` at the banner's size with a pixel ratio of 3, waits for fonts, images and content sizing, and screenshots `.banner-export-root`.
 4. The PNG is returned as a download.
 
 Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.

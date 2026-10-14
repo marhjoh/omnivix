@@ -1,30 +1,15 @@
 import { Frame } from "@/src/banner/Frame";
-import { normalizeBannerSize } from "@/src/lib/sizes";
-import type { BannerSize } from "@/src/types/template";
+import { FitContent } from "@/src/banner/FitContent";
+import { normalizeContentSize } from "@/src/banner/contentSize";
+import { normalizeContentAlign, FLEX_ALIGN } from "@/src/banner/contentAlign";
 import { RepoCard } from "@/src/banner/RepoCard";
 import { BannerMuted, BannerTitle } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized } from "@/src/github/normalize";
 
-type ProfileSizing = { avatar: number; name: number; handle: number };
-
-/** Profile avatar / name: tied to banner Type only (no extra size control). */
-const PROFILE_BY_BANNER_TYPE: Record<BannerSize, ProfileSizing> = {
-  wide: { avatar: 28, name: 13, handle: 12 },
-  header: { avatar: 24, name: 12, handle: 11 },
-  card: { avatar: 24, name: 12, handle: 11 },
-};
-
-function profileSizingForBannerType(size: unknown): ProfileSizing {
-  return PROFILE_BY_BANNER_TYPE[normalizeBannerSize(size)];
-}
-
-const FLEX_ALIGN: Record<string, string> = {
-  left: "flex-start",
-  center: "center",
-  right: "flex-end",
-};
+/** Natural sizes; `FitContent` scales profile and cards together to the chosen size and format. */
+const PROFILE_SIZING = { avatar: 28, name: 13, handle: 12 };
 
 /** Column count follows the chosen amount (1–6) for a stable layout. */
 function reposBannerColumnCount(amount: number): number {
@@ -37,7 +22,7 @@ function reposBannerColumnCount(amount: number): number {
 }
 
 const REPO_GRID_GAP_PX = 10;
-const REPO_CARD_COLUMN_MAX_PX = 220;
+const REPO_CARD_COLUMN_PX = 250;
 
 function ProfileBlock({
   user,
@@ -45,14 +30,12 @@ function ProfileBlock({
   chrome,
   showAvatar,
   showDisplayName,
-  sizing,
 }: {
   user: GithubUserNormalized | undefined;
   username: string;
   chrome: ReturnType<typeof bannerUiChrome>;
   showAvatar: boolean;
   showDisplayName: boolean;
-  sizing: ProfileSizing;
 }) {
   const login = user?.login ?? username;
   const displayName = user?.name?.trim();
@@ -80,8 +63,8 @@ function ProfileBlock({
             src={user.avatarUrl}
             alt=""
             style={{
-              width: sizing.avatar,
-              height: sizing.avatar,
+              width: PROFILE_SIZING.avatar,
+              height: PROFILE_SIZING.avatar,
               borderRadius: "50%",
               flexShrink: 0,
             }}
@@ -92,7 +75,7 @@ function ProfileBlock({
             <>
               <BannerTitle
                 style={{
-                  fontSize: sizing.name,
+                  fontSize: PROFILE_SIZING.name,
                   lineHeight: 1.15,
                   margin: "0 0 2px",
                   color: chrome.text,
@@ -100,7 +83,9 @@ function ProfileBlock({
               >
                 {displayName}
               </BannerTitle>
-              <BannerMuted style={{ fontSize: sizing.handle, color: chrome.textMuted, margin: 0 }}>
+              <BannerMuted
+                style={{ fontSize: PROFILE_SIZING.handle, color: chrome.textMuted, margin: 0 }}
+              >
                 @{login}
               </BannerMuted>
             </>
@@ -108,7 +93,7 @@ function ProfileBlock({
             <p
               style={{
                 margin: 0,
-                fontSize: sizing.handle,
+                fontSize: PROFILE_SIZING.handle,
                 fontWeight: 600,
                 lineHeight: 1.2,
                 color: chrome.text,
@@ -147,9 +132,8 @@ export function ReposBannerRenderer({
 
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
-  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) ||
-    "center") as keyof typeof FLEX_ALIGN;
-  const sizing = profileSizingForBannerType(state.size);
+  const alignment = normalizeContentAlign(state.alignment);
+  const contentSize = normalizeContentSize(state.contentSize);
 
   const showDescription = state.showDescription !== false;
   const showLanguage = state.showLanguage !== false;
@@ -209,7 +193,7 @@ export function ReposBannerRenderer({
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            alignItems: FLEX_ALIGN[gridPosition] ?? "flex-start",
+            alignItems: FLEX_ALIGN[alignment],
             padding: "12px 20px",
             height: "100%",
             width: "100%",
@@ -233,7 +217,6 @@ export function ReposBannerRenderer({
               chrome={chrome}
               showAvatar={showAvatar}
               showDisplayName={showDisplayName}
-              sizing={sizing}
             />
             <div
               style={{
@@ -288,43 +271,19 @@ export function ReposBannerRenderer({
       backgroundImage={backgroundImage}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: FLEX_ALIGN[gridPosition] ?? "flex-start",
-          padding: "12px 20px",
-          height: "100%",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            width: "fit-content",
-            maxWidth: "100%",
-            minWidth: 0,
-          }}
-        >
+      <FitContent size={contentSize} align={alignment}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
             user={user}
             username={username}
             chrome={chrome}
             showAvatar={showAvatar}
             showDisplayName={showDisplayName}
-            sizing={sizing}
           />
           <div
             style={{
               display: "grid",
-              width: "max-content",
-              maxWidth: "100%",
-              minWidth: 0,
-              gridTemplateColumns: `repeat(${cols}, minmax(0, ${REPO_CARD_COLUMN_MAX_PX}px))`,
+              gridTemplateColumns: `repeat(${cols}, ${REPO_CARD_COLUMN_PX}px)`,
               gap: REPO_GRID_GAP_PX,
               alignItems: "start",
             }}
@@ -342,7 +301,7 @@ export function ReposBannerRenderer({
             ))}
           </div>
         </div>
-      </div>
+      </FitContent>
     </Frame>
   );
 }

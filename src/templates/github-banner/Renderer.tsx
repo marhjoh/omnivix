@@ -1,28 +1,16 @@
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { Frame } from "@/src/banner/Frame";
+import { FitContent } from "@/src/banner/FitContent";
+import { normalizeContentSize } from "@/src/banner/contentSize";
+import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { BannerMuted, BannerTitle } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { RenderData } from "@/src/templates/renderers/types";
 
-/** Calendar-aligned grid: columnCount = GitHub weeks.length, cells placed by weekday row. */
-const GRID_SIZES: Record<
-  string,
-  { cell: number; gap: number; avatar: number; name: number; handle: number }
-> = {
-  xs: { cell: 6, gap: 2, avatar: 20, name: 10, handle: 10 },
-  s: { cell: 8, gap: 2, avatar: 24, name: 12, handle: 11 },
-  m: { cell: 10, gap: 2, avatar: 28, name: 13, handle: 12 },
-  l: { cell: 12, gap: 3, avatar: 32, name: 15, handle: 13 },
-  xl: { cell: 15, gap: 3, avatar: 36, name: 17, handle: 14 },
-};
-
-const FLEX_ALIGN: Record<string, string> = {
-  left: "flex-start",
-  center: "center",
-  right: "flex-end",
-};
+/** Natural sizes; `FitContent` scales the whole block to the chosen size and banner format. */
+const SIZING = { cell: 10, gap: 2, avatar: 28, name: 13, handle: 12 };
 
 export function GithubBannerRenderer({
   state,
@@ -47,10 +35,8 @@ export function GithubBannerRenderer({
   const showDayLabels = state.showDayLabels !== false;
   const showTotal = state.showTotal !== false;
   const profileRight = (state.profilePosition as string) === "right";
-  const gridPosition = (((state.gridPosition ?? state.gridAlign) as string) ||
-    "center") as keyof typeof FLEX_ALIGN;
-  const sizeKey = (state.gridSize as string) ?? "m";
-  const sizing = GRID_SIZES[sizeKey] ?? GRID_SIZES.m;
+  const alignment = normalizeContentAlign(state.alignment);
+  const contentSize = normalizeContentSize(state.contentSize);
   const cellShape = contributionCellShapeFromState(state.cellShape);
 
   const login = data.user?.login ?? username;
@@ -88,26 +74,8 @@ export function GithubBannerRenderer({
       backgroundImage={backgroundImage}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: FLEX_ALIGN[gridPosition] ?? "flex-start",
-          padding: "14px 20px",
-          height: "100%",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            width: "fit-content",
-            maxWidth: "100%",
-            minWidth: 0,
-          }}
-        >
+      <FitContent size={contentSize} align={alignment}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div
             style={{
               display: "flex",
@@ -129,8 +97,8 @@ export function GithubBannerRenderer({
                   src={data.user.avatarUrl}
                   alt=""
                   style={{
-                    width: sizing.avatar,
-                    height: sizing.avatar,
+                    width: SIZING.avatar,
+                    height: SIZING.avatar,
                     borderRadius: "50%",
                     flexShrink: 0,
                   }}
@@ -141,7 +109,7 @@ export function GithubBannerRenderer({
                   <>
                     <BannerTitle
                       style={{
-                        fontSize: sizing.name,
+                        fontSize: SIZING.name,
                         lineHeight: 1.15,
                         margin: "0 0 2px",
                         color: chrome.text,
@@ -150,7 +118,7 @@ export function GithubBannerRenderer({
                       {displayName}
                     </BannerTitle>
                     <BannerMuted
-                      style={{ fontSize: sizing.handle, color: chrome.textMuted, margin: 0 }}
+                      style={{ fontSize: SIZING.handle, color: chrome.textMuted, margin: 0 }}
                     >
                       @{login}
                     </BannerMuted>
@@ -159,7 +127,7 @@ export function GithubBannerRenderer({
                   <p
                     style={{
                       margin: 0,
-                      fontSize: sizing.handle,
+                      fontSize: SIZING.handle,
                       fontWeight: 600,
                       lineHeight: 1.2,
                       color: chrome.text,
@@ -175,10 +143,6 @@ export function GithubBannerRenderer({
 
           <div
             style={{
-              width: "fit-content",
-              maxWidth: "100%",
-              minWidth: 0,
-              overflow: "hidden",
               borderRadius: 12,
               padding: "12px 14px",
               background: chrome.gridOverlayBg,
@@ -196,8 +160,8 @@ export function GithubBannerRenderer({
               <ContributionGrid
                 contributions={data.contributions}
                 theme={gridTheme}
-                cellSize={sizing.cell}
-                gap={sizing.gap}
+                cellSize={SIZING.cell}
+                gap={SIZING.gap}
                 showMonthLabels={showMonthLabels}
                 showDayLabels={showDayLabels}
                 showTotal={showTotal}
@@ -209,7 +173,7 @@ export function GithubBannerRenderer({
             ) : null}
           </div>
         </div>
-      </div>
+      </FitContent>
     </Frame>
   );
 }
