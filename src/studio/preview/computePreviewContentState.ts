@@ -41,7 +41,16 @@ export function fetchErrorProblem(message: string): PreviewProblem {
   return {
     title: message,
     hint: "Check the username or your connection, then try again.",
-    retry: true,
+    action: "retry",
+  };
+}
+
+/** GitHub has no user by that name; retrying can't help, choosing another username can. */
+export function userNotFoundProblem(username: string): PreviewProblem {
+  return {
+    title: `No GitHub user named @${username.trim()}`,
+    hint: "Check the spelling, or choose another username.",
+    action: "change-username",
   };
 }
 
@@ -54,19 +63,16 @@ export function noReposProblem(mode: string, selectedRepos: string): PreviewProb
     return {
       title: "No pinned repositories",
       hint: "Pin repositories on your GitHub profile, or switch to Selected mode.",
-      retry: false,
     };
   }
   return selectedRepos.trim()
     ? {
         title: "No matching repositories",
         hint: "Choose public repositories from the list in the sidebar.",
-        retry: false,
       }
     : {
         title: "No repositories selected",
         hint: "Choose public repositories from the list in the sidebar.",
-        retry: false,
       };
 }
 

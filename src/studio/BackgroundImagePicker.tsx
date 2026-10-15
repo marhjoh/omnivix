@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { isInsecureImageLink } from "@/src/lib/imageLink";
 import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
@@ -57,17 +58,19 @@ export function BackgroundImagePicker({
   label,
   value,
   onChange,
+  onError,
 }: {
   id: string;
   label: string;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
+  /** An upload was rejected; shown as a toast. */
+  onError: (message: string) => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   /** Filename for the current data URL when this picker performed the upload (parent state is only the URL). */
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
@@ -79,13 +82,9 @@ export function BackgroundImagePicker({
   const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
   const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
   const linkStatus = useImageStatus(linkValue);
-  const linkError = !linkValue
-    ? null
-    : !/^https:\/\//i.test(linkValue)
-      ? "Use an https:// link."
-      : linkStatus === "failed"
-        ? "Couldn't load this image. Check the link; some sites block embedding."
-        : null;
+  // An http link, or one the browser can't load, can't be exported: the field turns red.
+  const linkInvalid =
+    linkValue !== undefined && (isInsecureImageLink(linkValue) || linkStatus === "failed");
 
   const urlInputValue =
     urlDraft !== undefined
@@ -138,7 +137,6 @@ export function BackgroundImagePicker({
   const grouped = groupPresets(BACKGROUND_PRESETS);
 
   const selectNone = () => {
-    setUploadError(null);
     setUploadSession(null);
     onChange(undefined);
     setUrlDraft(undefined);
@@ -147,7 +145,6 @@ export function BackgroundImagePicker({
   };
 
   const selectPreset = (src: string) => {
-    setUploadError(null);
     setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
@@ -156,7 +153,6 @@ export function BackgroundImagePicker({
   };
 
   const selectEnterUrl = () => {
-    setUploadError(null);
     setUrlEditorOpen(true);
     dropdown.close();
     if (typeof value === "string" && isHttpImageUrl(value)) {
@@ -167,7 +163,6 @@ export function BackgroundImagePicker({
   };
 
   const selectUpload = () => {
-    setUploadError(null);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
@@ -235,13 +230,12 @@ export function BackgroundImagePicker({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
-            setUploadError(null);
             if (!file) return;
             setUrlDraft(undefined);
             setUrlEditorOpen(false);
             const result = await normalizeBackgroundImageFile(file);
             if (!result.ok) {
-              setUploadError(result.error);
+              onError(result.error);
               return;
             }
             setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
@@ -249,12 +243,6 @@ export function BackgroundImagePicker({
           }}
         />
       </DropdownRoot>
-
-      {uploadError ? (
-        <p className="text-xs leading-snug text-danger" role="alert">
-          {uploadError}
-        </p>
-      ) : null}
 
       {showUrlField ? (
         <div className="space-y-1.5">
@@ -268,14 +256,10 @@ export function BackgroundImagePicker({
             inputMode="url"
             placeholder="Enter the link to your image…"
             className="field-input text-xs"
+            aria-invalid={linkInvalid}
             value={urlInputValue}
             onChange={(e) => onUrlChange(e.target.value)}
           />
-          {linkError ? (
-            <p className="text-xs leading-snug text-danger" role="alert">
-              {linkError}
-            </p>
-          ) : null}
         </div>
       ) : null}
     </div>

@@ -30,9 +30,12 @@ const BACKGROUND_QUALITY = 0.82;
 /** Decoded size limit for a processed upload; the export rejects larger ones (Vercel body limit). */
 export const MAX_UPLOADED_BACKGROUND_BYTES = 3 * 1024 * 1024;
 
-/** User-facing line when a file fails validation or decode (no “not supported” callouts). */
+/** User-facing line when a file type isn't allowed (including GIFs, which are animated). */
 export const SUPPORTED_BACKGROUND_FORMATS_MESSAGE =
-  "Only PNG, JPEG, WebP, AVIF, and HEIC/HEIF are supported.";
+  "Only PNG, JPEG, WebP, AVIF and HEIC are supported.";
+
+/** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
+export const UNREADABLE_BACKGROUND_MESSAGE = "Couldn't read this image. Try another file.";
 
 const GIF_MAGIC = [0x47, 0x49, 0x46]; // "GIF"
 
@@ -139,7 +142,7 @@ export async function normalizeBackgroundImageFile(
       });
       decodeBlob = Array.isArray(out) ? out[0]! : out;
     } catch {
-      return { ok: false, error: SUPPORTED_BACKGROUND_FORMATS_MESSAGE };
+      return { ok: false, error: UNREADABLE_BACKGROUND_MESSAGE };
     }
   }
 
@@ -147,7 +150,7 @@ export async function normalizeBackgroundImageFile(
   try {
     bitmap = await createImageBitmap(decodeBlob);
   } catch {
-    return { ok: false, error: SUPPORTED_BACKGROUND_FORMATS_MESSAGE };
+    return { ok: false, error: UNREADABLE_BACKGROUND_MESSAGE };
   }
 
   try {

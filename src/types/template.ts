@@ -26,6 +26,8 @@ export interface EditorFieldSchema {
   min?: number;
   max?: number;
   step?: number;
+  /** Longest allowed text, for text and textarea fields. */
+  maxLength?: number;
 }
 
 export interface TemplateMeta {

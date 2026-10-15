@@ -42,6 +42,10 @@ export function contributionCellShapeFromState(raw: unknown): ContributionCellSh
 
 const percent = z.number().min(0).max(100);
 
+/** A post's length: still readable on the 4:1 banner at the smallest text size. */
+const QUOTE_MAX_LENGTH = 280;
+const AUTHOR_MAX_LENGTH = 60;
+
 const baseState = z.object({
   size: z.enum(BANNER_SIZE_KEYS),
   themeId: z.string(),
@@ -313,12 +317,18 @@ export const quoteBannerDefinition: TemplateDefinition<{
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     alignmentField,
     contentSizeField,
-    { key: "quote", label: "Quote Text", type: "textarea", required: true },
-    { key: "author", label: "Author", type: "text" },
+    {
+      key: "quote",
+      label: "Quote Text",
+      type: "textarea",
+      required: true,
+      maxLength: QUOTE_MAX_LENGTH,
+    },
+    { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
   ],
   stateSchema: baseState.extend({
-    quote: z.string().min(1),
-    author: z.string().default(""),
+    quote: z.string().min(1).max(QUOTE_MAX_LENGTH),
+    author: z.string().max(AUTHOR_MAX_LENGTH).default(""),
     alignment: alignmentState,
     contentSize: contentSizeState,
   }),

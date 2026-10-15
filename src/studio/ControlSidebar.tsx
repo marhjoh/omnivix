@@ -13,14 +13,18 @@ import { THEME_PRESETS } from "@/src/types/theme";
 
 const currentYear = new Date().getFullYear();
 
+const NO_DISABLED_FIELDS: ReadonlySet<string> = new Set();
+
 function DebouncedInput({
   id,
   placeholder,
+  maxLength,
   value: externalValue,
   onChange,
 }: {
   id: string;
   placeholder?: string;
+  maxLength?: number;
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -52,6 +56,7 @@ function DebouncedInput({
       type="text"
       className="field-input"
       placeholder={placeholder}
+      maxLength={maxLength}
       value={localValue}
       onChange={handleChange}
     />
@@ -130,13 +135,17 @@ function RepoMultiSelect({
           ) : (
             catalog.map((repo) => {
               const on = selected.includes(repo.name);
+              // At the limit, only already-selected repositories can be clicked (to remove them).
+              const full = !on && selected.length >= maxPick;
               return (
                 <button
                   key={repo.id}
                   type="button"
                   onClick={() => toggle(repo.name)}
-                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                    on ? "bg-accent/15 text-text" : "text-muted hover:bg-surface"
+                  disabled={full}
+                  aria-pressed={on}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    on ? "bg-accent/15 text-text" : "text-muted enabled:hover:bg-surface"
                   }`}
                 >
                   <span
@@ -256,9 +265,10 @@ export function ControlSidebar({
   repoCatalog = [],
   repoCatalogLoading = false,
   repoCatalogError = null,
-  disabledFields = {},
+  disabledFields = NO_DISABLED_FIELDS,
   backgroundAdjusting = false,
   onToggleBackgroundAdjusting,
+  onError,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -269,10 +279,13 @@ export function ControlSidebar({
   repoCatalogLoading?: boolean;
   repoCatalogError?: string | null;
   /** Field key → reason it is unavailable; shown as a hint, the control is disabled and shown off. */
-  disabledFields?: Partial<Record<string, string>>;
+  /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
+  disabledFields?: ReadonlySet<string>;
   /** Whether the preview is in background adjust mode (drag to move). */
   backgroundAdjusting?: boolean;
   onToggleBackgroundAdjusting?: () => void;
+  /** Shows a one-off error as a toast (e.g. a rejected upload). */
+  onError: (message: string) => void;
 }) {
   const mode = state.mode as string | undefined;
   const background = backgroundFromState(state);
@@ -357,10 +370,9 @@ export function ControlSidebar({
         }
 
         if (field.type === "toggle") {
-          const disabledReason = disabledFields[field.key];
+          const disabled = disabledFields.has(field.key);
           // Shown off while disabled, without changing the saved value.
-          const checked = !disabledReason && Boolean(state[field.key] ?? false);
-          const hintId = disabledReason ? `${field.key}-hint` : undefined;
+          const checked = !disabled && Boolean(state[field.key] ?? false);
           return (
             <div key={field.key}>
               <div className="flex items-center justify-between">
@@ -370,8 +382,7 @@ export function ControlSidebar({
                   role="switch"
                   aria-checked={checked}
                   aria-label={field.label}
-                  aria-describedby={hintId}
-                  disabled={Boolean(disabledReason)}
+                  disabled={disabled}
                   onClick={() => onChange(field.key, !checked)}
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                     checked ? "bg-accent" : "bg-surface-2"
@@ -384,11 +395,6 @@ export function ControlSidebar({
                   />
                 </button>
               </div>
-              {disabledReason && (
-                <p id={hintId} className="mt-1 text-xs text-muted">
-                  {disabledReason}
-                </p>
-              )}
             </div>
           );
         }
@@ -412,8 +418,6 @@ export function ControlSidebar({
         }
 
         if (field.type === "select") {
-          const disabledReason = disabledFields[field.key];
-          const hintId = disabledReason ? `${field.key}-hint` : undefined;
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <Select
@@ -422,14 +426,8 @@ export function ControlSidebar({
                 value={String(state[field.key] ?? "")}
                 options={field.options ?? []}
                 onChange={(value) => onChange(field.key, value)}
-                disabled={Boolean(disabledReason)}
-                describedBy={hintId}
+                disabled={disabledFields.has(field.key)}
               />
-              {disabledReason && (
-                <p id={hintId} className="mt-1 text-xs text-muted">
-                  {disabledReason}
-                </p>
-              )}
             </FieldWrapper>
           );
         }
@@ -439,6 +437,7 @@ export function ControlSidebar({
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <textarea
                 id={field.key}
+                maxLength={field.maxLength}
                 rows={4}
                 className="field-input resize-y"
                 value={String(state[field.key] ?? "")}
@@ -458,6 +457,7 @@ export function ControlSidebar({
                   typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
                 }
                 onChange={(next) => onChange(field.key, next)}
+                onError={onError}
               />
               {background && onToggleBackgroundAdjusting ? (
                 <BackgroundAdjustControls
@@ -482,6 +482,7 @@ export function ControlSidebar({
             <DebouncedInput
               id={field.key}
               placeholder={field.placeholder}
+              maxLength={field.maxLength}
               value={String(state[field.key] ?? "")}
               onChange={(v) => onChange(field.key, v)}
             />

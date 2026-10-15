@@ -4,6 +4,9 @@ export type PreviewContentState = "loading" | "empty" | "error" | "ready";
 export interface PreviewProblem {
   title: string;
   hint: string;
-  /** Offer "Try again" (refetch); only useful when the problem may go away by itself. */
-  retry: boolean;
+  /**
+   * Button under the message: "retry" refetches (for problems that may go away by themselves),
+   * "change-username" opens the username dialog. None when only the sidebar can fix it.
+   */
+  action?: "retry" | "change-username";
 }

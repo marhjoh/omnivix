@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Loader2, PanelLeftClose, PanelLeftOpen, User, X } from "lucide-react";
+import { Download, Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
@@ -10,8 +10,6 @@ export function TopBar({
   onDownload,
   isDownloading,
   exportBlocked,
-  exportError,
-  onDismissExportError,
   username,
   needsUsername,
   onChangeUsername,
@@ -23,8 +21,6 @@ export function TopBar({
   isDownloading: boolean;
   /** Nothing to export yet (or a problem with it); the button is disabled. */
   exportBlocked: boolean;
-  exportError: string | null;
-  onDismissExportError: () => void;
   username?: string;
   needsUsername?: boolean;
   onChangeUsername?: () => void;
@@ -134,22 +130,6 @@ export function TopBar({
               </>
             )}
           </button>
-          {exportError && (
-            <div
-              role="alert"
-              className="absolute top-full right-0 z-20 mt-2 flex w-max max-w-[min(20rem,calc(100vw-2rem))] items-start gap-2 rounded-lg border border-danger/40 bg-surface px-3 py-2 text-xs leading-snug text-danger shadow-lg"
-            >
-              <span>{exportError}</span>
-              <button
-                type="button"
-                onClick={onDismissExportError}
-                className="btn-ghost -mr-1 shrink-0 rounded p-0.5"
-                aria-label="Dismiss export error"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
         </div>
       </HoverHighlightGroup>
     </>

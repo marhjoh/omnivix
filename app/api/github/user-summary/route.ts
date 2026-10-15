@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { githubErrorResponse } from "@/src/github/errorResponse";
 import { getUserSummary } from "@/src/github/client";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getUserSummary(username);
     return NextResponse.json(user);
-  } catch {
-    return NextResponse.json({ error: "Unable to fetch user data" }, { status: 502 });
+  } catch (error) {
+    return githubErrorResponse(error, username, "Unable to fetch user data");
   }
 }

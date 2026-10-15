@@ -3,6 +3,7 @@ import {
   computePreviewContentState,
   fetchErrorProblem,
   noReposProblem,
+  userNotFoundProblem,
 } from "./computePreviewContentState";
 
 describe("computePreviewContentState", () => {
@@ -72,21 +73,18 @@ describe("noReposProblem", () => {
   it("explains an empty pinned list", () => {
     expect(noReposProblem("pinned", "")).toMatchObject({
       title: "No pinned repositories",
-      retry: false,
     });
   });
 
   it("asks to pick repositories when none are selected", () => {
     expect(noReposProblem("selected", " ")).toMatchObject({
       title: "No repositories selected",
-      retry: false,
     });
   });
 
   it("says none matched when the selected ones weren't found", () => {
     expect(noReposProblem("selected", "gone-repo")).toMatchObject({
       title: "No matching repositories",
-      retry: false,
     });
   });
 });
@@ -96,7 +94,17 @@ describe("fetchErrorProblem", () => {
     expect(fetchErrorProblem("Unable to fetch user data")).toEqual({
       title: "Unable to fetch user data",
       hint: "Check the username or your connection, then try again.",
-      retry: true,
+      action: "retry",
+    });
+  });
+});
+
+describe("userNotFoundProblem", () => {
+  it("names the user and offers to change the username", () => {
+    expect(userNotFoundProblem(" ghost ")).toEqual({
+      title: "No GitHub user named @ghost",
+      hint: "Check the spelling, or choose another username.",
+      action: "change-username",
     });
   });
 });

@@ -3,6 +3,7 @@ export {
   computePreviewContentState,
   fetchErrorProblem,
   noReposProblem,
+  userNotFoundProblem,
   previewEmptyCopy,
   previewLoadingMessage,
 } from "./computePreviewContentState";

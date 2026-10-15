@@ -9,9 +9,12 @@ import {
   computePreviewContentState,
   fetchErrorProblem,
   noReposProblem,
+  userNotFoundProblem,
   type PreviewProblem,
 } from "@/src/studio/preview";
 import { isExportBlocked } from "@/src/studio/exportBlocked";
+import { isInsecureImageLink } from "@/src/lib/imageLink";
+import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
@@ -95,16 +98,32 @@ function persistState(templateId: string, state: Record<string, unknown>, needsU
   }
 }
 
+class FetchError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? res.statusText);
+    throw new FetchError(body.error ?? res.statusText, res.status);
   }
   return res.json() as Promise<T>;
 }
 
-type FetchResult<T> = { url: string; nonce: number; data?: T; error: string | null };
+type FetchResult<T> = {
+  url: string;
+  nonce: number;
+  data?: T;
+  error: string | null;
+  /** HTTP status of the failed request; 404 means the GitHub user doesn't exist. */
+  status: number | null;
+};
 
 /**
  * Last successful response per url, kept for the browser session. Returning to the studio, or to a
@@ -127,7 +146,7 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
       (data) => {
         if (ac.signal.aborted) return;
         lastFetched.set(url, data);
-        setResult({ url, nonce, data, error: null });
+        setResult({ url, nonce, data, error: null, status: null });
       },
       (error) => {
         if (ac.signal.aborted) return;
@@ -137,6 +156,7 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
           nonce,
           data: prev?.url === url ? prev.data : undefined,
           error: message,
+          status: error instanceof FetchError ? error.status : null,
         }));
       },
     );
@@ -148,6 +168,7 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
   return {
     data: current?.data ?? (url ? (lastFetched.get(url) as T | undefined) : undefined),
     error: settled ? current.error : null,
+    notFound: settled && current.status === 404,
     loading: url !== null && !settled,
   };
 }
@@ -375,13 +396,13 @@ export function StudioShell({
   const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
   const fill = state.contentSize === "fill";
-  const disabledFields = useMemo(
-    () => ({
-      ...(avatarFailed && { showAvatar: "Profile photo couldn't be loaded" }),
-      ...(fill && { alignment: "Fill covers the whole banner" }),
-    }),
-    [avatarFailed, fill],
-  );
+  // A profile photo that failed to load can't be shown, and Fill covers the whole banner.
+  const disabledFields = useMemo(() => {
+    const keys = new Set<string>();
+    if (avatarFailed) keys.add("showAvatar");
+    if (fill) keys.add("alignment");
+    return keys;
+  }, [avatarFailed, fill]);
   // A photo that failed to load is left out, so the banner never shows a broken-image icon.
   const renderData = useMemo<RenderData>(
     () => (avatarFailed && data.user ? { ...data, user: { ...data.user, avatarUrl: "" } } : data),
@@ -412,11 +433,14 @@ export function StudioShell({
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
   const noRepos = templateId === "repos-banner" && dataReady && data.repos?.length === 0;
+  const userNotFound = userFetch.notFound || contributionsFetch.notFound || reposFetch.notFound;
   const previewProblem = useMemo<PreviewProblem | null>(() => {
-    if (previewDataError) return fetchErrorProblem(previewDataError);
+    if (previewDataError) {
+      return userNotFound ? userNotFoundProblem(username) : fetchErrorProblem(previewDataError);
+    }
     if (noRepos) return noReposProblem(repoMode, selectedRepos);
     return null;
-  }, [previewDataError, noRepos, repoMode, selectedRepos]);
+  }, [previewDataError, userNotFound, username, noRepos, repoMode, selectedRepos]);
 
   const previewState = useMemo(
     () =>
@@ -437,6 +461,9 @@ export function StudioShell({
   }, []);
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const showError = useCallback((message: string) => setToast({ id: Date.now(), message }), []);
+  const dismissToast = useCallback(() => setToast(null), []);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   // Open the username prompt whenever a username becomes required but is missing.
@@ -489,22 +516,23 @@ export function StudioShell({
       ? state.backgroundImage
       : undefined,
   );
+  const backgroundFailed = backgroundStatus === "failed";
+  // A background that failed to load is left out of the preview, so the banner never shows a
+  // broken-image icon (like the profile photo above).
+  const previewBannerState = useMemo(
+    () => (backgroundFailed ? { ...state, backgroundImage: undefined } : state),
+    [backgroundFailed, state],
+  );
   const exportBlocked = isExportBlocked({
     previewState,
     stateValid,
-    backgroundFailed: backgroundStatus === "failed",
+    backgroundFailed: backgroundFailed || isInsecureImageLink(state.backgroundImage),
   });
-
-  const [exportFailure, setExportFailure] = useState<{
-    message: string;
-    state: Record<string, unknown>;
-  } | null>(null);
-  const exportError = exportFailure?.state === state ? exportFailure.message : null;
 
   async function onDownload() {
     if (exportBlocked) return;
     setIsDownloading(true);
-    setExportFailure(null);
+    dismissToast();
     try {
       const response = await fetch("/api/export", {
         method: "POST",
@@ -521,7 +549,7 @@ export function StudioShell({
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
-        setExportFailure({ message: body.error ?? "Export failed. Please try again.", state });
+        showError(body.error ?? "Export failed. Please try again.");
         return;
       }
       const blob = await response.blob();
@@ -533,10 +561,7 @@ export function StudioShell({
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {
-      setExportFailure({
-        message: "Couldn't reach the server. Check your connection and try again.",
-        state,
-      });
+      showError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -550,6 +575,7 @@ export function StudioShell({
 
   return (
     <div className={styles.shell}>
+      <Toast toast={toast} onDismiss={dismissToast} />
       <UsernameModal
         open={showUsernameModal}
         onSubmit={handleUsernameSubmit}
@@ -562,8 +588,6 @@ export function StudioShell({
           onDownload={onDownload}
           isDownloading={isDownloading}
           exportBlocked={exportBlocked}
-          exportError={exportError}
-          onDismissExportError={() => setExportFailure(null)}
           username={username}
           needsUsername={needsUsername}
           onChangeUsername={() => setShowUsernameModal(true)}
@@ -591,6 +615,7 @@ export function StudioShell({
               disabledFields={disabledFields}
               backgroundAdjusting={adjustingBackground}
               onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
+              onError={showError}
             />
           </div>
         </aside>
@@ -605,11 +630,12 @@ export function StudioShell({
           <PreviewArtboard
             templateId={templateId}
             size={size}
-            state={state}
+            state={previewBannerState}
             data={renderData}
             previewState={previewState}
             problem={previewProblem}
             onRetry={handlePreviewRetry}
+            onChangeUsername={() => setShowUsernameModal(true)}
             backgroundAdjust={
               adjustingBackground && background
                 ? {

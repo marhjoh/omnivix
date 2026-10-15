@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { githubErrorResponse } from "@/src/github/errorResponse";
 import { getOwnerReposCatalog } from "@/src/github/client";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const repos = await getOwnerReposCatalog(username);
     return NextResponse.json(repos);
-  } catch {
-    return NextResponse.json({ error: "Unable to fetch repo data" }, { status: 502 });
+  } catch (error) {
+    return githubErrorResponse(error, username, "Unable to fetch repo data");
   }
 }

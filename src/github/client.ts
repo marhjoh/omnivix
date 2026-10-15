@@ -25,6 +25,14 @@ function graphqlClient() {
   });
 }
 
+/** True when GitHub reports that the requested user doesn't exist. */
+export function isUserNotFound(error: unknown): boolean {
+  const errors = (error as { errors?: Array<{ type?: string; path?: unknown[] }> } | null)?.errors;
+  return (
+    Array.isArray(errors) && errors.some((e) => e.type === "NOT_FOUND" && e.path?.[0] === "user")
+  );
+}
+
 export async function getUserSummary(username: string): Promise<GithubUserNormalized> {
   const cacheKey = `gh:user:${username}`;
   const cached = readCache<GithubUserNormalized>(cacheKey);

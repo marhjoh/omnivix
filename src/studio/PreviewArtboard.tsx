@@ -26,6 +26,7 @@ export function PreviewArtboard({
   previewState,
   problem,
   onRetry,
+  onChangeUsername,
   backgroundAdjust,
 }: {
   templateId: TemplateId;
@@ -36,6 +37,7 @@ export function PreviewArtboard({
   /** Shown in place of the banner when `previewState` is "error". */
   problem: PreviewProblem | null;
   onRetry?: () => void;
+  onChangeUsername?: () => void;
   /** Set while the background is being adjusted: shows the drag surface over the preview. */
   backgroundAdjust?: {
     position: BackgroundPosition;
@@ -86,7 +88,13 @@ export function PreviewArtboard({
                 <PreviewErrorState
                   message={problem?.title ?? "Something went wrong"}
                   hint={problem?.hint ?? ""}
-                  onRetry={problem?.retry ? onRetry : undefined}
+                  action={
+                    problem?.action === "retry" && onRetry
+                      ? { label: "Try again", onClick: onRetry }
+                      : problem?.action === "change-username" && onChangeUsername
+                        ? { label: "Change username", onClick: onChangeUsername }
+                        : undefined
+                  }
                 />
               )}
             </div>
