@@ -15,6 +15,8 @@ import {
 import previewStyles from "@/src/studio/preview/preview.module.css";
 import { fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
+import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
+import type { BackgroundPosition } from "@/src/banner/background";
 
 export function PreviewArtboard({
   templateId,
@@ -24,6 +26,7 @@ export function PreviewArtboard({
   previewState,
   dataError,
   onRetryError,
+  backgroundAdjust,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -32,6 +35,13 @@ export function PreviewArtboard({
   previewState: PreviewContentState;
   dataError: string | null;
   onRetryError?: () => void;
+  /** Set while the background is being adjusted: shows the drag surface over the preview. */
+  backgroundAdjust?: {
+    position: BackgroundPosition;
+    zoom: number;
+    onMove: (position: BackgroundPosition) => void;
+    onDone: () => void;
+  };
 }) {
   const dims = BANNER_SIZES[size];
   const emptyCopy = previewEmptyCopy(templateId);
@@ -43,7 +53,7 @@ export function PreviewArtboard({
   const artboardStyle: CSSProperties =
     scale === null
       ? { width: "100%", maxWidth: dims.width, aspectRatio: `${dims.width} / ${dims.height}` }
-      : { width: dims.width * scale, height: dims.height * scale };
+      : { width: dims.width * scale, height: dims.height * scale, position: "relative" };
 
   return (
     <div ref={stageRef} className={previewStyles.stage}>
@@ -60,7 +70,11 @@ export function PreviewArtboard({
           >
             <BannerRenderer templateId={templateId} state={state} data={data} isExport={false} />
           </div>
-        ) : (
+        ) : null}
+        {previewState === "ready" && scale !== null && backgroundAdjust ? (
+          <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
+        ) : null}
+        {previewState === "ready" ? null : (
           <PreviewFrame>
             <div className={previewStyles.stateCenter}>
               {previewState === "loading" ? (

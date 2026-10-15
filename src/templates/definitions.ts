@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 import {
   CONTENT_ALIGN_OPTIONS,
   CONTENT_ALIGNS,
@@ -39,10 +40,14 @@ export function contributionCellShapeFromState(raw: unknown): ContributionCellSh
   return isOneOf(CONTRIBUTION_CELL_SHAPES, raw) ? raw : "rounded";
 }
 
+const percent = z.number().min(0).max(100);
+
 const baseState = z.object({
   size: z.enum(BANNER_SIZE_KEYS),
   themeId: z.string(),
   backgroundImage: z.string().optional(),
+  backgroundPosition: z.object({ x: percent, y: percent }).optional(),
+  backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
 });
 
 /** Horizontal placement of the content; in the quote banner also the text alignment. */

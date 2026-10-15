@@ -13,6 +13,11 @@ export interface BackgroundPreset {
   src: string;
   /** Photographer and Unsplash photo page, for photo presets. */
   credit?: { author: string; url: string };
+  /**
+   * Default background position in percent (CSS `object-position`), chosen so the subject stays in
+   * frame at every banner size. Defaults to the center.
+   */
+  focus?: { x: number; y: number };
 }
 
 export const BACKGROUND_PRESETS: BackgroundPreset[] = [
@@ -22,6 +27,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/london.avif",
     credit: { author: "Benjamin Davies", url: "https://unsplash.com/photos/Oja2ty_9ZLM" },
+    focus: { x: 30, y: 85 },
   },
   {
     id: "new-york",
@@ -29,6 +35,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/new-york.avif",
     credit: { author: "Mike Chavarri", url: "https://unsplash.com/photos/kZokA2VTKn4" },
+    focus: { x: 50, y: 45 },
   },
   {
     id: "chicago",
@@ -43,6 +50,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/toronto.avif",
     credit: { author: "Sandro Schuh", url: "https://unsplash.com/photos/6wVqCeK030Y" },
+    focus: { x: 50, y: 70 },
   },
   {
     id: "lisbon",
@@ -50,6 +58,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/lisbon.avif",
     credit: { author: "Aleksandr Zaitsev", url: "https://unsplash.com/photos/zEFfW3kXQR8" },
+    focus: { x: 50, y: 70 },
   },
   {
     id: "seoul",
@@ -57,6 +66,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/seoul.avif",
     credit: { author: "Ping Onganankun", url: "https://unsplash.com/photos/5htrsUUbFGI" },
+    focus: { x: 50, y: 60 },
   },
   {
     id: "sydney",
@@ -64,6 +74,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Cities",
     src: "/backgrounds/sydney.avif",
     credit: { author: "Joshua Delica", url: "https://unsplash.com/photos/9FqNt_8Mg0U" },
+    focus: { x: 50, y: 35 },
   },
   {
     id: "swiss-alps",
@@ -71,6 +82,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Nature",
     src: "/backgrounds/swiss-alps.avif",
     credit: { author: "Sam Ferrara", url: "https://unsplash.com/photos/1527pjeb6jg" },
+    focus: { x: 50, y: 45 },
   },
   {
     id: "norwegian-fjord",
@@ -78,6 +90,7 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     group: "Nature",
     src: "/backgrounds/norwegian-fjord.avif",
     credit: { author: "Robert Bye", url: "https://unsplash.com/photos/e1sTn8-hGEE" },
+    focus: { x: 50, y: 60 },
   },
   {
     id: "sahara",

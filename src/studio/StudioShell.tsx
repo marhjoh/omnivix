@@ -8,6 +8,7 @@ import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview";
 import { exportBlockedReason } from "@/src/studio/exportBlockedReason";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
@@ -75,7 +76,10 @@ function persistState(templateId: string, state: Record<string, unknown>, needsU
   if (typeof window === "undefined") return;
   try {
     const clone = { ...state };
+    // Uploads are too large to store; position and zoom only make sense with their image.
     delete clone.backgroundImage;
+    delete clone.backgroundPosition;
+    delete clone.backgroundZoom;
     if (needsUsername) {
       // Username is global; avoid stale per-template copies.
       delete clone.username;
@@ -436,6 +440,11 @@ export function StudioShell({
       }
       setState((prev) => {
         const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
+        // A new background starts at its own default position.
+        if (key === "backgroundImage") {
+          delete next.backgroundPosition;
+          delete next.backgroundZoom;
+        }
         persistState(templateId, next, needsUsername);
         return next;
       });
@@ -447,6 +456,20 @@ export function StudioShell({
     () => definition.stateSchema.safeParse(state).success,
     [definition.stateSchema, state],
   );
+  const background = backgroundFromState(state);
+  const [backgroundAdjusting, setBackgroundAdjusting] = useState(false);
+  // Adjust mode ends by itself when there's no background left to adjust.
+  const adjustingBackground = backgroundAdjusting && background !== undefined;
+  function toggleBackgroundAdjusting() {
+    setBackgroundAdjusting(!adjustingBackground);
+    // On phones the settings drawer covers the preview; close it so the background can be dragged.
+    if (isPhone && !adjustingBackground) closeDrawer();
+  }
+  const moveBackground = useCallback(
+    (position: BackgroundPosition) => updateState("backgroundPosition", position),
+    [updateState],
+  );
+
   const backgroundStatus = useImageStatus(
     typeof state.backgroundImage === "string" && state.backgroundImage
       ? state.backgroundImage
@@ -553,6 +576,8 @@ export function StudioShell({
               repoCatalogLoading={repoCatalogLoading}
               repoCatalogError={repoCatalogError}
               disabledFields={disabledFields}
+              backgroundAdjusting={adjustingBackground}
+              onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
             />
           </div>
         </aside>
@@ -572,6 +597,16 @@ export function StudioShell({
             previewState={previewState}
             dataError={previewDataError}
             onRetryError={handlePreviewRetry}
+            backgroundAdjust={
+              adjustingBackground && background
+                ? {
+                    position: background.position,
+                    zoom: background.zoom,
+                    onMove: moveBackground,
+                    onDone: () => setBackgroundAdjusting(false),
+                  }
+                : undefined
+            }
           />
         </main>
       </div>

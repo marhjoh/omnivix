@@ -7,6 +7,8 @@ import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
+import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
+import { backgroundFromState } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const currentYear = new Date().getFullYear();
@@ -255,6 +257,8 @@ export function ControlSidebar({
   repoCatalogLoading = false,
   repoCatalogError = null,
   disabledFields = {},
+  backgroundAdjusting = false,
+  onToggleBackgroundAdjusting,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -266,8 +270,12 @@ export function ControlSidebar({
   repoCatalogError?: string | null;
   /** Field key → reason it is unavailable; shown as a hint, the control is disabled and shown off. */
   disabledFields?: Partial<Record<string, string>>;
+  /** Whether the preview is in background adjust mode (drag to move). */
+  backgroundAdjusting?: boolean;
+  onToggleBackgroundAdjusting?: () => void;
 }) {
   const mode = state.mode as string | undefined;
+  const background = backgroundFromState(state);
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -442,15 +450,32 @@ export function ControlSidebar({
 
         if (field.type === "backgroundPicker") {
           return (
-            <BackgroundImagePicker
-              key={field.key}
-              id={field.key}
-              label={field.label}
-              value={
-                typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
-              }
-              onChange={(next) => onChange(field.key, next)}
-            />
+            <div key={field.key} className="space-y-3">
+              <BackgroundImagePicker
+                id={field.key}
+                label={field.label}
+                value={
+                  typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
+                }
+                onChange={(next) => onChange(field.key, next)}
+              />
+              {background && onToggleBackgroundAdjusting ? (
+                <BackgroundAdjustControls
+                  id={field.key}
+                  adjusting={backgroundAdjusting}
+                  onToggleAdjusting={onToggleBackgroundAdjusting}
+                  zoom={background.zoom}
+                  onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
+                  canReset={
+                    state.backgroundPosition !== undefined || state.backgroundZoom !== undefined
+                  }
+                  onReset={() => {
+                    onChange("backgroundPosition", undefined);
+                    onChange("backgroundZoom", undefined);
+                  }}
+                />
+              ) : null}
+            </div>
           );
         }
 

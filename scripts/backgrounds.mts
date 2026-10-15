@@ -7,8 +7,11 @@ import sharp from "sharp";
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 
 const WIDTH = 4800;
-/** Taller photos are cropped to 5:2, the tallest banner format, so nothing visible is lost. */
-const MAX_HEIGHT = WIDTH / 2.5;
+/**
+ * Taller photos are cropped to 3:2. That keeps room above and below the banner's crop, so the
+ * background can be moved and zoomed in the studio.
+ */
+const MAX_HEIGHT = WIDTH / 1.5;
 /** Shown at 28% opacity, where compression artifacts don't show. */
 const QUALITY = 40;
 
@@ -20,7 +23,7 @@ interface Source {
 }
 
 const SOURCES: Record<string, Source> = {
-  london: { url: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad", focusY: 0.8 },
+  london: { url: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad" },
   "new-york": { url: "https://images.unsplash.com/photo-1518235506717-e1ed3306a89b" },
   chicago: { url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390" },
   toronto: { url: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f" },

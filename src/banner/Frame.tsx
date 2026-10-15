@@ -1,5 +1,6 @@
 import { CSSProperties, PropsWithChildren } from "react";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
+import { backgroundImageStyle, type BannerBackground } from "@/src/banner/background";
 
 /**
  * Banner root, identical in preview and export. The studio preview draws its own ring and
@@ -7,11 +8,11 @@ import { bannerUiChrome, type Theme } from "@/src/theme/theme";
  */
 export function Frame({
   children,
-  backgroundImage,
+  background,
   style,
   appTheme = "dark",
 }: PropsWithChildren<{
-  backgroundImage?: string;
+  background?: BannerBackground;
   style?: CSSProperties;
   /** App light/dark: fallback background matches preview + export. */
   appTheme?: Theme;
@@ -29,11 +30,12 @@ export function Frame({
         ...style,
       }}
     >
-      {backgroundImage ? (
+      {background ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={backgroundImage}
+          src={background.src}
           alt=""
+          data-banner-background=""
           style={{
             position: "absolute",
             inset: 0,
@@ -41,6 +43,7 @@ export function Frame({
             height: "100%",
             objectFit: "cover",
             opacity: 0.28,
+            ...backgroundImageStyle(background),
           }}
         />
       ) : null}

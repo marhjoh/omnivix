@@ -1,4 +1,5 @@
 import { Frame } from "@/src/banner/Frame";
+import { backgroundFromState } from "@/src/banner/background";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { BannerMuted } from "@/src/banner/Text";
@@ -24,8 +25,7 @@ export function QuoteBannerRenderer({
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
-  const backgroundImage =
-    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const background = backgroundFromState(state);
   const alignment = normalizeContentAlign(state.alignment);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
@@ -43,7 +43,7 @@ export function QuoteBannerRenderer({
   return (
     <Frame
       appTheme={uiTheme}
-      backgroundImage={backgroundImage}
+      background={background}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <div

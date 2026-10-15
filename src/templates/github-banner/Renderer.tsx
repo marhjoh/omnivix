@@ -1,5 +1,6 @@
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { Frame } from "@/src/banner/Frame";
+import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
@@ -25,8 +26,7 @@ export function GithubBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const gridTheme = THEME_PRESETS.find((preset) => preset.id === state.themeId) ?? THEME_PRESETS[0];
-  const backgroundImage =
-    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const background = backgroundFromState(state);
   const username = typeof state.username === "string" ? state.username : "";
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
@@ -71,7 +71,7 @@ export function GithubBannerRenderer({
   return (
     <Frame
       appTheme={uiTheme}
-      backgroundImage={backgroundImage}
+      background={background}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <FitContent size={contentSize} align={alignment}>

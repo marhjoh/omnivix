@@ -1,4 +1,5 @@
 import { Frame } from "@/src/banner/Frame";
+import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
 import { normalizeContentAlign, FLEX_ALIGN } from "@/src/banner/contentAlign";
@@ -121,8 +122,7 @@ export function ReposBannerRenderer({
   uiTheme?: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
-  const backgroundImage =
-    typeof state.backgroundImage === "string" ? state.backgroundImage : undefined;
+  const background = backgroundFromState(state);
   const mode = (state.mode === "selected" ? "selected" : "pinned") as "pinned" | "selected";
   const maxReposPinned = Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
   const maxShown = mode === "selected" ? 6 : maxReposPinned;
@@ -188,7 +188,7 @@ export function ReposBannerRenderer({
     return (
       <Frame
         appTheme={uiTheme}
-        backgroundImage={backgroundImage}
+        background={background}
         style={{ background: chrome.baseBg, color: chrome.text }}
       >
         <div
@@ -272,7 +272,7 @@ export function ReposBannerRenderer({
   return (
     <Frame
       appTheme={uiTheme}
-      backgroundImage={backgroundImage}
+      background={background}
       style={{ background: chrome.baseBg, color: chrome.text }}
     >
       <FitContent size={contentSize} align={alignment}>
