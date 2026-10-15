@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "playwright test",
-    "social-preview": "tsx scripts/social-preview.mts"
+    "social-preview": "tsx scripts/social-preview.mts",
+    "backgrounds": "tsx scripts/backgrounds.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

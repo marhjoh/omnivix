@@ -1,8 +1,9 @@
 /**
- * Skyline preset images live in `public/backgrounds/*.jpg` (served as `/backgrounds/...`).
+ * Background presets live in `public/backgrounds/` (served as `/backgrounds/...`).
  *
- * Sources: Unsplash (https://unsplash.com/license) — vendored in-repo for reliable export/preview.
- * Labels are thematic; swap files or `src` paths to match your own photography or licensing needs.
+ * Photos are from Unsplash (https://unsplash.com/license), vendored in-repo for reliable export and
+ * preview. `pnpm backgrounds` regenerates them; see `scripts/backgrounds.mts`. The abstract SVGs
+ * are hand-written. Old preset paths redirect to these in `next.config.ts`.
  */
 export interface BackgroundPreset {
   id: string;
@@ -10,54 +11,90 @@ export interface BackgroundPreset {
   group: string;
   /** Public path served from /public */
   src: string;
+  /** Photographer and Unsplash photo page, for photo presets. */
+  credit?: { author: string; url: string };
 }
 
 export const BACKGROUND_PRESETS: BackgroundPreset[] = [
-  { id: "chicago", label: "Chicago", group: "Skylines", src: "/backgrounds/chicago.jpg" },
   {
-    id: "los-angeles",
-    label: "Los Angeles",
-    group: "Skylines",
-    src: "/backgrounds/los-angeles.jpg",
-  },
-  { id: "montreal", label: "Montreal", group: "Skylines", src: "/backgrounds/montreal.jpg" },
-  {
-    id: "new-york-day",
-    label: "New York (Day)",
-    group: "Skylines",
-    src: "/backgrounds/new-york-day.jpg",
+    id: "london",
+    label: "London",
+    group: "Cities",
+    src: "/backgrounds/london.avif",
+    credit: { author: "Benjamin Davies", url: "https://unsplash.com/photos/Oja2ty_9ZLM" },
   },
   {
-    id: "new-york-night",
-    label: "New York (Night)",
-    group: "Skylines",
-    src: "/backgrounds/new-york-night.jpg",
+    id: "new-york",
+    label: "New York",
+    group: "Cities",
+    src: "/backgrounds/new-york.avif",
+    credit: { author: "Mike Chavarri", url: "https://unsplash.com/photos/kZokA2VTKn4" },
   },
   {
-    id: "seattle-day",
-    label: "Seattle (Day)",
-    group: "Skylines",
-    src: "/backgrounds/seattle-day.jpg",
+    id: "chicago",
+    label: "Chicago",
+    group: "Cities",
+    src: "/backgrounds/chicago.avif",
+    credit: { author: "Max Bender", url: "https://unsplash.com/photos/VmX3vmBecFE" },
   },
   {
-    id: "seattle-night",
-    label: "Seattle (Night)",
-    group: "Skylines",
-    src: "/backgrounds/seattle-night.jpg",
+    id: "toronto",
+    label: "Toronto",
+    group: "Cities",
+    src: "/backgrounds/toronto.avif",
+    credit: { author: "Sandro Schuh", url: "https://unsplash.com/photos/6wVqCeK030Y" },
   },
   {
-    id: "toronto-day",
-    label: "Toronto (Day)",
-    group: "Skylines",
-    src: "/backgrounds/toronto-day.jpg",
+    id: "lisbon",
+    label: "Lisbon",
+    group: "Cities",
+    src: "/backgrounds/lisbon.avif",
+    credit: { author: "Aleksandr Zaitsev", url: "https://unsplash.com/photos/zEFfW3kXQR8" },
   },
   {
-    id: "toronto-night",
-    label: "Toronto (Night)",
-    group: "Skylines",
-    src: "/backgrounds/toronto-night.jpg",
+    id: "seoul",
+    label: "Seoul",
+    group: "Cities",
+    src: "/backgrounds/seoul.avif",
+    credit: { author: "Ping Onganankun", url: "https://unsplash.com/photos/5htrsUUbFGI" },
   },
-  { id: "vancouver", label: "Vancouver", group: "Skylines", src: "/backgrounds/vancouver.jpg" },
+  {
+    id: "sydney",
+    label: "Sydney",
+    group: "Cities",
+    src: "/backgrounds/sydney.avif",
+    credit: { author: "Joshua Delica", url: "https://unsplash.com/photos/9FqNt_8Mg0U" },
+  },
+  {
+    id: "swiss-alps",
+    label: "Swiss Alps",
+    group: "Nature",
+    src: "/backgrounds/swiss-alps.avif",
+    credit: { author: "Sam Ferrara", url: "https://unsplash.com/photos/1527pjeb6jg" },
+  },
+  {
+    id: "norwegian-fjord",
+    label: "Norwegian Fjord",
+    group: "Nature",
+    src: "/backgrounds/norwegian-fjord.avif",
+    credit: { author: "Robert Bye", url: "https://unsplash.com/photos/e1sTn8-hGEE" },
+  },
+  {
+    id: "sahara",
+    label: "Sahara Dunes",
+    group: "Nature",
+    src: "/backgrounds/sahara.avif",
+    credit: { author: "Emma Van Sant", url: "https://unsplash.com/photos/GkIGSLW04Nc" },
+  },
+  { id: "aurora", label: "Aurora", group: "Abstract", src: "/backgrounds/aurora.svg" },
+  {
+    id: "sunset-mesh",
+    label: "Sunset Gradient",
+    group: "Abstract",
+    src: "/backgrounds/sunset-mesh.svg",
+  },
+  { id: "waves", label: "Waves", group: "Abstract", src: "/backgrounds/waves.svg" },
+  { id: "dot-grid", label: "Dot Grid", group: "Abstract", src: "/backgrounds/dot-grid.svg" },
 ];
 
 export function presetBySrc(src: string): BackgroundPreset | undefined {
