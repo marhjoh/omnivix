@@ -1,5 +1,6 @@
 import type { ExportRequest } from "@/src/types/template";
 import { BackgroundLinkError, fetchBackgroundLink } from "@/src/export/backgroundLink";
+import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
 
 /**
  * Path the render page loads an uploaded or linked background from during export. No route
@@ -7,9 +8,6 @@ import { BackgroundLinkError, fetchBackgroundLink } from "@/src/export/backgroun
  * never has to fit in the render URL's token and Playwright never loads a link itself.
  */
 export const EXPORT_BACKGROUND_PATH = "/__export/background";
-
-/** Decoded upload size limit; keeps the export request under Vercel's 4.5 MB body limit. */
-export const MAX_EXPORT_BACKGROUND_BYTES = 3 * 1024 * 1024;
 
 const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|webp|avif));base64,([A-Za-z0-9+/]+={0,2})$/;
 /** Presets, plus the old `.jpg` paths that `next.config.ts` redirects. */
@@ -36,7 +34,7 @@ function decodeUpload(value: string): ExportBackground | string {
   const match = DATA_URL_PATTERN.exec(value);
   if (!match) return "The uploaded background isn't a supported image.";
   const body = Buffer.from(match[2], "base64");
-  if (body.length > MAX_EXPORT_BACKGROUND_BYTES) {
+  if (body.length > MAX_UPLOADED_BACKGROUND_BYTES) {
     return "The uploaded background is too large. Try a smaller image.";
   }
   return { contentType: match[1], body };

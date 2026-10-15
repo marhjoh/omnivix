@@ -10,6 +10,7 @@ const ALLOWED_IMAGE_MIME_TYPES = [
   "image/png",
   "image/jpeg",
   "image/webp",
+  "image/avif",
   "image/heic",
   "image/heif",
 ] as const;
@@ -17,14 +18,21 @@ const ALLOWED_IMAGE_MIME_TYPES = [
 /** Raw file size limit before decode (bytes). */
 export const MAX_BACKGROUND_UPLOAD_BYTES = 12 * 1024 * 1024;
 
-/** Longest edge after normalization (px). */
-const MAX_BACKGROUND_OUTPUT_DIMENSION = 2048;
+/**
+ * Longest edges to try, largest first. Exports are up to 4752px wide; smaller sizes are fallbacks
+ * for images too detailed to fit `MAX_UPLOADED_BACKGROUND_BYTES`.
+ */
+const BACKGROUND_OUTPUT_DIMENSIONS = [4800, 3600, 2400];
 
-const BACKGROUND_JPEG_QUALITY = 0.88;
+/** Shown at 28% opacity, where compression artifacts don't show. */
+const BACKGROUND_QUALITY = 0.82;
+
+/** Decoded size limit for a processed upload; the export rejects larger ones (Vercel body limit). */
+export const MAX_UPLOADED_BACKGROUND_BYTES = 3 * 1024 * 1024;
 
 /** User-facing line when a file fails validation or decode (no “not supported” callouts). */
 export const SUPPORTED_BACKGROUND_FORMATS_MESSAGE =
-  "Only PNG, JPEG, WebP, and HEIC/HEIF are supported.";
+  "Only PNG, JPEG, WebP, AVIF, and HEIC/HEIF are supported.";
 
 const GIF_MAGIC = [0x47, 0x49, 0x46]; // "GIF"
 
@@ -70,7 +78,7 @@ export function validateBackgroundUploadMeta(file: File): string | null {
   }
 
   if (!type) {
-    if (!/\.(png|jpe?g|webp|heic|heif)$/i.test(file.name)) {
+    if (!/\.(png|jpe?g|webp|avif|heic|heif)$/i.test(file.name)) {
       return SUPPORTED_BACKGROUND_FORMATS_MESSAGE;
     }
   }
@@ -86,8 +94,24 @@ export function shouldDecodeHeicWithHeic2any(file: File): boolean {
   return /\.(heic|heif)$/i.test(file.name);
 }
 
+/** Size in bytes of a base64 data URL's content. */
+export function dataUrlByteLength(dataUrl: string): number {
+  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  return (base64.length * 3) / 4 - padding;
+}
+
+function encodeCanvas(canvas: HTMLCanvasElement): string {
+  const webp = canvas.toDataURL("image/webp", BACKGROUND_QUALITY);
+  // Browsers that can't encode WebP (Safari) return a PNG instead, which is far larger.
+  return webp.startsWith("data:image/webp")
+    ? webp
+    : canvas.toDataURL("image/jpeg", BACKGROUND_QUALITY);
+}
+
 /**
- * Decode, optionally downscale, emit JPEG data URL for stable preview + export size.
+ * Decode, downscale to fit the export, and emit a WebP (or JPEG) data URL for stable preview and
+ * export size.
  */
 export async function normalizeBackgroundImageFile(
   file: File,
@@ -111,7 +135,7 @@ export async function normalizeBackgroundImageFile(
       const out = await heic2any({
         blob: file,
         toType: "image/jpeg",
-        quality: BACKGROUND_JPEG_QUALITY,
+        quality: BACKGROUND_QUALITY,
       });
       decodeBlob = Array.isArray(out) ? out[0]! : out;
     } catch {
@@ -128,21 +152,20 @@ export async function normalizeBackgroundImageFile(
 
   try {
     const { width, height } = bitmap;
-    const maxDim = MAX_BACKGROUND_OUTPUT_DIMENSION;
-    const scale = Math.min(1, maxDim / Math.max(width, height, 1));
-    const w = Math.max(1, Math.round(width * scale));
-    const h = Math.max(1, Math.round(height * scale));
-
     const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return { ok: false, error: "Unable to process image in this browser." };
     }
-    ctx.drawImage(bitmap, 0, 0, w, h);
-    const dataUrl = canvas.toDataURL("image/jpeg", BACKGROUND_JPEG_QUALITY);
-    return { ok: true, dataUrl };
+    for (const maxDim of BACKGROUND_OUTPUT_DIMENSIONS) {
+      const scale = Math.min(1, maxDim / Math.max(width, height, 1));
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const dataUrl = encodeCanvas(canvas);
+      if (dataUrlByteLength(dataUrl) <= MAX_UPLOADED_BACKGROUND_BYTES) return { ok: true, dataUrl };
+    }
+    return { ok: false, error: "This image is too detailed to use. Try a smaller one." };
   } finally {
     bitmap.close();
   }

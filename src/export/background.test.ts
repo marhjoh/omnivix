@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ExportRequest } from "@/src/types/template";
-import {
-  EXPORT_BACKGROUND_PATH,
-  MAX_EXPORT_BACKGROUND_BYTES,
-  resolveExportBackground,
-} from "./background";
+import { EXPORT_BACKGROUND_PATH, resolveExportBackground } from "./background";
+import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
 
 const payload = (backgroundImage?: unknown): ExportRequest => ({
   templateId: "quote-banner",
@@ -48,8 +45,8 @@ describe("resolveExportBackground", () => {
     ["a non-base64 data URL", "data:image/png,rawbytes"],
     ["malformed base64", "data:image/png;base64,not base64!"],
     [
-      `an upload over ${MAX_EXPORT_BACKGROUND_BYTES / (1024 * 1024)} MB`,
-      dataUrl("image/png", Buffer.alloc(MAX_EXPORT_BACKGROUND_BYTES + 1)),
+      `an upload over ${MAX_UPLOADED_BACKGROUND_BYTES / (1024 * 1024)} MB`,
+      dataUrl("image/png", Buffer.alloc(MAX_UPLOADED_BACKGROUND_BYTES + 1)),
     ],
     ["an http link", "http://example.com/a.jpg"],
     ["a protocol-relative link", "//example.com/a.jpg"],

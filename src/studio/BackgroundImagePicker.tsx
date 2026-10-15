@@ -20,7 +20,7 @@ import {
 
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
 const BACKGROUND_FILE_ACCEPT =
-  "image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif";
+  "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
 
 function isHttpImageUrl(s: string) {
   return /^https?:\/\//i.test(s.trim());
@@ -261,7 +261,8 @@ export function BackgroundImagePicker({
       ) : null}
 
       <p className="text-[11px] leading-snug text-muted">
-        Formats: PNG, JPEG, WebP, HEIC. Max: {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB.
+        Uploads: PNG, JPEG, WebP, AVIF or HEIC, up to {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)}{" "}
+        MB.
       </p>
 
       {showUrlField ? (

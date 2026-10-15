@@ -23,7 +23,7 @@
   - **Contribution Banner:** a large contribution heatmap
   - **Quote Banner:** a quote and author; needs no GitHub username
 - **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
-- **Backgrounds:** 10 built-in city photos, or upload your own (PNG, JPEG, WebP or HEIC, up to 12 MB)
+- **Backgrounds:** 14 built-in city, nature and abstract backgrounds, a link to an https image, or your own upload (PNG, JPEG, WebP, AVIF or HEIC, up to 12 MB)
 - **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
 - **Export:** a PNG at 3× resolution (for example 4752 × 1188 for LinkedIn)
 - **Studio:** light and dark mode, and works on phones as well as desktop
@@ -135,7 +135,7 @@ The GitHub, contribution and repos banners lay out their content at a fixed natu
 
 Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
 
-The settings travel in the URL, except an uploaded background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`).
+The settings travel in the URL, except an uploaded or linked background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`). Links are downloaded by the server first, and only from public https addresses (`src/export/backgroundLink.ts`). The render page can't load anything except the app itself and GitHub profile photos.
 
 ### GitHub data
 
