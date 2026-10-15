@@ -135,7 +135,7 @@ The GitHub, contribution and repos banners lay out their content at a fixed natu
 
 Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
 
-The settings travel in the URL, so very large uploaded backgrounds can exceed the URL limit; the export then asks for a smaller image.
+The settings travel in the URL, except an uploaded background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`).
 
 ### GitHub data
 
