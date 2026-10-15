@@ -23,10 +23,19 @@ Open an issue first for larger changes or new templates, so the direction is agr
 
 - Keep PRs small and focused, and link the issue they close.
 - Add screenshots for UI changes.
+- PRs are squash-merged, and the PR title becomes the commit on `main`. Write it as a Conventional Commit; CI checks it.
+- If a PR has more than one change for the release notes, list each one in the PR description:
+
+  ```
+  BEGIN_COMMIT_OVERRIDE
+  fix: correct cache duration in the FAQ
+  feat: add a dark theme to the studio
+  END_COMMIT_OVERRIDE
+  ```
 
 ## Releases
 
-Releases are automated with [release-please](https://github.com/googleapis/release-please) and follow [Semantic Versioning](https://semver.org). Commit types decide the next version: `fix:` bumps the patch, `feat:` the minor, and a breaking change (`feat!:` or a `BREAKING CHANGE:` footer) the major. Other types, like `docs:` and `chore:`, don't trigger a release.
+Releases are automated with [release-please](https://github.com/googleapis/release-please) and follow [Semantic Versioning](https://semver.org). The types of the commits on `main` (your PR titles) decide the next version: `fix:` bumps the patch, `feat:` the minor, and a breaking change (`feat!:` or a `BREAKING CHANGE:` footer) the major. Other types, like `docs:` and `chore:`, don't trigger a release.
 
 After a merge to `main` with a `feat:` or `fix:` commit, the release workflow opens a release PR and merges it once CI passes. That bumps `package.json`, updates `CHANGELOG.md`, tags `vX.Y.Z` and publishes a GitHub Release with the notes. Don't edit the version or the changelog by hand.
 
