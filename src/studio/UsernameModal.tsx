@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 const externalActionClass =
-  "group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-medium text-text shadow-xs transition-[border-color,background-color,box-shadow,color] hover:border-accent hover:bg-accent/10 hover:shadow-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[rgba(47,129,247,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]";
+  "group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-medium text-text shadow-xs transition-[border-color,background-color,box-shadow,color] hover:border-accent hover:bg-accent/10 hover:shadow-md focus-visible:border-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/15";
 
 const STORAGE_KEY = "omnivix:github-username";
 

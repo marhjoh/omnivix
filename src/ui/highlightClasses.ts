@@ -5,7 +5,7 @@
  * highlight behind it (HoverHighlightItem) is the hover state; 36px tall with 18px icons.
  */
 export const highlightItemBaseClass =
-  "relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/40";
+  "relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-1 focus-visible:outline-accent focus-visible:ring-[3px] focus-visible:ring-accent/15";
 
 /** Default (muted) coloring; use highlightItemBaseClass with your own text color for accents. */
 export const highlightItemClass = `${highlightItemBaseClass} text-muted hover:text-text`;

@@ -123,7 +123,7 @@ body {
   .btn-primary:hover:not(:disabled) {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
-    box-shadow: 0 0 16px rgba(47, 129, 247, 0.25);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
   /* Disabled buttons keep pointer events so their title tooltip can explain why. */

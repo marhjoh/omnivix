@@ -154,7 +154,7 @@
 :global(.field-input:focus) {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.15);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 /* Same shape as focus, in the danger color: a value that can't be used (e.g. a broken image link). */

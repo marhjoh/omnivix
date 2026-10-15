@@ -144,8 +144,10 @@ function RepoMultiSelect({
                   onClick={() => toggle(repo.name)}
                   disabled={full}
                   aria-pressed={on}
-                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    on ? "bg-accent/15 text-text" : "text-muted enabled:hover:bg-surface"
+                  className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    on
+                      ? "border-accent bg-accent/10 text-text"
+                      : "border-transparent text-muted enabled:hover:bg-surface"
                   }`}
                 >
                   <span
