@@ -16,17 +16,10 @@ describe("computePreviewContentState", () => {
     dataReady: false,
   };
 
-  it("returns loading before hydration", () => {
-    expect(computePreviewContentState({ ...base, hydrated: false, dataReady: false })).toBe(
-      "loading",
-    );
-  });
-
   it("returns empty when username required but missing", () => {
     expect(
       computePreviewContentState({
         ...base,
-        hydrated: true,
         username: "  ",
         dataReady: true,
       }),
@@ -37,7 +30,6 @@ describe("computePreviewContentState", () => {
     expect(
       computePreviewContentState({
         ...base,
-        hydrated: true,
         dataError: "Network error",
         dataReady: false,
       }),
@@ -45,13 +37,11 @@ describe("computePreviewContentState", () => {
   });
 
   it("returns loading when username set but data not ready", () => {
-    expect(computePreviewContentState({ ...base, hydrated: true, dataReady: false })).toBe(
-      "loading",
-    );
+    expect(computePreviewContentState({ ...base, dataReady: false })).toBe("loading");
   });
 
   it("returns ready when data ready", () => {
-    expect(computePreviewContentState({ ...base, hydrated: true, dataReady: true })).toBe("ready");
+    expect(computePreviewContentState({ ...base, dataReady: true })).toBe("ready");
   });
 
   it("is empty when required content (the quote) is missing", () => {
@@ -62,7 +52,6 @@ describe("computePreviewContentState", () => {
         username: "",
         missingContent: true,
         dataReady: true,
-        hydrated: true,
       }),
     ).toBe("empty");
   });

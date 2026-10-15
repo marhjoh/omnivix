@@ -2,7 +2,6 @@ import type { GithubDataKind } from "@/src/types/template";
 import type { PreviewContentState, PreviewProblem } from "./types";
 
 export function computePreviewContentState(params: {
-  hydrated: boolean;
   needsUsername: boolean;
   username: string;
   /** A required field (other than the username), such as the quote, is empty. */
@@ -11,10 +10,6 @@ export function computePreviewContentState(params: {
   dataReady: boolean;
 }): PreviewContentState {
   const username = params.username.trim();
-
-  if (!params.hydrated) {
-    return "loading";
-  }
 
   if ((params.needsUsername && !username) || params.missingContent) {
     return "empty";

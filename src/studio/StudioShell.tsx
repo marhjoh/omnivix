@@ -175,8 +175,6 @@ function useFetchJson<T>(
   };
 }
 
-const subscribeNever = () => () => {};
-
 /** Loads quicker than this go straight to the new preview, without showing the loading screen. */
 const LOADING_SCREEN_DELAY_MS = 300;
 
@@ -253,16 +251,6 @@ export function StudioShell({
   const [state, setState] = useState<Record<string, unknown>>(() =>
     applySavedSettings({ ...definition.initialState }, templateId, savedSettings, savedUsername),
   );
-
-  const isClient = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
-  const [hydrated, setHydrated] = useState(false);
-  if (isClient && !hydrated) {
-    setHydrated(true);
-  }
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarCollapsed);
@@ -470,14 +458,13 @@ export function StudioShell({
   const previewState = useMemo(
     () =>
       computePreviewContentState({
-        hydrated,
         needsUsername,
         username,
         missingContent,
         dataError: previewProblem?.title ?? null,
         dataReady,
       }),
-    [hydrated, needsUsername, username, missingContent, previewProblem, dataReady],
+    [needsUsername, username, missingContent, previewProblem, dataReady],
   );
 
   const handlePreviewRetry = useCallback(() => {
@@ -495,17 +482,10 @@ export function StudioShell({
   const dismissToast = useCallback((id?: number) => {
     setToast((current) => (id === undefined || current?.id === id ? null : current));
   }, []);
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  // GitHub banners ask for a username right away when none is saved.
+  const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !savedUsername);
   const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
   const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);
-
-  // Open the username prompt whenever a username becomes required but is missing.
-  const shouldPromptUsername = hydrated && needsUsername && !username;
-  const [prevShouldPromptUsername, setPrevShouldPromptUsername] = useState(false);
-  if (shouldPromptUsername !== prevShouldPromptUsername) {
-    setPrevShouldPromptUsername(shouldPromptUsername);
-    if (shouldPromptUsername) setShowUsernameModal(true);
-  }
 
   const updateState = useCallback(
     (key: string, value: unknown) => {
@@ -522,15 +502,14 @@ export function StudioShell({
     [templateId],
   );
 
-  // Saved as cookies after loading, and only when the saved part changes (not on every drag).
+  // Saved as cookies, and only when the saved part changes (not on every background drag).
   const storedJson = useMemo(() => storedStateJson(state, needsUsername), [state, needsUsername]);
   useEffect(() => {
-    if (!hydrated) return;
     setCookieClient(settingsCookieName(templateId), storedJson);
-  }, [hydrated, templateId, storedJson]);
+  }, [templateId, storedJson]);
   useEffect(() => {
-    if (hydrated && needsUsername && username) setCookieClient(USERNAME_COOKIE, username);
-  }, [hydrated, needsUsername, username]);
+    if (needsUsername && username) setCookieClient(USERNAME_COOKIE, username);
+  }, [needsUsername, username]);
 
   const stateValid = useMemo(
     () => definition.stateSchema.safeParse(state).success,

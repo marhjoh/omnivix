@@ -143,7 +143,7 @@ The settings travel in the URL, except an uploaded or linked background: `/api/e
 
 ### Theme
 
-The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), and the server reads the same cookie, so pages never flash the wrong theme. The export uses the same theme for the banner's interface elements.
+The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), and the server reads the same cookie, so pages never flash the wrong theme. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint.
 
 ### Link previews and search
 
