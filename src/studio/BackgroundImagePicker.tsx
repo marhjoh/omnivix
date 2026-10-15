@@ -5,6 +5,7 @@ import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { isInsecureImageLink } from "@/src/lib/imageLink";
+import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
 import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
@@ -159,7 +160,7 @@ export function BackgroundImagePicker({
   const onUrlChange = (raw: string) => {
     setUrlDraft(raw);
     if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
-    urlTimeoutRef.current = setTimeout(() => pushUrlToParent(raw), 400);
+    urlTimeoutRef.current = setTimeout(() => pushUrlToParent(raw), INPUT_DEBOUNCE_MS);
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     settleTimeoutRef.current = setTimeout(() => setSettledLink(raw.trim()), LINK_SETTLE_MS);
   };

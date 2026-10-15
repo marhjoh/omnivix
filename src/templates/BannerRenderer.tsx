@@ -13,13 +13,11 @@ export function BannerRenderer({
   templateId,
   state,
   data,
-  isExport = false,
   uiTheme: uiThemeProp,
 }: {
   templateId: TemplateId;
   state: Record<string, unknown>;
   data: RenderData;
-  isExport?: boolean;
   /** When set (e.g. PNG render route), overrides client theme. */
   uiTheme?: Theme;
 }) {
@@ -27,7 +25,7 @@ export function BannerRenderer({
   const uiTheme = uiThemeProp ?? contextTheme;
 
   if (templateId === "github-banner") {
-    return <GithubBannerRenderer state={state} data={data} isExport={isExport} uiTheme={uiTheme} />;
+    return <GithubBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
   }
 
   if (templateId === "repos-banner") {

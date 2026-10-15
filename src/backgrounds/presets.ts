@@ -11,8 +11,8 @@ interface BackgroundPreset {
   group: string;
   /** Public path served from /public */
   src: string;
-  /** Photographer and Unsplash photo page, for photo presets. */
-  credit?: { author: string; url: string };
+  /** For photo presets: photographer, Unsplash photo page, and the image on Unsplash's CDN. */
+  credit?: { author: string; url: string; image: string };
   /**
    * Default background position in percent (CSS `object-position`), chosen so the subject stays in
    * frame at every banner size. Defaults to the center.
@@ -26,7 +26,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "London",
     group: "Cities",
     src: "/backgrounds/london.avif",
-    credit: { author: "Benjamin Davies", url: "https://unsplash.com/photos/Oja2ty_9ZLM" },
+    credit: {
+      author: "Benjamin Davies",
+      url: "https://unsplash.com/photos/Oja2ty_9ZLM",
+      image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad",
+    },
     focus: { x: 30, y: 85 },
   },
   {
@@ -34,7 +38,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "New York",
     group: "Cities",
     src: "/backgrounds/new-york.avif",
-    credit: { author: "Mike Chavarri", url: "https://unsplash.com/photos/kZokA2VTKn4" },
+    credit: {
+      author: "Mike Chavarri",
+      url: "https://unsplash.com/photos/kZokA2VTKn4",
+      image: "https://images.unsplash.com/photo-1518235506717-e1ed3306a89b",
+    },
     focus: { x: 50, y: 45 },
   },
   {
@@ -42,14 +50,22 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Chicago",
     group: "Cities",
     src: "/backgrounds/chicago.avif",
-    credit: { author: "Max Bender", url: "https://unsplash.com/photos/VmX3vmBecFE" },
+    credit: {
+      author: "Max Bender",
+      url: "https://unsplash.com/photos/VmX3vmBecFE",
+      image: "https://images.unsplash.com/photo-1519501025264-65ba15a82390",
+    },
   },
   {
     id: "toronto",
     label: "Toronto",
     group: "Cities",
     src: "/backgrounds/toronto.avif",
-    credit: { author: "Sandro Schuh", url: "https://unsplash.com/photos/6wVqCeK030Y" },
+    credit: {
+      author: "Sandro Schuh",
+      url: "https://unsplash.com/photos/6wVqCeK030Y",
+      image: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f",
+    },
     focus: { x: 50, y: 70 },
   },
   {
@@ -57,7 +73,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Lisbon",
     group: "Cities",
     src: "/backgrounds/lisbon.avif",
-    credit: { author: "Aleksandr Zaitsev", url: "https://unsplash.com/photos/zEFfW3kXQR8" },
+    credit: {
+      author: "Aleksandr Zaitsev",
+      url: "https://unsplash.com/photos/zEFfW3kXQR8",
+      image: "https://images.unsplash.com/photo-1748279944004-f1d733dc711b",
+    },
     focus: { x: 50, y: 70 },
   },
   {
@@ -65,7 +85,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Seoul",
     group: "Cities",
     src: "/backgrounds/seoul.avif",
-    credit: { author: "Ping Onganankun", url: "https://unsplash.com/photos/5htrsUUbFGI" },
+    credit: {
+      author: "Ping Onganankun",
+      url: "https://unsplash.com/photos/5htrsUUbFGI",
+      image: "https://images.unsplash.com/photo-1532649097480-b67d52743b69",
+    },
     focus: { x: 50, y: 60 },
   },
   {
@@ -73,7 +97,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Sydney",
     group: "Cities",
     src: "/backgrounds/sydney.avif",
-    credit: { author: "Joshua Delica", url: "https://unsplash.com/photos/9FqNt_8Mg0U" },
+    credit: {
+      author: "Joshua Delica",
+      url: "https://unsplash.com/photos/9FqNt_8Mg0U",
+      image: "https://images.unsplash.com/photo-1667992501579-b6d13aedca18",
+    },
     focus: { x: 50, y: 35 },
   },
   {
@@ -81,7 +109,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Swiss Alps",
     group: "Nature",
     src: "/backgrounds/swiss-alps.avif",
-    credit: { author: "Sam Ferrara", url: "https://unsplash.com/photos/1527pjeb6jg" },
+    credit: {
+      author: "Sam Ferrara",
+      url: "https://unsplash.com/photos/1527pjeb6jg",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+    },
     focus: { x: 50, y: 45 },
   },
   {
@@ -89,7 +121,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Norwegian Fjord",
     group: "Nature",
     src: "/backgrounds/norwegian-fjord.avif",
-    credit: { author: "Robert Bye", url: "https://unsplash.com/photos/e1sTn8-hGEE" },
+    credit: {
+      author: "Robert Bye",
+      url: "https://unsplash.com/photos/e1sTn8-hGEE",
+      image: "https://images.unsplash.com/photo-1505731324189-3d0afbeafcbf",
+    },
     focus: { x: 50, y: 60 },
   },
   {
@@ -97,7 +133,11 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     label: "Sahara Dunes",
     group: "Nature",
     src: "/backgrounds/sahara.avif",
-    credit: { author: "Emma Van Sant", url: "https://unsplash.com/photos/GkIGSLW04Nc" },
+    credit: {
+      author: "Emma Van Sant",
+      url: "https://unsplash.com/photos/GkIGSLW04Nc",
+      image: "https://images.unsplash.com/photo-1617374128851-c84e37dc9f37",
+    },
   },
   { id: "aurora", label: "Aurora", group: "Abstract", src: "/backgrounds/aurora.svg" },
   {

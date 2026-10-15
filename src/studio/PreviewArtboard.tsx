@@ -2,6 +2,7 @@ import { CSSProperties } from "react";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
+import { templateRegistry } from "@/src/templates/registry";
 import { RenderData } from "@/src/templates/renderers/types";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import {
@@ -36,8 +37,8 @@ export function PreviewArtboard({
   previewState: PreviewContentState;
   /** Shown in place of the banner when `previewState` is "error". */
   problem: PreviewProblem | null;
-  onRetry?: () => void;
-  onChangeUsername?: () => void;
+  onRetry: () => void;
+  onChangeUsername: () => void;
   /** Set while the background is being adjusted: shows the drag surface over the preview. */
   backgroundAdjust?: {
     position: BackgroundPosition;
@@ -47,8 +48,9 @@ export function PreviewArtboard({
   };
 }) {
   const dims = BANNER_SIZES[size];
-  const emptyCopy = previewEmptyCopy(templateId);
-  const loadingMessage = previewLoadingMessage(templateId);
+  const { meta } = templateRegistry[templateId];
+  const emptyCopy = previewEmptyCopy(meta.needsUsername ?? false);
+  const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const scale = available ? fitScale(available, dims) : null;
 
@@ -71,7 +73,7 @@ export function PreviewArtboard({
               visibility: scale === null ? "hidden" : undefined,
             }}
           >
-            <BannerRenderer templateId={templateId} state={state} data={data} isExport={false} />
+            <BannerRenderer templateId={templateId} state={state} data={data} />
           </div>
         ) : null}
         {previewState === "ready" && scale !== null && backgroundAdjust ? (
@@ -84,19 +86,19 @@ export function PreviewArtboard({
                 <PreviewLoadingState message={loadingMessage} />
               ) : previewState === "empty" ? (
                 <PreviewEmptyState title={emptyCopy.title} description={emptyCopy.description} />
-              ) : (
+              ) : problem ? (
                 <PreviewErrorState
-                  message={problem?.title ?? "Something went wrong"}
-                  hint={problem?.hint ?? ""}
+                  message={problem.title}
+                  hint={problem.hint}
                   action={
-                    problem?.action === "retry" && onRetry
+                    problem.action === "retry"
                       ? { label: "Try again", onClick: onRetry }
-                      : problem?.action === "change-username" && onChangeUsername
+                      : problem.action === "change-username"
                         ? { label: "Change username", onClick: onChangeUsername }
                         : undefined
                   }
                 />
-              )}
+              ) : null}
             </div>
           </PreviewFrame>
         )}

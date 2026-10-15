@@ -7,8 +7,6 @@ type BannerUiChrome = {
   textMuted: string;
   gridOverlayBg: string;
   gridOverlayBorder: string;
-  frameFallback: string;
-  emptyStateIconSrc: string;
 };
 
 export function bannerUiChrome(t: Theme): BannerUiChrome {
@@ -19,8 +17,6 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
       textMuted: "#656d76",
       gridOverlayBg: "rgba(246, 248, 250, 0.94)",
       gridOverlayBorder: "rgba(31, 35, 40, 0.12)",
-      frameFallback: "#ffffff",
-      emptyStateIconSrc: "/brand/icon-dark.svg",
     };
   }
   return {
@@ -29,8 +25,6 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
     textMuted: "rgba(255,255,255,0.58)",
     gridOverlayBg: "rgba(13, 17, 23, 0.82)",
     gridOverlayBorder: "rgba(255, 255, 255, 0.1)",
-    frameFallback: "#0f172a",
-    emptyStateIconSrc: "/brand/icon-light.svg",
   };
 }
 

@@ -2,16 +2,12 @@ import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
-import { normalizeContentAlign, FLEX_ALIGN } from "@/src/banner/contentAlign";
+import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { RepoCard } from "@/src/banner/RepoCard";
-import { BannerMuted, BannerTitle } from "@/src/banner/Text";
+import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
-import type { GithubUserNormalized } from "@/src/github/normalize";
 import { reposShown } from "@/src/lib/repoSelection";
-
-/** Natural sizes; `FitContent` scales profile and cards together to the chosen size and format. */
-const PROFILE_SIZING = { avatar: 28, name: 13, handle: 12 };
 
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
 const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
@@ -23,101 +19,14 @@ function reposBannerColumnCount(count: number): number {
 const REPO_GRID_GAP_PX = 10;
 const REPO_CARD_COLUMN_PX = 250;
 
-function ProfileBlock({
-  user,
-  username,
-  chrome,
-  showAvatar,
-  showDisplayName,
-  right,
-}: {
-  user: GithubUserNormalized | undefined;
-  username: string;
-  chrome: ReturnType<typeof bannerUiChrome>;
-  showAvatar: boolean;
-  showDisplayName: boolean;
-  /** Profile Position: on the right edge of the content instead of the left. */
-  right: boolean;
-}) {
-  const login = user?.login ?? username;
-  const displayName = user?.name?.trim();
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        width: "100%",
-        minWidth: 0,
-        justifyContent: right ? "flex-end" : "flex-start",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: showDisplayName && displayName ? 8 : 6,
-          alignItems: "center",
-        }}
-      >
-        {showAvatar && user?.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.avatarUrl}
-            alt=""
-            style={{
-              width: PROFILE_SIZING.avatar,
-              height: PROFILE_SIZING.avatar,
-              borderRadius: "50%",
-              flexShrink: 0,
-            }}
-          />
-        ) : null}
-        <div style={{ minWidth: 0, textAlign: right ? "right" : "left" }}>
-          {showDisplayName && displayName ? (
-            <>
-              <BannerTitle
-                style={{
-                  fontSize: PROFILE_SIZING.name,
-                  lineHeight: 1.15,
-                  margin: "0 0 2px",
-                  color: chrome.text,
-                }}
-              >
-                {displayName}
-              </BannerTitle>
-              <BannerMuted
-                style={{ fontSize: PROFILE_SIZING.handle, color: chrome.textMuted, margin: 0 }}
-              >
-                @{login}
-              </BannerMuted>
-            </>
-          ) : (
-            <p
-              style={{
-                margin: 0,
-                fontSize: PROFILE_SIZING.handle,
-                fontWeight: 600,
-                lineHeight: 1.2,
-                color: chrome.text,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              @{login}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function ReposBannerRenderer({
   state,
   data,
-  uiTheme = "dark",
+  uiTheme,
 }: {
   state: Record<string, unknown>;
   data: RenderData;
-  uiTheme?: Theme;
+  uiTheme: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const background = backgroundFromState(state);
@@ -139,142 +48,12 @@ export function ReposBannerRenderer({
   const showStars = state.showStars !== false;
   const showForks = state.showForks !== false;
 
-  if (!username) {
-    return (
-      <Frame appTheme={uiTheme} style={{ background: chrome.baseBg, color: chrome.text }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            gap: 8,
-            textAlign: "center",
-            padding: "0 20px",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={chrome.emptyStateIconSrc}
-            alt=""
-            style={{ width: 40, height: 40, flexShrink: 0, opacity: 0.55 }}
-          />
-          <p
-            style={{
-              fontSize: 16,
-              fontWeight: 400,
-              lineHeight: 1.45,
-              color: chrome.text,
-              margin: 0,
-              maxWidth: 320,
-            }}
-          >
-            Select a GitHub profile to get started
-          </p>
-        </div>
-      </Frame>
-    );
-  }
-
-  const user = data.user;
-
-  if (repos.length === 0) {
-    return (
-      <Frame
-        appTheme={uiTheme}
-        background={background}
-        style={{ background: chrome.baseBg, color: chrome.text }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: FLEX_ALIGN[alignment],
-            padding: "12px 20px",
-            height: "100%",
-            width: "100%",
-            boxSizing: "border-box",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              width: "fit-content",
-              maxWidth: "100%",
-              minWidth: 0,
-              alignItems: "stretch",
-            }}
-          >
-            <ProfileBlock
-              user={user}
-              username={username}
-              chrome={chrome}
-              showAvatar={showAvatar}
-              showDisplayName={showDisplayName}
-              right={profileRight}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "stretch",
-                textAlign: "left",
-                gap: 6,
-                maxWidth: 300,
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={chrome.emptyStateIconSrc}
-                alt=""
-                style={{ width: 40, height: 40, flexShrink: 0, opacity: 0.55 }}
-              />
-              <p
-                style={{
-                  fontSize: 16,
-                  fontWeight: 400,
-                  lineHeight: 1.45,
-                  color: chrome.text,
-                  margin: 0,
-                }}
-              >
-                {mode === "selected" ? "No matching repositories" : "No pinned repositories"}
-              </p>
-              <p
-                style={{
-                  fontSize: 13,
-                  fontWeight: 400,
-                  lineHeight: 1.5,
-                  color: chrome.textMuted,
-                  margin: 0,
-                }}
-              >
-                {mode === "selected"
-                  ? "Choose public repositories from the list in the sidebar."
-                  : "Pin repositories on your GitHub profile, or switch to Selected mode."}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Frame>
-    );
-  }
-
   return (
-    <Frame
-      appTheme={uiTheme}
-      background={background}
-      style={{ background: chrome.baseBg, color: chrome.text }}
-    >
+    <Frame uiTheme={uiTheme} background={background}>
       <FitContent size={contentSize} align={alignment}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
-            user={user}
+            user={data.user}
             username={username}
             chrome={chrome}
             showAvatar={showAvatar}

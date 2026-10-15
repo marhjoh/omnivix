@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 
 type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
-/** Outcome per src for the browser session, so a remount doesn't wait on an image already seen. */
+/**
+ * Outcome per src for the browser session, so a remount doesn't wait on an image already seen.
+ * Uploads (data URLs, often megabytes) aren't kept; they load instantly anyway.
+ */
 const knownStatus = new Map<string, "loaded" | "failed">();
 
 /**
@@ -17,7 +20,7 @@ export function useImageStatus(src: string | undefined): ImageStatus {
     if (!src) return;
     const img = new Image();
     const settle = (status: "loaded" | "failed") => {
-      knownStatus.set(src, status);
+      if (!src.startsWith("data:")) knownStatus.set(src, status);
       setResult({ src, status });
     };
     img.onload = () => settle("loaded");

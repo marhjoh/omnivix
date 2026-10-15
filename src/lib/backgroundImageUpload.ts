@@ -119,10 +119,6 @@ function encodeCanvas(canvas: HTMLCanvasElement): string {
 export async function normalizeBackgroundImageFile(
   file: File,
 ): Promise<{ ok: true; dataUrl: string } | { ok: false; error: string }> {
-  if (typeof document === "undefined") {
-    return { ok: false, error: "Upload is only available in the browser." };
-  }
-
   const metaErr = validateBackgroundUploadMeta(file);
   if (metaErr) return { ok: false, error: metaErr };
 

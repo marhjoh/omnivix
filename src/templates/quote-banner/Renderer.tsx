@@ -2,10 +2,15 @@ import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
-import { BannerMuted } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { quoteBannerDefinition } from "@/src/templates/definitions";
 import { RenderData } from "@/src/templates/renderers/types";
+
+/** A quote longer than this is set smaller and may run to more lines. */
+const LONG_QUOTE_CHARS = 120;
+const LONG_QUOTE_SCALE = 0.7;
+const MIN_QUOTE_PX = 24;
+const QUOTE_LINES = { short: 3, long: 5 };
 
 /** Fixed type sizes: the quote keeps its own scale rather than fitting to the banner. */
 const QUOTE_SIZES: Record<ContentSize, { quote: number; author: number }> = {
@@ -18,11 +23,11 @@ const QUOTE_SIZES: Record<ContentSize, { quote: number; author: number }> = {
 
 export function QuoteBannerRenderer({
   state,
-  uiTheme = "dark",
+  uiTheme,
 }: {
   state: Record<string, unknown>;
   data: RenderData;
-  uiTheme?: Theme;
+  uiTheme: Theme;
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const background = backgroundFromState(state);
@@ -34,18 +39,13 @@ export function QuoteBannerRenderer({
       normalizeContentSize(state.contentSize, quoteBannerDefinition.initialState.contentSize)
     ];
 
-  const longText = quote.length > 120;
+  const longText = quote.length > LONG_QUOTE_CHARS;
   const quoteFontSize = longText
-    ? Math.max(24, Math.round(quoteScale.quote * 0.7))
+    ? Math.max(MIN_QUOTE_PX, Math.round(quoteScale.quote * LONG_QUOTE_SCALE))
     : quoteScale.quote;
-  const authorFontSize = Math.max(12, Math.round(quoteScale.author));
 
   return (
-    <Frame
-      appTheme={uiTheme}
-      background={background}
-      style={{ background: chrome.baseBg, color: chrome.text }}
-    >
+    <Frame uiTheme={uiTheme} background={background}>
       <div
         style={{
           display: "flex",
@@ -65,7 +65,7 @@ export function QuoteBannerRenderer({
             letterSpacing: "-0.02em",
             overflow: "hidden",
             display: "-webkit-box",
-            WebkitLineClamp: longText ? 5 : 3,
+            WebkitLineClamp: longText ? QUOTE_LINES.long : QUOTE_LINES.short,
             WebkitBoxOrient: "vertical",
             wordBreak: "break-word",
           }}
@@ -73,18 +73,18 @@ export function QuoteBannerRenderer({
           &ldquo;{quote}&rdquo;
         </blockquote>
         {author && (
-          <BannerMuted
+          <p
             style={{
               marginTop: 16,
-              fontSize: authorFontSize,
+              fontSize: quoteScale.author,
               color: chrome.textMuted,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
             }}
           >
-            - {author}
-          </BannerMuted>
+            — {author}
+          </p>
         )}
       </div>
     </Frame>

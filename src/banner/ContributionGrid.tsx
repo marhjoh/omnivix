@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { ContributionCellShape } from "@/src/templates/definitions";
 import { ContributionsNormalized } from "@/src/github/normalize";
 import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/lib/contributionCalendarLayout";
@@ -52,9 +53,22 @@ export function ContributionGrid({
   totalFill,
   cellShape = "rounded",
 }: ContributionGridProps) {
-  const monthDayColor = labelFill ?? theme.textSecondary;
-  const footerColor = totalFill ?? theme.textSecondary;
+  // Without explicit colors, labels use the banner's text color.
+  const monthDayColor = labelFill ?? "currentColor";
+  const footerColor = totalFill ?? "currentColor";
   const { rx, ry } = cellRadii(cellShape, cellSize);
+  // About 370 cells; worth keeping while the banner re-renders (e.g. dragging the background).
+  const { placedDays, monthLabels, columnCount } = useMemo(
+    () =>
+      buildCalendarLayout({
+        weeks: contributions.weeks ?? [],
+        months: contributions.months ?? [],
+        rangeStartYmd: contributions.rangeStartYmd,
+        rangeEndYmd: contributions.rangeEndYmd,
+        renderPaddingDays,
+      }),
+    [contributions, renderPaddingDays],
+  );
 
   if (!contributions.weeks?.length) {
     return (
@@ -72,14 +86,6 @@ export function ContributionGrid({
       </div>
     );
   }
-
-  const { placedDays, monthLabels, columnCount } = buildCalendarLayout({
-    weeks: contributions.weeks,
-    months: contributions.months ?? [],
-    rangeStartYmd: contributions.rangeStartYmd,
-    rangeEndYmd: contributions.rangeEndYmd,
-    renderPaddingDays,
-  });
 
   const dayLabelWidth = showDayLabels ? 28 : 0;
   const monthLabelHeight = showMonthLabels ? 20 : 0;
@@ -165,7 +171,8 @@ export function ContributionGrid({
             textAnchor="end"
             dominantBaseline="alphabetic"
           >
-            {contributions.total.toLocaleString()} contributions
+            {/* A fixed locale, so the preview and the server-rendered export match. */}
+            {contributions.total.toLocaleString("en-US")} contributions
           </text>
         )}
       </svg>

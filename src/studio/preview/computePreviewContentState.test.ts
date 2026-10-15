@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computePreviewContentState,
+  previewLoadingMessage,
   fetchErrorProblem,
   noReposProblem,
   userNotFoundProblem,
@@ -8,10 +9,9 @@ import {
 
 describe("computePreviewContentState", () => {
   const base = {
-    templateId: "github-banner" as const,
     needsUsername: true,
     username: "octocat",
-    quoteText: "",
+    missingContent: false,
     dataError: null as string | null,
     dataReady: false,
   };
@@ -54,14 +54,13 @@ describe("computePreviewContentState", () => {
     expect(computePreviewContentState({ ...base, hydrated: true, dataReady: true })).toBe("ready");
   });
 
-  it("quote-banner empty when quote trimmed empty", () => {
+  it("is empty when required content (the quote) is missing", () => {
     expect(
       computePreviewContentState({
         ...base,
-        templateId: "quote-banner",
         needsUsername: false,
         username: "",
-        quoteText: "   ",
+        missingContent: true,
         dataReady: true,
         hydrated: true,
       }),
@@ -106,5 +105,16 @@ describe("userNotFoundProblem", () => {
       hint: "Check the spelling, or choose another username.",
       action: "change-username",
     });
+  });
+});
+
+describe("previewLoadingMessage", () => {
+  it("names the data being loaded", () => {
+    expect(previewLoadingMessage(["user", "contributions"])).toBe(
+      "Loading profile and contributions…",
+    );
+    expect(previewLoadingMessage(["contributions"])).toBe("Loading contributions…");
+    expect(previewLoadingMessage(["user", "repos"])).toBe("Loading profile and repositories…");
+    expect(previewLoadingMessage([])).toBe("Loading…");
   });
 });

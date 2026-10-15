@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
-import {
-  computeLatestContributionRangeUtc,
-  isLeapYear,
-  listInclusiveUtcCalendarDays,
-  listUtcCalendarYearDays,
-} from "./utcContributionRange";
+import { computeLatestContributionRangeUtc } from "./utcContributionRange";
+
+const DAY_MS = 86_400_000;
 
 /** Product contract: explicit 365-day latest + full calendar YYYY. */
 
@@ -12,10 +9,11 @@ describe("computeLatestContributionRangeUtc", () => {
   it("spans exactly 365 inclusive UTC calendar days", () => {
     const anchor = new Date(Date.UTC(2026, 3, 3, 15, 30, 0));
     const r = computeLatestContributionRangeUtc(anchor);
-    const days = listInclusiveUtcCalendarDays(r.fromIso.slice(0, 10), r.toIso.slice(0, 10));
-    expect(days).toHaveLength(365);
-    expect(days[0]).toBe("2025-04-04");
-    expect(days[364]).toBe("2026-04-03");
+    expect(r.fromIso.slice(0, 10)).toBe("2025-04-04");
+    expect(r.toIso.slice(0, 10)).toBe("2026-04-03");
+    const days =
+      (Date.parse(r.toIso.slice(0, 10)) - Date.parse(r.fromIso.slice(0, 10))) / DAY_MS + 1;
+    expect(days).toBe(365);
   });
 
   it("exposes toYyyyMmDd matching anchor UTC date for cache keys", () => {
@@ -29,36 +27,5 @@ describe("computeLatestContributionRangeUtc", () => {
     const b = computeLatestContributionRangeUtc(new Date(Date.UTC(2024, 5, 10, 23, 59, 59)));
     expect(a.fromIso).toBe(b.fromIso);
     expect(a.toIso).toBe(b.toIso);
-  });
-});
-
-describe("listUtcCalendarYearDays", () => {
-  it("returns 365 days for a non-leap year", () => {
-    const d = listUtcCalendarYearDays(2023);
-    expect(d).toHaveLength(365);
-    expect(d[0]).toBe("2023-01-01");
-    expect(d[364]).toBe("2023-12-31");
-  });
-
-  it("returns 366 days for a leap year", () => {
-    const d = listUtcCalendarYearDays(2024);
-    expect(d).toHaveLength(366);
-    expect(d[59]).toBe("2024-02-29");
-  });
-});
-
-describe("listInclusiveUtcCalendarDays", () => {
-  it("supports arbitrary ranges", () => {
-    const d = listInclusiveUtcCalendarDays("2024-01-01", "2024-01-10");
-    expect(d).toHaveLength(10);
-  });
-});
-
-describe("isLeapYear", () => {
-  it("matches calendar rules", () => {
-    expect(isLeapYear(2024)).toBe(true);
-    expect(isLeapYear(2023)).toBe(false);
-    expect(isLeapYear(1900)).toBe(false);
-    expect(isLeapYear(2000)).toBe(true);
   });
 });

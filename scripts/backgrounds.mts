@@ -15,35 +15,16 @@ const MAX_HEIGHT = WIDTH / 1.5;
 /** Shown at 28% opacity, where compression artifacts don't show. */
 const QUALITY = 40;
 
-interface Source {
-  /** images.unsplash.com URL, without a query string. */
-  url: string;
-  /** Where to crop vertically: 0 keeps the top, 1 the bottom. Defaults to the center. */
-  focusY?: number;
+const photos = BACKGROUND_PRESETS.filter((preset) => preset.credit);
+const requested = process.argv.slice(2);
+for (const id of requested) {
+  if (!photos.some((preset) => preset.id === id)) throw new Error(`No photo preset "${id}"`);
 }
 
-const SOURCES: Record<string, Source> = {
-  london: { url: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad" },
-  "new-york": { url: "https://images.unsplash.com/photo-1518235506717-e1ed3306a89b" },
-  chicago: { url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390" },
-  toronto: { url: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f" },
-  lisbon: { url: "https://images.unsplash.com/photo-1748279944004-f1d733dc711b" },
-  seoul: { url: "https://images.unsplash.com/photo-1532649097480-b67d52743b69" },
-  sydney: { url: "https://images.unsplash.com/photo-1667992501579-b6d13aedca18" },
-  "swiss-alps": { url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4" },
-  "norwegian-fjord": { url: "https://images.unsplash.com/photo-1505731324189-3d0afbeafcbf" },
-  sahara: { url: "https://images.unsplash.com/photo-1617374128851-c84e37dc9f37" },
-};
-
-const requested = process.argv.slice(2);
-const ids = requested.length > 0 ? requested : Object.keys(SOURCES);
-
-for (const id of ids) {
-  const source = SOURCES[id];
-  const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
-  if (!source || !preset) throw new Error(`No preset with a source for "${id}"`);
-
-  const response = await fetch(`${source.url}?fm=jpg&q=95&fit=max&w=${WIDTH}`);
+for (const preset of photos) {
+  if (requested.length > 0 && !requested.includes(preset.id)) continue;
+  const { id } = preset;
+  const response = await fetch(`${preset.credit!.image}?fm=jpg&q=95&fit=max&w=${WIDTH}`);
   if (!response.ok) throw new Error(`${id}: ${response.status} ${response.statusText}`);
   const original = Buffer.from(await response.arrayBuffer());
 
@@ -53,7 +34,7 @@ for (const id of ids) {
   const outPath = join(process.cwd(), "public", preset.src);
   const scaledHeight = Math.round((height * WIDTH) / width);
   const cropHeight = Math.min(scaledHeight, MAX_HEIGHT);
-  const top = Math.round((scaledHeight - cropHeight) * (source.focusY ?? 0.5));
+  const top = Math.round((scaledHeight - cropHeight) / 2);
   await sharp(original)
     .resize(WIDTH)
     .extract({ left: 0, top, width: WIDTH, height: cropHeight })

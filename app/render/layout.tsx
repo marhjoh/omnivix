@@ -12,7 +12,6 @@ body:has([data-omnivix-render-root]) {
   overflow: hidden !important;
   background: transparent !important;
 }
-body:has([data-omnivix-render-root]) #__next-build-indicator,
 body:has([data-omnivix-render-root]) [data-nextjs-dialog-overlay],
 body:has([data-omnivix-render-root]) nextjs-portal {
   display: none !important;

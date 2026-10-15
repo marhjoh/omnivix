@@ -90,24 +90,14 @@
   animation: omnivixShimmer 1.2s ease-in-out infinite;
 }
 
+/* Shorter second row; used together with .skeletonRow. */
 .skeletonRowNarrow {
   width: min(160px, 55cqw);
-  height: 10px;
-  border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--surface-2) 0%,
-    color-mix(in oklab, var(--surface-2) 70%, var(--text)) 50%,
-    var(--surface-2) 100%
-  );
-  background-size: 200% 100%;
-  animation: omnivixShimmer 1.2s ease-in-out infinite;
   opacity: 0.7;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skeletonRow,
-  .skeletonRowNarrow {
+  .skeletonRow {
     animation: none;
     background: var(--surface-2);
   }

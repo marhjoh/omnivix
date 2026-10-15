@@ -9,7 +9,7 @@ export function PreviewLoadingState({ message }: { message: string }) {
       <ThemedIcon className={styles.pulseLogo} size={44} />
       <p className={styles.loadingText}>{message}</p>
       <div className={styles.skeletonRow} aria-hidden />
-      <div className={styles.skeletonRowNarrow} aria-hidden />
+      <div className={`${styles.skeletonRow} ${styles.skeletonRowNarrow}`} aria-hidden />
     </div>
   );
 }

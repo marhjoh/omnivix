@@ -1,23 +1,21 @@
-import { CSSProperties, PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { backgroundImageStyle, type BannerBackground } from "@/src/banner/background";
 
 /**
- * Banner root, identical in preview and export. The studio preview draws its own ring and
+ * Banner root, identical in preview and export: the app theme's banner color and text color,
+ * with the background image (if any) at 28% on top. The studio preview draws its own ring and
  * rounded corners around it (`.omnivix-artboard`) so they stay crisp when the banner is scaled.
  */
 export function Frame({
   children,
   background,
-  style,
-  appTheme = "dark",
+  uiTheme,
 }: PropsWithChildren<{
   background?: BannerBackground;
-  style?: CSSProperties;
-  /** App light/dark: fallback background matches preview + export. */
-  appTheme?: Theme;
+  uiTheme: Theme;
 }>) {
-  const chrome = bannerUiChrome(appTheme);
+  const chrome = bannerUiChrome(uiTheme);
   return (
     <div
       className="banner-export-root"
@@ -26,8 +24,8 @@ export function Frame({
         height: "100%",
         overflow: "hidden",
         position: "relative",
-        background: chrome.frameFallback,
-        ...style,
+        background: chrome.baseBg,
+        color: chrome.text,
       }}
     >
       {background ? (

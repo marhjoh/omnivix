@@ -21,9 +21,9 @@ export function TopBar({
   isDownloading: boolean;
   /** Nothing to export yet (or a problem with it); the button is disabled. */
   exportBlocked: boolean;
-  username?: string;
-  needsUsername?: boolean;
-  onChangeUsername?: () => void;
+  username: string;
+  needsUsername: boolean;
+  onChangeUsername: () => void;
   sidebarExpanded: boolean;
   onToggleSidebar: () => void;
 }) {
@@ -108,29 +108,27 @@ export function TopBar({
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        <div className="relative">
-          {/* 36px tall and round like the other header controls; icon-only on phones (aria-label keeps the name). */}
-          <button
-            className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
-            onClick={onDownload}
-            disabled={isDownloading || exportBlocked}
-            aria-label={isDownloading ? "Exporting…" : "Download PNG"}
-            aria-busy={isDownloading}
-            type="button"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="hidden sm:inline">Exporting&hellip;</span>
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Download PNG</span>
-              </>
-            )}
-          </button>
-        </div>
+        {/* 36px tall and round like the other header controls; icon-only on phones (aria-label keeps the name). */}
+        <button
+          className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
+          onClick={onDownload}
+          disabled={isDownloading || exportBlocked}
+          aria-label={isDownloading ? "Exporting…" : "Download PNG"}
+          aria-busy={isDownloading}
+          type="button"
+        >
+          {isDownloading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="hidden sm:inline">Exporting&hellip;</span>
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Download PNG</span>
+            </>
+          )}
+        </button>
       </HoverHighlightGroup>
     </>
   );

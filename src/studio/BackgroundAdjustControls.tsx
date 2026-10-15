@@ -1,6 +1,9 @@
 import { Move } from "lucide-react";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 
+/** Zoom slider step: 5 percentage points. */
+const ZOOM_STEP = 0.05;
+
 /** Position and zoom controls shown under the background picker once a background is chosen. */
 export function BackgroundAdjustControls({
   id,
@@ -51,7 +54,7 @@ export function BackgroundAdjustControls({
         type="range"
         min={MIN_BACKGROUND_ZOOM}
         max={MAX_BACKGROUND_ZOOM}
-        step={0.05}
+        step={ZOOM_STEP}
         value={zoom}
         onChange={(e) => onZoomChange(Number(e.target.value))}
         className="w-full accent-accent"

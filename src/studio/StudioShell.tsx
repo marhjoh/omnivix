@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { templateRegistry } from "@/src/templates/registry";
-import { BannerSize, TemplateId } from "@/src/types/template";
+import type { BannerSize, GithubDataKind, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import {
@@ -45,22 +45,12 @@ type FetchSlotErrors = {
 };
 
 /**
- * Single message for preview: one slot wins per template.
- * The contribution banner only draws contributions; its user fetch is for the sidebar (year list).
+ * The error the preview shows: the first failing fetch among the data the banner draws. (The
+ * contribution banner's user fetch is only for the sidebar's year list, so it never shows.)
  */
-function previewErrorForTemplate(templateId: TemplateId, e: FetchSlotErrors): string | null {
-  if (templateId === "github-banner") {
-    if (e.user) return e.user;
-    if (e.contributions) return e.contributions;
-    return null;
-  }
-  if (templateId === "contribution-banner") {
-    return e.contributions;
-  }
-  if (templateId === "repos-banner") {
-    if (e.user) return e.user;
-    if (e.repos) return e.repos;
-    return null;
+function previewErrorFor(githubData: readonly GithubDataKind[], e: FetchSlotErrors) {
+  for (const kind of githubData) {
+    if (e[kind]) return e[kind];
   }
   return null;
 }
@@ -187,6 +177,9 @@ function useFetchJson<T>(
 
 const subscribeNever = () => () => {};
 
+/** A bit longer than the sidebar's 0.2s transition in studio.module.css. */
+const SIDEBAR_ANIMATION_MS = 300;
+
 /** Keep in sync with the drawer breakpoint in studio.module.css. */
 const PHONE_QUERY = "(max-width: 767px)";
 
@@ -228,7 +221,7 @@ function clampSelectedRepos(
   templateId: TemplateId,
   state: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (templateId !== "repos-banner") return state;
+  if (!templateRegistry[templateId].meta.githubData.includes("repos")) return state;
   const limit = reposShown(state.mode, state.maxRepos);
   const parts = parseRepoSelection(String(state.selectedRepos ?? ""));
   if (parts.length <= limit) return state;
@@ -297,7 +290,10 @@ export function StudioShell({
     setSidebarAnimating(true);
     change();
     window.clearTimeout(animationTimer.current);
-    animationTimer.current = window.setTimeout(() => setSidebarAnimating(false), 300);
+    animationTimer.current = window.setTimeout(
+      () => setSidebarAnimating(false),
+      SIDEBAR_ANIMATION_MS,
+    );
   }, []);
   useEffect(() => () => window.clearTimeout(animationTimer.current), []);
 
@@ -327,8 +323,9 @@ export function StudioShell({
 
   const [refetchNonce, setRefetchNonce] = useState(0);
 
-  const needsContributions = templateId === "github-banner" || templateId === "contribution-banner";
-  const needsReposFetch = templateId === "repos-banner";
+  const { githubData } = definition.meta;
+  const needsContributions = githubData.includes("contributions");
+  const needsReposFetch = githubData.includes("repos");
 
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
   const username = (state.username as string) ?? "";
@@ -422,30 +419,26 @@ export function StudioShell({
     [avatarFailed, data],
   );
 
-  const dataReady = useMemo(() => {
-    if (!needsUsername || !username) return true;
-    if (templateId === "github-banner") {
-      return Boolean(data.user && data.contributions && avatarReady);
-    }
-    if (templateId === "contribution-banner") {
-      return Boolean(data.contributions);
-    }
-    if (templateId === "repos-banner") {
-      return Boolean(data.user && data.repos && avatarReady);
-    }
-    return true;
-  }, [needsUsername, username, templateId, data.user, data.contributions, data.repos, avatarReady]);
+  // Ready once the data the banner draws has loaded (and the profile photo, when it shows one).
+  const dataReady =
+    !needsUsername ||
+    !username ||
+    (githubData.every((kind) => data[kind] !== undefined) &&
+      (!githubData.includes("user") || avatarReady));
 
-  const quoteText = String(state.quote ?? "");
+  // A required field such as the quote is empty (the username is handled on its own).
+  const missingContent = definition.schema.some(
+    (field) => field.required && field.key !== "username" && !String(state[field.key] ?? "").trim(),
+  );
 
   const previewDataError = useMemo(
-    () => previewErrorForTemplate(templateId, fetchErrors),
-    [templateId, fetchErrors],
+    () => previewErrorFor(githubData, fetchErrors),
+    [githubData, fetchErrors],
   );
 
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
-  const noRepos = templateId === "repos-banner" && dataReady && data.repos?.length === 0;
+  const noRepos = needsReposFetch && dataReady && data.repos?.length === 0;
   const userNotFound = userFetch.notFound || contributionsFetch.notFound || reposFetch.notFound;
   const previewProblem = useMemo<PreviewProblem | null>(() => {
     if (previewDataError) {
@@ -459,14 +452,13 @@ export function StudioShell({
     () =>
       computePreviewContentState({
         hydrated,
-        templateId,
         needsUsername,
         username,
-        quoteText,
+        missingContent,
         dataError: previewProblem?.title ?? null,
         dataReady,
       }),
-    [hydrated, templateId, needsUsername, username, quoteText, previewProblem, dataReady],
+    [hydrated, needsUsername, username, missingContent, previewProblem, dataReady],
   );
 
   const handlePreviewRetry = useCallback(() => {
@@ -648,7 +640,6 @@ export function StudioShell({
             <ControlSidebar
               schema={definition.schema}
               state={state}
-              templateId={templateId}
               accountCreatedYear={accountCreatedYear}
               onChange={updateState}
               repoCatalog={repoCatalog}

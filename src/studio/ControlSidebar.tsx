@@ -5,8 +5,9 @@ import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
-import { EditorFieldSchema, TemplateId } from "@/src/types/template";
+import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
+import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -40,7 +41,7 @@ function DebouncedInput({
     const newValue = e.target.value;
     setLocalValue(newValue);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => onChange(newValue), 400);
+    timeoutRef.current = setTimeout(() => onChange(newValue), INPUT_DEBOUNCE_MS);
   };
 
   useEffect(() => {
@@ -244,7 +245,6 @@ function SizePicker({
 export function ControlSidebar({
   schema,
   state,
-  templateId,
   accountCreatedYear,
   onChange,
   repoCatalog,
@@ -259,7 +259,6 @@ export function ControlSidebar({
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
-  templateId: TemplateId;
   accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
   repoCatalog: RepoNormalized[];
@@ -295,12 +294,13 @@ export function ControlSidebar({
       {schema.map((field) => {
         if (field.key === "username") return null;
 
-        if (field.key === "maxRepos" && templateId === "repos-banner" && mode === "selected") {
+        // Selected mode shows the repository picker instead of the amount slider.
+        if (field.key === "maxRepos" && mode === "selected") {
           return null;
         }
 
         if (field.type === "repoMultiSelect") {
-          if (templateId !== "repos-banner" || mode !== "selected") {
+          if (mode !== "selected") {
             return null;
           }
           return (
@@ -338,14 +338,10 @@ export function ControlSidebar({
         }
 
         if (field.key === "year") {
-          const contributionTemplates =
-            templateId === "github-banner" || templateId === "contribution-banner";
-          const yearOptions = contributionTemplates
-            ? [
-                { value: "latest", label: "Last 365 days" },
-                ...years.map((y) => ({ value: y, label: y })),
-              ]
-            : years.map((y) => ({ value: y, label: y }));
+          const yearOptions = [
+            { value: "latest", label: "Last 365 days" },
+            ...years.map((y) => ({ value: y, label: y })),
+          ];
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <Select
