@@ -131,12 +131,25 @@ type FetchResult<T> = {
  */
 const lastFetched = new Map<string, unknown>();
 
+/** Last successful response per `keepKey` (see useFetchJson), for urls that differ only in detail. */
+const lastFetchedByKey = new Map<string, unknown>();
+
 /**
  * Results are stored with the url/nonce they belong to and derived on read,
  * so nothing has to be reset synchronously when the url changes.
  * On error, the last data for the same url is kept.
  */
-function useFetchJson<T>(url: string | null, nonce: number, fallbackError: string) {
+function useFetchJson<T>(
+  url: string | null,
+  nonce: number,
+  fallbackError: string,
+  /**
+   * Responses with the same key stand in for each other while a new url loads, e.g. the
+   * repositories for another selection, so the preview keeps its content instead of flashing
+   * "loading".
+   */
+  keepKey?: string,
+) {
   const [result, setResult] = useState<FetchResult<T> | null>(null);
 
   useEffect(() => {
@@ -146,6 +159,7 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
       (data) => {
         if (ac.signal.aborted) return;
         lastFetched.set(url, data);
+        if (keepKey) lastFetchedByKey.set(keepKey, data);
         setResult({ url, nonce, data, error: null, status: null });
       },
       (error) => {
@@ -161,12 +175,17 @@ function useFetchJson<T>(url: string | null, nonce: number, fallbackError: strin
       },
     );
     return () => ac.abort();
-  }, [url, nonce, fallbackError]);
+  }, [url, nonce, fallbackError, keepKey]);
 
   const current = url && result?.url === url ? result : null;
   const settled = current !== null && current.nonce === nonce;
   return {
-    data: current?.data ?? (url ? (lastFetched.get(url) as T | undefined) : undefined),
+    data:
+      current?.data ??
+      (url
+        ? ((lastFetched.get(url) ?? (keepKey ? lastFetchedByKey.get(keepKey) : undefined)) as
+            T | undefined)
+        : undefined),
     error: settled ? current.error : null,
     notFound: settled && current.status === 404,
     loading: url !== null && !settled,
@@ -352,6 +371,7 @@ export function StudioShell({
       : null,
     refetchNonce,
     "Unable to load GitHub data",
+    `${username}:${repoMode}`,
   );
   const catalogFetch = useFetchJson<RepoNormalized[]>(
     username && needsReposFetch && repoMode === "selected"
@@ -362,7 +382,12 @@ export function StudioShell({
   );
 
   const user = userFetch.error ? undefined : userFetch.data;
-  const repos = reposFetch.error ? undefined : reposFetch.data;
+  // While another selection loads, the previous repositories stay on screen; an empty list doesn't,
+  // or picking the first repository would flash "No repositories selected".
+  const repos =
+    reposFetch.error || (reposFetch.loading && reposFetch.data?.length === 0)
+      ? undefined
+      : reposFetch.data;
   // Contributions keep the last good result for the same username/year when a refetch fails.
   const contributions = contributionsFetch.data;
 
