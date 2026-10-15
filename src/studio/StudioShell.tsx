@@ -542,16 +542,17 @@ export function StudioShell({
       : undefined,
   );
   const backgroundFailed = backgroundStatus === "failed";
-  // A background that failed to load is left out of the preview, so the banner never shows a
-  // broken-image icon (like the profile photo above).
+  // A background that can't be used (it failed to load, or is an http link) is left out of the
+  // preview, so the banner never shows a broken-image icon; the sidebar keeps the choice.
+  const backgroundUnusable = backgroundFailed || isInsecureImageLink(state.backgroundImage);
   const previewBannerState = useMemo(
-    () => (backgroundFailed ? { ...state, backgroundImage: undefined } : state),
-    [backgroundFailed, state],
+    () => (backgroundUnusable ? { ...state, backgroundImage: undefined } : state),
+    [backgroundUnusable, state],
   );
   const exportBlocked = isExportBlocked({
     previewState,
     stateValid,
-    backgroundFailed: backgroundFailed || isInsecureImageLink(state.backgroundImage),
+    backgroundFailed: backgroundUnusable,
   });
 
   async function onDownload() {
@@ -641,6 +642,7 @@ export function StudioShell({
               backgroundAdjusting={adjustingBackground}
               onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
               onError={showError}
+              onErrorResolved={dismissToast}
             />
           </div>
         </aside>

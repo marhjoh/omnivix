@@ -29,6 +29,9 @@ function isDataUrl(s: string) {
 
 const TRIGGER_LABEL_MAX = 44;
 
+/** How long the link field must be idle before a link that can't be used is reported. */
+const LINK_SETTLE_MS = 1000;
+
 function triggerLabel(value: string | undefined, uploadedFileName: string | null): string {
   if (!value) return "None";
   if (isDataUrl(value)) {
@@ -59,13 +62,16 @@ export function BackgroundImagePicker({
   value,
   onChange,
   onError,
+  onErrorResolved,
 }: {
   id: string;
   label: string;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
-  /** An upload was rejected; shown as a toast. */
+  /** An upload was rejected, or an image link can't be used; shown as a toast. */
   onError: (message: string) => void;
+  /** The image link that was reported now works; hides its toast. */
+  onErrorResolved: () => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,13 +84,35 @@ export function BackgroundImagePicker({
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The link the user has stopped typing (idle, Enter or leaving the field); only it is reported. */
+  const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
+  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The last link a toast was shown for, so the same link is reported once. */
+  const reportedLinkRef = useRef<string | null>(null);
 
   const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
   const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
   const linkStatus = useImageStatus(linkValue);
-  // An http link, or one the browser can't load, can't be exported: the field turns red.
-  const linkInvalid =
-    linkValue !== undefined && (isInsecureImageLink(linkValue) || linkStatus === "failed");
+  // An http link, or one the browser can't load, can't be exported. It's left out of the preview
+  // (see StudioShell) and reported once the user has stopped typing it.
+  const linkProblem =
+    linkValue === undefined || settledLink !== linkValue
+      ? null
+      : isInsecureImageLink(linkValue)
+        ? "Use an https:// image link."
+        : linkStatus === "failed"
+          ? "Couldn't load this image link."
+          : null;
+
+  useEffect(() => {
+    if (linkProblem && reportedLinkRef.current !== linkValue) {
+      reportedLinkRef.current = linkValue ?? null;
+      onError(linkProblem);
+    } else if (linkStatus === "loaded" && reportedLinkRef.current !== null) {
+      reportedLinkRef.current = null;
+      onErrorResolved();
+    }
+  }, [linkProblem, linkValue, linkStatus, onError, onErrorResolved]);
 
   const urlInputValue =
     urlDraft !== undefined
@@ -102,6 +130,7 @@ export function BackgroundImagePicker({
   useEffect(() => {
     return () => {
       if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
+      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     };
   }, []);
 
@@ -132,6 +161,17 @@ export function BackgroundImagePicker({
     setUrlDraft(raw);
     if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
     urlTimeoutRef.current = setTimeout(() => pushUrlToParent(raw), 400);
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    settleTimeoutRef.current = setTimeout(() => setSettledLink(raw.trim()), LINK_SETTLE_MS);
+  };
+
+  /** Enter or leaving the field: use the link now, without waiting for the pauses above. */
+  const settleUrl = () => {
+    if (urlDraft === undefined) return;
+    if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    pushUrlToParent(urlDraft);
+    setSettledLink(urlDraft.trim());
   };
 
   const grouped = groupPresets(BACKGROUND_PRESETS);
@@ -256,9 +296,10 @@ export function BackgroundImagePicker({
             inputMode="url"
             placeholder="Enter the link to your image…"
             className="field-input text-xs"
-            aria-invalid={linkInvalid}
             value={urlInputValue}
             onChange={(e) => onUrlChange(e.target.value)}
+            onBlur={settleUrl}
+            onKeyDown={(e) => e.key === "Enter" && settleUrl()}
           />
         </div>
       ) : null}

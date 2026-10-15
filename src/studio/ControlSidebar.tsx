@@ -164,9 +164,6 @@ function RepoMultiSelect({
           )}
         </div>
       )}
-      <p className="text-[10px] text-muted">
-        Up to {maxPick} · {selected.length} selected
-      </p>
     </div>
   );
 }
@@ -271,6 +268,7 @@ export function ControlSidebar({
   backgroundAdjusting = false,
   onToggleBackgroundAdjusting,
   onError,
+  onErrorResolved,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -288,6 +286,8 @@ export function ControlSidebar({
   onToggleBackgroundAdjusting?: () => void;
   /** Shows a one-off error as a toast (e.g. a rejected upload). */
   onError: (message: string) => void;
+  /** Hides a toast whose problem went away (an image link that now loads). */
+  onErrorResolved: () => void;
 }) {
   const mode = state.mode as string | undefined;
   const background = backgroundFromState(state);
@@ -460,6 +460,7 @@ export function ControlSidebar({
                 }
                 onChange={(next) => onChange(field.key, next)}
                 onError={onError}
+                onErrorResolved={onErrorResolved}
               />
               {background && onToggleBackgroundAdjusting ? (
                 <BackgroundAdjustControls
