@@ -5,9 +5,7 @@ import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
 
 const payload = (backgroundImage?: unknown): ExportRequest => ({
   templateId: "quote-banner",
-  format: "png",
   size: "wide",
-  scale: 2,
   state: { quote: "hello", ...(backgroundImage === undefined ? {} : { backgroundImage }) },
 });
 

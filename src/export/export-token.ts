@@ -1,16 +1,22 @@
 import type { ExportRequest } from "@/src/types/template";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const DEFAULT_TTL_SECONDS = 120;
 
-/** Falls back to a fixed dev secret locally only; on Vercel a missing secret would make tokens forgeable. */
+/**
+ * Without `EXPORT_TOKEN_SECRET`, a random secret per server process: tokens can't be forged, but
+ * only that process can verify them. Vercel runs the export and the render page in separate
+ * functions, so it needs the shared secret.
+ */
+const processSecret = randomBytes(32).toString("base64url");
+
 function getSecret(): string {
   const secret = process.env.EXPORT_TOKEN_SECRET;
   if (secret) return secret;
   if (process.env.VERCEL) {
     throw new Error("EXPORT_TOKEN_SECRET is required on Vercel");
   }
-  return "omnivix-dev-secret";
+  return processSecret;
 }
 
 function sign(value: string): string {
@@ -36,9 +42,9 @@ export function createExportToken(payload: ExportRequest): string {
 }
 
 /**
- * Verifies signature + expiry and returns the payload. Idempotent (same token works until expiry).
+ * Verifies signature + expiry and returns the payload. The same token works until it expires.
  */
-export function consumeExportToken(token: string): ExportRequest | null {
+export function verifyExportToken(token: string): ExportRequest | null {
   const [encoded, signature] = token.split(".");
   if (!encoded || !signature) return null;
   const expectedSignature = sign(encoded);

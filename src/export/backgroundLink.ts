@@ -7,14 +7,8 @@ import { isPublicAddress } from "@/src/export/publicAddress";
 const MAX_LINKED_BACKGROUND_BYTES = 10 * 1024 * 1024;
 const TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
-const IMAGE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/avif",
-  "image/gif",
-  "image/svg+xml",
-];
+/** Same formats as uploads; GIFs would animate in the preview but export as one frame. */
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"];
 
 /** A link the export won't use; `message` is shown to the user. */
 export class BackgroundLinkError extends Error {}
@@ -38,7 +32,6 @@ const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
 };
 
 function toLinkError(error: NodeJS.ErrnoException): BackgroundLinkError {
-  if (error instanceof BackgroundLinkError) return error;
   if (error.code === "ENOTPUBLIC") return new BackgroundLinkError(NOT_ALLOWED);
   if (error.name === "AbortError" || error.name === "TimeoutError") {
     return new BackgroundLinkError("The image link took too long to load.");
@@ -83,19 +76,27 @@ export async function fetchBackgroundLink(
             reject(new BackgroundLinkError("The image link redirects too many times."));
             return;
           }
-          const next = new URL(res.headers.location, url).href;
-          fetchBackgroundLink(next, redirectsLeft - 1, signal).then(resolve, reject);
+          const next = new URL(res.headers.location, url);
+          if (next.protocol !== "https:") {
+            reject(new BackgroundLinkError("That image link redirects to an insecure address."));
+            return;
+          }
+          fetchBackgroundLink(next.href, redirectsLeft - 1, signal).then(resolve, reject);
           return;
         }
         if (status !== 200) {
           res.resume();
-          reject(new BackgroundLinkError(`The image link returned an error (HTTP ${status}).`));
+          reject(
+            new BackgroundLinkError(
+              "Couldn't load that image link. It may have moved or be private.",
+            ),
+          );
           return;
         }
         const contentType = (res.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
         if (!IMAGE_TYPES.includes(contentType)) {
           res.destroy();
-          reject(new BackgroundLinkError("That link isn't an image."));
+          reject(new BackgroundLinkError("That link isn't a PNG, JPEG, WebP or AVIF image."));
           return;
         }
         const tooLarge = new BackgroundLinkError(

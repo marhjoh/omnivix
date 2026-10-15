@@ -31,6 +31,7 @@ import { THEME_PRESETS } from "@/src/types/theme";
 import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
 import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
+import { parseRepoSelection, reposShown } from "@/src/lib/repoSelection";
 
 const STATE_PREFIX = "omnivix:state:";
 
@@ -228,14 +229,10 @@ function clampSelectedRepos(
   state: Record<string, unknown>,
 ): Record<string, unknown> {
   if (templateId !== "repos-banner") return state;
-  const mode = String(state.mode ?? "pinned");
-  const maxR = mode === "selected" ? 6 : Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
-  const parts = String(state.selectedRepos ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (parts.length <= maxR) return state;
-  return { ...state, selectedRepos: parts.slice(0, maxR).join(", ") };
+  const limit = reposShown(state.mode, state.maxRepos);
+  const parts = parseRepoSelection(String(state.selectedRepos ?? ""));
+  if (parts.length <= limit) return state;
+  return { ...state, selectedRepos: parts.slice(0, limit).join(", ") };
 }
 
 export function StudioShell({
@@ -588,8 +585,6 @@ export function StudioShell({
           templateId,
           size,
           state,
-          format: "png",
-          scale: 2,
           pixelRatio: EXPORT_PIXEL_RATIO,
           uiTheme: appTheme,
         }),

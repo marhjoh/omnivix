@@ -25,6 +25,8 @@ describe("isPublicAddress", () => {
     ["IPv4-mapped loopback", "::ffff:127.0.0.1"],
     ["IPv4-mapped private", "::ffff:10.0.0.1"],
     ["NAT64", "64:ff9b::7f00:1"],
+    ["IPv4-compatible loopback", "::7f00:1"],
+    ["SIIT-translated loopback", "::ffff:0:7f00:1"],
     ["not an address", "localhost"],
   ])("blocks %s (%s)", (_, address) => {
     expect(isPublicAddress(address)).toBe(false);

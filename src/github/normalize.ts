@@ -2,11 +2,8 @@ export interface GithubUserNormalized {
   login: string;
   name: string | null;
   avatarUrl: string;
-  followers: number;
-  publicRepos: number;
-  /** Total from the explicit rolling 365-day UTC window (year="latest"). */
-  contributionsLatest365: number;
-  createdAt?: string;
+  /** ISO date the account was created; the studio offers contribution years from then on. */
+  createdAt: string;
 }
 
 export interface RepoNormalized {
@@ -17,8 +14,6 @@ export interface RepoNormalized {
   languageColor: string | null;
   stargazers: number;
   forks: number;
-  url: string;
-  isPinned: boolean;
 }
 
 export type ContributionDayNormalized = {
@@ -44,8 +39,6 @@ export interface ContributionMonthNormalized {
   firstDay: string;
   /** Full English name from GitHub, e.g. "January". */
   name: string;
-  totalWeeks: number;
-  year: number;
 }
 
 /**
@@ -68,8 +61,4 @@ export interface ContributionsNormalized {
   rangeStartYmd: string;
   /** Inclusive end of the requested range (YYYY-MM-DD). */
   rangeEndYmd: string;
-  /** "latest" = rolling 365 days; "year" = full calendar year. */
-  mode: "latest" | "year";
-  /** Calendar year number when mode="year" (e.g. 2025). */
-  year?: number;
 }

@@ -37,7 +37,11 @@ export interface TemplateMeta {
   defaultSize: BannerSize;
   tags: string[];
   needsUsername?: boolean;
+  /** GitHub data the banner itself draws; the export fetches only these. */
+  githubData: GithubDataKind[];
 }
+
+export type GithubDataKind = "user" | "contributions" | "repos";
 
 export interface TemplateDefinition<TState extends Record<string, unknown>> {
   meta: TemplateMeta;
@@ -50,8 +54,6 @@ export interface ExportRequest {
   templateId: TemplateId;
   size: BannerSize;
   state: Record<string, unknown>;
-  format: "png";
-  scale: 1 | 2;
   pixelRatio?: 1 | 2 | 3;
   /** Matches editor app theme so PNG matches on-screen preview. */
   uiTheme?: Theme;

@@ -10,6 +10,7 @@ import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
+import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 
 const currentYear = new Date().getFullYear();
 
@@ -78,13 +79,6 @@ function FieldWrapper({
       {children}
     </div>
   );
-}
-
-function parseRepoSelection(raw: string): string[] {
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 function RepoMultiSelect({
@@ -316,7 +310,7 @@ export function ControlSidebar({
               loading={repoCatalogLoading}
               error={repoCatalogError}
               valueCsv={String(state.selectedRepos ?? "")}
-              maxPick={6}
+              maxPick={MAX_REPOS}
               onChange={(csv) => onChange("selectedRepos", csv)}
             />
           );

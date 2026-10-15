@@ -8,18 +8,16 @@ import { BannerMuted, BannerTitle } from "@/src/banner/Text";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
 import type { GithubUserNormalized } from "@/src/github/normalize";
+import { reposShown } from "@/src/lib/repoSelection";
 
 /** Natural sizes; `FitContent` scales profile and cards together to the chosen size and format. */
 const PROFILE_SIZING = { avatar: 28, name: 13, handle: 12 };
 
-/** Column count follows the chosen amount (1–6) for a stable layout. */
-function reposBannerColumnCount(amount: number): number {
-  const n = Math.min(6, Math.max(1, Number.isFinite(amount) ? Math.round(amount) : 1));
-  if (n <= 1) return 1;
-  if (n === 2) return 2;
-  if (n === 3) return 3;
-  if (n === 4) return 2;
-  return 3;
+/** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
+const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
+
+function reposBannerColumnCount(count: number): number {
+  return COLUMNS_BY_COUNT[Math.min(COLUMNS_BY_COUNT.length, count) - 1];
 }
 
 const REPO_GRID_GAP_PX = 10;
@@ -123,14 +121,12 @@ export function ReposBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const background = backgroundFromState(state);
-  const mode = (state.mode === "selected" ? "selected" : "pinned") as "pinned" | "selected";
-  const maxReposPinned = Math.min(6, Math.max(1, Number(state.maxRepos ?? 6)));
-  const maxShown = mode === "selected" ? 6 : maxReposPinned;
-  const repos = Array.isArray(data.repos) ? data.repos.slice(0, maxShown) : [];
+  const mode = state.mode === "selected" ? "selected" : "pinned";
+  const shown = reposShown(mode, state.maxRepos);
+  const repos = Array.isArray(data.repos) ? data.repos.slice(0, shown) : [];
   const username = typeof state.username === "string" ? state.username : "";
-  const layoutAmount =
-    mode === "selected" ? Math.min(6, Math.max(1, repos.length)) : maxReposPinned;
-  const cols = reposBannerColumnCount(layoutAmount);
+  // Selected mode lays out what was picked; pinned mode keeps the chosen amount's layout.
+  const cols = reposBannerColumnCount(mode === "selected" ? Math.max(1, repos.length) : shown);
 
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;

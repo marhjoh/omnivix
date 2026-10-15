@@ -1,18 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { githubErrorResponse } from "@/src/github/errorResponse";
-import { getContributions } from "@/src/github/client";
+import { NextResponse, type NextRequest } from "next/server";
+import { getContributions, isContributionYear } from "@/src/github/client";
+import { githubRoute } from "@/src/github/route";
 
-export async function GET(request: NextRequest) {
-  const username = request.nextUrl.searchParams.get("username");
-  if (!username) {
-    return NextResponse.json({ error: "username is required" }, { status: 400 });
+export function GET(request: NextRequest) {
+  const year = request.nextUrl.searchParams.get("year") || "latest";
+  if (!isContributionYear(year)) {
+    return NextResponse.json({ error: "That isn't a valid year." }, { status: 400 });
   }
-  const rawYear = request.nextUrl.searchParams.get("year");
-  const year = rawYear && rawYear.length > 0 ? rawYear : "latest";
-  try {
-    const contributions = await getContributions(username, year);
-    return NextResponse.json(contributions);
-  } catch (error) {
-    return githubErrorResponse(error, username, "Unable to fetch contribution data");
-  }
+  return githubRoute(request, "Couldn't load contributions from GitHub.", (username) =>
+    getContributions(username, year),
+  );
 }

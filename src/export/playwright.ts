@@ -2,9 +2,13 @@ import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
-import { getViewport } from "@/src/export/viewport";
+import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
+import { BANNER_SIZES } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
+
+/** How long each step of a render may take: loading the page, the banner, fonts and images. */
+const RENDER_TIMEOUT_MS = 25_000;
 
 /** Hosts the render page may load from besides its own origin (GitHub profile photos). */
 const ALLOWED_HOSTS = new Set(["avatars.githubusercontent.com"]);
@@ -48,7 +52,7 @@ async function waitForRasterReady(page: Page) {
 export async function captureBannerPng({
   url,
   size,
-  pixelRatio = 3,
+  pixelRatio = EXPORT_PIXEL_RATIO,
   background,
 }: {
   url: string;
@@ -66,23 +70,32 @@ export async function captureBannerPng({
       })
     : await playwrightChromium.launch({ headless: true });
   try {
-    const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+    const { width, height } = BANNER_SIZES[size];
     const context = await browser.newContext({
-      viewport: getViewport(size, pixelRatio),
+      viewport: { width, height },
       deviceScaleFactor: pixelRatio,
-      ...(bypassSecret ? { extraHTTPHeaders: { "x-vercel-protection-bypass": bypassSecret } } : {}),
     });
     const page = await context.newPage();
-    page.setDefaultTimeout(25_000);
+    page.setDefaultTimeout(RENDER_TIMEOUT_MS);
     // Only the app and allowed hosts are reachable; links are downloaded and checked beforehand.
+    // The main page may still navigate (a Vercel login redirect is reported below), frames may not.
     // Routes added later take precedence, so the background route below runs first.
     const { origin } = new URL(url);
+    // Sent to the app only, never to the other allowed hosts.
+    const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
     await page.route("**/*", (route) => {
-      const target = new URL(route.request().url());
+      const request = route.request();
+      const target = new URL(request.url());
+      if (target.origin === origin) {
+        return route.fallback(
+          bypassSecret
+            ? { headers: { ...request.headers(), "x-vercel-protection-bypass": bypassSecret } }
+            : undefined,
+        );
+      }
       const allowed =
-        target.origin === origin ||
         ALLOWED_HOSTS.has(target.hostname) ||
-        route.request().isNavigationRequest();
+        (request.isNavigationRequest() && request.frame() === page.mainFrame());
       return allowed ? route.fallback() : route.abort("blockedbyclient");
     });
     if (background) {
@@ -90,7 +103,7 @@ export async function captureBannerPng({
         route.fulfill({ status: 200, contentType: background.contentType, body: background.body }),
       );
     }
-    const response = await page.goto(url, { waitUntil: "load", timeout: 25_000 });
+    const response = await page.goto(url, { waitUntil: "load" });
     const status = response?.status() ?? 0;
     if (status >= 400) {
       throw new Error(`Render page returned HTTP ${status}`);
@@ -100,7 +113,7 @@ export async function captureBannerPng({
       throw new Error("Render page blocked by Vercel Deployment Protection");
     }
     const target = page.locator(".banner-export-root");
-    await target.waitFor({ state: "visible", timeout: 25_000 });
+    await target.waitFor({ state: "visible" });
     await waitForRasterReady(page);
     await waitForContentFit(page);
     const screenshot = await target.screenshot({
@@ -108,7 +121,6 @@ export async function captureBannerPng({
       animations: "disabled",
       scale: "device",
     });
-    await context.close();
     return screenshot;
   } finally {
     await browser.close();

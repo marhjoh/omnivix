@@ -16,6 +16,7 @@ import {
 import { isOneOf } from "@/src/lib/isOneOf";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
+import { MAX_REPOS } from "@/src/lib/repoSelection";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -110,6 +111,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["GitHub", "Profile", "Contributions"],
     needsUsername: true,
+    githubData: ["user", "contributions"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -186,6 +188,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["GitHub", "Repos"],
     needsUsername: true,
+    githubData: ["user", "repos"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -205,7 +208,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
       ],
     },
     { key: "selectedRepos", label: "Repositories", type: "repoMultiSelect" },
-    { key: "maxRepos", label: "Amount", type: "range", min: 1, max: 6, step: 1 },
+    { key: "maxRepos", label: "Amount", type: "range", min: 1, max: MAX_REPOS, step: 1 },
     { key: "showDescription", label: "Description", type: "toggle" },
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
@@ -219,7 +222,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     alignment: alignmentState,
     mode: z.enum(["pinned", "selected"]),
     selectedRepos: z.string().default(""),
-    maxRepos: z.number().min(1).max(6).default(6),
+    maxRepos: z.number().min(1).max(MAX_REPOS).default(MAX_REPOS),
     showDescription: z.boolean().default(true),
     showLanguage: z.boolean().default(true),
     showStars: z.boolean().default(true),
@@ -234,7 +237,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     alignment: "center",
     mode: "pinned",
     selectedRepos: "",
-    maxRepos: 6,
+    maxRepos: MAX_REPOS,
     showDescription: true,
     showLanguage: true,
     showStars: true,
@@ -262,6 +265,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["Contributions", "Heatmap"],
     needsUsername: true,
+    githubData: ["contributions"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -311,6 +315,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["Quote", "Typography"],
     needsUsername: false,
+    githubData: [],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },

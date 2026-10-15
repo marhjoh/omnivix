@@ -21,8 +21,10 @@ for (const [network, prefix] of [
   nonPublic.addSubnet(network, prefix, "ipv4");
 }
 for (const [network, prefix] of [
-  ["::", 128],
-  ["::1", 128],
+  // IPv4-compatible (::a.b.c.d) addresses, including :: and ::1.
+  ["::", 96],
+  // SIIT-translated IPv4 (::ffff:0:a.b.c.d).
+  ["::ffff:0:0:0", 96],
   ["64:ff9b::", 96],
   ["64:ff9b:1::", 48],
   ["100::", 64],

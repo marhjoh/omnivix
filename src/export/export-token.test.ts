@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createExportToken, consumeExportToken } from "./session-store";
+import { createExportToken, verifyExportToken } from "./export-token";
 
 const samplePayload = {
   templateId: "quote-banner" as const,
-  format: "png" as const,
   size: "header" as const,
-  scale: 2 as const,
   pixelRatio: 2 as const,
   state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },
 };
@@ -13,9 +11,9 @@ const samplePayload = {
 describe("export session token", () => {
   it("round-trips a valid payload", () => {
     const token = createExportToken(samplePayload);
-    const payload = consumeExportToken(token);
+    const payload = verifyExportToken(token);
     expect(payload?.templateId).toBe("quote-banner");
-    expect(payload?.format).toBe("png");
+    expect(payload?.state).toEqual(samplePayload.state);
   });
 
   it("round-trips state with a sizeable string field", () => {
@@ -24,7 +22,7 @@ describe("export session token", () => {
       ...samplePayload,
       state: { ...samplePayload.state, backgroundImage: huge },
     });
-    const out = consumeExportToken(token);
+    const out = verifyExportToken(token);
     expect(out?.state.backgroundImage).toBe(huge);
   });
 
@@ -32,12 +30,12 @@ describe("export session token", () => {
     const token = createExportToken(samplePayload);
     const [encoded, sig] = token.split(".");
     const tampered = `${encoded.slice(0, -1)}y.${sig}`;
-    expect(consumeExportToken(tampered)).toBeNull();
+    expect(verifyExportToken(tampered)).toBeNull();
   });
 
   it("allows repeat verification until expiry (serverless-safe)", () => {
     const token = createExportToken(samplePayload);
-    expect(consumeExportToken(token)).not.toBeNull();
-    expect(consumeExportToken(token)).not.toBeNull();
+    expect(verifyExportToken(token)).not.toBeNull();
+    expect(verifyExportToken(token)).not.toBeNull();
   });
 });
