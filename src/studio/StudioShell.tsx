@@ -16,10 +16,12 @@ import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { isInsecureImageLink } from "@/src/lib/imageLink";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
-import { UsernameModal, getStoredUsername, storeUsername } from "@/src/studio/UsernameModal";
+import { UsernameModal } from "@/src/studio/UsernameModal";
+import { settingsCookieName, setCookieClient, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { RenderData } from "@/src/templates/renderers/types";
 import type {
   GithubUserNormalized,
@@ -33,10 +35,10 @@ import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { parseRepoSelection, reposShown } from "@/src/lib/repoSelection";
 
-const STATE_PREFIX = "omnivix:state:";
-
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
 const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
+
+const NO_REPOS: RepoNormalized[] = [];
 
 type FetchSlotErrors = {
   user: string | null;
@@ -53,16 +55,6 @@ function previewErrorFor(githubData: readonly GithubDataKind[], e: FetchSlotErro
     if (e[kind]) return e[kind];
   }
   return null;
-}
-
-function loadPersistedState(templateId: string): Record<string, unknown> | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STATE_PREFIX + templateId);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
 }
 
 /** The part of the state that's saved per template, as JSON. */
@@ -160,15 +152,23 @@ function useFetchJson<T>(
     return () => ac.abort();
   }, [url, nonce, fallbackError, keepKey]);
 
+  // With no request (e.g. no repositories selected), nothing is on screen from this fetch, so
+  // the kept data is out of date: the next request shows "loading" rather than old content.
+  useEffect(() => {
+    if (!url && keepKey) lastFetchedByKey.delete(keepKey);
+  }, [url, keepKey]);
+
   const current = url && result?.url === url ? result : null;
   const settled = current !== null && current.nonce === nonce;
+  const ownData = current?.data ?? (url ? (lastFetched.get(url) as T | undefined) : undefined);
+  const keptData =
+    url && keepKey && ownData === undefined
+      ? (lastFetchedByKey.get(keepKey) as T | undefined)
+      : undefined;
   return {
-    data:
-      current?.data ??
-      (url
-        ? ((lastFetched.get(url) ?? (keepKey ? lastFetchedByKey.get(keepKey) : undefined)) as
-            T | undefined)
-        : undefined),
+    data: ownData ?? keptData,
+    /** The data is from another request with the same `keepKey`, shown while this one loads. */
+    stale: keptData !== undefined,
     error: settled ? current.error : null,
     notFound: settled && current.status === 404,
     loading: url !== null && !settled,
@@ -176,6 +176,9 @@ function useFetchJson<T>(
 }
 
 const subscribeNever = () => () => {};
+
+/** Loads quicker than this go straight to the new preview, without showing the loading screen. */
+const LOADING_SCREEN_DELAY_MS = 300;
 
 /** A bit longer than the sidebar's 0.2s transition in studio.module.css. */
 const SIDEBAR_ANIMATION_MS = 300;
@@ -189,25 +192,26 @@ function subscribePhone(onChange: () => void) {
   return () => mq.removeEventListener("change", onChange);
 }
 
-function withPersistedState(
+/**
+ * The template's defaults with saved settings applied. Saved values come from the browser, so
+ * anything the template no longer offers falls back to its default.
+ */
+function applySavedSettings(
   prev: Record<string, unknown>,
   templateId: TemplateId,
-  needsUsername: boolean,
+  saved: Record<string, unknown> | null,
+  username: string | null,
 ): Record<string, unknown> {
-  const persisted = loadPersistedState(templateId);
-  const storedUsername = needsUsername ? getStoredUsername() : "";
-  if (!persisted && !storedUsername) return prev;
-
-  const merged = { ...prev, ...persisted };
+  if (!saved && !username) return prev;
+  const merged = { ...prev, ...saved };
   merged.size = normalizeBannerSize(merged.size, prev.size as BannerSize);
-  // A saved choice the field no longer offers falls back to the template default.
   for (const field of templateRegistry[templateId].schema) {
     if (field.options && !field.options.some((option) => option.value === merged[field.key])) {
       merged[field.key] = prev[field.key];
     }
   }
-  if (needsUsername) {
-    merged.username = storedUsername;
+  if (templateRegistry[templateId].meta.needsUsername) {
+    merged.username = username ?? "";
   }
   const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
   if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
@@ -231,20 +235,25 @@ function clampSelectedRepos(
 export function StudioShell({
   templateId,
   initialSidebarCollapsed,
+  savedSettings,
+  savedUsername,
 }: {
   templateId: TemplateId;
   initialSidebarCollapsed: boolean;
+  /** This template's settings from its cookie (null: none saved yet). */
+  savedSettings: Record<string, unknown> | null;
+  /** The GitHub username from its cookie (null: none saved yet). */
+  savedUsername: string | null;
 }) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
   const needsUsername = definition.meta.needsUsername ?? false;
 
-  const [state, setState] = useState<Record<string, unknown>>(() => ({
-    ...definition.initialState,
-  }));
+  // Saved settings come from cookies, so the server renders them and nothing switches after load.
+  const [state, setState] = useState<Record<string, unknown>>(() =>
+    applySavedSettings({ ...definition.initialState }, templateId, savedSettings, savedUsername),
+  );
 
-  // Persisted state lives in localStorage, so it is merged in on the first client render
-  // (after hydration) to keep the server and client markup identical.
   const isClient = useSyncExternalStore(
     subscribeNever,
     () => true,
@@ -253,7 +262,6 @@ export function StudioShell({
   const [hydrated, setHydrated] = useState(false);
   if (isClient && !hydrated) {
     setHydrated(true);
-    setState((prev) => withPersistedState(prev, templateId, needsUsername));
   }
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
@@ -349,9 +357,13 @@ export function StudioShell({
       : null,
     refetchNonce,
     GITHUB_FETCH_FALLBACK,
+    // Another year keeps the current grid until it arrives, instead of flashing "Loading".
+    username,
   );
+  // With nothing selected the answer is an empty list, so there's nothing to ask GitHub.
+  const nothingSelected = repoMode === "selected" && parseRepoSelection(selectedRepos).length === 0;
   const reposFetch = useFetchJson<RepoNormalized[]>(
-    username && needsReposFetch
+    username && needsReposFetch && !nothingSelected
       ? `/api/github/repos?username=${encodedUsername}&mode=${encodeURIComponent(repoMode)}&selected=${encodeURIComponent(selectedRepos)}`
       : null,
     refetchNonce,
@@ -369,11 +381,11 @@ export function StudioShell({
   const user = userFetch.error ? undefined : userFetch.data;
   // While another selection loads, the previous repositories stay on screen; an empty list doesn't,
   // or picking the first repository would flash "No repositories selected".
-  const repos =
-    reposFetch.error || (reposFetch.loading && reposFetch.data?.length === 0)
+  const repos = nothingSelected
+    ? NO_REPOS
+    : reposFetch.error || (reposFetch.loading && reposFetch.data?.length === 0)
       ? undefined
       : reposFetch.data;
-  // Contributions keep the last good result for the same username/year when a refetch fails.
   const contributions = contributionsFetch.data;
 
   const data = useMemo<RenderData>(
@@ -385,10 +397,17 @@ export function StudioShell({
   const fetchErrors = useMemo<FetchSlotErrors>(
     () => ({
       user: userFetch.error,
-      contributions: contributions ? null : contributionsFetch.error,
+      // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
+      contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch.error,
       repos: reposFetch.error,
     }),
-    [userFetch.error, contributions, contributionsFetch.error, reposFetch.error],
+    [
+      userFetch.error,
+      contributions,
+      contributionsFetch.stale,
+      contributionsFetch.error,
+      reposFetch.error,
+    ],
   );
 
   const accountCreatedYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : null;
@@ -503,16 +522,15 @@ export function StudioShell({
     [templateId],
   );
 
-  // Saved after hydration, and only when the saved part changes (not on every background drag).
+  // Saved as cookies after loading, and only when the saved part changes (not on every drag).
   const storedJson = useMemo(() => storedStateJson(state, needsUsername), [state, needsUsername]);
   useEffect(() => {
     if (!hydrated) return;
-    try {
-      localStorage.setItem(STATE_PREFIX + templateId, storedJson);
-    } catch {
-      /* storage blocked or full; settings just aren't remembered */
-    }
+    setCookieClient(settingsCookieName(templateId), storedJson);
   }, [hydrated, templateId, storedJson]);
+  useEffect(() => {
+    if (hydrated && needsUsername && username) setCookieClient(USERNAME_COOKIE, username);
+  }, [hydrated, needsUsername, username]);
 
   const stateValid = useMemo(
     () => definition.stateSchema.safeParse(state).success,
@@ -559,8 +577,24 @@ export function StudioShell({
     () => (backgroundUnusable ? { ...state, backgroundImage: undefined } : state),
     [backgroundUnusable, state],
   );
+  // What the preview and the Download button show. A quick load keeps the previous preview
+  // instead of flashing the loading screen (see useHoldDuringLoad); both always change together.
+  const livePreview = useMemo(
+    () => ({
+      previewState,
+      problem: previewProblem,
+      bannerState: previewBannerState,
+      data: renderData,
+    }),
+    [previewState, previewProblem, previewBannerState, renderData],
+  );
+  const shownPreview = useHoldDuringLoad(
+    livePreview,
+    previewState === "loading",
+    LOADING_SCREEN_DELAY_MS,
+  );
   const exportBlocked = isExportBlocked({
-    previewState,
+    previewState: shownPreview.previewState,
     stateValid,
     backgroundFailed: backgroundUnusable,
   });
@@ -602,7 +636,6 @@ export function StudioShell({
   }
 
   function handleUsernameSubmit(newUsername: string) {
-    storeUsername(newUsername);
     updateState("username", newUsername);
     closeUsernameModal();
   }
@@ -665,10 +698,10 @@ export function StudioShell({
           <PreviewArtboard
             templateId={templateId}
             size={size}
-            state={previewBannerState}
-            data={renderData}
-            previewState={previewState}
-            problem={previewProblem}
+            state={shownPreview.bannerState}
+            data={shownPreview.data}
+            previewState={shownPreview.previewState}
+            problem={shownPreview.problem}
             onRetry={handlePreviewRetry}
             onChangeUsername={openUsernameModal}
             backgroundAdjust={

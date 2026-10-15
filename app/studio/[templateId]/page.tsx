@@ -5,6 +5,12 @@ import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
+import {
+  parseSettingsCookie,
+  parseUsernameCookie,
+  settingsCookieName,
+  USERNAME_COOKIE,
+} from "@/src/studio/studioCookies";
 
 export async function generateMetadata({
   params,
@@ -45,12 +51,15 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
     notFound();
   }
   const cookieStore = await cookies();
-  const sidebarCollapsed = parseSidebarCollapsedCookie(cookieStore.get(SIDEBAR_COOKIE_NAME)?.value);
   return (
     <StudioShell
       key={templateId}
       templateId={templateId}
-      initialSidebarCollapsed={sidebarCollapsed}
+      initialSidebarCollapsed={parseSidebarCollapsedCookie(
+        cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
+      )}
+      savedSettings={parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value)}
+      savedUsername={parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value)}
     />
   );
 }

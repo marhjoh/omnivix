@@ -117,7 +117,9 @@ body {
     border: 1px solid var(--accent);
     color: #fff;
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-primary:hover:not(:disabled) {
@@ -126,7 +128,6 @@ body {
     box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
-  /* Disabled buttons keep pointer events so their title tooltip can explain why. */
   .btn-primary:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -138,7 +139,9 @@ body {
     border: 1px solid var(--border);
     color: var(--text);
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-secondary:hover:not(:disabled) {
@@ -157,7 +160,9 @@ body {
     border: 1px solid transparent;
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-ghost:hover:not(:disabled) {
