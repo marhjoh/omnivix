@@ -11,6 +11,8 @@ export function exportBlockedReason(params: {
   templateId: TemplateId;
   previewState: PreviewContentState;
   stateValid: boolean;
+  /** The background image couldn't be loaded in the browser. */
+  backgroundFailed?: boolean;
 }): string | null {
   switch (params.previewState) {
     case "empty":
@@ -20,6 +22,7 @@ export function exportBlockedReason(params: {
     case "error":
       return "Preview data failed to load";
   }
+  if (params.backgroundFailed) return "Background image couldn't be loaded";
   if (!params.stateValid) return "Some settings are invalid";
   return null;
 }

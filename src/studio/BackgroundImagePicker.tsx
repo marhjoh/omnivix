@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
+import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import {
   MAX_BACKGROUND_UPLOAD_BYTES,
   normalizeBackgroundImageFile,
@@ -80,6 +81,15 @@ export function BackgroundImagePicker({
   const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
+  const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
+  const linkStatus = useImageStatus(linkValue);
+  const linkError = !linkValue
+    ? null
+    : !/^https:\/\//i.test(linkValue)
+      ? "Use an https:// link."
+      : linkStatus === "failed"
+        ? "Couldn't load this image. Check the link; some sites block embedding."
+        : null;
 
   const urlInputValue =
     urlDraft !== undefined
@@ -269,9 +279,15 @@ export function BackgroundImagePicker({
             value={urlInputValue}
             onChange={(e) => onUrlChange(e.target.value)}
           />
-          <p className="text-[11px] leading-snug text-muted">
-            Note: Other sites may block hotlinking.
-          </p>
+          {linkError ? (
+            <p className="text-xs leading-snug text-danger" role="alert">
+              {linkError}
+            </p>
+          ) : (
+            <p className="text-[11px] leading-snug text-muted">
+              Note: Other sites may block hotlinking.
+            </p>
+          )}
         </div>
       ) : null}
     </div>

@@ -38,4 +38,10 @@ describe("exportBlockedReason", () => {
       "Some settings are invalid",
     );
   });
+
+  it("blocks when the background image failed to load", () => {
+    expect(exportBlockedReason({ ...base, previewState: "ready", backgroundFailed: true })).toBe(
+      "Background image couldn't be loaded",
+    );
+  });
 });

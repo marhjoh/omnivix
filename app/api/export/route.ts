@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exportRequestSchema } from "@/src/export/payload";
-import { splitUploadedBackground } from "@/src/export/background";
+import { resolveExportBackground } from "@/src/export/background";
 import { createExportToken } from "@/src/export/session-store";
 import { getPublicOrigin } from "@/src/export/request-origin";
 import { buildRenderUrl } from "@/src/export/render-url";
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid export payload" }, { status: 400 });
   }
-  const split = splitUploadedBackground(parsed.data);
+  const split = await resolveExportBackground(parsed.data);
   if (!split.ok) {
     return NextResponse.json({ error: split.error }, { status: 400 });
   }

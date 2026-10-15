@@ -6,6 +6,9 @@ import { getViewport } from "@/src/export/viewport";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
 
+/** Hosts the render page may load from besides its own origin (GitHub profile photos). */
+const ALLOWED_HOSTS = new Set(["avatars.githubusercontent.com"]);
+
 /** `FitContent` sizes content in the browser after hydration, so wait for every fit to finish. */
 async function waitForContentFit(page: Page) {
   await page.waitForFunction(
@@ -51,7 +54,7 @@ export async function captureBannerPng({
   url: string;
   size: BannerSize;
   pixelRatio?: 1 | 2 | 3;
-  /** Uploaded background, served at `EXPORT_BACKGROUND_PATH` instead of travelling in the URL. */
+  /** Uploaded or linked background, served at `EXPORT_BACKGROUND_PATH`. */
   background?: ExportBackground;
 }) {
   const isVercel = Boolean(process.env.VERCEL);
@@ -71,6 +74,17 @@ export async function captureBannerPng({
     });
     const page = await context.newPage();
     page.setDefaultTimeout(25_000);
+    // Only the app and allowed hosts are reachable; links are downloaded and checked beforehand.
+    // Routes added later take precedence, so the background route below runs first.
+    const { origin } = new URL(url);
+    await page.route("**/*", (route) => {
+      const target = new URL(route.request().url());
+      const allowed =
+        target.origin === origin ||
+        ALLOWED_HOSTS.has(target.hostname) ||
+        route.request().isNavigationRequest();
+      return allowed ? route.fallback() : route.abort("blockedbyclient");
+    });
     if (background) {
       await page.route(`**${EXPORT_BACKGROUND_PATH}`, (route) =>
         route.fulfill({ status: 200, contentType: background.contentType, body: background.body }),

@@ -447,7 +447,17 @@ export function StudioShell({
     () => definition.stateSchema.safeParse(state).success,
     [definition.stateSchema, state],
   );
-  const blockedReason = exportBlockedReason({ templateId, previewState, stateValid });
+  const backgroundStatus = useImageStatus(
+    typeof state.backgroundImage === "string" && state.backgroundImage
+      ? state.backgroundImage
+      : undefined,
+  );
+  const blockedReason = exportBlockedReason({
+    templateId,
+    previewState,
+    stateValid,
+    backgroundFailed: backgroundStatus === "failed",
+  });
 
   const [exportFailure, setExportFailure] = useState<{
     message: string;
