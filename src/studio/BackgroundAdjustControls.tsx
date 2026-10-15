@@ -28,7 +28,6 @@ export function BackgroundAdjustControls({
       <div className="flex gap-2">
         <button
           type="button"
-          aria-pressed={adjusting}
           onClick={onToggleAdjusting}
           className={`btn-secondary flex-1 px-3 py-1.5 text-xs ${
             adjusting ? "border-accent bg-accent/10" : ""

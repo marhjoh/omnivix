@@ -154,7 +154,7 @@ export async function normalizeBackgroundImageFile(
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) {
-      return { ok: false, error: "Unable to process image in this browser." };
+      return { ok: false, error: "Couldn't process this image in your browser." };
     }
     for (const maxDim of BACKGROUND_OUTPUT_DIMENSIONS) {
       const scale = Math.min(1, maxDim / Math.max(width, height, 1));
@@ -164,7 +164,7 @@ export async function normalizeBackgroundImageFile(
       const dataUrl = encodeCanvas(canvas);
       if (dataUrlByteLength(dataUrl) <= MAX_UPLOADED_BACKGROUND_BYTES) return { ok: true, dataUrl };
     }
-    return { ok: false, error: "This image is too detailed to use. Try a smaller one." };
+    return { ok: false, error: "This image is too large to use. Try a smaller one." };
   } finally {
     bitmap.close();
   }

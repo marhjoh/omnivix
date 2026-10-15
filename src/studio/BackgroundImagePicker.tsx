@@ -47,18 +47,6 @@ function triggerLabel(value: string | undefined, uploadedFileName: string | null
   return "Custom";
 }
 
-function triggerTitle(
-  value: string | undefined,
-  uploadedFileName: string | null,
-): string | undefined {
-  if (!value) return undefined;
-  if (isDataUrl(value)) {
-    const name = uploadedFileName?.trim();
-    return name || undefined;
-  }
-  return value;
-}
-
 export function BackgroundImagePicker({
   id,
   label,
@@ -217,7 +205,7 @@ export function BackgroundImagePicker({
       </label>
 
       <DropdownRoot dropdown={dropdown} className="relative space-y-1.5">
-        <DropdownTrigger dropdown={dropdown} title={triggerTitle(value, uploadDisplayName)}>
+        <DropdownTrigger dropdown={dropdown}>
           {triggerLabel(value, uploadDisplayName)}
         </DropdownTrigger>
 

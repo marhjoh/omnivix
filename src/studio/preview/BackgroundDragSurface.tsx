@@ -49,8 +49,11 @@ export function BackgroundDragSurface({
     });
   }
 
+  // Takes focus while adjusting, and gives it back (to the Adjust button) when done.
   useEffect(() => {
+    const returnFocusTo = document.activeElement as HTMLElement | null;
     ref.current?.focus({ preventScroll: true });
+    return () => returnFocusTo?.focus({ preventScroll: true });
   }, []);
 
   function panRange() {

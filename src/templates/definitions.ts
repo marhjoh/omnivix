@@ -68,7 +68,7 @@ const alignmentState = z.enum(CONTENT_ALIGNS).default("center");
 /** Which side of the content the avatar and name sit on (GitHub and repos banners). */
 const profilePositionField: EditorFieldSchema = {
   key: "profilePosition",
-  label: "Profile Position",
+  label: "Profile position",
   type: "select",
   options: [
     { label: "Left", value: "left" },
@@ -131,7 +131,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
     { key: "showAvatar", label: "Profile photo", type: "toggle" },
-    { key: "showDisplayName", label: "Full Name", type: "toggle" },
+    { key: "showDisplayName", label: "Full name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
@@ -197,7 +197,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     profilePositionField,
     contentSizeField,
     { key: "showAvatar", label: "Profile photo", type: "toggle" },
-    { key: "showDisplayName", label: "Full Name", type: "toggle" },
+    { key: "showDisplayName", label: "Full name", type: "toggle" },
     {
       key: "mode",
       label: "Mode",
@@ -324,7 +324,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     contentSizeField,
     {
       key: "quote",
-      label: "Quote Text",
+      label: "Quote text",
       type: "textarea",
       required: true,
       maxLength: QUOTE_MAX_LENGTH,

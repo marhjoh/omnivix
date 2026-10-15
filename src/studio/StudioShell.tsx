@@ -583,7 +583,7 @@ export function StudioShell({
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
-        showError(body.error ?? "Export failed. Please try again.");
+        showError(body.error ?? "Couldn't export the banner. Try again.");
         return;
       }
       const blob = await response.blob();

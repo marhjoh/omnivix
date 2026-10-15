@@ -43,7 +43,6 @@ export function TopBar({
             aria-expanded={sidebarExpanded}
             aria-controls="studio-sidebar"
             aria-label={sidebarExpanded ? "Hide settings" : "Show settings"}
-            title={sidebarExpanded ? "Hide settings" : "Show settings"}
           >
             <SidebarIcon className="h-[18px] w-[18px]" />
           </button>
@@ -56,18 +55,13 @@ export function TopBar({
         <div className="flex shrink-0 items-center gap-2.5 md:min-w-0 md:shrink">
           {/* The app icon is the way home. */}
           <HoverHighlightItem id="home">
-            <Link
-              href="/"
-              className={highlightItemClass}
-              aria-label="Back to home"
-              title="Back to home"
-            >
+            <Link href="/" className={highlightItemClass} aria-label="Back to home">
               <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
             </Link>
           </HoverHighlightItem>
           {/* The visible title below only shows from md, so the h1 is a hidden copy. */}
           <h1 className="sr-only">{title}</h1>
-          <span className="hidden truncate font-medium md:inline" title={title} aria-hidden>
+          <span className="hidden truncate font-medium md:inline" aria-hidden>
             {title}
           </span>
         </div>
@@ -76,8 +70,7 @@ export function TopBar({
             <button
               type="button"
               onClick={onChangeUsername}
-              title={`@${username}`}
-              aria-label={`Change GitHub profile (@${username})`}
+              aria-label={`Change GitHub username (@${username})`}
               className={`${highlightItemClass} sm:w-auto sm:px-[9px]`}
             >
               <User className="h-[18px] w-[18px] shrink-0" />
@@ -87,16 +80,15 @@ export function TopBar({
         )}
         {needsUsername && !username && (
           <HoverHighlightItem id="profile" className="md:ml-2">
-            {/* Accent color: choosing a profile is the next step. */}
+            {/* Accent color: choosing a username is the next step. */}
             <button
               type="button"
               onClick={onChangeUsername}
-              title="Select profile"
-              aria-label="Select GitHub profile"
+              aria-label="Choose GitHub username"
               className={`${highlightItemBaseClass} whitespace-nowrap text-accent hover:text-accent-hover sm:w-auto sm:px-[9px]`}
             >
               <User className="h-[18px] w-[18px] shrink-0" />
-              <span className="hidden sm:inline">Select profile</span>
+              <span className="hidden sm:inline">Choose username</span>
             </button>
           </HoverHighlightItem>
         )}

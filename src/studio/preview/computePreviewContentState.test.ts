@@ -89,9 +89,9 @@ describe("noReposProblem", () => {
 });
 
 describe("fetchErrorProblem", () => {
-  it("keeps the server message and offers a retry", () => {
-    expect(fetchErrorProblem("Unable to fetch user data")).toEqual({
-      title: "Unable to fetch user data",
+  it("uses the server message as a heading (no period) and offers a retry", () => {
+    expect(fetchErrorProblem("Couldn't load the GitHub profile.")).toEqual({
+      title: "Couldn't load the GitHub profile",
       hint: "Check the username or your connection, then try again.",
       action: "retry",
     });

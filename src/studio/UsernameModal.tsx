@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
@@ -38,14 +38,40 @@ export function UsernameModal({
   onCancel: () => void;
 }) {
   const [value, setValue] = useState("");
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // While open: Escape cancels, Tab stays inside the dialog, and focus goes back to where it was
+  // (e.g. the username button) when it closes.
   useEffect(() => {
     if (!open) return;
+    // Noted before focusing the input (not with autoFocus, which would run first).
+    const returnFocusTo = document.activeElement as HTMLElement | null;
+    inputRef.current?.focus();
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") {
+        onCancel();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled]), input:not([disabled])",
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      returnFocusTo?.focus();
+    };
   }, [open, onCancel]);
 
   function handleSubmit(e: React.FormEvent) {
@@ -79,6 +105,7 @@ export function UsernameModal({
             onClick={(e) => e.target === e.currentTarget && onCancel()}
           >
             <motion.div
+              ref={dialogRef}
               role="dialog"
               aria-modal="true"
               aria-labelledby="username-modal-title"
@@ -105,15 +132,17 @@ export function UsernameModal({
                   <input
                     type="text"
                     className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-hidden"
+                    aria-labelledby="username-modal-title"
                     value={value}
                     onChange={(e) => setValue(parseInput(e.target.value))}
-                    autoFocus
+                    ref={inputRef}
                   />
                 </div>
 
                 <div className="mb-6 text-xs">
                   <p className="text-center text-muted/80">
-                    💡 Tip: turn on private contributions to get a more complete banner.
+                    <strong className="font-semibold text-text">Tip:</strong> turn on private
+                    contributions to get a more complete banner.
                   </p>
 
                   <div className="mt-2 flex flex-wrap justify-center gap-2">
@@ -145,7 +174,7 @@ export function UsernameModal({
                     className="btn-primary w-full justify-center py-3"
                     disabled={!value.trim()}
                   >
-                    Select Profile
+                    Use username
                   </button>
                   <button
                     type="button"

@@ -34,7 +34,8 @@ export function computePreviewContentState(params: {
 /** A GitHub request failed: the server's message, with a hint and a retry. */
 export function fetchErrorProblem(message: string): PreviewProblem {
   return {
-    title: message,
+    // A heading, so no closing period (the same message ends with one elsewhere).
+    title: message.replace(/\.$/, ""),
     hint: "Check the username or your connection, then try again.",
     action: "retry",
   };
@@ -88,8 +89,8 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 export function previewEmptyCopy(needsUsername: boolean): { title: string; description: string } {
   return needsUsername
     ? {
-        title: "Choose a GitHub profile",
-        description: "Select a username to load data for this banner.",
+        title: "Choose a GitHub username",
+        description: "Enter a username to load this banner's data.",
       }
     : {
         title: "Add your quote",

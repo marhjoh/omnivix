@@ -113,8 +113,10 @@ function RepoMultiSelect({
   };
 
   return (
-    <div className="space-y-1.5">
-      <span className="block text-xs font-medium text-muted">Repositories</span>
+    <div className="space-y-1.5" role="group" aria-labelledby="repositories-label">
+      <span id="repositories-label" className="block text-xs font-medium text-muted">
+        Repositories
+      </span>
       {loading && <p className="text-xs text-muted">Loading repository list…</p>}
       {error && (
         <p className="text-xs text-danger" role="alert">
@@ -173,6 +175,7 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (id: string
             key={preset.id}
             type="button"
             onClick={() => onChange(preset.id)}
+            aria-pressed={resolvedId === preset.id}
             className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-xs transition-all ${
               resolvedId === preset.id
                 ? "border-accent bg-accent/10 text-text"
@@ -180,11 +183,15 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (id: string
             }`}
           >
             <span className="font-medium">{preset.label}</span>
-            <div className="ml-auto flex gap-1">
+            <span className="ml-auto flex gap-1" aria-hidden>
               {preset.gridLevels.map((color, i) => (
-                <div key={i} className="h-4 w-4 rounded-xs" style={{ backgroundColor: color }} />
+                <span
+                  key={i}
+                  className="block h-4 w-4 rounded-xs"
+                  style={{ backgroundColor: color }}
+                />
               ))}
-            </div>
+            </span>
           </button>
         ))}
       </div>
