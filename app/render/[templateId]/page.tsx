@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { templateRegistry } from "@/src/templates/registry";
-import { TemplateId } from "@/src/types/template";
+import { isTemplateId } from "@/src/templates/registry";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { consumeExportToken } from "@/src/export/session-store";
@@ -15,7 +14,7 @@ export default async function RenderPage({
 }) {
   const { templateId } = await params;
   const { token } = await searchParams;
-  if (!(templateId in templateRegistry) || !token) notFound();
+  if (!isTemplateId(templateId) || !token) notFound();
 
   const payload = consumeExportToken(token);
   if (!payload || payload.templateId !== templateId) notFound();
@@ -53,7 +52,7 @@ export default async function RenderPage({
       }}
     >
       <BannerRenderer
-        templateId={templateId as TemplateId}
+        templateId={templateId}
         state={payload.state}
         data={{ user, contributions, repos }}
         isExport

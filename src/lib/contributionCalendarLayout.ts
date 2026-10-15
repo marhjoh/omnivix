@@ -21,7 +21,7 @@ import type {
   ContributionMonthNormalized,
 } from "@/src/github/normalize";
 
-export type PlacedCalendarDay = {
+type PlacedCalendarDay = {
   date: string;
   count: number;
   level: 0 | 1 | 2 | 3 | 4;
@@ -31,7 +31,7 @@ export type PlacedCalendarDay = {
   isOutOfRange?: boolean;
 };
 
-export type MonthLabel = {
+type MonthLabel = {
   label: string;
   colIndex: number;
 };

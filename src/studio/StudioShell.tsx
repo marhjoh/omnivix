@@ -34,6 +34,9 @@ import styles from "@/src/studio/studio.module.css";
 
 const STATE_PREFIX = "omnivix:state:";
 
+/** Shown when a GitHub request fails without a message of its own (network, platform errors). */
+const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
+
 type FetchSlotErrors = {
   user: string | null;
   contributions: string | null;
@@ -42,25 +45,16 @@ type FetchSlotErrors = {
 
 /**
  * Single message for preview: one slot wins per template.
- * Contribution banner only needs contributions for the canvas; user fetch is sidebar-only.
+ * The contribution banner only draws contributions; its user fetch is for the sidebar (year list).
  */
-function previewErrorForTemplate(
-  templateId: TemplateId,
-  e: FetchSlotErrors,
-  dataReady: boolean,
-): string | null {
-  if (templateId === "contribution-banner" && dataReady) {
-    return null;
-  }
+function previewErrorForTemplate(templateId: TemplateId, e: FetchSlotErrors): string | null {
   if (templateId === "github-banner") {
     if (e.user) return e.user;
     if (e.contributions) return e.contributions;
     return null;
   }
   if (templateId === "contribution-banner") {
-    if (e.contributions) return e.contributions;
-    if (e.user) return e.user;
-    return null;
+    return e.contributions;
   }
   if (templateId === "repos-banner") {
     if (e.user) return e.user;
@@ -80,22 +74,18 @@ function loadPersistedState(templateId: string): Record<string, unknown> | null 
   }
 }
 
-function persistState(templateId: string, state: Record<string, unknown>, needsUsername: boolean) {
-  if (typeof window === "undefined") return;
-  try {
-    const clone = { ...state };
-    // Uploads are too large to store; position and zoom only make sense with their image.
-    delete clone.backgroundImage;
-    delete clone.backgroundPosition;
-    delete clone.backgroundZoom;
-    if (needsUsername) {
-      // Username is global; avoid stale per-template copies.
-      delete clone.username;
-    }
-    localStorage.setItem(STATE_PREFIX + templateId, JSON.stringify(clone));
-  } catch {
-    /* quota exceeded, ignore */
+/** The part of the state that's saved per template, as JSON. */
+function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {
+  const clone = { ...state };
+  // Uploads are too large to store; position and zoom only make sense with their image.
+  delete clone.backgroundImage;
+  delete clone.backgroundPosition;
+  delete clone.backgroundZoom;
+  if (needsUsername) {
+    // Username is global; avoid stale per-template copies.
+    delete clone.username;
   }
+  return JSON.stringify(clone);
 }
 
 class FetchError extends Error {
@@ -111,7 +101,8 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new FetchError(body.error ?? res.statusText, res.status);
+    // Platform errors (a timeout page, an HTML 500) have no message; the caller's fallback is used.
+    throw new FetchError(body.error ?? "", res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -137,7 +128,7 @@ const lastFetchedByKey = new Map<string, unknown>();
 /**
  * Results are stored with the url/nonce they belong to and derived on read,
  * so nothing has to be reset synchronously when the url changes.
- * On error, the last data for the same url is kept.
+ * On error, the last data for the same url is kept (from `lastFetched`).
  */
 function useFetchJson<T>(
   url: string | null,
@@ -164,14 +155,15 @@ function useFetchJson<T>(
       },
       (error) => {
         if (ac.signal.aborted) return;
-        const message = error instanceof Error ? error.message : fallbackError;
-        setResult((prev) => ({
+        // Only our API's own messages are shown; network errors ("Failed to fetch") use the fallback.
+        const message =
+          error instanceof FetchError && error.message ? error.message : fallbackError;
+        setResult({
           url,
           nonce,
-          data: prev?.url === url ? prev.data : undefined,
           error: message,
           status: error instanceof FetchError ? error.status : null,
-        }));
+        });
       },
     );
     return () => ac.abort();
@@ -257,10 +249,9 @@ export function StudioShell({
   const definition = templateRegistry[templateId];
   const needsUsername = definition.meta.needsUsername ?? false;
 
-  const [state, setState] = useState<Record<string, unknown>>(() => {
-    const initial: Record<string, unknown> = { ...definition.initialState };
-    return initial;
-  });
+  const [state, setState] = useState<Record<string, unknown>>(() => ({
+    ...definition.initialState,
+  }));
 
   // Persisted state lives in localStorage, so it is merged in on the first client render
   // (after hydration) to keep the server and client markup identical.
@@ -356,21 +347,21 @@ export function StudioShell({
   const userFetch = useFetchJson<GithubUserNormalized>(
     needsUsername && username ? `/api/github/user-summary?username=${encodedUsername}` : null,
     refetchNonce,
-    "Unable to load GitHub data",
+    GITHUB_FETCH_FALLBACK,
   );
   const contributionsFetch = useFetchJson<ContributionsNormalized>(
     username && needsContributions
       ? `/api/github/contributions?username=${encodedUsername}&year=${encodeURIComponent(yearRaw)}`
       : null,
     refetchNonce,
-    "Unable to load GitHub data",
+    GITHUB_FETCH_FALLBACK,
   );
   const reposFetch = useFetchJson<RepoNormalized[]>(
     username && needsReposFetch
       ? `/api/github/repos?username=${encodedUsername}&mode=${encodeURIComponent(repoMode)}&selected=${encodeURIComponent(selectedRepos)}`
       : null,
     refetchNonce,
-    "Unable to load GitHub data",
+    GITHUB_FETCH_FALLBACK,
     `${username}:${repoMode}`,
   );
   const catalogFetch = useFetchJson<RepoNormalized[]>(
@@ -378,7 +369,7 @@ export function StudioShell({
       ? `/api/github/repos-catalog?username=${encodedUsername}`
       : null,
     refetchNonce,
-    "Unable to load repository list",
+    "Couldn't load your repositories.",
   );
 
   const user = userFetch.error ? undefined : userFetch.data;
@@ -451,8 +442,8 @@ export function StudioShell({
   const quoteText = String(state.quote ?? "");
 
   const previewDataError = useMemo(
-    () => previewErrorForTemplate(templateId, fetchErrors, dataReady),
-    [templateId, fetchErrors, dataReady],
+    () => previewErrorForTemplate(templateId, fetchErrors),
+    [templateId, fetchErrors],
   );
 
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
@@ -487,9 +478,18 @@ export function StudioShell({
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const showError = useCallback((message: string) => setToast({ id: Date.now(), message }), []);
-  const dismissToast = useCallback(() => setToast(null), []);
+  const showError = useCallback((message: string) => {
+    const id = Date.now();
+    setToast({ id, message });
+    return id;
+  }, []);
+  /** Hides the toast; with an id, only if that toast is still the one showing. */
+  const dismissToast = useCallback((id?: number) => {
+    setToast((current) => (id === undefined || current?.id === id ? null : current));
+  }, []);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
+  const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);
 
   // Open the username prompt whenever a username becomes required but is missing.
   const shouldPromptUsername = hydrated && needsUsername && !username;
@@ -501,9 +501,6 @@ export function StudioShell({
 
   const updateState = useCallback(
     (key: string, value: unknown) => {
-      if (key === "username" && typeof value === "string") {
-        storeUsername(value);
-      }
       setState((prev) => {
         const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
         // A new background starts at its own default position.
@@ -511,26 +508,30 @@ export function StudioShell({
           delete next.backgroundPosition;
           delete next.backgroundZoom;
         }
-        persistState(templateId, next, needsUsername);
         return next;
       });
     },
-    [templateId, needsUsername],
+    [templateId],
   );
+
+  // Saved after hydration, and only when the saved part changes (not on every background drag).
+  const storedJson = useMemo(() => storedStateJson(state, needsUsername), [state, needsUsername]);
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STATE_PREFIX + templateId, storedJson);
+    } catch {
+      /* storage blocked or full; settings just aren't remembered */
+    }
+  }, [hydrated, templateId, storedJson]);
 
   const stateValid = useMemo(
     () => definition.stateSchema.safeParse(state).success,
     [definition.stateSchema, state],
   );
   const background = backgroundFromState(state);
-  const [backgroundAdjusting, setBackgroundAdjusting] = useState(false);
-  // Adjust mode ends by itself when there's no background left to adjust.
-  const adjustingBackground = backgroundAdjusting && background !== undefined;
-  function toggleBackgroundAdjusting() {
-    setBackgroundAdjusting(!adjustingBackground);
-    // On phones the settings drawer covers the preview; close it so the background can be dragged.
-    if (isPhone && !adjustingBackground) closeDrawer();
-  }
+  /** The image adjust mode was turned on for; choosing another image (or none) ends it. */
+  const [adjustingSrc, setAdjustingSrc] = useState<string | null>(null);
   const moveBackground = useCallback(
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
     [updateState],
@@ -545,6 +546,26 @@ export function StudioShell({
   // A background that can't be used (it failed to load, or is an http link) is left out of the
   // preview, so the banner never shows a broken-image icon; the sidebar keeps the choice.
   const backgroundUnusable = backgroundFailed || isInsecureImageLink(state.backgroundImage);
+  /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
+  const adjustableBackground = backgroundUnusable ? undefined : background;
+  const adjustingBackground =
+    adjustableBackground !== undefined && adjustingSrc === adjustableBackground.src;
+  function toggleBackgroundAdjusting() {
+    setAdjustingSrc(adjustingBackground ? null : (adjustableBackground?.src ?? null));
+    // On phones the settings drawer covers the preview; close it so the background can be dragged.
+    if (isPhone && !adjustingBackground) closeDrawer();
+  }
+
+  // Links report their own problems (BackgroundImagePicker); a preset or upload that fails to
+  // load is reported here, once per image.
+  const reportedBackgroundRef = useRef<string | null>(null);
+  const backgroundSrc = background?.src;
+  useEffect(() => {
+    if (!backgroundFailed || !backgroundSrc || /^https?:\/\//i.test(backgroundSrc)) return;
+    if (reportedBackgroundRef.current === backgroundSrc) return;
+    reportedBackgroundRef.current = backgroundSrc;
+    showError("Couldn't load this background.");
+  }, [backgroundFailed, backgroundSrc, showError]);
   const previewBannerState = useMemo(
     () => (backgroundUnusable ? { ...state, backgroundImage: undefined } : state),
     [backgroundUnusable, state],
@@ -596,7 +617,7 @@ export function StudioShell({
   function handleUsernameSubmit(newUsername: string) {
     storeUsername(newUsername);
     updateState("username", newUsername);
-    setShowUsernameModal(false);
+    closeUsernameModal();
   }
 
   return (
@@ -605,7 +626,7 @@ export function StudioShell({
       <UsernameModal
         open={showUsernameModal}
         onSubmit={handleUsernameSubmit}
-        onCancel={() => setShowUsernameModal(false)}
+        onCancel={closeUsernameModal}
       />
 
       <header className={styles.topbar}>
@@ -616,7 +637,7 @@ export function StudioShell({
           exportBlocked={exportBlocked}
           username={username}
           needsUsername={needsUsername}
-          onChangeUsername={() => setShowUsernameModal(true)}
+          onChangeUsername={openUsernameModal}
           sidebarExpanded={sidebarExpanded}
           onToggleSidebar={toggleSidebar}
         />
@@ -639,6 +660,7 @@ export function StudioShell({
               repoCatalogLoading={repoCatalogLoading}
               repoCatalogError={repoCatalogError}
               disabledFields={disabledFields}
+              adjustableBackground={adjustableBackground}
               backgroundAdjusting={adjustingBackground}
               onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
               onError={showError}
@@ -662,14 +684,14 @@ export function StudioShell({
             previewState={previewState}
             problem={previewProblem}
             onRetry={handlePreviewRetry}
-            onChangeUsername={() => setShowUsernameModal(true)}
+            onChangeUsername={openUsernameModal}
             backgroundAdjust={
-              adjustingBackground && background
+              adjustingBackground && adjustableBackground
                 ? {
-                    position: background.position,
-                    zoom: background.zoom,
+                    position: adjustableBackground.position,
+                    zoom: adjustableBackground.zoom,
                     onMove: moveBackground,
-                    onDone: () => setBackgroundAdjusting(false),
+                    onDone: () => setAdjustingSrc(null),
                   }
                 : undefined
             }

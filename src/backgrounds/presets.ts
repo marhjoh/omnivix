@@ -5,7 +5,7 @@
  * preview. `pnpm backgrounds` regenerates them; see `scripts/backgrounds.mts`. The abstract SVGs
  * are hand-written. Old preset paths redirect to these in `next.config.ts`.
  */
-export interface BackgroundPreset {
+interface BackgroundPreset {
   id: string;
   label: string;
   group: string;

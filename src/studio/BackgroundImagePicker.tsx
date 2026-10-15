@@ -29,6 +29,8 @@ function isDataUrl(s: string) {
 
 const TRIGGER_LABEL_MAX = 44;
 
+const GROUPED_PRESETS = groupPresets(BACKGROUND_PRESETS);
+
 /** How long the link field must be idle before a link that can't be used is reported. */
 const LINK_SETTLE_MS = 1000;
 
@@ -68,10 +70,10 @@ export function BackgroundImagePicker({
   label: string;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
-  /** An upload was rejected, or an image link can't be used; shown as a toast. */
-  onError: (message: string) => void;
-  /** The image link that was reported now works; hides its toast. */
-  onErrorResolved: () => void;
+  /** An upload was rejected, or an image link can't be used; shown as a toast. Returns its id. */
+  onError: (message: string) => number;
+  /** Hides the toast with this id (a reported link was changed or now works). */
+  onErrorResolved: (toastId: number) => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,39 +89,36 @@ export function BackgroundImagePicker({
   /** The link the user has stopped typing (idle, Enter or leaving the field); only it is reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** The last link a toast was shown for, so the same link is reported once. */
-  const reportedLinkRef = useRef<string | null>(null);
+  /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
+  const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
-  const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
+  /** The current background when it's an image link. */
   const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
+  const showUrlField = urlEditorOpen || linkValue !== undefined;
   const linkStatus = useImageStatus(linkValue);
-  // An http link, or one the browser can't load, can't be exported. It's left out of the preview
-  // (see StudioShell) and reported once the user has stopped typing it.
-  const linkProblem =
-    linkValue === undefined || settledLink !== linkValue
-      ? null
-      : isInsecureImageLink(linkValue)
-        ? "Use an https:// image link."
-        : linkStatus === "failed"
-          ? "Couldn't load this image link."
-          : null;
+  // A link that can't be exported (not a link at all, http, or one the browser can't load) is left
+  // out of the preview (see StudioShell) and reported once the user has stopped typing it.
+  const linkProblem = !settledLink
+    ? null
+    : !isHttpImageUrl(settledLink) || isInsecureImageLink(settledLink)
+      ? "Use an https:// image link."
+      : settledLink === linkValue && linkStatus === "failed"
+        ? "Couldn't load this image link."
+        : null;
 
   useEffect(() => {
-    if (linkProblem && reportedLinkRef.current !== linkValue) {
-      reportedLinkRef.current = linkValue ?? null;
-      onError(linkProblem);
-    } else if (linkStatus === "loaded" && reportedLinkRef.current !== null) {
-      reportedLinkRef.current = null;
-      onErrorResolved();
+    const reported = reportedRef.current;
+    // The reported link was changed, or works now: its toast is out of date.
+    if (reported && (reported.link !== settledLink || !linkProblem)) {
+      onErrorResolved(reported.toastId);
+      reportedRef.current = null;
     }
-  }, [linkProblem, linkValue, linkStatus, onError, onErrorResolved]);
+    if (linkProblem && settledLink && !reportedRef.current) {
+      reportedRef.current = { link: settledLink, toastId: onError(linkProblem) };
+    }
+  }, [linkProblem, settledLink, onError, onErrorResolved]);
 
-  const urlInputValue =
-    urlDraft !== undefined
-      ? urlDraft
-      : typeof value === "string" && isHttpImageUrl(value)
-        ? value
-        : "";
+  const urlInputValue = urlDraft ?? linkValue ?? "";
 
   useEffect(() => {
     if (urlEditorOpen && urlInputRef.current) {
@@ -174,9 +173,8 @@ export function BackgroundImagePicker({
     setSettledLink(urlDraft.trim());
   };
 
-  const grouped = groupPresets(BACKGROUND_PRESETS);
-
   const selectNone = () => {
+    setSettledLink(undefined);
     setUploadSession(null);
     onChange(undefined);
     setUrlDraft(undefined);
@@ -185,6 +183,7 @@ export function BackgroundImagePicker({
   };
 
   const selectPreset = (src: string) => {
+    setSettledLink(undefined);
     setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
@@ -195,7 +194,7 @@ export function BackgroundImagePicker({
   const selectEnterUrl = () => {
     setUrlEditorOpen(true);
     dropdown.close();
-    if (typeof value === "string" && isHttpImageUrl(value)) {
+    if (linkValue) {
       setUrlDraft(undefined);
     } else {
       setUrlDraft("");
@@ -203,6 +202,7 @@ export function BackgroundImagePicker({
   };
 
   const selectUpload = () => {
+    setSettledLink(undefined);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
@@ -225,7 +225,7 @@ export function BackgroundImagePicker({
             None
           </DropdownOption>
 
-          {Array.from(grouped.entries()).map(([groupName, presets]) => (
+          {Array.from(GROUPED_PRESETS.entries()).map(([groupName, presets]) => (
             <div key={groupName}>
               <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
               {presets.map((p) => (

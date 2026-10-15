@@ -35,6 +35,19 @@ export function BackgroundDragSurface({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; from: BackgroundPosition } | null>(null);
+  /** Moves are applied once per frame; pointer events can fire faster than the screen updates. */
+  const moveFrame = useRef<number | null>(null);
+  const pending = useRef<BackgroundPosition | null>(null);
+
+  useEffect(() => () => cancelAnimationFrame(moveFrame.current ?? 0), []);
+
+  function scheduleMove(next: BackgroundPosition) {
+    pending.current = next;
+    moveFrame.current ??= requestAnimationFrame(() => {
+      moveFrame.current = null;
+      if (pending.current) onMove(pending.current);
+    });
+  }
 
   useEffect(() => {
     ref.current?.focus({ preventScroll: true });
@@ -62,7 +75,7 @@ export function BackgroundDragSurface({
       { x: (event.clientX - start.x) / scale, y: (event.clientY - start.y) / scale },
       range,
     );
-    onMove({ x: round(next.x), y: round(next.y) });
+    scheduleMove({ x: round(next.x), y: round(next.y) });
   }
 
   function onPointerUp() {

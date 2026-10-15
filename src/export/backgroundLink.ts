@@ -4,7 +4,7 @@ import { isIP, type LookupFunction } from "node:net";
 import type { ExportBackground } from "@/src/export/background";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
-export const MAX_LINKED_BACKGROUND_BYTES = 10 * 1024 * 1024;
+const MAX_LINKED_BACKGROUND_BYTES = 10 * 1024 * 1024;
 const TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
 const IMAGE_TYPES = [

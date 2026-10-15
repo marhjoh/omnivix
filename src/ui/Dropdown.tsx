@@ -38,6 +38,8 @@ export function useDropdown(triggerId: string) {
     };
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Only close the list, not whatever contains it (the phone settings drawer).
+      e.stopPropagation();
       setOpen(false);
       document.getElementById(triggerId)?.focus();
     };
@@ -78,7 +80,7 @@ export function useDropdown(triggerId: string) {
   return { open, setOpen, close, listId, triggerId, onListKeyDown };
 }
 
-export type Dropdown = ReturnType<typeof useDropdown>;
+type Dropdown = ReturnType<typeof useDropdown>;
 
 /** Wraps trigger and list; clicks inside it don't count as outside clicks. */
 export function DropdownRoot({

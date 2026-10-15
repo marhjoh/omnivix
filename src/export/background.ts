@@ -18,7 +18,7 @@ export interface ExportBackground {
   body: Buffer;
 }
 
-export type ExportBackgroundResult =
+type ExportBackgroundResult =
   | { ok: true; payload: ExportRequest; background?: ExportBackground }
   | { ok: false; error: string };
 

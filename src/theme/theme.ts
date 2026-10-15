@@ -1,7 +1,7 @@
 export type Theme = "light" | "dark";
 
 /** Studio + PNG export: banner chrome follows app light/dark (template `themeId` is separate). */
-export type BannerUiChrome = {
+type BannerUiChrome = {
   baseBg: string;
   text: string;
   textMuted: string;

@@ -30,7 +30,7 @@ function isPosition(raw: unknown): raw is BackgroundPosition {
 }
 
 /** Where a background sits by default: its preset's focus, or the center. */
-export function defaultBackgroundPosition(src: string): BackgroundPosition {
+function defaultBackgroundPosition(src: string): BackgroundPosition {
   return presetBySrc(src)?.focus ?? CENTER;
 }
 

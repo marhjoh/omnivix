@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type ImageStatus = "none" | "loading" | "loaded" | "failed";
+type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
 /** Outcome per src for the browser session, so a remount doesn't wait on an image already seen. */
 const knownStatus = new Map<string, "loaded" | "failed">();

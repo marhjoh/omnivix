@@ -8,12 +8,10 @@ import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
-import { backgroundFromState, isDefaultBackgroundFraming } from "@/src/banner/background";
+import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const currentYear = new Date().getFullYear();
-
-const NO_DISABLED_FIELDS: ReadonlySet<string> = new Set();
 
 function DebouncedInput({
   id,
@@ -171,12 +169,6 @@ function RepoMultiSelect({
 function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
 
-  useEffect(() => {
-    if (!THEME_PRESETS.some((p) => p.id === value)) {
-      onChange("default");
-    }
-  }, [value, onChange]);
-
   return (
     <div className="space-y-2">
       <span className="block text-xs font-medium text-muted">Theme</span>
@@ -261,11 +253,12 @@ export function ControlSidebar({
   templateId,
   accountCreatedYear,
   onChange,
-  repoCatalog = [],
-  repoCatalogLoading = false,
-  repoCatalogError = null,
-  disabledFields = NO_DISABLED_FIELDS,
-  backgroundAdjusting = false,
+  repoCatalog,
+  repoCatalogLoading,
+  repoCatalogError,
+  disabledFields,
+  adjustableBackground,
+  backgroundAdjusting,
   onToggleBackgroundAdjusting,
   onError,
   onErrorResolved,
@@ -273,24 +266,25 @@ export function ControlSidebar({
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
   templateId: TemplateId;
-  accountCreatedYear?: number | null;
+  accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
-  repoCatalog?: RepoNormalized[];
-  repoCatalogLoading?: boolean;
-  repoCatalogError?: string | null;
-  /** Field key → reason it is unavailable; shown as a hint, the control is disabled and shown off. */
+  repoCatalog: RepoNormalized[];
+  repoCatalogLoading: boolean;
+  repoCatalogError: string | null;
   /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
-  disabledFields?: ReadonlySet<string>;
+  disabledFields: ReadonlySet<string>;
+  /** The background that can be moved and zoomed; none when there's none, or it can't be used. */
+  adjustableBackground: BannerBackground | undefined;
   /** Whether the preview is in background adjust mode (drag to move). */
-  backgroundAdjusting?: boolean;
-  onToggleBackgroundAdjusting?: () => void;
-  /** Shows a one-off error as a toast (e.g. a rejected upload). */
-  onError: (message: string) => void;
-  /** Hides a toast whose problem went away (an image link that now loads). */
-  onErrorResolved: () => void;
+  backgroundAdjusting: boolean;
+  onToggleBackgroundAdjusting: () => void;
+  /** Shows a one-off error as a toast (e.g. a rejected upload); returns the toast's id. */
+  onError: (message: string) => number;
+  /** Hides the toast with this id, if it's still showing. */
+  onErrorResolved: (toastId: number) => void;
 }) {
   const mode = state.mode as string | undefined;
-  const background = backgroundFromState(state);
+  const background = adjustableBackground;
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -462,7 +456,7 @@ export function ControlSidebar({
                 onError={onError}
                 onErrorResolved={onErrorResolved}
               />
-              {background && onToggleBackgroundAdjusting ? (
+              {background ? (
                 <BackgroundAdjustControls
                   id={field.key}
                   adjusting={backgroundAdjusting}

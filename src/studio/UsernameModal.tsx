@@ -10,14 +10,22 @@ const externalActionClass =
 
 const STORAGE_KEY = "omnivix:github-username";
 
+/** Storage can be blocked (privacy settings); the studio then just doesn't remember the username. */
 export function getStoredUsername(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem(STORAGE_KEY) ?? "";
+  try {
+    return localStorage.getItem(STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
 }
 
 export function storeUsername(username: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, username);
+  try {
+    localStorage.setItem(STORAGE_KEY, username);
+  } catch {
+    /* storage blocked */
+  }
 }
 
 export function UsernameModal({
@@ -43,10 +51,7 @@ export function UsernameModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = value.trim();
-    if (trimmed) {
-      storeUsername(trimmed);
-      onSubmit(trimmed);
-    }
+    if (trimmed) onSubmit(trimmed);
   }
 
   function parseInput(raw: string): string {

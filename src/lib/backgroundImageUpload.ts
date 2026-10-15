@@ -35,7 +35,7 @@ export const SUPPORTED_BACKGROUND_FORMATS_MESSAGE =
   "Only PNG, JPEG, WebP, AVIF and HEIC are supported.";
 
 /** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
-export const UNREADABLE_BACKGROUND_MESSAGE = "Couldn't read this image. Try another file.";
+const UNREADABLE_BACKGROUND_MESSAGE = "Couldn't read this image. Try another file.";
 
 const GIF_MAGIC = [0x47, 0x49, 0x46]; // "GIF"
 
