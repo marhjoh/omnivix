@@ -3,7 +3,7 @@ import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { RenderData } from "@/src/templates/renderers/types";
-import type { PreviewContentState } from "@/src/studio/preview/types";
+import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import {
   PreviewEmptyState,
   PreviewErrorState,
@@ -24,8 +24,8 @@ export function PreviewArtboard({
   state,
   data,
   previewState,
-  dataError,
-  onRetryError,
+  problem,
+  onRetry,
   backgroundAdjust,
 }: {
   templateId: TemplateId;
@@ -33,8 +33,9 @@ export function PreviewArtboard({
   state: Record<string, unknown>;
   data: RenderData;
   previewState: PreviewContentState;
-  dataError: string | null;
-  onRetryError?: () => void;
+  /** Shown in place of the banner when `previewState` is "error". */
+  problem: PreviewProblem | null;
+  onRetry?: () => void;
   /** Set while the background is being adjusted: shows the drag surface over the preview. */
   backgroundAdjust?: {
     position: BackgroundPosition;
@@ -83,9 +84,9 @@ export function PreviewArtboard({
                 <PreviewEmptyState title={emptyCopy.title} description={emptyCopy.description} />
               ) : (
                 <PreviewErrorState
-                  message={dataError ?? "Something went wrong"}
-                  hint="Check the username or your connection, then try again."
-                  onRetry={onRetryError}
+                  message={problem?.title ?? "Something went wrong"}
+                  hint={problem?.hint ?? ""}
+                  onRetry={problem?.retry ? onRetry : undefined}
                 />
               )}
             </div>

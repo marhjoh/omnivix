@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computePreviewContentState } from "./computePreviewContentState";
+import {
+  computePreviewContentState,
+  fetchErrorProblem,
+  noReposProblem,
+} from "./computePreviewContentState";
 
 describe("computePreviewContentState", () => {
   const base = {
@@ -61,5 +65,38 @@ describe("computePreviewContentState", () => {
         hydrated: true,
       }),
     ).toBe("empty");
+  });
+});
+
+describe("noReposProblem", () => {
+  it("explains an empty pinned list", () => {
+    expect(noReposProblem("pinned", "")).toMatchObject({
+      title: "No pinned repositories",
+      retry: false,
+    });
+  });
+
+  it("asks to pick repositories when none are selected", () => {
+    expect(noReposProblem("selected", " ")).toMatchObject({
+      title: "No repositories selected",
+      retry: false,
+    });
+  });
+
+  it("says none matched when the selected ones weren't found", () => {
+    expect(noReposProblem("selected", "gone-repo")).toMatchObject({
+      title: "No matching repositories",
+      retry: false,
+    });
+  });
+});
+
+describe("fetchErrorProblem", () => {
+  it("keeps the server message and offers a retry", () => {
+    expect(fetchErrorProblem("Unable to fetch user data")).toEqual({
+      title: "Unable to fetch user data",
+      hint: "Check the username or your connection, then try again.",
+      retry: true,
+    });
   });
 });

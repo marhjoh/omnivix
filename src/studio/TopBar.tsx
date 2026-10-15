@@ -9,7 +9,7 @@ export function TopBar({
   title,
   onDownload,
   isDownloading,
-  blockedReason,
+  exportBlocked,
   exportError,
   onDismissExportError,
   username,
@@ -21,7 +21,8 @@ export function TopBar({
   title: string;
   onDownload: () => void;
   isDownloading: boolean;
-  blockedReason: string | null;
+  /** Nothing to export yet (or a problem with it); the button is disabled. */
+  exportBlocked: boolean;
   exportError: string | null;
   onDismissExportError: () => void;
   username?: string;
@@ -116,8 +117,7 @@ export function TopBar({
           <button
             className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
             onClick={onDownload}
-            disabled={isDownloading || blockedReason !== null}
-            title={blockedReason ?? undefined}
+            disabled={isDownloading || exportBlocked}
             aria-label={isDownloading ? "Exporting…" : "Download PNG"}
             aria-busy={isDownloading}
             type="button"

@@ -5,8 +5,13 @@ import { templateRegistry } from "@/src/templates/registry";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
-import { computePreviewContentState } from "@/src/studio/preview";
-import { exportBlockedReason } from "@/src/studio/exportBlockedReason";
+import {
+  computePreviewContentState,
+  fetchErrorProblem,
+  noReposProblem,
+  type PreviewProblem,
+} from "@/src/studio/preview";
+import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
@@ -404,6 +409,15 @@ export function StudioShell({
     [templateId, fetchErrors, dataReady],
   );
 
+  // The repos banner with no repositories to show is handled like a failed fetch: the preview
+  // says why instead of drawing an empty banner, and export is blocked.
+  const noRepos = templateId === "repos-banner" && dataReady && data.repos?.length === 0;
+  const previewProblem = useMemo<PreviewProblem | null>(() => {
+    if (previewDataError) return fetchErrorProblem(previewDataError);
+    if (noRepos) return noReposProblem(repoMode, selectedRepos);
+    return null;
+  }, [previewDataError, noRepos, repoMode, selectedRepos]);
+
   const previewState = useMemo(
     () =>
       computePreviewContentState({
@@ -412,10 +426,10 @@ export function StudioShell({
         needsUsername,
         username,
         quoteText,
-        dataError: previewDataError,
+        dataError: previewProblem?.title ?? null,
         dataReady,
       }),
-    [hydrated, templateId, needsUsername, username, quoteText, previewDataError, dataReady],
+    [hydrated, templateId, needsUsername, username, quoteText, previewProblem, dataReady],
   );
 
   const handlePreviewRetry = useCallback(() => {
@@ -475,8 +489,7 @@ export function StudioShell({
       ? state.backgroundImage
       : undefined,
   );
-  const blockedReason = exportBlockedReason({
-    templateId,
+  const exportBlocked = isExportBlocked({
     previewState,
     stateValid,
     backgroundFailed: backgroundStatus === "failed",
@@ -489,7 +502,7 @@ export function StudioShell({
   const exportError = exportFailure?.state === state ? exportFailure.message : null;
 
   async function onDownload() {
-    if (blockedReason) return;
+    if (exportBlocked) return;
     setIsDownloading(true);
     setExportFailure(null);
     try {
@@ -548,7 +561,7 @@ export function StudioShell({
           title={definition.meta.title}
           onDownload={onDownload}
           isDownloading={isDownloading}
-          blockedReason={blockedReason}
+          exportBlocked={exportBlocked}
           exportError={exportError}
           onDismissExportError={() => setExportFailure(null)}
           username={username}
@@ -595,8 +608,8 @@ export function StudioShell({
             state={state}
             data={renderData}
             previewState={previewState}
-            dataError={previewDataError}
-            onRetryError={handlePreviewRetry}
+            problem={previewProblem}
+            onRetry={handlePreviewRetry}
             backgroundAdjust={
               adjustingBackground && background
                 ? {
