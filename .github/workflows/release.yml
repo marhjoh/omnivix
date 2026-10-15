@@ -32,10 +32,10 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # Merges the release PR as soon as CI passes.
+      # Squash-merges the release PR as soon as CI passes.
       - name: Auto-merge the release PR
         if: steps.release.outputs.pr
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh pr merge "${{ fromJSON(steps.release.outputs.pr).number }}" --auto --merge
+        run: gh pr merge "${{ fromJSON(steps.release.outputs.pr).number }}" --auto --squash
