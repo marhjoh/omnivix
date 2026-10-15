@@ -4,11 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import {
-  MAX_BACKGROUND_UPLOAD_BYTES,
-  normalizeBackgroundImageFile,
-  truncateMiddle,
-} from "@/src/lib/backgroundImageUpload";
+import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
   DropdownRoot,
@@ -260,11 +256,6 @@ export function BackgroundImagePicker({
         </p>
       ) : null}
 
-      <p className="text-[11px] leading-snug text-muted">
-        Uploads: PNG, JPEG, WebP, AVIF or HEIC, up to {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)}{" "}
-        MB.
-      </p>
-
       {showUrlField ? (
         <div className="space-y-1.5">
           <label htmlFor={`${id}-url`} className="block text-xs font-medium text-muted">
@@ -284,11 +275,7 @@ export function BackgroundImagePicker({
             <p className="text-xs leading-snug text-danger" role="alert">
               {linkError}
             </p>
-          ) : (
-            <p className="text-[11px] leading-snug text-muted">
-              Note: Other sites may block hotlinking.
-            </p>
-          )}
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -43,11 +43,6 @@ export function BackgroundAdjustControls({
           Reset
         </button>
       </div>
-      {adjusting ? (
-        <p className="text-[11px] leading-snug text-muted">
-          Drag the preview to move the background, or use the arrow keys.
-        </p>
-      ) : null}
       <label htmlFor={zoomId} className="block text-xs font-medium text-muted">
         Zoom: {Math.round(zoom * 100)}%
       </label>

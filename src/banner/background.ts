@@ -49,6 +49,12 @@ export function backgroundFromState(state: Record<string, unknown>): BannerBackg
   return { src, position, zoom };
 }
 
+/** True when the background is at its default position and zoom, so there's nothing to reset. */
+export function isDefaultBackgroundFraming({ src, position, zoom }: BannerBackground): boolean {
+  const initial = defaultBackgroundPosition(src);
+  return zoom === MIN_BACKGROUND_ZOOM && position.x === initial.x && position.y === initial.y;
+}
+
 /**
  * Styles for the background `<img>`. `object-position` places the image; zoom scales it around the
  * same point, so 0% and 100% keep an edge aligned at any zoom and the frame never shows a gap.

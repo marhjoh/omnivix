@@ -4,6 +4,7 @@ import {
   backgroundFromState,
   backgroundImageStyle,
   backgroundPanRange,
+  isDefaultBackgroundFraming,
   dragBackgroundPosition,
 } from "./background";
 
@@ -50,6 +51,26 @@ describe("backgroundFromState", () => {
         backgroundZoom: NaN,
       }),
     ).toMatchObject({ position: { x: 50, y: 50 }, zoom: 1 });
+  });
+});
+
+describe("isDefaultBackgroundFraming", () => {
+  const london = "/backgrounds/london.avif";
+
+  it("is true when position and zoom are back at their defaults", () => {
+    const state = {
+      backgroundImage: london,
+      backgroundPosition: { x: 30, y: 85 },
+      backgroundZoom: 1,
+    };
+    expect(isDefaultBackgroundFraming(backgroundFromState(state)!)).toBe(true);
+  });
+
+  it("is false once moved or zoomed", () => {
+    const moved = { backgroundImage: london, backgroundPosition: { x: 30, y: 70 } };
+    const zoomed = { backgroundImage: london, backgroundZoom: 1.2 };
+    expect(isDefaultBackgroundFraming(backgroundFromState(moved)!)).toBe(false);
+    expect(isDefaultBackgroundFraming(backgroundFromState(zoomed)!)).toBe(false);
   });
 });
 

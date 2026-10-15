@@ -8,7 +8,7 @@ import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
-import { backgroundFromState } from "@/src/banner/background";
+import { backgroundFromState, isDefaultBackgroundFraming } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 const currentYear = new Date().getFullYear();
@@ -466,9 +466,7 @@ export function ControlSidebar({
                   onToggleAdjusting={onToggleBackgroundAdjusting}
                   zoom={background.zoom}
                   onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
-                  canReset={
-                    state.backgroundPosition !== undefined || state.backgroundZoom !== undefined
-                  }
+                  canReset={!isDefaultBackgroundFraming(background)}
                   onReset={() => {
                     onChange("backgroundPosition", undefined);
                     onChange("backgroundZoom", undefined);
