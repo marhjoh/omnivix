@@ -1,26 +1,15 @@
 import type { NextRequest } from "next/server";
 
 /**
- * Origin the browser used to call the app. Prefer this over `request.nextUrl.origin` for
- * serverless: some platforms surface an internal host there, and Playwright must open the same
- * public URL users use (correct deployment, cookies, Vercel auth bypass rules).
+ * Origin Playwright opens the render page on. On Vercel, the forwarded headers are set by the
+ * platform and name the public URL users use (right deployment, cookies, auth bypass rules);
+ * `nextUrl` can be an internal host there. Elsewhere those headers could come from the client, so
+ * the server's own origin is used.
  */
 export function getPublicOrigin(request: NextRequest): string {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const host = forwardedHost?.split(",")[0]?.trim() || request.headers.get("host")?.trim();
-
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const proto =
-    forwardedProto?.split(",")[0]?.trim() ||
-    (process.env.VERCEL ? "https" : request.nextUrl.protocol.replace(":", "") || "http");
-
-  if (host) {
-    return `${proto}://${host}`;
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
+  if (!process.env.VERCEL) return request.nextUrl.origin;
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  if (host) return `https://${host}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return request.nextUrl.origin;
 }

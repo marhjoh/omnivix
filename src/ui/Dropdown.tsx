@@ -38,6 +38,8 @@ export function useDropdown(triggerId: string) {
     };
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Only close the list, not whatever contains it (the phone settings drawer).
+      e.stopPropagation();
       setOpen(false);
       document.getElementById(triggerId)?.focus();
     };
@@ -78,7 +80,7 @@ export function useDropdown(triggerId: string) {
   return { open, setOpen, close, listId, triggerId, onListKeyDown };
 }
 
-export type Dropdown = ReturnType<typeof useDropdown>;
+type Dropdown = ReturnType<typeof useDropdown>;
 
 /** Wraps trigger and list; clicks inside it don't count as outside clicks. */
 export function DropdownRoot({
@@ -95,15 +97,11 @@ export function DropdownRoot({
 
 export function DropdownTrigger({
   dropdown,
-  title,
   disabled,
-  describedBy,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
-  title?: string;
   disabled?: boolean;
-  describedBy?: string;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
   const Chevron = open ? ChevronUp : ChevronDown;
@@ -114,14 +112,11 @@ export function DropdownTrigger({
       aria-haspopup="listbox"
       aria-expanded={open}
       aria-controls={open ? listId : undefined}
-      aria-describedby={describedBy}
       disabled={disabled}
       onClick={() => setOpen((o) => !o)}
-      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors hover:border-border focus:border-[var(--accent)] focus:ring-2 focus:ring-[rgba(47,129,247,0.15)] focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors focus:outline-hidden focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <span className="min-w-0 flex-1 truncate" title={title}>
-        {children}
-      </span>
+      <span className="min-w-0 flex-1 truncate">{children}</span>
       <Chevron className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />
     </button>
   );
@@ -189,7 +184,6 @@ export function Select({
   options,
   onChange,
   disabled,
-  describedBy,
 }: {
   id: string;
   /** Accessible name for the option list. */
@@ -198,13 +192,12 @@ export function Select({
   options: ReadonlyArray<{ label: string; value: string }>;
   onChange: (value: string) => void;
   disabled?: boolean;
-  describedBy?: string;
 }) {
   const dropdown = useDropdown(id);
   const current = options.find((option) => option.value === value);
   return (
     <DropdownRoot dropdown={dropdown} className="relative">
-      <DropdownTrigger dropdown={dropdown} disabled={disabled} describedBy={describedBy}>
+      <DropdownTrigger dropdown={dropdown} disabled={disabled}>
         {current?.label ?? value}
       </DropdownTrigger>
       <DropdownList dropdown={dropdown} label={`${label} options`}>

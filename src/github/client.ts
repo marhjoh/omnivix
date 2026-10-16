@@ -1,10 +1,9 @@
-import { readCache, writeCache } from "@/src/github/cache";
+import { cached } from "@/src/github/cache";
 import {
   ContributionDayNormalized,
-  ContributionMonthNormalized,
-  ContributionWeekNormalized,
   ContributionsNormalized,
   GithubUserNormalized,
+  RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
 import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
@@ -15,204 +14,146 @@ import { graphql } from "@octokit/graphql";
 const TTL_SHORT = 1000 * 60 * 3; // 3 min
 const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
 
+/** Repositories are listed 100 per page; this caps the picker at 1,000 of the most recently updated. */
+const REPO_PAGE_SIZE = 100;
+const MAX_REPO_PAGES = 10;
+
 function graphqlClient() {
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    throw new Error("GITHUB_TOKEN is required for production GitHub data");
+    throw new Error("GITHUB_TOKEN is not set");
   }
   return graphql.defaults({
     headers: { authorization: `token ${token}` },
   });
 }
 
-export async function getUserSummary(username: string): Promise<GithubUserNormalized> {
-  const cacheKey = `gh:user:${username}`;
-  const cached = readCache<GithubUserNormalized>(cacheKey);
-  if (cached) return cached;
+/** GitHub logins are case-insensitive, so cache keys are too. */
+function userKey(username: string) {
+  return username.toLowerCase();
+}
 
-  const client = graphqlClient();
-  const user = await client<{
-    user: {
-      login: string;
-      name: string | null;
-      avatarUrl: string;
-      createdAt: string;
-      followers: { totalCount: number };
-      repositories: { totalCount: number };
-    };
-  }>(
-    `
-      query UserSummary($username: String!) {
-        user(login: $username) {
-          login
-          name
-          avatarUrl
-          createdAt
-          followers {
-            totalCount
-          }
-          repositories(ownerAffiliations: OWNER) {
-            totalCount
-          }
-        }
-      }
-    `,
-    { username },
-  );
-  const contributions = await getContributions(username, "latest");
-  return writeCache(
-    cacheKey,
-    {
-      login: user.user.login,
-      name: user.user.name,
-      avatarUrl: user.user.avatarUrl,
-      followers: user.user.followers.totalCount,
-      publicRepos: user.user.repositories.totalCount,
-      contributionsLatest365: contributions.total,
-      createdAt: user.user.createdAt,
-    },
-    TTL_SHORT,
+/** "latest" (the last 365 days) or a four-digit year. */
+export function isContributionYear(year: string): boolean {
+  return year === "latest" || /^\d{4}$/.test(year);
+}
+
+/** True when GitHub reports that the requested user doesn't exist. */
+export function isUserNotFound(error: unknown): boolean {
+  const errors = (error as { errors?: Array<{ type?: string; path?: unknown[] }> } | null)?.errors;
+  return (
+    Array.isArray(errors) && errors.some((e) => e.type === "NOT_FOUND" && e.path?.[0] === "user")
   );
 }
 
-export async function getContributions(
+export function getUserSummary(username: string): Promise<GithubUserNormalized> {
+  return cached(`gh:user:${userKey(username)}`, TTL_SHORT, async () => {
+    const { user } = await graphqlClient()<{ user: GithubUserNormalized }>(
+      `
+        query UserSummary($username: String!) {
+          user(login: $username) {
+            login
+            name
+            avatarUrl
+            createdAt
+          }
+        }
+      `,
+      { username },
+    );
+    return user;
+  });
+}
+
+const LEVELS: Record<string, ContributionDayNormalized["level"]> = {
+  NONE: 0,
+  FIRST_QUARTILE: 1,
+  SECOND_QUARTILE: 2,
+  THIRD_QUARTILE: 3,
+  FOURTH_QUARTILE: 4,
+};
+
+/** Contributions for a calendar year, or for the last 365 days when `year` is "latest". */
+export function getContributions(
   username: string,
-  year?: string,
+  year = "latest",
 ): Promise<ContributionsNormalized> {
-  const modeLatest = !year || year === "latest";
-  const latestRange = modeLatest ? computeLatestContributionRangeUtc(new Date()) : null;
-  const cacheKey = modeLatest
-    ? `gh:contrib:${username}:latest:${latestRange!.toYyyyMmDd}`
-    : `gh:contrib:${username}:${year}`;
-
-  const cached = readCache<ContributionsNormalized>(cacheKey);
-  if (cached) return cached;
-
-  const client = graphqlClient();
-
-  let from: string;
-  let to: string;
-  let rangeStartYmd: string;
-  let rangeEndYmd: string;
-  let yearNum: number | undefined;
-
-  if (modeLatest) {
-    from = latestRange!.fromIso;
-    to = latestRange!.toIso;
-    rangeStartYmd = from.slice(0, 10);
-    rangeEndYmd = to.slice(0, 10);
-  } else {
-    yearNum = parseInt(year!, 10);
-    if (Number.isNaN(yearNum) || String(yearNum).length !== 4) {
-      throw new Error(`Invalid contribution year: ${year}`);
-    }
-    from = `${yearNum}-01-01T00:00:00Z`;
-    to = `${yearNum}-12-31T23:59:59Z`;
-    rangeStartYmd = `${yearNum}-01-01`;
-    rangeEndYmd = `${yearNum}-12-31`;
+  if (!isContributionYear(year)) {
+    return Promise.reject(new Error(`Invalid contribution year: ${year}`));
   }
+  const latest = year === "latest" ? computeLatestContributionRangeUtc(new Date()) : null;
+  const from = latest ? latest.fromIso : `${year}-01-01T00:00:00Z`;
+  const to = latest ? latest.toIso : `${year}-12-31T23:59:59Z`;
+  const isHistorical = !latest && Number(year) < new Date().getUTCFullYear();
+  const period = latest ? `latest:${latest.toYyyyMmDd}` : year;
 
-  const response = await client<{
-    user: {
-      contributionsCollection: {
-        contributionCalendar: {
-          totalContributions: number;
-          months: Array<{
-            firstDay: string;
-            name: string;
-            totalWeeks: number;
-            year: number;
-          }>;
-          weeks: Array<{
-            firstDay: string;
-            contributionDays: Array<{
-              date: string;
-              contributionCount: number;
-              contributionLevel:
-                | "NONE"
-                | "FIRST_QUARTILE"
-                | "SECOND_QUARTILE"
-                | "THIRD_QUARTILE"
-                | "FOURTH_QUARTILE";
-              weekday: number;
-            }>;
-          }>;
+  return cached(
+    `gh:contrib:${userKey(username)}:${period}`,
+    isHistorical ? TTL_LONG : TTL_SHORT,
+    async () => {
+      const response = await graphqlClient()<{
+        user: {
+          contributionsCollection: {
+            contributionCalendar: {
+              totalContributions: number;
+              months: Array<{ firstDay: string; name: string }>;
+              weeks: Array<{
+                firstDay: string;
+                contributionDays: Array<{
+                  date: string;
+                  contributionCount: number;
+                  contributionLevel: string;
+                  weekday: number;
+                }>;
+              }>;
+            };
+          };
         };
-      };
-    };
-  }>(
-    `
-      query UserContributions($username: String!, $from: DateTime, $to: DateTime) {
-        user(login: $username) {
-          contributionsCollection(from: $from, to: $to) {
-            contributionCalendar {
-              totalContributions
-              months {
-                firstDay
-                name
-                totalWeeks
-                year
-              }
-              weeks {
-                firstDay
-                contributionDays {
-                  date
-                  contributionCount
-                  contributionLevel
-                  weekday
+      }>(
+        `
+          query UserContributions($username: String!, $from: DateTime, $to: DateTime) {
+            user(login: $username) {
+              contributionsCollection(from: $from, to: $to) {
+                contributionCalendar {
+                  totalContributions
+                  months {
+                    firstDay
+                    name
+                  }
+                  weeks {
+                    firstDay
+                    contributionDays {
+                      date
+                      contributionCount
+                      contributionLevel
+                      weekday
+                    }
+                  }
                 }
               }
             }
           }
-        }
-      }
-    `,
-    { username, from, to },
-  );
+        `,
+        { username, from, to },
+      );
 
-  const levelToNumber: Record<string, 0 | 1 | 2 | 3 | 4> = {
-    NONE: 0,
-    FIRST_QUARTILE: 1,
-    SECOND_QUARTILE: 2,
-    THIRD_QUARTILE: 3,
-    FOURTH_QUARTILE: 4,
-  };
-
-  const calendar = response.user.contributionsCollection.contributionCalendar;
-
-  const weeks: ContributionWeekNormalized[] = calendar.weeks.map((week) => ({
-    firstDay: week.firstDay,
-    days: week.contributionDays.map((day): ContributionDayNormalized => ({
-      date: day.date,
-      count: day.contributionCount,
-      level: levelToNumber[day.contributionLevel] ?? 0,
-      weekday: day.weekday as 0 | 1 | 2 | 3 | 4 | 5 | 6,
-    })),
-  }));
-
-  const months: ContributionMonthNormalized[] = calendar.months.map((m) => ({
-    firstDay: m.firstDay,
-    name: m.name,
-    totalWeeks: m.totalWeeks,
-    year: m.year,
-  }));
-
-  const currentYear = new Date().getUTCFullYear();
-  const isHistorical = !modeLatest && yearNum != null && yearNum < currentYear;
-  const ttl = isHistorical ? TTL_LONG : TTL_SHORT;
-
-  return writeCache(
-    cacheKey,
-    {
-      total: calendar.totalContributions,
-      weeks,
-      months,
-      rangeStartYmd,
-      rangeEndYmd,
-      mode: modeLatest ? "latest" : "year",
-      year: yearNum,
+      const calendar = response.user.contributionsCollection.contributionCalendar;
+      return {
+        total: calendar.totalContributions,
+        weeks: calendar.weeks.map((week) => ({
+          firstDay: week.firstDay,
+          days: week.contributionDays.map((day) => ({
+            date: day.date,
+            count: day.contributionCount,
+            level: LEVELS[day.contributionLevel] ?? 0,
+            weekday: day.weekday as ContributionDayNormalized["weekday"],
+          })),
+        })),
+        months: calendar.months,
+        rangeStartYmd: from.slice(0, 10),
+        rangeEndYmd: to.slice(0, 10),
+      };
     },
-    ttl,
   );
 }
 
@@ -220,13 +161,24 @@ type RepoGqlFields = {
   id: string;
   name: string;
   description: string | null;
-  url: string;
   stargazerCount: number;
   forkCount: number;
   primaryLanguage: { name: string; color: string | null } | null;
 };
 
-function normalizeRepoNode(repo: RepoGqlFields, isPinned: boolean): RepoNormalized {
+const REPO_FIELDS = `
+  id
+  name
+  description
+  stargazerCount
+  forkCount
+  primaryLanguage {
+    name
+    color
+  }
+`;
+
+function normalizeRepoNode(repo: RepoGqlFields): RepoNormalized {
   return {
     id: repo.id,
     name: repo.name,
@@ -235,111 +187,76 @@ function normalizeRepoNode(repo: RepoGqlFields, isPinned: boolean): RepoNormaliz
     languageColor: repo.primaryLanguage?.color ?? null,
     stargazers: repo.stargazerCount,
     forks: repo.forkCount,
-    url: repo.url,
-    isPinned,
   };
 }
 
-type UserReposBundle = { pinned: RepoNormalized[]; ownerPublic: RepoNormalized[] };
+type RepoPage = {
+  nodes: RepoGqlFields[];
+  pageInfo: { hasNextPage: boolean; endCursor: string | null };
+};
 
-async function fetchUserReposBundle(username: string): Promise<UserReposBundle> {
-  const cacheKey = `gh:repos:bundle:v2:${username}`;
-  const cached = readCache<UserReposBundle>(cacheKey);
-  if (cached) return cached;
+const OWNER_REPOS_ARGS = `
+  first: ${REPO_PAGE_SIZE}
+  after: $after
+  ownerAffiliations: OWNER
+  orderBy: { field: UPDATED_AT, direction: DESC }
+  privacy: PUBLIC
+  isFork: false
+`;
 
-  const client = graphqlClient();
-  const response = await client<{
-    user: {
-      pinnedItems: {
-        nodes: Array<({ __typename: string } & RepoGqlFields) | { __typename: string }>;
+/** Pinned repositories and the owner's public repositories (newest first), fetched together. */
+export function getRepoLists(username: string): Promise<RepoLists> {
+  return cached(`gh:repos:${userKey(username)}`, TTL_SHORT, async () => {
+    const client = graphqlClient();
+    const first = await client<{
+      user: {
+        pinnedItems: { nodes: Array<Partial<RepoGqlFields> & { __typename: string }> };
+        repositories: RepoPage;
       };
-      repositories: {
-        nodes: RepoGqlFields[];
-      };
-    };
-  }>(
-    `
-      query UserRepos($username: String!) {
-        user(login: $username) {
-          pinnedItems(first: 6, types: REPOSITORY) {
-            nodes {
-              ... on Repository {
+    }>(
+      `
+        query UserRepos($username: String!, $after: String) {
+          user(login: $username) {
+            pinnedItems(first: 6, types: REPOSITORY) {
+              nodes {
                 __typename
-                id
-                name
-                description
-                url
-                stargazerCount
-                forkCount
-                primaryLanguage {
-                  name
-                  color
-                }
+                ... on Repository { ${REPO_FIELDS} }
               }
             }
-          }
-          repositories(
-            first: 100
-            ownerAffiliations: OWNER
-            orderBy: { field: UPDATED_AT, direction: DESC }
-            privacy: PUBLIC
-            isFork: false
-          ) {
-            nodes {
-              id
-              name
-              description
-              url
-              stargazerCount
-              forkCount
-              primaryLanguage {
-                name
-                color
-              }
+            repositories(${OWNER_REPOS_ARGS}) {
+              nodes { ${REPO_FIELDS} }
+              pageInfo { hasNextPage endCursor }
             }
           }
         }
-      }
-    `,
-    { username },
-  );
+      `,
+      { username, after: null },
+    );
 
-  const pinned: RepoNormalized[] = [];
-  for (const node of response.user.pinnedItems.nodes) {
-    if (node.__typename === "Repository" && "id" in node && "name" in node) {
-      pinned.push(normalizeRepoNode(node as RepoGqlFields, true));
+    const pinned = first.user.pinnedItems.nodes
+      .filter((node) => node.__typename === "Repository")
+      .map((node) => normalizeRepoNode(node as RepoGqlFields));
+
+    const nodes = [...first.user.repositories.nodes];
+    let page = first.user.repositories.pageInfo;
+    for (let i = 1; i < MAX_REPO_PAGES && page.hasNextPage; i++) {
+      const next = await client<{ user: { repositories: RepoPage } }>(
+        `
+          query MoreUserRepos($username: String!, $after: String) {
+            user(login: $username) {
+              repositories(${OWNER_REPOS_ARGS}) {
+                nodes { ${REPO_FIELDS} }
+                pageInfo { hasNextPage endCursor }
+              }
+            }
+          }
+        `,
+        { username, after: page.endCursor },
+      );
+      nodes.push(...next.user.repositories.nodes);
+      page = next.user.repositories.pageInfo;
     }
-  }
 
-  const ownerPublic = response.user.repositories.nodes.map((repo) =>
-    normalizeRepoNode(repo, false),
-  );
-
-  return writeCache(cacheKey, { pinned, ownerPublic }, TTL_SHORT);
-}
-
-/** Public repos for the signed-in owner (studio picker). Cached with {@link getRepos}. */
-export async function getOwnerReposCatalog(username: string): Promise<RepoNormalized[]> {
-  const bundle = await fetchUserReposBundle(username);
-  return bundle.ownerPublic;
-}
-
-export async function getRepos(
-  username: string,
-  mode: "pinned" | "selected",
-  selected: string[] = [],
-): Promise<RepoNormalized[]> {
-  const bundle = await fetchUserReposBundle(username);
-  if (mode === "pinned") {
-    return bundle.pinned;
-  }
-  const byName = new Map(bundle.ownerPublic.map((r) => [r.name, r]));
-  const ordered: RepoNormalized[] = [];
-  for (const name of selected) {
-    const repo = byName.get(name);
-    if (repo) {
-      ordered.push({ ...repo, isPinned: false });
-    }
-  }
-  return ordered;
+    return { pinned, owned: nodes.map(normalizeRepoNode) };
+  });
 }

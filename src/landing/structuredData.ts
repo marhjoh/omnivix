@@ -38,7 +38,11 @@ export function landingJsonLd() {
             (s) => `${s.label} banner for ${s.platforms.map((p) => p.name).join(", ")}`,
           ),
         ],
-        creator: { "@type": "Person", name: "marhjoh", url: SITE_LINKS.maintainerProfile },
+        creator: {
+          "@type": "Person",
+          name: SITE_LINKS.maintainerHandle,
+          url: SITE_LINKS.maintainerProfile,
+        },
         sameAs: [SITE_LINKS.repo],
       },
       {

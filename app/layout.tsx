@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/src/lib/site";
+import localFont from "next/font/local";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_OPEN_GRAPH } from "@/src/lib/site";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
-import { parseThemeCookie, THEME_COOKIE_NAME, THEME_INIT_SCRIPT } from "@/src/theme/theme";
+import { DEFAULT_THEME, THEME_INIT_SCRIPT } from "@/src/theme/theme";
 import "./globals.css";
+
+/**
+ * Inter (variable, Latin), self-hosted so every visitor and the export's browser use the same font;
+ * a system font would make the preview and the downloaded PNG differ. SIL Open Font License.
+ */
+const inter = localFont({
+  src: "./fonts/inter-latin-variable.woff2",
+  weight: "100 900",
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    url: "/",
-  },
+  // No url here: it would mark every page without its own (such as the 404 page) as the home page.
+  openGraph: SITE_OPEN_GRAPH,
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
@@ -43,22 +49,25 @@ export const metadata: Metadata = {
   verification: { google: "CH99E0UrpoR3FTE5rj6SxDSvMADkuXfctdmwFNyYhlo" },
 };
 
-export default async function RootLayout({
+/**
+ * No cookies are read here, so pages that don't need them are prerendered. The theme comes from
+ * THEME_INIT_SCRIPT, which sets data-theme before first paint; CSS and the themed artwork follow
+ * it directly. The studio reads the theme cookie itself, since its banner preview picks colors in
+ * JavaScript.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const theme = parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value);
-
   return (
-    // suppressHydrationWarning: THEME_INIT_SCRIPT may change data-theme before React hydrates.
-    <html lang="en" data-theme={theme} suppressHydrationWarning>
+    // suppressHydrationWarning: THEME_INIT_SCRIPT adds data-theme before React hydrates.
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="bg-bg text-text antialiased">
-        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
+      <body>
+        <ThemeProvider initialTheme={DEFAULT_THEME}>{children}</ThemeProvider>
       </body>
     </html>
   );

@@ -1,6 +1,9 @@
-export type { PreviewContentState } from "./types";
+export type { PreviewProblem } from "./types";
 export {
   computePreviewContentState,
+  fetchErrorProblem,
+  noReposProblem,
+  userNotFoundProblem,
   previewEmptyCopy,
   previewLoadingMessage,
 } from "./computePreviewContentState";

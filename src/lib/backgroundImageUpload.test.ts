@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  dataUrlByteLength,
   isGifMagicBytes,
   MAX_BACKGROUND_UPLOAD_BYTES,
   readFileHead,
@@ -44,6 +45,16 @@ describe("validateBackgroundUploadMeta", () => {
   it("rejects empty mime with bad extension", () => {
     const f = new File([], "x.bin", { type: "" });
     expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
+  });
+
+  it("accepts avif by mime", () => {
+    const f = new File([], "photo.avif", { type: "image/avif" });
+    expect(validateBackgroundUploadMeta(f)).toBeNull();
+  });
+
+  it("allows empty mime with .avif extension", () => {
+    const f = new File([], "photo.avif", { type: "" });
+    expect(validateBackgroundUploadMeta(f)).toBeNull();
   });
 
   it("accepts heic by mime", () => {
@@ -118,5 +129,12 @@ describe("truncateMiddle", () => {
     const out = truncateMiddle(s, 20);
     expect(out.length).toBeLessThanOrEqual(20);
     expect(out).toContain("…");
+  });
+});
+
+describe("dataUrlByteLength", () => {
+  it.each([0, 1, 2, 3, 1000])("matches the decoded size of %i bytes", (size) => {
+    const dataUrl = `data:image/webp;base64,${Buffer.alloc(size, 7).toString("base64")}`;
+    expect(dataUrlByteLength(dataUrl)).toBe(size);
   });
 });

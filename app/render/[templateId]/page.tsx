@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { templateRegistry } from "@/src/templates/registry";
-import { TemplateId } from "@/src/types/template";
+import { isTemplateId, templateRegistry } from "@/src/templates/registry";
+import { reposForBanner } from "@/src/lib/repoSelection";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
-import { consumeExportToken } from "@/src/export/session-store";
-import { getContributions, getRepos, getUserSummary } from "@/src/github/client";
+import { verifyExportToken } from "@/src/export/export-token";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 
 export default async function RenderPage({
   params,
@@ -15,34 +15,26 @@ export default async function RenderPage({
 }) {
   const { templateId } = await params;
   const { token } = await searchParams;
-  if (!(templateId in templateRegistry) || !token) notFound();
+  if (!isTemplateId(templateId) || !token) notFound();
 
-  const payload = consumeExportToken(token);
+  const payload = verifyExportToken(token);
   if (!payload || payload.templateId !== templateId) notFound();
 
   const size = BANNER_SIZES[payload.size];
-  const username = payload.state.username;
-  const rawYear =
-    typeof payload.state.year === "string" && payload.state.year.length > 0
-      ? payload.state.year
-      : String(new Date().getFullYear());
-  const user =
-    typeof username === "string" && username ? await getUserSummary(username) : undefined;
-  const contributions =
-    typeof username === "string" && username
-      ? await getContributions(username, rawYear)
-      : undefined;
-  const repos =
-    templateId === "repos-banner" && typeof username === "string" && username
-      ? await getRepos(
-          username,
-          payload.state.mode === "selected" ? "selected" : "pinned",
-          String(payload.state.selectedRepos ?? "")
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
+  const { state } = payload;
+  const username = typeof state.username === "string" ? state.username : "";
+  // Only the data this banner draws, fetched in parallel. The export route has already checked
+  // the settings against the template's schema, which fills in defaults such as the year.
+  const needs = new Set(templateRegistry[templateId].meta.githubData);
+  const [user, contributions, repos] = await Promise.all([
+    needs.has("user") ? getUserSummary(username) : undefined,
+    needs.has("contributions") ? getContributions(username, String(state.year)) : undefined,
+    needs.has("repos")
+      ? getRepoLists(username).then((lists) =>
+          reposForBanner(lists, state.mode, String(state.selectedRepos ?? "")),
         )
-      : undefined;
+      : undefined,
+  ]);
 
   return (
     <main
@@ -53,10 +45,9 @@ export default async function RenderPage({
       }}
     >
       <BannerRenderer
-        templateId={templateId as TemplateId}
-        state={payload.state}
+        templateId={templateId}
+        state={state}
         data={{ user, contributions, repos }}
-        isExport
         uiTheme={payload.uiTheme ?? "dark"}
       />
     </main>

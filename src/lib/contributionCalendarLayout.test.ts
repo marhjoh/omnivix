@@ -112,8 +112,6 @@ function monthsForYear(year: number): ContributionMonthNormalized[] {
   return Array.from({ length: 12 }, (_, i) => ({
     firstDay: `${year}-${String(i + 1).padStart(2, "0")}-01`,
     name: names[i],
-    totalWeeks: 5,
-    year,
   }));
 }
 
@@ -364,8 +362,8 @@ describe("buildCalendarLayout — month labels", () => {
   it("month label collision: labels too close are dropped", () => {
     const weeks = buildWeeksForRange("2025-01-27", "2025-02-08");
     const months: ContributionMonthNormalized[] = [
-      { firstDay: "2025-01-01", name: "January", totalWeeks: 5, year: 2025 },
-      { firstDay: "2025-02-01", name: "February", totalWeeks: 4, year: 2025 },
+      { firstDay: "2025-01-01", name: "January" },
+      { firstDay: "2025-02-01", name: "February" },
     ];
     const { monthLabels } = buildCalendarLayout({
       weeks,

@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
-import {
-  MAX_BACKGROUND_UPLOAD_BYTES,
-  normalizeBackgroundImageFile,
-  truncateMiddle,
-} from "@/src/lib/backgroundImageUpload";
+import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { isInsecureImageLink } from "@/src/lib/imageLink";
+import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
   DropdownRoot,
@@ -19,7 +17,7 @@ import {
 
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
 const BACKGROUND_FILE_ACCEPT =
-  "image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif";
+  "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
 
 function isHttpImageUrl(s: string) {
   return /^https?:\/\//i.test(s.trim());
@@ -30,6 +28,11 @@ function isDataUrl(s: string) {
 }
 
 const TRIGGER_LABEL_MAX = 44;
+
+const GROUPED_PRESETS = groupPresets(BACKGROUND_PRESETS);
+
+/** How long the link field must be idle before a link that can't be used is reported. */
+const LINK_SETTLE_MS = 1000;
 
 function triggerLabel(value: string | undefined, uploadedFileName: string | null): string {
   if (!value) return "None";
@@ -43,50 +46,87 @@ function triggerLabel(value: string | undefined, uploadedFileName: string | null
   return "Custom";
 }
 
-function triggerTitle(
-  value: string | undefined,
-  uploadedFileName: string | null,
-): string | undefined {
-  if (!value) return undefined;
-  if (isDataUrl(value)) {
-    const name = uploadedFileName?.trim();
-    return name || undefined;
-  }
-  return value;
-}
-
 export function BackgroundImagePicker({
   id,
   label,
   value,
   onChange,
+  onError,
+  onErrorResolved,
 }: {
   id: string;
   label: string;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
+  /** An upload was rejected, or an image link can't be used; shown as a toast. Returns its id. */
+  onError: (message: string) => number;
+  /** Hides the toast with this id (a reported link was changed or now works). */
+  onErrorResolved: (toastId: number) => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   /** Filename for the current data URL when this picker performed the upload (parent state is only the URL). */
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
   );
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
-  const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The link the user has stopped typing (idle, Enter or leaving the field); only it is reported. */
+  const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
+  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
+  const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
-  const showUrlField = urlEditorOpen || (typeof value === "string" && isHttpImageUrl(value));
+  /** The current background when it's an image link. */
+  const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
+  const showUrlField = urlEditorOpen || linkValue !== undefined;
+  const linkStatus = useImageStatus(linkValue);
+  // A link that can't be exported (not a link at all, http, or one the browser can't load) is left
+  // out of the preview (see StudioShell) and reported once the user has stopped typing it.
+  const linkProblem = !settledLink
+    ? null
+    : !isHttpImageUrl(settledLink) || isInsecureImageLink(settledLink)
+      ? "Use an https:// image link."
+      : settledLink === linkValue && linkStatus === "failed"
+        ? "Couldn't load this image link."
+        : null;
 
-  const urlInputValue =
-    urlDraft !== undefined
-      ? urlDraft
-      : typeof value === "string" && isHttpImageUrl(value)
-        ? value
-        : "";
+  // A settled link that isn't the background yet. It becomes the background once the browser has
+  // loaded it or it has failed (an http link right away); until then the banner keeps the
+  // background it has, so typing never makes it flicker.
+  const pendingLink =
+    settledLink && isHttpImageUrl(settledLink) && settledLink !== linkValue
+      ? settledLink
+      : undefined;
+  const pendingStatus = useImageStatus(
+    pendingLink && !isInsecureImageLink(pendingLink) ? pendingLink : undefined,
+  );
+  useEffect(() => {
+    if (!pendingLink) return;
+    if (
+      isInsecureImageLink(pendingLink) ||
+      pendingStatus === "loaded" ||
+      pendingStatus === "failed"
+    ) {
+      onChange(pendingLink);
+    }
+  }, [pendingLink, pendingStatus, onChange]);
+
+  useEffect(() => {
+    const reported = reportedRef.current;
+    // The reported link was changed, or works now: its toast is out of date.
+    if (reported && (reported.link !== settledLink || !linkProblem)) {
+      onErrorResolved(reported.toastId);
+      reportedRef.current = null;
+    }
+    if (linkProblem && settledLink && !reportedRef.current) {
+      reportedRef.current = { link: settledLink, toastId: onError(linkProblem) };
+    }
+  }, [linkProblem, settledLink, onError, onErrorResolved]);
+
+  const urlInputValue = urlDraft ?? linkValue ?? "";
 
   useEffect(() => {
     if (urlEditorOpen && urlInputRef.current) {
@@ -96,7 +136,7 @@ export function BackgroundImagePicker({
 
   useEffect(() => {
     return () => {
-      if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
+      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     };
   }, []);
 
@@ -105,34 +145,31 @@ export function BackgroundImagePicker({
       ? uploadSession.fileName
       : null;
 
-  const pushUrlToParent = useCallback(
+  /** The user has stopped typing: an emptied field removes the background, a link is checked. */
+  const settle = useCallback(
     (raw: string) => {
-      const t = raw.trim();
-      if (!t) {
-        setUploadSession(null);
-        onChange(undefined);
-        setUrlDraft(undefined);
-        return;
-      }
-      if (isHttpImageUrl(t)) {
-        setUploadSession(null);
-        onChange(t);
-        setUrlDraft(undefined);
-      }
+      const link = raw.trim();
+      setSettledLink(link);
+      if (!link) onChange(undefined);
     },
     [onChange],
   );
 
   const onUrlChange = (raw: string) => {
     setUrlDraft(raw);
-    if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
-    urlTimeoutRef.current = setTimeout(() => pushUrlToParent(raw), 400);
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    settleTimeoutRef.current = setTimeout(() => settle(raw), LINK_SETTLE_MS);
   };
 
-  const grouped = groupPresets(BACKGROUND_PRESETS);
+  /** Enter or leaving the field: check the link now, without waiting for the pause. */
+  const settleUrl = () => {
+    if (urlDraft === undefined) return;
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    settle(urlDraft);
+  };
 
   const selectNone = () => {
-    setUploadError(null);
+    setSettledLink(undefined);
     setUploadSession(null);
     onChange(undefined);
     setUrlDraft(undefined);
@@ -141,7 +178,7 @@ export function BackgroundImagePicker({
   };
 
   const selectPreset = (src: string) => {
-    setUploadError(null);
+    setSettledLink(undefined);
     setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
@@ -150,10 +187,9 @@ export function BackgroundImagePicker({
   };
 
   const selectEnterUrl = () => {
-    setUploadError(null);
     setUrlEditorOpen(true);
     dropdown.close();
-    if (typeof value === "string" && isHttpImageUrl(value)) {
+    if (linkValue) {
       setUrlDraft(undefined);
     } else {
       setUrlDraft("");
@@ -161,7 +197,7 @@ export function BackgroundImagePicker({
   };
 
   const selectUpload = () => {
-    setUploadError(null);
+    setSettledLink(undefined);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
@@ -175,7 +211,7 @@ export function BackgroundImagePicker({
       </label>
 
       <DropdownRoot dropdown={dropdown} className="relative space-y-1.5">
-        <DropdownTrigger dropdown={dropdown} title={triggerTitle(value, uploadDisplayName)}>
+        <DropdownTrigger dropdown={dropdown}>
           {triggerLabel(value, uploadDisplayName)}
         </DropdownTrigger>
 
@@ -184,7 +220,7 @@ export function BackgroundImagePicker({
             None
           </DropdownOption>
 
-          {Array.from(grouped.entries()).map(([groupName, presets]) => (
+          {Array.from(GROUPED_PRESETS.entries()).map(([groupName, presets]) => (
             <div key={groupName}>
               <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
               {presets.map((p) => (
@@ -229,13 +265,12 @@ export function BackgroundImagePicker({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
-            setUploadError(null);
             if (!file) return;
             setUrlDraft(undefined);
             setUrlEditorOpen(false);
             const result = await normalizeBackgroundImageFile(file);
             if (!result.ok) {
-              setUploadError(result.error);
+              onError(result.error);
               return;
             }
             setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
@@ -243,16 +278,6 @@ export function BackgroundImagePicker({
           }}
         />
       </DropdownRoot>
-
-      {uploadError ? (
-        <p className="text-xs leading-snug text-danger" role="alert">
-          {uploadError}
-        </p>
-      ) : null}
-
-      <p className="text-[11px] leading-snug text-muted">
-        Formats: PNG, JPEG, WebP, HEIC. Max: {MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB.
-      </p>
 
       {showUrlField ? (
         <div className="space-y-1.5">
@@ -268,10 +293,9 @@ export function BackgroundImagePicker({
             className="field-input text-xs"
             value={urlInputValue}
             onChange={(e) => onUrlChange(e.target.value)}
+            onBlur={settleUrl}
+            onKeyDown={(e) => e.key === "Enter" && settleUrl()}
           />
-          <p className="text-[11px] leading-snug text-muted">
-            Note: Other sites may block hotlinking.
-          </p>
         </div>
       ) : null}
     </div>

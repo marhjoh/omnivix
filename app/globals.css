@@ -9,7 +9,6 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-success: var(--success);
   --color-danger: var(--danger);
 }
 
@@ -19,14 +18,11 @@ html[data-theme="dark"] {
   --surface: #161b22;
   --surface-2: #1f2631;
   --border: #2d3745;
-  --border-subtle: rgba(255, 255, 255, 0.08);
   --text: #e6edf3;
   --muted: #9da8b3;
   --accent: #2f81f7;
   --accent-hover: #58a6ff;
-  --success: #3fb950;
   --danger: #f85149;
-  --radius: 0.625rem;
   color-scheme: dark;
 }
 
@@ -35,14 +31,11 @@ html[data-theme="light"] {
   --surface: #f6f8fa;
   --surface-2: #eef1f4;
   --border: #d0d7de;
-  --border-subtle: rgba(0, 0, 0, 0.06);
   --text: #1f2328;
   --muted: #656d76;
   --accent: #0969da;
   --accent-hover: #0550ae;
-  --success: #1a7f37;
   --danger: #cf222e;
-  --radius: 0.625rem;
   color-scheme: light;
 }
 
@@ -59,18 +52,16 @@ html {
   min-width: 280px;
 }
 
-/* `clip`, not `hidden`, and on body only: hidden turns body into a scroll container,
-   which stops position: sticky (landing header) from working. */
-body {
-  overflow-x: clip;
-}
-
 body {
   min-height: 100%;
+  /* `clip`, not `hidden`: hidden turns body into a scroll container, which stops
+     position: sticky (landing header) from working. */
+  overflow-x: clip;
   color: var(--text);
   background: var(--bg);
+  /* Inter is loaded in app/layout.tsx (next/font); the rest are fallbacks while it loads. */
   font-family:
-    "Inter",
+    var(--font-inter),
     "Segoe UI",
     system-ui,
     -apple-system,
@@ -79,54 +70,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@layer base {
-  * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-}
-
 @layer components {
-  .omnivix-card {
-    @apply rounded-xl border border-border bg-surface transition-all duration-300;
-  }
-
-  html[data-theme="dark"] .omnivix-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  html[data-theme="light"] .omnivix-card:hover {
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.08),
-      0 0 0 1px rgba(0, 0, 0, 0.04);
-  }
-
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
     background: var(--accent);
     border: 1px solid var(--accent);
     color: #fff;
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-primary:hover:not(:disabled) {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
-    box-shadow: 0 0 16px rgba(47, 129, 247, 0.25);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
-  /* Disabled buttons keep pointer events so their title tooltip can explain why. */
   .btn-primary:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -138,7 +99,9 @@ body {
     border: 1px solid var(--border);
     color: var(--text);
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-secondary:hover:not(:disabled) {
@@ -157,7 +120,9 @@ body {
     border: 1px solid transparent;
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.15s;
+    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
   }
 
   .btn-ghost:hover:not(:disabled) {
@@ -169,18 +134,4 @@ body {
     opacity: 0.4;
     cursor: not-allowed;
   }
-}
-
-/* Studio banner preview card: theme-aware chrome (matches app tokens). */
-/* The 1px ring is a shadow, not a border, so it takes no space from the scaled banner. */
-html[data-theme="dark"] .omnivix-artboard {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    0 12px 40px rgba(0, 0, 0, 0.35);
-}
-
-html[data-theme="light"] .omnivix-artboard {
-  box-shadow:
-    0 0 0 1px var(--border),
-    0 10px 32px rgba(31, 35, 40, 0.08);
 }

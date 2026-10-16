@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import {
+  DEFAULT_THEME,
   type Theme,
   parseThemeCookie,
   readThemeCookieClient,
@@ -22,7 +23,7 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
+  theme: DEFAULT_THEME,
   setTheme: () => {},
   toggle: () => {},
 });

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="1" stop-color="#0b1e3a"/>
+    </linearGradient>
+    <radialGradient id="g1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#22d3a6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#22d3a6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#a855f7" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="3200" height="1200" fill="url(#sky)"/>
+  <ellipse cx="700" cy="520" rx="900" ry="260" fill="url(#g1)" transform="rotate(-12 700 520)"/>
+  <ellipse cx="1650" cy="430" rx="1000" ry="230" fill="url(#g2)" transform="rotate(6 1650 430)"/>
+  <ellipse cx="2550" cy="560" rx="850" ry="280" fill="url(#g1)" transform="rotate(-8 2550 560)"/>
+  <ellipse cx="2100" cy="250" rx="700" ry="200" fill="url(#g3)" transform="rotate(10 2100 250)"/>
+  <ellipse cx="400" cy="200" rx="600" ry="180" fill="url(#g3)"/>
+</svg>

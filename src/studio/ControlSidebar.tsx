@@ -5,20 +5,27 @@ import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
-import { EditorFieldSchema, TemplateId } from "@/src/types/template";
+import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
+import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
+import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
+import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
+import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
+import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 
 const currentYear = new Date().getFullYear();
 
 function DebouncedInput({
   id,
   placeholder,
+  maxLength,
   value: externalValue,
   onChange,
 }: {
   id: string;
   placeholder?: string;
+  maxLength?: number;
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -35,7 +42,7 @@ function DebouncedInput({
     const newValue = e.target.value;
     setLocalValue(newValue);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => onChange(newValue), 400);
+    timeoutRef.current = setTimeout(() => onChange(newValue), INPUT_DEBOUNCE_MS);
   };
 
   useEffect(() => {
@@ -50,6 +57,7 @@ function DebouncedInput({
       type="text"
       className="field-input"
       placeholder={placeholder}
+      maxLength={maxLength}
       value={localValue}
       onChange={handleChange}
     />
@@ -75,17 +83,50 @@ function FieldWrapper({
   );
 }
 
-function parseRepoSelection(raw: string): string[] {
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+/** Shown while the repository list loads slowly; quicker loads go straight to the list. */
+const REPO_LIST_SKELETON_DELAY_MS = 300;
+const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
+
+function RepoRow({
+  name,
+  on,
+  disabled,
+  onClick,
+}: {
+  name: string;
+  on: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={on}
+      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+        on
+          ? "border-accent bg-accent/10 text-text"
+          : "border-transparent text-muted enabled:hover:bg-surface"
+      }`}
+    >
+      <span
+        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+          on ? "border-accent bg-accent" : "border-border"
+        }`}
+      >
+        {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
+      </span>
+      <span className="min-w-0 truncate font-medium">{name}</span>
+    </button>
+  );
 }
 
 function RepoMultiSelect({
   catalog,
   loading,
   error,
+  onRetry,
   valueCsv,
   maxPick,
   onChange,
@@ -93,11 +134,16 @@ function RepoMultiSelect({
   catalog: RepoNormalized[];
   loading: boolean;
   error: string | null;
+  onRetry: () => void;
   valueCsv: string;
   maxPick: number;
   onChange: (csv: string) => void;
 }) {
   const selected = parseRepoSelection(valueCsv);
+  // The picks from when the list opened come first, so they show (checked) while the rest
+  // loads and don't move when it arrives. Clicking later doesn't reorder anything.
+  const [initialPicks] = useState(selected);
+  const showSkeleton = useDelayedFlag(loading, REPO_LIST_SKELETON_DELAY_MS);
 
   const toggle = (name: string) => {
     const i = selected.indexOf(name);
@@ -112,60 +158,77 @@ function RepoMultiSelect({
     onChange(next.join(", "));
   };
 
+  const row = (name: string, key: string) => {
+    const on = selected.includes(name);
+    return (
+      <RepoRow
+        key={key}
+        name={name}
+        on={on}
+        // At the limit, only already-selected repositories can be clicked (to remove them).
+        disabled={!on && selected.length >= maxPick}
+        onClick={() => toggle(name)}
+      />
+    );
+  };
+
+  // A pick that's no longer in the list (renamed, deleted, made private) still shows, so it can
+  // be removed: otherwise it would count toward the limit with no way to unpick it.
+  const missing = selected.filter((name) => !catalog.some((repo) => repo.name === name));
+  const ordered = [
+    ...initialPicks.flatMap((name) => catalog.find((repo) => repo.name === name) ?? []),
+    ...catalog.filter((repo) => !initialPicks.includes(repo.name)),
+  ];
+
   return (
-    <div className="space-y-1.5">
-      <span className="block text-xs font-medium text-muted">Repositories</span>
-      {loading && <p className="text-xs text-muted">Loading repository list…</p>}
-      {error && (
-        <p className="text-xs text-danger" role="alert">
-          {error}
-        </p>
-      )}
-      {!loading && !error && (
-        <div className="max-h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5">
-          {catalog.length === 0 ? (
-            <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
-          ) : (
-            catalog.map((repo) => {
-              const on = selected.includes(repo.name);
-              return (
-                <button
-                  key={repo.id}
-                  type="button"
-                  onClick={() => toggle(repo.name)}
-                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                    on ? "bg-accent/15 text-text" : "text-muted hover:bg-surface"
-                  }`}
-                >
-                  <span
-                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[var(--radius)] border ${
-                      on ? "border-accent bg-accent" : "border-border"
-                    }`}
-                  >
-                    {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
-                  </span>
-                  <span className="min-w-0 truncate font-medium">{repo.name}</span>
-                </button>
-              );
-            })
-          )}
-        </div>
-      )}
-      <p className="text-[10px] text-muted">
-        Up to {maxPick} · {selected.length} selected
-      </p>
+    <div className="space-y-1.5" role="group" aria-labelledby="repositories-label">
+      <span id="repositories-label" className="block text-xs font-medium text-muted">
+        Repositories
+      </span>
+      {/* The box keeps one height whether loading, loaded or failed, so nothing below it moves. */}
+      <div
+        className="h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5"
+        aria-busy={loading}
+      >
+        {error ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
+            <p className="text-xs text-danger" role="alert">
+              {error}
+            </p>
+            <button type="button" onClick={onRetry} className="btn-secondary px-3 py-1 text-xs">
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
+          <>
+            {initialPicks.map((name) => row(name, name))}
+            {showSkeleton
+              ? SKELETON_ROW_WIDTHS.slice(initialPicks.length).map((width, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5" aria-hidden>
+                    <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-border/70 motion-safe:animate-pulse" />
+                    <span
+                      className="h-2.5 rounded bg-border/70 motion-safe:animate-pulse"
+                      style={{ width }}
+                    />
+                  </div>
+                ))
+              : null}
+          </>
+        ) : ordered.length === 0 && missing.length === 0 ? (
+          <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
+        ) : (
+          <>
+            {missing.map((name) => row(name, `missing:${name}`))}
+            {ordered.map((repo) => row(repo.name, repo.id))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
 function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
-
-  useEffect(() => {
-    if (!THEME_PRESETS.some((p) => p.id === value)) {
-      onChange("default");
-    }
-  }, [value, onChange]);
 
   return (
     <div className="space-y-2">
@@ -176,6 +239,7 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (id: string
             key={preset.id}
             type="button"
             onClick={() => onChange(preset.id)}
+            aria-pressed={resolvedId === preset.id}
             className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-xs transition-all ${
               resolvedId === preset.id
                 ? "border-accent bg-accent/10 text-text"
@@ -183,11 +247,15 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (id: string
             }`}
           >
             <span className="font-medium">{preset.label}</span>
-            <div className="ml-auto flex gap-1">
+            <span className="ml-auto flex gap-1" aria-hidden>
               {preset.gridLevels.map((color, i) => (
-                <div key={i} className="h-4 w-4 rounded-xs" style={{ backgroundColor: color }} />
+                <span
+                  key={i}
+                  className="block h-4 w-4 rounded-xs"
+                  style={{ backgroundColor: color }}
+                />
               ))}
-            </div>
+            </span>
           </button>
         ))}
       </div>
@@ -248,26 +316,41 @@ function SizePicker({
 export function ControlSidebar({
   schema,
   state,
-  templateId,
   accountCreatedYear,
   onChange,
-  repoCatalog = [],
-  repoCatalogLoading = false,
-  repoCatalogError = null,
-  disabledFields = {},
+  repoCatalog,
+  repoCatalogLoading,
+  repoCatalogError,
+  onRetryRepoCatalog,
+  disabledFields,
+  adjustableBackground,
+  backgroundAdjusting,
+  onToggleBackgroundAdjusting,
+  onError,
+  onErrorResolved,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
-  templateId: TemplateId;
-  accountCreatedYear?: number | null;
+  accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
-  repoCatalog?: RepoNormalized[];
-  repoCatalogLoading?: boolean;
-  repoCatalogError?: string | null;
-  /** Field key → reason it is unavailable; shown as a hint, the control is disabled and shown off. */
-  disabledFields?: Partial<Record<string, string>>;
+  repoCatalog: RepoNormalized[];
+  repoCatalogLoading: boolean;
+  repoCatalogError: string | null;
+  onRetryRepoCatalog: () => void;
+  /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
+  disabledFields: ReadonlySet<string>;
+  /** The background that can be moved and zoomed; none when there's none, or it can't be used. */
+  adjustableBackground: BannerBackground | undefined;
+  /** Whether the preview is in background adjust mode (drag to move). */
+  backgroundAdjusting: boolean;
+  onToggleBackgroundAdjusting: () => void;
+  /** Shows a one-off error as a toast (e.g. a rejected upload); returns the toast's id. */
+  onError: (message: string) => number;
+  /** Hides the toast with this id, if it's still showing. */
+  onErrorResolved: (toastId: number) => void;
 }) {
   const mode = state.mode as string | undefined;
+  const background = adjustableBackground;
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -284,12 +367,13 @@ export function ControlSidebar({
       {schema.map((field) => {
         if (field.key === "username") return null;
 
-        if (field.key === "maxRepos" && templateId === "repos-banner" && mode === "selected") {
+        // Selected mode shows the repository picker instead of the amount slider.
+        if (field.key === "maxRepos" && mode === "selected") {
           return null;
         }
 
         if (field.type === "repoMultiSelect") {
-          if (templateId !== "repos-banner" || mode !== "selected") {
+          if (mode !== "selected") {
             return null;
           }
           return (
@@ -298,8 +382,9 @@ export function ControlSidebar({
               catalog={repoCatalog}
               loading={repoCatalogLoading}
               error={repoCatalogError}
+              onRetry={onRetryRepoCatalog}
               valueCsv={String(state.selectedRepos ?? "")}
-              maxPick={6}
+              maxPick={MAX_REPOS}
               onChange={(csv) => onChange("selectedRepos", csv)}
             />
           );
@@ -327,14 +412,10 @@ export function ControlSidebar({
         }
 
         if (field.key === "year") {
-          const contributionTemplates =
-            templateId === "github-banner" || templateId === "contribution-banner";
-          const yearOptions = contributionTemplates
-            ? [
-                { value: "latest", label: "Last 365 days" },
-                ...years.map((y) => ({ value: y, label: y })),
-              ]
-            : years.map((y) => ({ value: y, label: y }));
+          const yearOptions = [
+            { value: "latest", label: "Last 365 days" },
+            ...years.map((y) => ({ value: y, label: y })),
+          ];
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <Select
@@ -349,10 +430,9 @@ export function ControlSidebar({
         }
 
         if (field.type === "toggle") {
-          const disabledReason = disabledFields[field.key];
+          const disabled = disabledFields.has(field.key);
           // Shown off while disabled, without changing the saved value.
-          const checked = !disabledReason && Boolean(state[field.key] ?? false);
-          const hintId = disabledReason ? `${field.key}-hint` : undefined;
+          const checked = !disabled && Boolean(state[field.key] ?? false);
           return (
             <div key={field.key}>
               <div className="flex items-center justify-between">
@@ -362,8 +442,7 @@ export function ControlSidebar({
                   role="switch"
                   aria-checked={checked}
                   aria-label={field.label}
-                  aria-describedby={hintId}
-                  disabled={Boolean(disabledReason)}
+                  disabled={disabled}
                   onClick={() => onChange(field.key, !checked)}
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                     checked ? "bg-accent" : "bg-surface-2"
@@ -376,11 +455,6 @@ export function ControlSidebar({
                   />
                 </button>
               </div>
-              {disabledReason && (
-                <p id={hintId} className="mt-1 text-xs text-muted">
-                  {disabledReason}
-                </p>
-              )}
             </div>
           );
         }
@@ -404,8 +478,6 @@ export function ControlSidebar({
         }
 
         if (field.type === "select") {
-          const disabledReason = disabledFields[field.key];
-          const hintId = disabledReason ? `${field.key}-hint` : undefined;
           return (
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <Select
@@ -414,14 +486,8 @@ export function ControlSidebar({
                 value={String(state[field.key] ?? "")}
                 options={field.options ?? []}
                 onChange={(value) => onChange(field.key, value)}
-                disabled={Boolean(disabledReason)}
-                describedBy={hintId}
+                disabled={disabledFields.has(field.key)}
               />
-              {disabledReason && (
-                <p id={hintId} className="mt-1 text-xs text-muted">
-                  {disabledReason}
-                </p>
-              )}
             </FieldWrapper>
           );
         }
@@ -431,6 +497,7 @@ export function ControlSidebar({
             <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
               <textarea
                 id={field.key}
+                maxLength={field.maxLength}
                 rows={4}
                 className="field-input resize-y"
                 value={String(state[field.key] ?? "")}
@@ -442,15 +509,32 @@ export function ControlSidebar({
 
         if (field.type === "backgroundPicker") {
           return (
-            <BackgroundImagePicker
-              key={field.key}
-              id={field.key}
-              label={field.label}
-              value={
-                typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
-              }
-              onChange={(next) => onChange(field.key, next)}
-            />
+            <div key={field.key} className="space-y-3">
+              <BackgroundImagePicker
+                id={field.key}
+                label={field.label}
+                value={
+                  typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
+                }
+                onChange={(next) => onChange(field.key, next)}
+                onError={onError}
+                onErrorResolved={onErrorResolved}
+              />
+              {background ? (
+                <BackgroundAdjustControls
+                  id={field.key}
+                  adjusting={backgroundAdjusting}
+                  onToggleAdjusting={onToggleBackgroundAdjusting}
+                  zoom={background.zoom}
+                  onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
+                  canReset={!isDefaultBackgroundFraming(background)}
+                  onReset={() => {
+                    onChange("backgroundPosition", undefined);
+                    onChange("backgroundZoom", undefined);
+                  }}
+                />
+              ) : null}
+            </div>
           );
         }
 
@@ -459,6 +543,7 @@ export function ControlSidebar({
             <DebouncedInput
               id={field.key}
               placeholder={field.placeholder}
+              maxLength={field.maxLength}
               value={String(state[field.key] ?? "")}
               onChange={(v) => onChange(field.key, v)}
             />

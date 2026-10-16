@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 import {
   CONTENT_ALIGN_OPTIONS,
   CONTENT_ALIGNS,
@@ -15,6 +16,7 @@ import {
 import { isOneOf } from "@/src/lib/isOneOf";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
+import { MAX_REPOS } from "@/src/lib/repoSelection";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -39,10 +41,18 @@ export function contributionCellShapeFromState(raw: unknown): ContributionCellSh
   return isOneOf(CONTRIBUTION_CELL_SHAPES, raw) ? raw : "rounded";
 }
 
+const percent = z.number().min(0).max(100);
+
+/** A post's length: still readable on the 4:1 banner at the smallest text size. */
+const QUOTE_MAX_LENGTH = 280;
+const AUTHOR_MAX_LENGTH = 60;
+
 const baseState = z.object({
   size: z.enum(BANNER_SIZE_KEYS),
   themeId: z.string(),
   backgroundImage: z.string().optional(),
+  backgroundPosition: z.object({ x: percent, y: percent }).optional(),
+  backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
 });
 
 /** Horizontal placement of the content; in the quote banner also the text alignment. */
@@ -58,7 +68,7 @@ const alignmentState = z.enum(CONTENT_ALIGNS).default("center");
 /** Which side of the content the avatar and name sit on (GitHub and repos banners). */
 const profilePositionField: EditorFieldSchema = {
   key: "profilePosition",
-  label: "Profile Position",
+  label: "Profile position",
   type: "select",
   options: [
     { label: "Left", value: "left" },
@@ -101,6 +111,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["GitHub", "Profile", "Contributions"],
     needsUsername: true,
+    githubData: ["user", "contributions"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -120,7 +131,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
     { key: "showAvatar", label: "Profile photo", type: "toggle" },
-    { key: "showDisplayName", label: "Full Name", type: "toggle" },
+    { key: "showDisplayName", label: "Full name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
@@ -177,6 +188,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["GitHub", "Repos"],
     needsUsername: true,
+    githubData: ["user", "repos"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -185,7 +197,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     profilePositionField,
     contentSizeField,
     { key: "showAvatar", label: "Profile photo", type: "toggle" },
-    { key: "showDisplayName", label: "Full Name", type: "toggle" },
+    { key: "showDisplayName", label: "Full name", type: "toggle" },
     {
       key: "mode",
       label: "Mode",
@@ -196,7 +208,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
       ],
     },
     { key: "selectedRepos", label: "Repositories", type: "repoMultiSelect" },
-    { key: "maxRepos", label: "Amount", type: "range", min: 1, max: 6, step: 1 },
+    { key: "maxRepos", label: "Amount", type: "range", min: 1, max: MAX_REPOS, step: 1 },
     { key: "showDescription", label: "Description", type: "toggle" },
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
@@ -210,7 +222,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     alignment: alignmentState,
     mode: z.enum(["pinned", "selected"]),
     selectedRepos: z.string().default(""),
-    maxRepos: z.number().min(1).max(6).default(6),
+    maxRepos: z.number().min(1).max(MAX_REPOS).default(MAX_REPOS),
     showDescription: z.boolean().default(true),
     showLanguage: z.boolean().default(true),
     showStars: z.boolean().default(true),
@@ -225,7 +237,7 @@ export const pinnedReposDefinition: TemplateDefinition<{
     alignment: "center",
     mode: "pinned",
     selectedRepos: "",
-    maxRepos: 6,
+    maxRepos: MAX_REPOS,
     showDescription: true,
     showLanguage: true,
     showStars: true,
@@ -253,6 +265,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["Contributions", "Heatmap"],
     needsUsername: true,
+    githubData: ["contributions"],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
@@ -302,18 +315,25 @@ export const quoteBannerDefinition: TemplateDefinition<{
     defaultSize: "wide",
     tags: ["Quote", "Typography"],
     needsUsername: false,
+    githubData: [],
   },
   schema: [
     { key: "size", label: "Type", type: "sizeSelect" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     alignmentField,
     contentSizeField,
-    { key: "quote", label: "Quote Text", type: "textarea", required: true },
-    { key: "author", label: "Author", type: "text" },
+    {
+      key: "quote",
+      label: "Quote text",
+      type: "textarea",
+      required: true,
+      maxLength: QUOTE_MAX_LENGTH,
+    },
+    { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
   ],
   stateSchema: baseState.extend({
-    quote: z.string().min(1),
-    author: z.string().default(""),
+    quote: z.string().min(1).max(QUOTE_MAX_LENGTH),
+    author: z.string().max(AUTHOR_MAX_LENGTH).default(""),
     alignment: alignmentState,
     contentSize: contentSizeState,
   }),

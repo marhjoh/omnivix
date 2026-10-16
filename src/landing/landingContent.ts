@@ -56,7 +56,7 @@ export const FAQ = [
   },
   {
     question: "Can I use my own background image?",
-    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds or upload your own PNG, JPEG, WebP or HEIC image. Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds or upload your own PNG, JPEG, WebP, AVIF or HEIC image. Uploads are processed in your browser and only sent to the server while your banner is exported.`,
   },
   {
     question: "What GitHub data does Omnivix use, and is it stored?",
