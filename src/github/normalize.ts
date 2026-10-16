@@ -16,6 +16,12 @@ export interface RepoNormalized {
   forks: number;
 }
 
+/** A user's pinned repositories and all their public ones (newest first). */
+export interface RepoLists {
+  pinned: RepoNormalized[];
+  owned: RepoNormalized[];
+}
+
 export type ContributionDayNormalized = {
   date: string;
   count: number;

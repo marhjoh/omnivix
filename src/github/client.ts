@@ -3,6 +3,7 @@ import {
   ContributionDayNormalized,
   ContributionsNormalized,
   GithubUserNormalized,
+  RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
 import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
@@ -203,10 +204,8 @@ const OWNER_REPOS_ARGS = `
   isFork: false
 `;
 
-type UserReposBundle = { pinned: RepoNormalized[]; ownerPublic: RepoNormalized[] };
-
 /** Pinned repositories and the owner's public repositories (newest first), fetched together. */
-function fetchUserReposBundle(username: string): Promise<UserReposBundle> {
+export function getRepoLists(username: string): Promise<RepoLists> {
   return cached(`gh:repos:${userKey(username)}`, TTL_SHORT, async () => {
     const client = graphqlClient();
     const first = await client<{
@@ -258,23 +257,6 @@ function fetchUserReposBundle(username: string): Promise<UserReposBundle> {
       page = next.user.repositories.pageInfo;
     }
 
-    return { pinned, ownerPublic: nodes.map(normalizeRepoNode) };
+    return { pinned, owned: nodes.map(normalizeRepoNode) };
   });
-}
-
-/** The owner's public repositories, for the studio's repository picker. */
-export async function getOwnerReposCatalog(username: string): Promise<RepoNormalized[]> {
-  return (await fetchUserReposBundle(username)).ownerPublic;
-}
-
-/** Pinned repositories, or the selected ones in the order they were picked. */
-export async function getRepos(
-  username: string,
-  mode: "pinned" | "selected",
-  selected: string[] = [],
-): Promise<RepoNormalized[]> {
-  const bundle = await fetchUserReposBundle(username);
-  if (mode === "pinned") return bundle.pinned;
-  const byName = new Map(bundle.ownerPublic.map((repo) => [repo.name, repo]));
-  return selected.flatMap((name) => byName.get(name) ?? []);
 }

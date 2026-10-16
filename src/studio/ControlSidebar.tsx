@@ -126,6 +126,7 @@ function RepoMultiSelect({
   catalog,
   loading,
   error,
+  onRetry,
   valueCsv,
   maxPick,
   onChange,
@@ -133,6 +134,7 @@ function RepoMultiSelect({
   catalog: RepoNormalized[];
   loading: boolean;
   error: string | null;
+  onRetry: () => void;
   valueCsv: string;
   maxPick: number;
   onChange: (csv: string) => void;
@@ -170,6 +172,9 @@ function RepoMultiSelect({
     );
   };
 
+  // A pick that's no longer in the list (renamed, deleted, made private) still shows, so it can
+  // be removed: otherwise it would count toward the limit with no way to unpick it.
+  const missing = selected.filter((name) => !catalog.some((repo) => repo.name === name));
   const ordered = [
     ...initialPicks.flatMap((name) => catalog.find((repo) => repo.name === name) ?? []),
     ...catalog.filter((repo) => !initialPicks.includes(repo.name)),
@@ -180,38 +185,44 @@ function RepoMultiSelect({
       <span id="repositories-label" className="block text-xs font-medium text-muted">
         Repositories
       </span>
-      {error ? (
-        <p className="text-xs text-danger" role="alert">
-          {error}
-        </p>
-      ) : (
-        // While loading, the box already has its full height, so nothing below it moves.
-        <div
-          className={`${loading ? "h-52" : "max-h-52"} space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5`}
-          aria-busy={loading}
-        >
-          {loading ? (
-            <>
-              {initialPicks.map((name) => row(name, name))}
-              {showSkeleton
-                ? SKELETON_ROW_WIDTHS.slice(initialPicks.length).map((width, i) => (
-                    <div key={i} className="flex items-center gap-2 px-2 py-1.5" aria-hidden>
-                      <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-border/70 motion-safe:animate-pulse" />
-                      <span
-                        className="h-2.5 rounded bg-border/70 motion-safe:animate-pulse"
-                        style={{ width }}
-                      />
-                    </div>
-                  ))
-                : null}
-            </>
-          ) : ordered.length === 0 ? (
-            <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
-          ) : (
-            ordered.map((repo) => row(repo.name, repo.id))
-          )}
-        </div>
-      )}
+      {/* The box keeps one height whether loading, loaded or failed, so nothing below it moves. */}
+      <div
+        className="h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5"
+        aria-busy={loading}
+      >
+        {error ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
+            <p className="text-xs text-danger" role="alert">
+              {error}
+            </p>
+            <button type="button" onClick={onRetry} className="btn-secondary px-3 py-1 text-xs">
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
+          <>
+            {initialPicks.map((name) => row(name, name))}
+            {showSkeleton
+              ? SKELETON_ROW_WIDTHS.slice(initialPicks.length).map((width, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5" aria-hidden>
+                    <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-border/70 motion-safe:animate-pulse" />
+                    <span
+                      className="h-2.5 rounded bg-border/70 motion-safe:animate-pulse"
+                      style={{ width }}
+                    />
+                  </div>
+                ))
+              : null}
+          </>
+        ) : ordered.length === 0 && missing.length === 0 ? (
+          <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
+        ) : (
+          <>
+            {missing.map((name) => row(name, `missing:${name}`))}
+            {ordered.map((repo) => row(repo.name, repo.id))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -310,6 +321,7 @@ export function ControlSidebar({
   repoCatalog,
   repoCatalogLoading,
   repoCatalogError,
+  onRetryRepoCatalog,
   disabledFields,
   adjustableBackground,
   backgroundAdjusting,
@@ -324,6 +336,7 @@ export function ControlSidebar({
   repoCatalog: RepoNormalized[];
   repoCatalogLoading: boolean;
   repoCatalogError: string | null;
+  onRetryRepoCatalog: () => void;
   /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
   disabledFields: ReadonlySet<string>;
   /** The background that can be moved and zoomed; none when there's none, or it can't be used. */
@@ -369,6 +382,7 @@ export function ControlSidebar({
               catalog={repoCatalog}
               loading={repoCatalogLoading}
               error={repoCatalogError}
+              onRetry={onRetryRepoCatalog}
               valueCsv={String(state.selectedRepos ?? "")}
               maxPick={MAX_REPOS}
               onChange={(csv) => onChange("selectedRepos", csv)}

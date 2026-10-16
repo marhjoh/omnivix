@@ -40,6 +40,15 @@ export function parseSettingsCookie(value: string | undefined): Record<string, u
   }
 }
 
+/** Client-only: a cookie's raw value, or undefined. */
+export function readCookieClient(name: string): string | undefined {
+  const prefix = `${name}=`;
+  return document.cookie
+    .split("; ")
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+}
+
 /** Client-only: saves a cookie for a year, for the next page request. */
 export function setCookieClient(name: string, value: string): void {
   if (typeof document === "undefined") return;

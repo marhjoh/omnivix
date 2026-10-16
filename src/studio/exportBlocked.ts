@@ -9,6 +9,16 @@ export function isExportBlocked(params: {
   stateValid: boolean;
   /** The background image couldn't be loaded in the browser. */
   backgroundFailed: boolean;
+  /**
+   * The preview still shows an earlier version while the current one loads (a quick load being
+   * held, the previous year's grid, or the previous background); a download now wouldn't match it.
+   */
+  previewPending: boolean;
 }): boolean {
-  return params.previewState !== "ready" || !params.stateValid || params.backgroundFailed;
+  return (
+    params.previewState !== "ready" ||
+    !params.stateValid ||
+    params.backgroundFailed ||
+    params.previewPending
+  );
 }

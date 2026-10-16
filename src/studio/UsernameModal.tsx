@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 const externalActionClass =
@@ -10,14 +10,23 @@ const externalActionClass =
 
 export function UsernameModal({
   open,
+  currentUsername,
   onSubmit,
   onCancel,
 }: {
   open: boolean;
+  /** Shown in the field when the dialog opens, so changing it starts from the current one. */
+  currentUsername: string;
   onSubmit: (username: string) => void;
   onCancel: () => void;
 }) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(currentUsername);
+  // Each time the dialog opens, the field starts from the current username.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setValue(currentUsername);
+  }
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +36,10 @@ export function UsernameModal({
     if (!open) return;
     // Noted before focusing the input (not with autoFocus, which would run first).
     const returnFocusTo = document.activeElement as HTMLElement | null;
-    inputRef.current?.focus();
+    const input = inputRef.current;
+    input?.focus();
+    // Cursor after the current username, ready to edit it.
+    input?.setSelectionRange(input.value.length, input.value.length);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onCancel();
@@ -107,7 +119,7 @@ export function UsernameModal({
               </div>
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-3 flex items-center rounded-md border border-border bg-surface-2 px-3">
+                <div className="mb-3 flex items-center rounded-md border border-border bg-surface-2 pr-1.5 pl-3">
                   <span className="text-sm text-muted select-none">https://github.com/</span>
                   <input
                     type="text"
@@ -117,6 +129,19 @@ export function UsernameModal({
                     onChange={(e) => setValue(parseInput(e.target.value))}
                     ref={inputRef}
                   />
+                  {value ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue("");
+                        inputRef.current?.focus();
+                      }}
+                      className="btn-ghost shrink-0 rounded p-1"
+                      aria-label="Clear username"
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="mb-6 text-xs">

@@ -12,20 +12,30 @@ import {
   userNotFoundProblem,
   type PreviewProblem,
 } from "@/src/studio/preview";
+import type { PreviewContentState } from "@/src/studio/preview/types";
 import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { isInsecureImageLink } from "@/src/lib/imageLink";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
+import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { UsernameModal } from "@/src/studio/UsernameModal";
-import { settingsCookieName, setCookieClient, USERNAME_COOKIE } from "@/src/studio/studioCookies";
+import {
+  parseSettingsCookie,
+  parseUsernameCookie,
+  readCookieClient,
+  settingsCookieName,
+  setCookieClient,
+  USERNAME_COOKIE,
+} from "@/src/studio/studioCookies";
 import { RenderData } from "@/src/templates/renderers/types";
 import type {
   GithubUserNormalized,
   ContributionsNormalized,
+  RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
@@ -33,7 +43,7 @@ import { THEME_PRESETS } from "@/src/types/theme";
 import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
 import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
-import { parseRepoSelection, reposShown } from "@/src/lib/repoSelection";
+import { MAX_REPOS, parseRepoSelection, reposForBanner } from "@/src/lib/repoSelection";
 
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
 const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
@@ -101,9 +111,12 @@ type FetchResult<T> = {
 
 /**
  * Last successful response per url, kept for the browser session. Returning to the studio, or to a
- * year or user shown before, renders that data at once while it is fetched again.
+ * year or user shown before, renders that data at once; it's fetched again only when older than
+ * FRESH_FOR_MS, so going back and forth doesn't ask GitHub again each time.
  */
-const lastFetched = new Map<string, unknown>();
+const lastFetched = new Map<string, { data: unknown; at: number }>();
+
+const FRESH_FOR_MS = 60_000;
 
 /** Last successful response per `keepKey` (see useFetchJson), for urls that differ only in detail. */
 const lastFetchedByKey = new Map<string, unknown>();
@@ -125,14 +138,20 @@ function useFetchJson<T>(
   keepKey?: string,
 ) {
   const [result, setResult] = useState<FetchResult<T> | null>(null);
+  const lastNonceRef = useRef(nonce);
 
   useEffect(() => {
     if (!url) return;
+    // A retry always asks again; otherwise a recent response is used as is.
+    const retry = lastNonceRef.current !== nonce;
+    lastNonceRef.current = nonce;
+    const cachedEntry = lastFetched.get(url);
+    const fresh = !retry && cachedEntry !== undefined && Date.now() - cachedEntry.at < FRESH_FOR_MS;
     const ac = new AbortController();
-    fetchJson<T>(url, ac.signal).then(
+    (fresh ? Promise.resolve(cachedEntry.data as T) : fetchJson<T>(url, ac.signal)).then(
       (data) => {
         if (ac.signal.aborted) return;
-        lastFetched.set(url, data);
+        if (!fresh) lastFetched.set(url, { data, at: Date.now() });
         if (keepKey) lastFetchedByKey.set(keepKey, data);
         setResult({ url, nonce, data, error: null, status: null });
       },
@@ -152,15 +171,10 @@ function useFetchJson<T>(
     return () => ac.abort();
   }, [url, nonce, fallbackError, keepKey]);
 
-  // With no request (e.g. no repositories selected), nothing is on screen from this fetch, so
-  // the kept data is out of date: the next request shows "loading" rather than old content.
-  useEffect(() => {
-    if (!url && keepKey) lastFetchedByKey.delete(keepKey);
-  }, [url, keepKey]);
-
   const current = url && result?.url === url ? result : null;
   const settled = current !== null && current.nonce === nonce;
-  const ownData = current?.data ?? (url ? (lastFetched.get(url) as T | undefined) : undefined);
+  const ownData =
+    current?.data ?? (url ? (lastFetched.get(url)?.data as T | undefined) : undefined);
   const keptData =
     url && keepKey && ownData === undefined
       ? (lastFetchedByKey.get(keepKey) as T | undefined)
@@ -177,6 +191,13 @@ function useFetchJson<T>(
 
 /** Loads quicker than this go straight to the new preview, without showing the loading screen. */
 const LOADING_SCREEN_DELAY_MS = 300;
+/** Once shown, the loading screen stays at least this long, so it doesn't just blink. */
+const LOADING_SCREEN_MIN_MS = 400;
+
+/** Only a finished preview is held during a load; an empty or error state goes straight to it. */
+function isReadyPreview(preview: { previewState: PreviewContentState }): boolean {
+  return preview.previewState === "ready";
+}
 
 /** A bit longer than the sidebar's 0.2s transition in studio.module.css. */
 const SIDEBAR_ANIMATION_MS = 300;
@@ -218,16 +239,19 @@ function applySavedSettings(
   return clampSelectedRepos(templateId, merged);
 }
 
-/** Repos banner: keep selectedRepos within the number of repos that can be shown. */
+/**
+ * Repos banner: at most MAX_REPOS selected. Only in Selected mode; Pinned mode's Amount doesn't
+ * touch the selection, which is kept for switching back.
+ */
 function clampSelectedRepos(
   templateId: TemplateId,
   state: Record<string, unknown>,
 ): Record<string, unknown> {
   if (!templateRegistry[templateId].meta.githubData.includes("repos")) return state;
-  const limit = reposShown(state.mode, state.maxRepos);
+  if (state.mode !== "selected") return state;
   const parts = parseRepoSelection(String(state.selectedRepos ?? ""));
-  if (parts.length <= limit) return state;
-  return { ...state, selectedRepos: parts.slice(0, limit).join(", ") };
+  if (parts.length <= MAX_REPOS) return state;
+  return { ...state, selectedRepos: parts.slice(0, MAX_REPOS).join(", ") };
 }
 
 export function StudioShell({
@@ -248,8 +272,19 @@ export function StudioShell({
   const needsUsername = definition.meta.needsUsername ?? false;
 
   // Saved settings come from cookies, so the server renders them and nothing switches after load.
+  // The saved settings: from the server's cookie read on the first render, but read again in the
+  // browser when the studio is opened by navigating (Back, Forward, a link). Next.js may reuse
+  // the page from an earlier visit then, and its props would bring back older settings.
+  const [saved] = useState(() =>
+    typeof document === "undefined"
+      ? { settings: savedSettings, username: savedUsername }
+      : {
+          settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
+          username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
+        },
+  );
   const [state, setState] = useState<Record<string, unknown>>(() =>
-    applySavedSettings({ ...definition.initialState }, templateId, savedSettings, savedUsername),
+    applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
   );
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
@@ -317,11 +352,12 @@ export function StudioShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [drawerOpen, closeDrawer]);
 
-  const [refetchNonce, setRefetchNonce] = useState(0);
+  // One per request, so a retry asks again only for what failed.
+  const [retryNonces, setRetryNonces] = useState({ user: 0, contributions: 0, repos: 0 });
 
   const { githubData } = definition.meta;
   const needsContributions = githubData.includes("contributions");
-  const needsReposFetch = githubData.includes("repos");
+  const needsRepos = githubData.includes("repos");
 
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
   const username = (state.username as string) ?? "";
@@ -336,44 +372,32 @@ export function StudioShell({
 
   const userFetch = useFetchJson<GithubUserNormalized>(
     needsUsername && username ? `/api/github/user-summary?username=${encodedUsername}` : null,
-    refetchNonce,
+    retryNonces.user,
     GITHUB_FETCH_FALLBACK,
   );
   const contributionsFetch = useFetchJson<ContributionsNormalized>(
     username && needsContributions
       ? `/api/github/contributions?username=${encodedUsername}&year=${encodeURIComponent(yearRaw)}`
       : null,
-    refetchNonce,
+    retryNonces.contributions,
     GITHUB_FETCH_FALLBACK,
     // Another year keeps the current grid until it arrives, instead of flashing "Loading".
     username,
   );
-  // With nothing selected the answer is an empty list, so there's nothing to ask GitHub.
-  const nothingSelected = repoMode === "selected" && parseRepoSelection(selectedRepos).length === 0;
-  const reposFetch = useFetchJson<RepoNormalized[]>(
-    username && needsReposFetch && !nothingSelected
-      ? `/api/github/repos?username=${encodedUsername}&mode=${encodeURIComponent(repoMode)}&selected=${encodeURIComponent(selectedRepos)}`
-      : null,
-    refetchNonce,
+  // Both repository lists in one request per user: picking repositories and switching between
+  // pinned and selected need nothing more from GitHub.
+  const repoListsFetch = useFetchJson<RepoLists>(
+    username && needsRepos ? `/api/github/repos?username=${encodedUsername}` : null,
+    retryNonces.repos,
     GITHUB_FETCH_FALLBACK,
-    `${username}:${repoMode}`,
   );
-  const catalogFetch = useFetchJson<RepoNormalized[]>(
-    username && needsReposFetch && repoMode === "selected"
-      ? `/api/github/repos-catalog?username=${encodedUsername}`
-      : null,
-    refetchNonce,
-    "Couldn't load your repositories.",
-  );
+  const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
 
   const user = userFetch.error ? undefined : userFetch.data;
-  // While another selection loads, the previous repositories stay on screen; an empty list doesn't,
-  // or picking the first repository would flash "No repositories selected".
-  const repos = nothingSelected
-    ? NO_REPOS
-    : reposFetch.error || (reposFetch.loading && reposFetch.data?.length === 0)
-      ? undefined
-      : reposFetch.data;
+  const repos = useMemo(
+    () => (repoLists ? reposForBanner(repoLists, repoMode, selectedRepos) : undefined),
+    [repoLists, repoMode, selectedRepos],
+  );
   const contributions = contributionsFetch.data;
 
   const data = useMemo<RenderData>(
@@ -381,36 +405,35 @@ export function StudioShell({
     [user, contributions, repos],
   );
 
-  // Errors from a previous refetchNonce are not reported, so a retry clears them immediately.
+  // Errors from a previous retry nonce are not reported, so a retry clears them immediately.
   const fetchErrors = useMemo<FetchSlotErrors>(
     () => ({
       user: userFetch.error,
       // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
       contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch.error,
-      repos: reposFetch.error,
+      repos: repoListsFetch.error,
     }),
     [
       userFetch.error,
       contributions,
       contributionsFetch.stale,
       contributionsFetch.error,
-      reposFetch.error,
+      repoListsFetch.error,
     ],
   );
 
   const accountCreatedYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : null;
-  const repoCatalog = useMemo(
-    () => (catalogFetch.error ? [] : (catalogFetch.data ?? [])),
-    [catalogFetch.error, catalogFetch.data],
-  );
+  const repoCatalog = repoLists?.owned ?? NO_REPOS;
   // Only "loading" with nothing to show; a refetch keeps the list it has.
-  const repoCatalogLoading = catalogFetch.loading && !catalogFetch.data;
-  const repoCatalogError = catalogFetch.error;
+  const repoCatalogLoading = repoListsFetch.loading && !repoListsFetch.data;
+  const repoCatalogError = repoListsFetch.error;
 
   // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
   // the banner doesn't appear with an empty spot that fills in later on a slow connection.
   // Preloaded even when off, so switching it on doesn't flash the loading state.
-  const avatarStatus = useImageStatus(data.user?.avatarUrl);
+  const avatarStatus = useImageStatus(
+    githubData.includes("user") ? data.user?.avatarUrl : undefined,
+  );
   const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
   const fill = state.contentSize === "fill";
@@ -446,8 +469,8 @@ export function StudioShell({
 
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
-  const noRepos = needsReposFetch && dataReady && data.repos?.length === 0;
-  const userNotFound = userFetch.notFound || contributionsFetch.notFound || reposFetch.notFound;
+  const noRepos = needsRepos && dataReady && data.repos?.length === 0;
+  const userNotFound = userFetch.notFound || contributionsFetch.notFound || repoListsFetch.notFound;
   const previewProblem = useMemo<PreviewProblem | null>(() => {
     if (previewDataError) {
       return userNotFound ? userNotFoundProblem(username) : fetchErrorProblem(previewDataError);
@@ -469,7 +492,14 @@ export function StudioShell({
   );
 
   const handlePreviewRetry = useCallback(() => {
-    setRefetchNonce((n) => n + 1);
+    setRetryNonces((n) => ({
+      user: userFetch.error ? n.user + 1 : n.user,
+      contributions: contributionsFetch.error ? n.contributions + 1 : n.contributions,
+      repos: repoListsFetch.error ? n.repos + 1 : n.repos,
+    }));
+  }, [userFetch.error, contributionsFetch.error, repoListsFetch.error]);
+  const retryRepoCatalog = useCallback(() => {
+    setRetryNonces((n) => ({ ...n, repos: n.repos + 1 }));
   }, []);
 
   const [isDownloading, setIsDownloading] = useState(false);
@@ -484,7 +514,7 @@ export function StudioShell({
     setToast((current) => (id === undefined || current?.id === id ? null : current));
   }, []);
   // GitHub banners ask for a username right away when none is saved.
-  const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !savedUsername);
+  const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !saved.username);
   const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
   const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);
 
@@ -553,9 +583,20 @@ export function StudioShell({
     reportedBackgroundRef.current = backgroundSrc;
     showError("Couldn't load this background.");
   }, [backgroundFailed, backgroundSrc, showError]);
+  const backgroundFields = useMemo(
+    () => ({
+      backgroundImage: backgroundUnusable ? undefined : state.backgroundImage,
+      backgroundPosition: state.backgroundPosition,
+      backgroundZoom: state.backgroundZoom,
+    }),
+    [backgroundUnusable, state.backgroundImage, state.backgroundPosition, state.backgroundZoom],
+  );
+  // A new background replaces the old one once it has loaded, instead of leaving the banner
+  // without one in between.
+  const shownBackground = useKeepWhile(backgroundFields, backgroundStatus === "loading");
   const previewBannerState = useMemo(
-    () => (backgroundUnusable ? { ...state, backgroundImage: undefined } : state),
-    [backgroundUnusable, state],
+    () => ({ ...state, ...shownBackground }),
+    [state, shownBackground],
   );
   // What the preview and the Download button show. A quick load keeps the previous preview
   // instead of flashing the loading screen (see useHoldDuringLoad); both always change together.
@@ -568,15 +609,19 @@ export function StudioShell({
     }),
     [previewState, previewProblem, previewBannerState, renderData],
   );
-  const shownPreview = useHoldDuringLoad(
-    livePreview,
-    previewState === "loading",
-    LOADING_SCREEN_DELAY_MS,
-  );
+  const shownPreview = useHoldDuringLoad(livePreview, previewState === "loading", {
+    delayMs: LOADING_SCREEN_DELAY_MS,
+    minShowMs: LOADING_SCREEN_MIN_MS,
+    canHold: isReadyPreview,
+  });
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
     stateValid,
     backgroundFailed: backgroundUnusable,
+    previewPending:
+      shownPreview !== livePreview ||
+      contributionsFetch.stale ||
+      shownBackground !== backgroundFields,
   });
 
   async function onDownload() {
@@ -625,6 +670,7 @@ export function StudioShell({
       <Toast toast={toast} onDismiss={dismissToast} />
       <UsernameModal
         open={showUsernameModal}
+        currentUsername={username}
         onSubmit={handleUsernameSubmit}
         onCancel={closeUsernameModal}
       />
@@ -658,6 +704,7 @@ export function StudioShell({
               repoCatalog={repoCatalog}
               repoCatalogLoading={repoCatalogLoading}
               repoCatalogError={repoCatalogError}
+              onRetryRepoCatalog={retryRepoCatalog}
               disabledFields={disabledFields}
               adjustableBackground={adjustableBackground}
               backgroundAdjusting={adjustingBackground}

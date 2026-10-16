@@ -5,7 +5,6 @@ import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { isInsecureImageLink } from "@/src/lib/imageLink";
-import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
 import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
@@ -74,7 +73,6 @@ export function BackgroundImagePicker({
   );
   /** `undefined` = show parent `value` when it is an HTTP URL; otherwise local typing draft */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
-  const urlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The link the user has stopped typing (idle, Enter or leaving the field); only it is reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -94,6 +92,27 @@ export function BackgroundImagePicker({
       : settledLink === linkValue && linkStatus === "failed"
         ? "Couldn't load this image link."
         : null;
+
+  // A settled link that isn't the background yet. It becomes the background once the browser has
+  // loaded it or it has failed (an http link right away); until then the banner keeps the
+  // background it has, so typing never makes it flicker.
+  const pendingLink =
+    settledLink && isHttpImageUrl(settledLink) && settledLink !== linkValue
+      ? settledLink
+      : undefined;
+  const pendingStatus = useImageStatus(
+    pendingLink && !isInsecureImageLink(pendingLink) ? pendingLink : undefined,
+  );
+  useEffect(() => {
+    if (!pendingLink) return;
+    if (
+      isInsecureImageLink(pendingLink) ||
+      pendingStatus === "loaded" ||
+      pendingStatus === "failed"
+    ) {
+      onChange(pendingLink);
+    }
+  }, [pendingLink, pendingStatus, onChange]);
 
   useEffect(() => {
     const reported = reportedRef.current;
@@ -117,7 +136,6 @@ export function BackgroundImagePicker({
 
   useEffect(() => {
     return () => {
-      if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
       if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     };
   }, []);
@@ -127,39 +145,27 @@ export function BackgroundImagePicker({
       ? uploadSession.fileName
       : null;
 
-  const pushUrlToParent = useCallback(
+  /** The user has stopped typing: an emptied field removes the background, a link is checked. */
+  const settle = useCallback(
     (raw: string) => {
-      const t = raw.trim();
-      if (!t) {
-        setUploadSession(null);
-        onChange(undefined);
-        setUrlDraft(undefined);
-        return;
-      }
-      if (isHttpImageUrl(t)) {
-        setUploadSession(null);
-        onChange(t);
-        setUrlDraft(undefined);
-      }
+      const link = raw.trim();
+      setSettledLink(link);
+      if (!link) onChange(undefined);
     },
     [onChange],
   );
 
   const onUrlChange = (raw: string) => {
     setUrlDraft(raw);
-    if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
-    urlTimeoutRef.current = setTimeout(() => pushUrlToParent(raw), INPUT_DEBOUNCE_MS);
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    settleTimeoutRef.current = setTimeout(() => setSettledLink(raw.trim()), LINK_SETTLE_MS);
+    settleTimeoutRef.current = setTimeout(() => settle(raw), LINK_SETTLE_MS);
   };
 
-  /** Enter or leaving the field: use the link now, without waiting for the pauses above. */
+  /** Enter or leaving the field: check the link now, without waiting for the pause. */
   const settleUrl = () => {
     if (urlDraft === undefined) return;
-    if (urlTimeoutRef.current) clearTimeout(urlTimeoutRef.current);
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    pushUrlToParent(urlDraft);
-    setSettledLink(urlDraft.trim());
+    settle(urlDraft);
   };
 
   const selectNone = () => {

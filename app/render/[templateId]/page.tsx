@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
-import { parseRepoSelection } from "@/src/lib/repoSelection";
+import { reposForBanner } from "@/src/lib/repoSelection";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { verifyExportToken } from "@/src/export/export-token";
-import { getContributions, getRepos, getUserSummary } from "@/src/github/client";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 
 export default async function RenderPage({
   params,
@@ -30,10 +30,8 @@ export default async function RenderPage({
     needs.has("user") ? getUserSummary(username) : undefined,
     needs.has("contributions") ? getContributions(username, String(state.year)) : undefined,
     needs.has("repos")
-      ? getRepos(
-          username,
-          state.mode === "selected" ? "selected" : "pinned",
-          parseRepoSelection(String(state.selectedRepos ?? "")),
+      ? getRepoLists(username).then((lists) =>
+          reposForBanner(lists, state.mode, String(state.selectedRepos ?? "")),
         )
       : undefined,
   ]);
