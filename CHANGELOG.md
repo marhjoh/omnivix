@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/marhjoh/omnivix/compare/v1.4.0...v1.4.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* close the toast when its close button is clicked ([#127](https://github.com/marhjoh/omnivix/issues/127)) ([3409a4a](https://github.com/marhjoh/omnivix/commit/3409a4a0072d53518e927b8b9bb290cd89d80641))
+
 ## [1.4.0](https://github.com/marhjoh/omnivix/compare/v1.3.1...v1.4.0) (2026-10-16)
 
 
