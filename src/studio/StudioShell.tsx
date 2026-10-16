@@ -11,11 +11,11 @@ import {
   fetchErrorProblem,
   noReposProblem,
   userNotFoundProblem,
+  type PreviewContentState,
   type PreviewProblem,
 } from "@/src/studio/preview";
-import type { PreviewContentState } from "@/src/studio/preview/types";
 import { isExportBlocked } from "@/src/studio/exportBlocked";
-import { isInsecureImageLink } from "@/src/lib/imageLink";
+import { isHttpImageUrl, isInsecureImageLink } from "@/src/lib/imageLink";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
@@ -246,12 +246,11 @@ export function StudioShell({
 }) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
-  const needsUsername = definition.meta.needsUsername ?? false;
+  const needsUsername = definition.meta.needsUsername;
 
   // Saved settings come from cookies, so the server renders them and nothing switches after load.
-  // The saved settings: from the server's cookie read on the first render, but read again in the
-  // browser when the studio is opened by navigating (Back, Forward, a link). Next.js may reuse
-  // the page from an earlier visit then, and its props would bring back older settings.
+  // The browser reads the cookies again when the studio is opened by navigating (Back, Forward, a
+  // link): Next.js may reuse the page from an earlier visit then, with props holding older settings.
   const [saved] = useState(() =>
     typeof document === "undefined"
       ? { settings: savedSettings, username: savedUsername }
@@ -349,11 +348,12 @@ export function StudioShell({
     year: contributionYear(state.year),
   });
 
+  const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
   const userFetch = useFetchJson<GithubUserNormalized>(
     urls.user,
     retryNonces.user,
     GITHUB_FETCH_FALLBACK,
-    { initial: initialData<GithubUserNormalized>(initialGithubData, urls.user) },
+    { initial: initialUser },
   );
   const contributionsFetch = useFetchJson<ContributionsNormalized>(
     urls.contributions,
@@ -387,23 +387,6 @@ export function StudioShell({
     [user, contributions, repos],
   );
 
-  // Errors from a previous retry nonce are not reported, so a retry clears them immediately.
-  const fetchErrors = useMemo<FetchSlotErrors>(
-    () => ({
-      user: userFetch.error,
-      // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
-      contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch.error,
-      repos: repoListsFetch.error,
-    }),
-    [
-      userFetch.error,
-      contributions,
-      contributionsFetch.stale,
-      contributionsFetch.error,
-      repoListsFetch.error,
-    ],
-  );
-
   const accountCreatedYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : null;
   const repoCatalog = repoLists?.owned ?? NO_REPOS;
   // Only "loading" with nothing to show; a refetch keeps the list it has.
@@ -412,14 +395,11 @@ export function StudioShell({
 
   // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
   // the banner doesn't appear with an empty spot that fills in later on a slow connection.
-  // Preloaded even when off, so switching it on doesn't flash the loading state.
-  // The photo of a profile from the server render is already loading in the page (preloaded
-  // below), so it counts as loaded, like the rest of that first paint.
+  // Preloaded even when off, so switching it on doesn't flash the loading state. The photo from
+  // the server render is already loading in the page (preloaded here), so it counts as loaded,
+  // like the rest of that first paint.
   const avatarUrl = githubData.includes("user") ? data.user?.avatarUrl : undefined;
-  const serverAvatarUrl = initialData<GithubUserNormalized>(
-    initialGithubData,
-    urls.user,
-  )?.avatarUrl;
+  const serverAvatarUrl = initialUser?.avatarUrl;
   if (serverAvatarUrl) preload(serverAvatarUrl, { as: "image" });
   const avatarStatus = useImageStatus(avatarUrl, {
     assumeLoaded: avatarUrl !== undefined && avatarUrl === serverAvatarUrl,
@@ -452,10 +432,13 @@ export function StudioShell({
     (field) => field.required && field.key !== "username" && !String(state[field.key] ?? "").trim(),
   );
 
-  const previewDataError = useMemo(
-    () => previewErrorFor(githubData, fetchErrors),
-    [githubData, fetchErrors],
-  );
+  // Errors from a previous retry nonce are not reported, so a retry clears them immediately.
+  const previewDataError = previewErrorFor(githubData, {
+    user: userFetch.error,
+    // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
+    contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch.error,
+    repos: repoListsFetch.error,
+  });
 
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
@@ -469,17 +452,13 @@ export function StudioShell({
     return null;
   }, [previewDataError, userNotFound, username, noRepos, repoMode, selectedRepos]);
 
-  const previewState = useMemo(
-    () =>
-      computePreviewContentState({
-        needsUsername,
-        username,
-        missingContent,
-        dataError: previewProblem?.title ?? null,
-        dataReady,
-      }),
-    [needsUsername, username, missingContent, previewProblem, dataReady],
-  );
+  const previewState = computePreviewContentState({
+    needsUsername,
+    username,
+    missingContent,
+    dataError: previewProblem?.title ?? null,
+    dataReady,
+  });
 
   const handlePreviewRetry = useCallback(() => {
     setRetryNonces((n) => ({
@@ -568,7 +547,7 @@ export function StudioShell({
   const reportedBackgroundRef = useRef<string | null>(null);
   const backgroundSrc = background?.src;
   useEffect(() => {
-    if (!backgroundFailed || !backgroundSrc || /^https?:\/\//i.test(backgroundSrc)) return;
+    if (!backgroundFailed || !backgroundSrc || isHttpImageUrl(backgroundSrc)) return;
     if (reportedBackgroundRef.current === backgroundSrc) return;
     reportedBackgroundRef.current = backgroundSrc;
     showError("Couldn't load this background.");
@@ -607,7 +586,7 @@ export function StudioShell({
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
     stateValid,
-    backgroundFailed: backgroundUnusable,
+    backgroundUnusable,
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "image/png",
-        "Content-Disposition": `attachment; filename=\"${payload.templateId}.png\"`,
+        "Content-Disposition": `attachment; filename="${payload.templateId}.png"`,
       },
     });
   } catch (exportError) {

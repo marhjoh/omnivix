@@ -16,6 +16,5 @@ export default async function Image({ params }: { params: Promise<{ templateId: 
   if (!isTemplateId(templateId)) {
     notFound();
   }
-  const { meta } = templateRegistry[templateId];
-  return renderTemplateOgImage(meta.id, meta.title, meta.description);
+  return renderTemplateOgImage(templateId);
 }

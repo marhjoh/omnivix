@@ -121,7 +121,6 @@ describe("buildCalendarLayout — authoritative weeks contract", () => {
     const { columnCount } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
     });
     expect(columnCount).toBe(weeks.length);
@@ -132,7 +131,6 @@ describe("buildCalendarLayout — authoritative weeks contract", () => {
     const { columnCount } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2024),
-      rangeStartYmd: "2024-01-01",
       rangeEndYmd: "2024-12-31",
     });
     expect(columnCount).toBe(weeks.length);
@@ -143,14 +141,12 @@ describe("buildCalendarLayout — authoritative weeks contract", () => {
     const compact = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: false,
     });
     const padded = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -165,7 +161,6 @@ describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
     });
     const dates = placedDays.map((d) => d.date);
@@ -177,7 +172,6 @@ describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2022),
-      rangeStartYmd: "2022-01-01",
       rangeEndYmd: "2022-12-31",
     });
     const dates = placedDays.map((d) => d.date);
@@ -189,7 +183,6 @@ describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -202,7 +195,6 @@ describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
     });
     const dates = placedDays.map((d) => d.date);
@@ -214,7 +206,6 @@ describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -229,7 +220,6 @@ describe("buildCalendarLayout — weekday semantics", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
     });
     const jan1 = placedDays.find((d) => d.date === "2025-01-01")!;
@@ -245,7 +235,6 @@ describe("buildCalendarLayout — weekday semantics", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-01-31",
     });
     const mondays = placedDays.filter((d) => weekdayFromYmd(d.date) === 1 && !d.isOutOfRange);
@@ -262,7 +251,6 @@ describe("buildCalendarLayout — padding cells", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: false,
     });
@@ -274,7 +262,6 @@ describe("buildCalendarLayout — padding cells", () => {
     const { placedDays, columnCount } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -290,7 +277,6 @@ describe("buildCalendarLayout — padding cells", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -310,7 +296,6 @@ describe("buildCalendarLayout — padding cells", () => {
     const { placedDays } = buildCalendarLayout({
       weeks,
       months: [],
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-01-11",
       renderPaddingDays: true,
     });
@@ -326,7 +311,6 @@ describe("buildCalendarLayout — padding cells", () => {
     const { placedDays, columnCount } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
       renderPaddingDays: true,
     });
@@ -343,7 +327,6 @@ describe("buildCalendarLayout — month labels", () => {
     const { monthLabels } = buildCalendarLayout({
       weeks,
       months: monthsForYear(2025),
-      rangeStartYmd: "2025-01-01",
       rangeEndYmd: "2025-12-31",
     });
     const feb = monthLabels.find((m) => m.label === "Feb");
@@ -368,7 +351,6 @@ describe("buildCalendarLayout — month labels", () => {
     const { monthLabels } = buildCalendarLayout({
       weeks,
       months,
-      rangeStartYmd: "2025-01-27",
       rangeEndYmd: "2025-02-08",
     });
     expect(monthLabels.length).toBeLessThanOrEqual(2);

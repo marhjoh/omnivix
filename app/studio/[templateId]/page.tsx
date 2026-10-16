@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { SITE_NAME, SITE_PLATFORMS } from "@/src/lib/site";
+import { SITE_NAME, SITE_OPEN_GRAPH, SITE_PLATFORMS } from "@/src/lib/site";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
@@ -29,18 +29,12 @@ export async function generateMetadata({
   const description = `${meta.description} Create a ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
   const url = `/studio/${templateId}`;
   const title = `${meta.title} · ${SITE_NAME}`;
-  // openGraph/twitter replace the layout's objects rather than merging, so set every field.
+  // twitter replaces the layout's object rather than merging, so set every field.
   return {
     title: meta.title,
     description,
     alternates: { canonical: url },
-    openGraph: {
-      type: "website",
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-    },
+    openGraph: { ...SITE_OPEN_GRAPH, title, description, url },
     twitter: {
       card: "summary_large_image",
       title,

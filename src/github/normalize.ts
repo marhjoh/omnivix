@@ -52,7 +52,7 @@ export interface ContributionMonthNormalized {
  *
  * `weeks` is the authoritative column source: columnCount = weeks.length.
  * `months` provides month label placement metadata.
- * Range metadata lets the layout distinguish in-range from out-of-range cells.
+ * `rangeEndYmd` limits which months get a label.
  */
 export interface ContributionsNormalized {
   total: number;
@@ -63,8 +63,6 @@ export interface ContributionsNormalized {
   /** GitHub month metadata for calendar-aligned month label placement. */
   months: ContributionMonthNormalized[];
 
-  /** Inclusive start of the requested range (YYYY-MM-DD). */
-  rangeStartYmd: string;
   /** Inclusive end of the requested range (YYYY-MM-DD). */
   rangeEndYmd: string;
 }

@@ -1,4 +1,4 @@
-export type { PreviewProblem } from "./types";
+export type { PreviewContentState, PreviewProblem } from "./types";
 export {
   computePreviewContentState,
   fetchErrorProblem,

@@ -88,6 +88,17 @@ const contentSizeField: EditorFieldSchema = {
 
 const contentSizeState = z.enum(CONTENT_SIZES);
 
+/** GitHub and contribution banners: the contribution grid's cells. */
+const cellShapeField: EditorFieldSchema = {
+  key: "cellShape",
+  label: "Cell shape",
+  type: "select",
+  options: CONTRIBUTION_CELL_SHAPE_OPTIONS,
+};
+const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
+
+const yearState = z.string().default(String(new Date().getFullYear()));
+
 export const githubBannerDefinition: TemplateDefinition<{
   username: string;
   year: string;
@@ -109,7 +120,6 @@ export const githubBannerDefinition: TemplateDefinition<{
     title: "GitHub Banner",
     description: "Username, avatar, and contributions.",
     defaultSize: "wide",
-    tags: ["GitHub", "Profile", "Contributions"],
     needsUsername: true,
     githubData: ["user", "contributions"],
   },
@@ -121,12 +131,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     alignmentField,
     profilePositionField,
     contentSizeField,
-    {
-      key: "cellShape",
-      label: "Cell shape",
-      type: "select",
-      options: [...CONTRIBUTION_CELL_SHAPE_OPTIONS],
-    },
+    cellShapeField,
     { key: "showMonthLabels", label: "Months", type: "toggle" },
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
@@ -135,7 +140,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
-    year: z.string().default(String(new Date().getFullYear())),
+    year: yearState,
     showMonthLabels: z.boolean().default(true),
     showDayLabels: z.boolean().default(true),
     showTotal: z.boolean().default(true),
@@ -144,7 +149,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     profilePosition: profilePositionState,
     alignment: alignmentState,
     contentSize: contentSizeState,
-    cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
+    cellShape: cellShapeState,
   }),
   initialState: {
     username: "",
@@ -163,7 +168,7 @@ export const githubBannerDefinition: TemplateDefinition<{
   },
 };
 
-export const pinnedReposDefinition: TemplateDefinition<{
+export const reposBannerDefinition: TemplateDefinition<{
   username: string;
   showAvatar: boolean;
   showDisplayName: boolean;
@@ -186,7 +191,6 @@ export const pinnedReposDefinition: TemplateDefinition<{
     title: "Repos Banner",
     description: "Languages, stars, and forks.",
     defaultSize: "wide",
-    tags: ["GitHub", "Repos"],
     needsUsername: true,
     githubData: ["user", "repos"],
   },
@@ -263,7 +267,6 @@ export const contributionBannerDefinition: TemplateDefinition<{
     title: "Contribution Banner",
     description: "Contribution heatmap.",
     defaultSize: "wide",
-    tags: ["Contributions", "Heatmap"],
     needsUsername: true,
     githubData: ["contributions"],
   },
@@ -274,19 +277,14 @@ export const contributionBannerDefinition: TemplateDefinition<{
     { key: "year", label: "Year", type: "select" },
     alignmentField,
     { ...contentSizeField, options: [...CONTENT_SIZE_OPTIONS, { label: "Fill", value: "fill" }] },
-    {
-      key: "cellShape",
-      label: "Cell shape",
-      type: "select",
-      options: [...CONTRIBUTION_CELL_SHAPE_OPTIONS],
-    },
+    cellShapeField,
   ],
   stateSchema: baseState.extend({
     username: z.string().min(1),
     alignment: alignmentState,
     contentSize: z.enum(CONTENT_SIZES_OR_FILL),
-    year: z.string().default(String(new Date().getFullYear())),
-    cellShape: z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded"),
+    year: yearState,
+    cellShape: cellShapeState,
   }),
   initialState: {
     username: "",
@@ -313,7 +311,6 @@ export const quoteBannerDefinition: TemplateDefinition<{
     title: "Quote Banner",
     description: "Typographic quotes.",
     defaultSize: "wide",
-    tags: ["Quote", "Typography"],
     needsUsername: false,
     githubData: [],
   },

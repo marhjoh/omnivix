@@ -10,8 +10,8 @@ import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
 export const EXPORT_BACKGROUND_PATH = "/__export/background";
 
 const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|webp|avif));base64,([A-Za-z0-9+/]+={0,2})$/;
-/** Presets, plus the old `.jpg` paths that `next.config.ts` redirects. */
-const PRESET_PATTERN = /^\/backgrounds\/[a-z0-9-]+\.(?:avif|svg|jpg)$/;
+/** Built-in presets (src/backgrounds/presets.ts). */
+const PRESET_PATTERN = /^\/backgrounds\/[a-z0-9-]+\.(?:avif|svg)$/;
 
 export interface ExportBackground {
   contentType: string;
@@ -51,8 +51,8 @@ export async function resolveExportBackground(
 ): Promise<ExportBackgroundResult> {
   const value = payload.state.backgroundImage;
   if (value === undefined || value === "") return { ok: true, payload };
-  if (typeof value === "string" && PRESET_PATTERN.test(value)) return { ok: true, payload };
   if (typeof value !== "string") return { ok: false, error: "Unsupported background image." };
+  if (PRESET_PATTERN.test(value)) return { ok: true, payload };
 
   if (value.startsWith("data:")) {
     const upload = decodeUpload(value);

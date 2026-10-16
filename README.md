@@ -142,7 +142,7 @@ The GitHub, contribution and repos banners lay out their content at a fixed natu
 
 Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
 
-The settings travel in the URL, except an uploaded or linked background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`). Links are downloaded by the server first, and only from public https addresses (`src/export/backgroundLink.ts`). The render page can't load anything except the app itself and GitHub profile photos.
+The settings travel in the signed token in the render URL, except an uploaded or linked background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`). Links are downloaded by the server first, and only from public https addresses (`src/export/backgroundLink.ts`). The render page can't load anything except the app itself and GitHub profile photos.
 
 ### GitHub data
 
@@ -150,7 +150,7 @@ The settings travel in the URL, except an uploaded or linked background: `/api/e
 
 ### Theme
 
-The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), and the server reads the same cookie, so pages never flash the wrong theme. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint.
+The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), so pages never flash the wrong theme. The studio page also reads the cookie on the server, because its banner preview picks colors in JavaScript. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint.
 
 ### Link previews and search
 

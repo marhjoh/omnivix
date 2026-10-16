@@ -3,6 +3,7 @@ import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
+import { DEFAULT_THEME } from "@/src/theme/theme";
 import { verifyExportToken } from "@/src/export/export-token";
 import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 
@@ -48,7 +49,7 @@ export default async function RenderPage({
         templateId={templateId}
         state={state}
         data={{ user, contributions, repos }}
-        uiTheme={payload.uiTheme ?? "dark"}
+        uiTheme={payload.uiTheme ?? DEFAULT_THEME}
       />
     </main>
   );

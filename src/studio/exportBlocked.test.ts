@@ -5,7 +5,7 @@ describe("isExportBlocked", () => {
   const ready = {
     previewState: "ready" as const,
     stateValid: true,
-    backgroundFailed: false,
+    backgroundUnusable: false,
     previewPending: false,
   };
 
@@ -21,8 +21,8 @@ describe("isExportBlocked", () => {
     expect(isExportBlocked({ ...ready, stateValid: false })).toBe(true);
   });
 
-  it("blocks when the background image failed to load", () => {
-    expect(isExportBlocked({ ...ready, backgroundFailed: true })).toBe(true);
+  it("blocks when the background can't be used", () => {
+    expect(isExportBlocked({ ...ready, backgroundUnusable: true })).toBe(true);
   });
 
   it("blocks while the preview still shows an earlier version", () => {

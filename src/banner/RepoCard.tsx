@@ -17,20 +17,20 @@ const CARD = {
 
 interface RepoCardProps {
   repo: RepoNormalized;
-  showDescription?: boolean;
-  showLanguage?: boolean;
-  showStars?: boolean;
-  showForks?: boolean;
-  uiTheme?: Theme;
+  showDescription: boolean;
+  showLanguage: boolean;
+  showStars: boolean;
+  showForks: boolean;
+  uiTheme: Theme;
 }
 
 export function RepoCard({
   repo,
-  showDescription = true,
-  showLanguage = true,
-  showStars = true,
-  showForks = true,
-  uiTheme = "dark",
+  showDescription,
+  showLanguage,
+  showStars,
+  showForks,
+  uiTheme,
 }: RepoCardProps) {
   const hasFooter = showLanguage || showStars || showForks;
   const cardChrome =
@@ -75,7 +75,7 @@ export function RepoCard({
         style={{
           fontSize: CARD.title,
           margin: 0,
-          marginBottom: showDescription ? CARD.gapTitle : hasFooter ? CARD.gapTitle : 0,
+          marginBottom: showDescription || hasFooter ? CARD.gapTitle : 0,
           color: cardChrome.title,
           fontWeight: 600,
           lineHeight: 1.2,

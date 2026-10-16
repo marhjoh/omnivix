@@ -2,11 +2,13 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
+import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BACKGROUND_PRESETS } from "./presets";
 
-/** Widest export: the widest banner at the 3× export pixel ratio. */
-const MIN_PHOTO_WIDTH = Math.max(...Object.values(BANNER_SIZES).map((s) => s.width)) * 3;
+/** Widest export: the widest banner at the export pixel ratio. */
+const MIN_PHOTO_WIDTH =
+  Math.max(...Object.values(BANNER_SIZES).map((s) => s.width)) * EXPORT_PIXEL_RATIO;
 const MAX_BYTES = 1024 * 1024;
 
 const filePath = (src: string) => join(process.cwd(), "public", src);

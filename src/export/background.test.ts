@@ -17,7 +17,6 @@ describe("resolveExportBackground", () => {
     ["an empty background", ""],
     ["a preset", "/backgrounds/london.avif"],
     ["an abstract preset", "/backgrounds/aurora.svg"],
-    ["an old preset path", "/backgrounds/chicago.jpg"],
   ])("leaves %s unchanged", async (_, value) => {
     const input = payload(value);
     expect(await resolveExportBackground(input)).toEqual({ ok: true, payload: input });
@@ -49,6 +48,7 @@ describe("resolveExportBackground", () => {
     ["an http link", "http://example.com/a.jpg"],
     ["a protocol-relative link", "//example.com/a.jpg"],
     ["another app path", "/api/github/repos"],
+    ["an old .jpg preset path", "/backgrounds/chicago.jpg"],
     ["a path escaping the presets", "/backgrounds/../api/github/repos"],
     ["a non-string value", 42],
   ])("rejects %s", async (_, value) => {

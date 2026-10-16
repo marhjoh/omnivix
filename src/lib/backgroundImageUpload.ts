@@ -67,10 +67,8 @@ export function validateBackgroundUploadMeta(file: File): string | null {
     return SUPPORTED_BACKGROUND_FORMATS_MESSAGE;
   }
 
+  // GIF isn't on the allowed list, so its MIME type is rejected below.
   const type = file.type.toLowerCase().trim();
-  if (type === "image/gif") {
-    return SUPPORTED_BACKGROUND_FORMATS_MESSAGE;
-  }
 
   if (type && !isOneOf(ALLOWED_IMAGE_MIME_TYPES, type)) {
     // HEIC sometimes ships as octet-stream or an empty type; trust the extension in those cases.

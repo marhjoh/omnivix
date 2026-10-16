@@ -8,7 +8,7 @@ const samplePayload = {
   state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },
 };
 
-describe("export session token", () => {
+describe("export token", () => {
   it("round-trips a valid payload", () => {
     const token = createExportToken(samplePayload);
     const payload = verifyExportToken(token);
@@ -33,7 +33,7 @@ describe("export session token", () => {
     expect(verifyExportToken(tampered)).toBeNull();
   });
 
-  it("allows repeat verification until expiry (serverless-safe)", () => {
+  it("allows repeat verification until expiry", () => {
     const token = createExportToken(samplePayload);
     expect(verifyExportToken(token)).not.toBeNull();
     expect(verifyExportToken(token)).not.toBeNull();

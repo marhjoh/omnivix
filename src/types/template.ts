@@ -2,7 +2,14 @@ import { z } from "zod";
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
 
-export type TemplateId = "github-banner" | "repos-banner" | "contribution-banner" | "quote-banner";
+export const TEMPLATE_IDS = [
+  "github-banner",
+  "repos-banner",
+  "contribution-banner",
+  "quote-banner",
+] as const;
+
+export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export type { BannerSize };
 
@@ -21,7 +28,6 @@ export interface EditorFieldSchema {
   label: string;
   type: EditorFieldType;
   required?: boolean;
-  placeholder?: string;
   options?: Array<{ label: string; value: string }>;
   min?: number;
   max?: number;
@@ -35,8 +41,7 @@ export interface TemplateMeta {
   title: string;
   description: string;
   defaultSize: BannerSize;
-  tags: string[];
-  needsUsername?: boolean;
+  needsUsername: boolean;
   /** GitHub data the banner itself draws; the export fetches only these. */
   githubData: GithubDataKind[];
 }
