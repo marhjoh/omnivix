@@ -8,6 +8,7 @@ import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
+import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -82,6 +83,45 @@ function FieldWrapper({
   );
 }
 
+/** Shown while the repository list loads slowly; quicker loads go straight to the list. */
+const REPO_LIST_SKELETON_DELAY_MS = 300;
+const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
+
+function RepoRow({
+  name,
+  on,
+  disabled,
+  onClick,
+}: {
+  name: string;
+  on: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={on}
+      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+        on
+          ? "border-accent bg-accent/10 text-text"
+          : "border-transparent text-muted enabled:hover:bg-surface"
+      }`}
+    >
+      <span
+        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+          on ? "border-accent bg-accent" : "border-border"
+        }`}
+      >
+        {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
+      </span>
+      <span className="min-w-0 truncate font-medium">{name}</span>
+    </button>
+  );
+}
+
 function RepoMultiSelect({
   catalog,
   loading,
@@ -98,6 +138,10 @@ function RepoMultiSelect({
   onChange: (csv: string) => void;
 }) {
   const selected = parseRepoSelection(valueCsv);
+  // The picks from when the list opened come first, so they show (checked) while the rest
+  // loads and don't move when it arrives. Clicking later doesn't reorder anything.
+  const [initialPicks] = useState(selected);
+  const showSkeleton = useDelayedFlag(loading, REPO_LIST_SKELETON_DELAY_MS);
 
   const toggle = (name: string) => {
     const i = selected.indexOf(name);
@@ -112,50 +156,59 @@ function RepoMultiSelect({
     onChange(next.join(", "));
   };
 
+  const row = (name: string, key: string) => {
+    const on = selected.includes(name);
+    return (
+      <RepoRow
+        key={key}
+        name={name}
+        on={on}
+        // At the limit, only already-selected repositories can be clicked (to remove them).
+        disabled={!on && selected.length >= maxPick}
+        onClick={() => toggle(name)}
+      />
+    );
+  };
+
+  const ordered = [
+    ...initialPicks.flatMap((name) => catalog.find((repo) => repo.name === name) ?? []),
+    ...catalog.filter((repo) => !initialPicks.includes(repo.name)),
+  ];
+
   return (
     <div className="space-y-1.5" role="group" aria-labelledby="repositories-label">
       <span id="repositories-label" className="block text-xs font-medium text-muted">
         Repositories
       </span>
-      {loading && <p className="text-xs text-muted">Loading repository list…</p>}
-      {error && (
+      {error ? (
         <p className="text-xs text-danger" role="alert">
           {error}
         </p>
-      )}
-      {!loading && !error && (
-        <div className="max-h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5">
-          {catalog.length === 0 ? (
+      ) : (
+        // While loading, the box already has its full height, so nothing below it moves.
+        <div
+          className={`${loading ? "h-52" : "max-h-52"} space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5`}
+          aria-busy={loading}
+        >
+          {loading ? (
+            <>
+              {initialPicks.map((name) => row(name, name))}
+              {showSkeleton
+                ? SKELETON_ROW_WIDTHS.slice(initialPicks.length).map((width, i) => (
+                    <div key={i} className="flex items-center gap-2 px-2 py-1.5" aria-hidden>
+                      <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-border/70 motion-safe:animate-pulse" />
+                      <span
+                        className="h-2.5 rounded bg-border/70 motion-safe:animate-pulse"
+                        style={{ width }}
+                      />
+                    </div>
+                  ))
+                : null}
+            </>
+          ) : ordered.length === 0 ? (
             <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
           ) : (
-            catalog.map((repo) => {
-              const on = selected.includes(repo.name);
-              // At the limit, only already-selected repositories can be clicked (to remove them).
-              const full = !on && selected.length >= maxPick;
-              return (
-                <button
-                  key={repo.id}
-                  type="button"
-                  onClick={() => toggle(repo.name)}
-                  disabled={full}
-                  aria-pressed={on}
-                  className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    on
-                      ? "border-accent bg-accent/10 text-text"
-                      : "border-transparent text-muted enabled:hover:bg-surface"
-                  }`}
-                >
-                  <span
-                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
-                      on ? "border-accent bg-accent" : "border-border"
-                    }`}
-                  >
-                    {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
-                  </span>
-                  <span className="min-w-0 truncate font-medium">{repo.name}</span>
-                </button>
-              );
-            })
+            ordered.map((repo) => row(repo.name, repo.id))
           )}
         </div>
       )}

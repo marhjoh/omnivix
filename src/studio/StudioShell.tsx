@@ -403,7 +403,8 @@ export function StudioShell({
     () => (catalogFetch.error ? [] : (catalogFetch.data ?? [])),
     [catalogFetch.error, catalogFetch.data],
   );
-  const repoCatalogLoading = catalogFetch.loading;
+  // Only "loading" with nothing to show; a refetch keeps the list it has.
+  const repoCatalogLoading = catalogFetch.loading && !catalogFetch.data;
   const repoCatalogError = catalogFetch.error;
 
   // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
