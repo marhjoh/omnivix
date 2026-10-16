@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { SITE_NAME } from "@/src/lib/site";
+import { SITE_NAME, SITE_PLATFORMS } from "@/src/lib/site";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
+import { ThemeProvider } from "@/src/theme/ThemeProvider";
+import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
 import {
   parseSettingsCookie,
@@ -22,7 +24,7 @@ export async function generateMetadata({
     return {};
   }
   const { meta } = templateRegistry[templateId];
-  const description = `${meta.description} Create a ${meta.title} for LinkedIn, X, Bluesky, Twitch and more. Free, no sign-up.`;
+  const description = `${meta.description} Create a ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
   const url = `/studio/${templateId}`;
   const title = `${meta.title} · ${SITE_NAME}`;
   // openGraph/twitter replace the layout's objects rather than merging, so set every field.
@@ -52,14 +54,17 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
   }
   const cookieStore = await cookies();
   return (
-    <StudioShell
-      key={templateId}
-      templateId={templateId}
-      initialSidebarCollapsed={parseSidebarCollapsedCookie(
-        cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
-      )}
-      savedSettings={parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value)}
-      savedUsername={parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value)}
-    />
+    // The banner preview picks its colors in JavaScript, so the theme must be right on the server.
+    <ThemeProvider initialTheme={parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value)}>
+      <StudioShell
+        key={templateId}
+        templateId={templateId}
+        initialSidebarCollapsed={parseSidebarCollapsedCookie(
+          cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
+        )}
+        savedSettings={parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value)}
+        savedUsername={parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value)}
+      />
+    </ThemeProvider>
   );
 }

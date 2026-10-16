@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
-import { SITE_TAGLINE } from "@/src/lib/site";
+import { SITE_PLATFORMS, SITE_TAGLINE } from "@/src/lib/site";
 import type { TemplateId } from "@/src/types/template";
 
 // ImageResponse (Satori) can't decode WebP, so src/og/banners holds 1200px JPEG copies
@@ -89,9 +89,8 @@ const bannerStyle = {
  */
 export async function renderSiteOgImage(size: { width: number; height: number } = OG_SIZE) {
   const { fonts, logo } = await assets;
-  const banners = await Promise.all(
-    (["github-banner", "contribution-banner", "quote-banner"] as const).map(bannerSrc),
-  );
+  const bannerIds = ["github-banner", "contribution-banner", "quote-banner"] as const;
+  const banners = await Promise.all(bannerIds.map(bannerSrc));
 
   return toJpeg(
     new ImageResponse(
@@ -110,7 +109,7 @@ export async function renderSiteOgImage(size: { width: number; height: number } 
           {banners.map((src, i) => (
             <img
               alt=""
-              key={src.slice(-32)}
+              key={bannerIds[i]}
               src={src}
               width={720}
               height={180}
@@ -134,8 +133,7 @@ export async function renderSiteOgImage(size: { width: number; height: number } 
               {SITE_TAGLINE}
             </div>
             <div style={{ fontSize: 26, color: COLORS.muted, lineHeight: 1.35 }}>
-              LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos and
-              contributions.
+              {`${SITE_PLATFORMS} and other banners from your GitHub profile, repos and contributions.`}
             </div>
           </div>
         </div>
@@ -160,7 +158,7 @@ export async function renderTemplateOgImage(
         <div style={{ display: "flex", flexDirection: "column", marginTop: 36, gap: 8 }}>
           <div style={{ fontSize: 64, fontWeight: 700, letterSpacing: -1.5 }}>{title}</div>
           <div style={{ fontSize: 30, color: COLORS.muted }}>
-            {`${description} For LinkedIn, X, Bluesky, Twitch and more.`}
+            {`${description} For ${SITE_PLATFORMS} and more.`}
           </div>
         </div>
         <img

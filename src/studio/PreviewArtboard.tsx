@@ -58,7 +58,7 @@ export function PreviewArtboard({
   const artboardStyle: CSSProperties =
     scale === null
       ? { width: "100%", maxWidth: dims.width, aspectRatio: `${dims.width} / ${dims.height}` }
-      : { width: dims.width * scale, height: dims.height * scale, position: "relative" };
+      : { width: dims.width * scale, height: dims.height * scale };
 
   return (
     <div ref={stageRef} className={previewStyles.stage}>

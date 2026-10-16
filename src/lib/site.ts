@@ -3,8 +3,21 @@ export const SITE_NAME = "Omnivix";
 
 export const SITE_TAGLINE = "Create profile banners you actually want to use";
 
-export const SITE_DESCRIPTION =
-  "Create LinkedIn, X, Bluesky, Twitch and other banners from your GitHub profile, repos, contributions or a favorite quote. Free, no sign-up.";
+/** The best-known platforms, for copy that can't list all of them. */
+export const SITE_PLATFORMS = "LinkedIn, X, Bluesky, Twitch";
+
+export const SITE_DESCRIPTION = `Create ${SITE_PLATFORMS} and other banners from your GitHub profile, repos, contributions or a favorite quote. Free, no sign-up.`;
+
+/**
+ * Open Graph defaults. A page's `openGraph` replaces the layout's rather than merging, so pages
+ * that set their own (with their `url`) spread this first.
+ */
+export const SITE_OPEN_GRAPH = {
+  type: "website",
+  siteName: SITE_NAME,
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+} as const;
 
 export const SITE_LICENSE = { name: "MIT", url: "https://opensource.org/licenses/MIT" } as const;
 

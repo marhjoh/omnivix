@@ -195,8 +195,7 @@ html[data-theme="light"] .heroSubline {
   border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
   transition:
     box-shadow 0.35s ease,
-    border-color 0.35s ease,
-    transform 0.35s ease;
+    border-color 0.35s ease;
 }
 
 .showcaseTile:hover {
@@ -209,23 +208,10 @@ html[data-theme="light"] .heroSubline {
 .showcasePreview {
   position: relative;
   width: 100%;
-  aspect-ratio: 1584 / 396;
   overflow: hidden;
   background: var(--surface-2);
   border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
   isolation: isolate;
-}
-
-.showcaseCaption {
-  -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .showcaseTile {
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-  }
 }
 
 /* ---------- Site header: full-width bar at the top → floating glass pill once scrolled ---------- */
@@ -333,7 +319,8 @@ html[data-theme="light"] .siteHeader[data-scrolled="true"] .navBar {
   top: 50%;
   left: 50%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Set from HeroMarquee.tsx. */
+  grid-template-columns: repeat(var(--marquee-columns), 1fr);
   gap: 1rem;
   width: max(56rem, 120%);
   transform: translate(-50%, -50%) rotateX(50deg) rotateZ(-35deg);
@@ -354,7 +341,7 @@ html[data-theme="light"] .siteHeader[data-scrolled="true"] .navBar {
 
 .marqueeCard {
   position: relative;
-  aspect-ratio: 1584 / 396;
+  aspect-ratio: var(--banner-ratio);
   overflow: hidden;
   border-radius: 0.625rem;
   box-shadow:
@@ -374,6 +361,25 @@ html[data-theme="light"] .siteHeader[data-scrolled="true"] .navBar {
 @media (prefers-reduced-motion: reduce) {
   .marqueeColumn,
   .marqueeColumn[data-reverse="true"] {
+    animation: none;
+  }
+}
+
+/* Hero copy slides up on load (LandingHero sets the distance, delay and duration). No fade: the
+   copy is visible in the server HTML before anything runs. */
+.heroSlide {
+  animation: heroSlideIn var(--slide-duration, 0.55s) cubic-bezier(0.22, 1, 0.36, 1)
+    var(--slide-delay, 0s) both;
+}
+
+@keyframes heroSlideIn {
+  from {
+    transform: translateY(var(--slide-from, 16px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroSlide {
     animation: none;
   }
 }

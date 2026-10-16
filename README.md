@@ -42,7 +42,7 @@
   </tr>
   <tr>
     <td><img src="docs/images/landing.webp" alt="Landing page with the Omnivix hero and a tilted wall of example banners" /></td>
-    <td><img src="docs/images/studio-light.webp" alt="Studio in light mode: settings sidebar and a GitHub Banner preview on a Seattle background" /></td>
+    <td><img src="docs/images/studio-light.webp" alt="Studio in light mode: settings sidebar and a GitHub Banner preview on a photo background" /></td>
   </tr>
 </table>
 
@@ -65,25 +65,28 @@ Without a `GITHUB_TOKEN`, the landing page and the Quote Banner still work, but 
 
 ### Environment variables
 
-| Variable                          | Needed                          | What it's for                                                                                                                                                                                                |
-| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GITHUB_TOKEN`                    | For the GitHub templates        | GitHub API token for reading public profiles, repos and contributions. Either a classic token with no scopes, or a fine-grained token with read-only access to public repositories, works.                   |
-| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Locally, a fixed development secret is used if it's missing; on Vercel the export fails without it. Use a long random string.                                           |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export's headless browser open `/render` on a protected deployment (usually Preview). Vercel sets it when _Protection Bypass for Automation_ is enabled under **Settings → Deployment Protection**. |
+| Variable                          | Needed                          | What it's for                                                                                                                                                                                                     |
+| --------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN`                    | For the GitHub templates        | GitHub API token for reading public profiles, repos and contributions. Either a classic token with no scopes, or a fine-grained token with read-only access to public repositories, works.                        |
+| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Without it, each server process makes up a random secret, which works for one process (such as `pnpm dev`); on Vercel the export fails without it. Use a long random string. |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export's headless browser open `/render` on a protected deployment (usually Preview). Vercel sets it when _Protection Bypass for Automation_ is enabled under **Settings → Deployment Protection**.      |
 
 On Vercel, set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Production** and the **Preview** environments, or exports and GitHub data fail on preview deployments. `VERCEL_PROJECT_PRODUCTION_URL` and `VERCEL_URL` are set by Vercel automatically and are used for absolute URLs in metadata and for the export's render URL.
 
 ### Scripts
 
-| Command                     | What it does                    |
-| --------------------------- | ------------------------------- |
-| `pnpm dev`                  | Development server on port 3000 |
-| `pnpm build` / `pnpm start` | Production build and server     |
-| `pnpm lint`                 | ESLint                          |
-| `pnpm typecheck`            | TypeScript, no emit             |
-| `pnpm test`                 | Unit tests (Vitest)             |
+| Command                             | What it does                                                   |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `pnpm dev`                          | Development server on port 3000                                |
+| `pnpm build` / `pnpm start`         | Production build and server                                    |
+| `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting                      |
+| `pnpm lint`                         | ESLint                                                         |
+| `pnpm typecheck`                    | TypeScript, no emit                                            |
+| `pnpm test` / `pnpm test:watch`     | Unit tests (Vitest), once or on file changes                   |
+| `pnpm backgrounds`                  | Regenerate the background photos from Unsplash (all, or by id) |
+| `pnpm social-preview`               | Regenerate the repository's social preview image               |
 
-CI runs `lint`, `typecheck` and `test` on every pull request.
+CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull request.
 
 ## Routes
 
@@ -104,6 +107,7 @@ CI runs `lint`, `typecheck` and `test` on every pull request.
 ```
 app/                 Routes (App Router): pages, API handlers, metadata files
 src/templates/       Template definitions (fields, state schema, defaults), registry and renderers
+src/banner/          Building blocks the renderers share: frame, background, grid, cards, fitting
 src/studio/          Studio UI: shell, sidebar, preview
 src/export/          Export: token signing, render URL, Playwright capture
 src/github/          GitHub GraphQL client, normalization and in-memory cache
@@ -111,6 +115,9 @@ src/landing/         Landing page sections and the shared FAQ copy
 src/og/              Link-preview image rendering
 src/theme/           Light/dark theme
 src/backgrounds/     Background presets
+src/lib/             Shared helpers: banner sizes, uploads, repository selection, site copy
+src/types/           Shared types and the contribution grid themes
+src/ui/              Generic UI pieces: dropdown, toast, hover highlight, icons
 public/              Brand assets, background photos, landing banners
 ```
 
@@ -163,4 +170,4 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, cod
 [MIT](LICENSE). This covers the code, not these third-party files, which keep their own licenses:
 
 - Background photos in `public/backgrounds/`: [Unsplash License](https://unsplash.com/license). Each photographer is credited in [`src/backgrounds/presets.ts`](src/backgrounds/presets.ts)
-- Inter font in `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org)
+- Inter font in `app/fonts/` and `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org)

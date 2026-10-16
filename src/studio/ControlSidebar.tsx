@@ -146,7 +146,7 @@ function RepoMultiSelect({
                   }`}
                 >
                   <span
-                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[var(--radius)] border ${
+                    className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
                       on ? "border-accent bg-accent" : "border-border"
                     }`}
                   >

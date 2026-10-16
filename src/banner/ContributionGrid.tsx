@@ -124,7 +124,6 @@ export function ContributionGrid({
               fill={monthDayColor}
               fontSize={10}
               fontWeight={500}
-              fontFamily="system-ui, -apple-system, sans-serif"
             >
               {label}
             </text>
@@ -139,7 +138,6 @@ export function ContributionGrid({
               fill={monthDayColor}
               fontSize={9}
               fontWeight={500}
-              fontFamily="system-ui, -apple-system, sans-serif"
             >
               {label}
             </text>
@@ -167,7 +165,6 @@ export function ContributionGrid({
             y={monthLabelHeight + gridH + 17}
             fill={footerColor}
             fontSize={11}
-            fontFamily="system-ui, -apple-system, sans-serif"
             textAnchor="end"
             dominantBaseline="alphabetic"
           >

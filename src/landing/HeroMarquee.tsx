@@ -1,14 +1,10 @@
 import Image from "next/image";
-import type { TemplateId } from "@/src/types/template";
-import { landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
+import type { CSSProperties } from "react";
+import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
+import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/landing/landing.module.css";
 
-const TEMPLATES: TemplateId[] = [
-  "github-banner",
-  "repos-banner",
-  "quote-banner",
-  "contribution-banner",
-];
+const TEMPLATES = LANDING_TEMPLATE_ORDER;
 const CARDS_PER_COLUMN = 6;
 const COLUMNS = 4;
 
@@ -25,7 +21,15 @@ const columns = Array.from({ length: COLUMNS }, (_, col) =>
 export function HeroMarquee() {
   return (
     <div className={styles.marquee} aria-hidden>
-      <div className={styles.marqueeWall}>
+      <div
+        className={styles.marqueeWall}
+        style={
+          {
+            "--marquee-columns": COLUMNS,
+            "--banner-ratio": `${BANNER_SIZES.wide.width} / ${BANNER_SIZES.wide.height}`,
+          } as CSSProperties
+        }
+      >
         {columns.map((column, i) => (
           <div key={i} className={styles.marqueeColumn} data-reverse={i % 2 === 1}>
             {column.map((templateId, j) => (

@@ -9,11 +9,9 @@ export function ThemeToggle({ className }: { className: string }) {
 
   return (
     <button type="button" onClick={toggle} className={className} aria-label={label}>
-      {theme === "dark" ? (
-        <Sun className="h-[18px] w-[18px]" />
-      ) : (
-        <Moon className="h-[18px] w-[18px]" />
-      )}
+      {/* Both icons; CSS shows the one for the current theme, so it's right before React loads. */}
+      <Sun className="show-in-dark h-[18px] w-[18px]" aria-hidden />
+      <Moon className="show-in-light h-[18px] w-[18px]" aria-hidden />
     </button>
   );
 }

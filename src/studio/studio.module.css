@@ -165,6 +165,20 @@
   border-radius: 12px;
 }
 
+/* Theme-aware ring and shadow. The 1px ring is a shadow, not a border, so it takes no space from
+   the scaled banner. */
+:global(html[data-theme="dark"] .omnivix-artboard) {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-theme="light"] .omnivix-artboard) {
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 10px 32px rgba(31, 35, 40, 0.08);
+}
+
 /* Loading/empty/error copy needs more room than a scaled-down LinkedIn banner on phones. */
 :global(.omnivix-artboard:not([data-state="ready"])) {
   min-height: min(220px, 100%);

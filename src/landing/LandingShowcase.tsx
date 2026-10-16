@@ -1,57 +1,43 @@
-"use client";
-
-import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { TemplateId, TemplateMeta } from "@/src/types/template";
-import { landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
+import type { TemplateId } from "@/src/types/template";
+import { templateRegistry } from "@/src/templates/registry";
+import { BANNER_SIZES } from "@/src/lib/sizes";
+import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
 
-function metaById(templates: TemplateMeta[]): Partial<Record<TemplateId, TemplateMeta>> {
-  return Object.fromEntries(templates.map((m) => [m.id, m])) as Partial<
-    Record<TemplateId, TemplateMeta>
-  >;
-}
+/** Two columns in the 72rem container (16px side padding, 24px gap) from the sm breakpoint. */
+const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
 
-const SHOWCASE_ORDER: TemplateId[] = [
-  "github-banner",
-  "repos-banner",
-  "quote-banner",
-  "contribution-banner",
-];
-
-function ShowcaseCard({ templateId, title }: { templateId: TemplateId; title: string }) {
-  const src = landingPreviewSrc(templateId);
-
+function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
   // No fade-in: cards are visible in the server HTML, so the grid never looks empty while JS loads.
   return (
     <Link
       href={`/studio/${templateId}`}
-      className={`group block h-full min-w-0 focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
+      className={`group min-w-0 focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
     >
-      <div className={landingStyles.showcasePreview}>
+      <div
+        className={landingStyles.showcasePreview}
+        style={{ aspectRatio: `${BANNER_SIZES.wide.width} / ${BANNER_SIZES.wide.height}` }}
+      >
         <Image
-          src={src}
+          src={landingPreviewSrc(templateId)}
           // Decorative: the caption names the link.
           alt=""
           fill
-          sizes="(max-width: 640px) 100vw, 50vw"
+          sizes={IMAGE_SIZES}
           loading="lazy"
           className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
-      <p
-        className={`px-4 py-3.5 text-sm font-semibold tracking-tight text-text ${landingStyles.showcaseCaption}`}
-      >
-        {title}
+      <p className="px-4 py-3.5 text-sm font-semibold tracking-tight text-text">
+        {templateRegistry[templateId].meta.title}
       </p>
     </Link>
   );
 }
 
-export function LandingShowcase({ templates }: { templates: TemplateMeta[] }) {
-  const byId = useMemo(() => metaById(templates), [templates]);
-
+export function LandingShowcase() {
   return (
     <section
       id="showcase"
@@ -69,12 +55,8 @@ export function LandingShowcase({ templates }: { templates: TemplateMeta[] }) {
         </header>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-          {SHOWCASE_ORDER.map((templateId) => (
-            <ShowcaseCard
-              key={templateId}
-              templateId={templateId}
-              title={byId[templateId]?.title ?? templateId}
-            />
+          {LANDING_TEMPLATE_ORDER.map((templateId) => (
+            <ShowcaseCard key={templateId} templateId={templateId} />
           ))}
         </div>
       </div>
