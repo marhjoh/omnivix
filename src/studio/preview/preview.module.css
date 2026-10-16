@@ -5,8 +5,10 @@
   min-height: 0;
 }
 
-/* Fills the preview area; its size is what the banner is scaled to fit. */
+/* Fills the preview area; its size is what the banner is scaled to fit (also in CSS, see
+   PreviewArtboard, so it has its size before the page's JavaScript runs). */
 .stage {
+  container-type: size;
   flex: 1;
   width: 100%;
   min-width: 0;

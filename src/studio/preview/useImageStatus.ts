@@ -13,7 +13,15 @@ const knownStatus = new Map<string, "loaded" | "failed">();
  * the banner with an empty spot that fills in later on slow networks) and skip it if it fails.
  * The browser caches the preloaded image, so the banner's own <img> renders it immediately.
  */
-export function useImageStatus(src: string | undefined): ImageStatus {
+export function useImageStatus(
+  src: string | undefined,
+  {
+    assumeLoaded = false,
+  }: {
+    /** Report "loaded" while it loads, for an image the page itself is already showing. */
+    assumeLoaded?: boolean;
+  } = {},
+): ImageStatus {
   const [result, setResult] = useState<{ src: string; status: "loaded" | "failed" } | null>(null);
 
   useEffect(() => {
@@ -42,5 +50,7 @@ export function useImageStatus(src: string | undefined): ImageStatus {
   }, [src]);
 
   if (!src) return "none";
-  return result?.src === src ? result.status : (knownStatus.get(src) ?? "loading");
+  return result?.src === src
+    ? result.status
+    : (knownStatus.get(src) ?? (assumeLoaded ? "loaded" : "loading"));
 }

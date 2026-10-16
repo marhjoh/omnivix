@@ -40,6 +40,7 @@ export function FitContent({
     scaler.style.left = `${inset}px`;
     scaler.style.top = `${inset}px`;
     scaler.style.transform = `scale(${scale})`;
+    scaler.style.visibility = "visible";
     if (document.fonts.status === "loaded") {
       container.setAttribute(FIT_STATUS_ATTRIBUTE, "ready");
     }
@@ -76,9 +77,12 @@ export function FitContent({
     >
       <div
         ref={scalerRef}
-        // Geometry (left, top, width, height, transform) is set by `fit`.
+        // Geometry (left, top, width, height, transform) is set by `fit`. Hidden until then: the
+        // server-rendered page shows the banner before its JavaScript runs, and unfitted content
+        // would jump into place.
         style={{
           position: "absolute",
+          visibility: "hidden",
           transformOrigin: "0 0",
           display: "flex",
           alignItems: "center",

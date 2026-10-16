@@ -4,6 +4,8 @@ import { SITE_NAME, SITE_PLATFORMS } from "@/src/lib/site";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
+import { applySavedSettings } from "@/src/studio/savedSettings";
+import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
@@ -53,6 +55,16 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
     notFound();
   }
   const cookieStore = await cookies();
+  const savedSettings = parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value);
+  const savedUsername = parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value);
+  // The same settings the studio starts from, so the GitHub data matches what it shows.
+  const initialState = applySavedSettings(
+    { ...templateRegistry[templateId].initialState },
+    templateId,
+    savedSettings,
+    savedUsername,
+  );
+  const initialGithubData = await loadInitialGithubData(templateId, initialState);
   return (
     // The banner preview picks its colors in JavaScript, so the theme must be right on the server.
     <ThemeProvider initialTheme={parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value)}>
@@ -62,8 +74,9 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
         initialSidebarCollapsed={parseSidebarCollapsedCookie(
           cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
         )}
-        savedSettings={parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value)}
-        savedUsername={parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value)}
+        savedSettings={savedSettings}
+        savedUsername={savedUsername}
+        initialGithubData={initialGithubData}
       />
     </ThemeProvider>
   );

@@ -5,6 +5,7 @@ import { templateRegistry } from "@/src/templates/registry";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
+import { LinkPendingSpinner } from "@/src/landing/LinkPendingSpinner";
 
 /** Two columns in the 72rem container (16px side padding, 24px gap) from the sm breakpoint. */
 const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
@@ -30,8 +31,9 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
           className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
-      <p className="px-4 py-3.5 text-sm font-semibold tracking-tight text-text">
+      <p className="flex items-center justify-between gap-2 px-4 py-3.5 text-sm font-semibold tracking-tight text-text">
         {templateRegistry[templateId].meta.title}
+        <LinkPendingSpinner />
       </p>
     </Link>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { preload } from "react-dom";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSize, GithubDataKind, TemplateId } from "@/src/types/template";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
@@ -39,11 +40,12 @@ import type {
   RepoNormalized,
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import { THEME_PRESETS } from "@/src/types/theme";
 import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
-import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
+import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
-import { MAX_REPOS, parseRepoSelection, reposForBanner } from "@/src/lib/repoSelection";
+import { reposForBanner } from "@/src/lib/repoSelection";
+import { applySavedSettings, clampSelectedRepos } from "@/src/studio/savedSettings";
+import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
 const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
@@ -130,18 +132,28 @@ function useFetchJson<T>(
   url: string | null,
   nonce: number,
   fallbackError: string,
-  /**
-   * Responses with the same key stand in for each other while a new url loads, e.g. the
-   * repositories for another selection, so the preview keeps its content instead of flashing
-   * "loading".
-   */
-  keepKey?: string,
+  {
+    keepKey,
+    initial,
+  }: {
+    /**
+     * Responses with the same key stand in for each other while a new url loads, e.g. the
+     * contributions for another year, so the preview keeps its content instead of flashing
+     * "loading".
+     */
+    keepKey?: string;
+    /** This url's data from the page's server render (see initialGithubData), if it has it. */
+    initial?: T;
+  } = {},
 ) {
   const [result, setResult] = useState<FetchResult<T> | null>(null);
   const lastNonceRef = useRef(nonce);
 
   useEffect(() => {
     if (!url) return;
+    if (initial !== undefined && !lastFetched.has(url)) {
+      lastFetched.set(url, { data: initial, at: Date.now() });
+    }
     // A retry always asks again; otherwise a recent response is used as is.
     const retry = lastNonceRef.current !== nonce;
     lastNonceRef.current = nonce;
@@ -169,12 +181,12 @@ function useFetchJson<T>(
       },
     );
     return () => ac.abort();
-  }, [url, nonce, fallbackError, keepKey]);
+  }, [url, nonce, fallbackError, keepKey, initial]);
 
   const current = url && result?.url === url ? result : null;
   const settled = current !== null && current.nonce === nonce;
   const ownData =
-    current?.data ?? (url ? (lastFetched.get(url)?.data as T | undefined) : undefined);
+    current?.data ?? (url ? ((lastFetched.get(url)?.data as T | undefined) ?? initial) : undefined);
   const keptData =
     url && keepKey && ownData === undefined
       ? (lastFetchedByKey.get(keepKey) as T | undefined)
@@ -187,6 +199,11 @@ function useFetchJson<T>(
     notFound: settled && current.status === 404,
     loading: url !== null && !settled,
   };
+}
+
+/** `url`'s data from the server render, if it has it. */
+function initialData<T>(initialGithubData: Record<string, unknown>, url: string | null) {
+  return url ? (initialGithubData[url] as T | undefined) : undefined;
 }
 
 /** Loads quicker than this go straight to the new preview, without showing the loading screen. */
@@ -211,54 +228,12 @@ function subscribePhone(onChange: () => void) {
   return () => mq.removeEventListener("change", onChange);
 }
 
-/**
- * The template's defaults with saved settings applied. Saved values come from the browser, so
- * anything the template no longer offers falls back to its default.
- */
-function applySavedSettings(
-  prev: Record<string, unknown>,
-  templateId: TemplateId,
-  saved: Record<string, unknown> | null,
-  username: string | null,
-): Record<string, unknown> {
-  if (!saved && !username) return prev;
-  const merged = { ...prev, ...saved };
-  merged.size = normalizeBannerSize(merged.size, prev.size as BannerSize);
-  for (const field of templateRegistry[templateId].schema) {
-    if (field.options && !field.options.some((option) => option.value === merged[field.key])) {
-      merged[field.key] = prev[field.key];
-    }
-  }
-  if (templateRegistry[templateId].meta.needsUsername) {
-    merged.username = username ?? "";
-  }
-  const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
-  if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
-    merged.themeId = "default";
-  }
-  return clampSelectedRepos(templateId, merged);
-}
-
-/**
- * Repos banner: at most MAX_REPOS selected. Only in Selected mode; Pinned mode's Amount doesn't
- * touch the selection, which is kept for switching back.
- */
-function clampSelectedRepos(
-  templateId: TemplateId,
-  state: Record<string, unknown>,
-): Record<string, unknown> {
-  if (!templateRegistry[templateId].meta.githubData.includes("repos")) return state;
-  if (state.mode !== "selected") return state;
-  const parts = parseRepoSelection(String(state.selectedRepos ?? ""));
-  if (parts.length <= MAX_REPOS) return state;
-  return { ...state, selectedRepos: parts.slice(0, MAX_REPOS).join(", ") };
-}
-
 export function StudioShell({
   templateId,
   initialSidebarCollapsed,
   savedSettings,
   savedUsername,
+  initialGithubData,
 }: {
   templateId: TemplateId;
   initialSidebarCollapsed: boolean;
@@ -266,6 +241,8 @@ export function StudioShell({
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
   savedUsername: string | null;
+  /** GitHub data the server already loaded, by the url the studio fetches it from. */
+  initialGithubData: Record<string, unknown>;
 }) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
@@ -356,40 +333,45 @@ export function StudioShell({
   const [retryNonces, setRetryNonces] = useState({ user: 0, contributions: 0, repos: 0 });
 
   const { githubData } = definition.meta;
-  const needsContributions = githubData.includes("contributions");
   const needsRepos = githubData.includes("repos");
 
   const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
   const username = (state.username as string) ?? "";
 
-  const yearRaw =
-    state.year != null && String(state.year).length > 0
-      ? String(state.year)
-      : String(new Date().getFullYear());
   const repoMode = String(state.mode ?? "pinned");
   const selectedRepos = String(state.selectedRepos ?? "");
-  const encodedUsername = encodeURIComponent(username);
+  // Both repository lists come in one request per user: picking repositories and switching
+  // between pinned and selected need nothing more from GitHub.
+  const urls = githubDataUrls({
+    needsUsername,
+    githubData,
+    username,
+    year: contributionYear(state.year),
+  });
 
   const userFetch = useFetchJson<GithubUserNormalized>(
-    needsUsername && username ? `/api/github/user-summary?username=${encodedUsername}` : null,
+    urls.user,
     retryNonces.user,
     GITHUB_FETCH_FALLBACK,
+    { initial: initialData<GithubUserNormalized>(initialGithubData, urls.user) },
   );
   const contributionsFetch = useFetchJson<ContributionsNormalized>(
-    username && needsContributions
-      ? `/api/github/contributions?username=${encodedUsername}&year=${encodeURIComponent(yearRaw)}`
-      : null,
+    urls.contributions,
     retryNonces.contributions,
     GITHUB_FETCH_FALLBACK,
-    // Another year keeps the current grid until it arrives, instead of flashing "Loading".
-    username,
+    {
+      // Another year keeps the current grid until it arrives, instead of flashing "Loading".
+      keepKey: username,
+      initial: initialData<ContributionsNormalized>(initialGithubData, urls.contributions),
+    },
   );
-  // Both repository lists in one request per user: picking repositories and switching between
-  // pinned and selected need nothing more from GitHub.
   const repoListsFetch = useFetchJson<RepoLists>(
-    username && needsRepos ? `/api/github/repos?username=${encodedUsername}` : null,
+    urls.repos,
     retryNonces.repos,
     GITHUB_FETCH_FALLBACK,
+    {
+      initial: initialData<RepoLists>(initialGithubData, urls.repos),
+    },
   );
   const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
 
@@ -431,9 +413,17 @@ export function StudioShell({
   // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
   // the banner doesn't appear with an empty spot that fills in later on a slow connection.
   // Preloaded even when off, so switching it on doesn't flash the loading state.
-  const avatarStatus = useImageStatus(
-    githubData.includes("user") ? data.user?.avatarUrl : undefined,
-  );
+  // The photo of a profile from the server render is already loading in the page (preloaded
+  // below), so it counts as loaded, like the rest of that first paint.
+  const avatarUrl = githubData.includes("user") ? data.user?.avatarUrl : undefined;
+  const serverAvatarUrl = initialData<GithubUserNormalized>(
+    initialGithubData,
+    urls.user,
+  )?.avatarUrl;
+  if (serverAvatarUrl) preload(serverAvatarUrl, { as: "image" });
+  const avatarStatus = useImageStatus(avatarUrl, {
+    assumeLoaded: avatarUrl !== undefined && avatarUrl === serverAvatarUrl,
+  });
   const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
   const fill = state.contentSize === "fill";

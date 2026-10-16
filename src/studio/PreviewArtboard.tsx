@@ -14,7 +14,7 @@ import {
   previewLoadingMessage,
 } from "@/src/studio/preview";
 import previewStyles from "@/src/studio/preview/preview.module.css";
-import { fitScale } from "@/src/studio/preview/fitScale";
+import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import type { BackgroundPosition } from "@/src/banner/background";
@@ -54,11 +54,15 @@ export function PreviewArtboard({
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const scale = available ? fitScale(available, dims) : null;
 
-  // Until the stage is measured, fall back to a CSS aspect-ratio box and hide the banner.
+  // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
+  // the stage as a size container, so the banner shows at its final size from the first paint.
+  // tan(atan2(a, b)) is a / b as a plain number, which scale() needs.
+  const fitWidth = cssFitWidth(dims);
   const artboardStyle: CSSProperties =
     scale === null
-      ? { width: "100%", maxWidth: dims.width, aspectRatio: `${dims.width} / ${dims.height}` }
+      ? { width: fitWidth, aspectRatio: `${dims.width} / ${dims.height}` }
       : { width: dims.width * scale, height: dims.height * scale };
+  const bannerScale = scale === null ? `tan(atan2(${fitWidth}, ${dims.width}px))` : String(scale);
 
   return (
     <div ref={stageRef} className={previewStyles.stage}>
@@ -69,8 +73,7 @@ export function PreviewArtboard({
             style={{
               width: dims.width,
               height: dims.height,
-              transform: `scale(${scale ?? 1})`,
-              visibility: scale === null ? "hidden" : undefined,
+              transform: `scale(${bannerScale})`,
             }}
           >
             <BannerRenderer templateId={templateId} state={state} data={data} />
