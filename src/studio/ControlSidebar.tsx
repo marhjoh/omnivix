@@ -7,7 +7,6 @@ import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
-import { INPUT_DEBOUNCE_MS } from "@/src/studio/inputDebounce";
 import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
@@ -16,15 +15,16 @@ import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 
 const currentYear = new Date().getFullYear();
 
+/** How long text fields wait after the last keystroke before updating the banner. */
+const INPUT_DEBOUNCE_MS = 400;
+
 function DebouncedInput({
   id,
-  placeholder,
   maxLength,
   value: externalValue,
   onChange,
 }: {
   id: string;
-  placeholder?: string;
   maxLength?: number;
   value: string;
   onChange: (value: string) => void;
@@ -56,7 +56,6 @@ function DebouncedInput({
       id={id}
       type="text"
       className="field-input"
-      placeholder={placeholder}
       maxLength={maxLength}
       value={localValue}
       onChange={handleChange}
@@ -323,7 +322,7 @@ export function ControlSidebar({
   repoCatalogError,
   onRetryRepoCatalog,
   disabledFields,
-  adjustableBackground,
+  adjustableBackground: background,
   backgroundAdjusting,
   onToggleBackgroundAdjusting,
   onError,
@@ -350,7 +349,6 @@ export function ControlSidebar({
   onErrorResolved: (toastId: number) => void;
 }) {
   const mode = state.mode as string | undefined;
-  const background = adjustableBackground;
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -542,7 +540,6 @@ export function ControlSidebar({
           <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
             <DebouncedInput
               id={field.key}
-              placeholder={field.placeholder}
               maxLength={field.maxLength}
               value={String(state[field.key] ?? "")}
               onChange={(v) => onChange(field.key, v)}

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import { isInsecureImageLink } from "@/src/lib/imageLink";
+import { isHttpImageUrl, isInsecureImageLink } from "@/src/lib/imageLink";
 import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
 import {
   DropdownGroupLabel,
@@ -18,10 +18,6 @@ import {
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
 const BACKGROUND_FILE_ACCEPT =
   "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
-
-function isHttpImageUrl(s: string) {
-  return /^https?:\/\//i.test(s.trim());
-}
 
 function isDataUrl(s: string) {
   return s.startsWith("data:");
@@ -140,10 +136,9 @@ export function BackgroundImagePicker({
     };
   }, []);
 
+  // uploadSession only ever holds a data URL, so a match means the background is that upload.
   const uploadDisplayName =
-    typeof value === "string" && isDataUrl(value) && uploadSession?.dataUrl === value
-      ? uploadSession.fileName
-      : null;
+    uploadSession && uploadSession.dataUrl === value ? uploadSession.fileName : null;
 
   /** The user has stopped typing: an emptied field removes the background, a link is checked. */
   const settle = useCallback(
@@ -168,16 +163,8 @@ export function BackgroundImagePicker({
     settle(urlDraft);
   };
 
-  const selectNone = () => {
-    setSettledLink(undefined);
-    setUploadSession(null);
-    onChange(undefined);
-    setUrlDraft(undefined);
-    setUrlEditorOpen(false);
-    dropdown.close();
-  };
-
-  const selectPreset = (src: string) => {
+  /** A preset, or no background (`undefined`). */
+  const select = (src: string | undefined) => {
     setSettledLink(undefined);
     setUploadSession(null);
     onChange(src);
@@ -189,11 +176,7 @@ export function BackgroundImagePicker({
   const selectEnterUrl = () => {
     setUrlEditorOpen(true);
     dropdown.close();
-    if (linkValue) {
-      setUrlDraft(undefined);
-    } else {
-      setUrlDraft("");
-    }
+    setUrlDraft(linkValue ? undefined : "");
   };
 
   const selectUpload = () => {
@@ -216,7 +199,7 @@ export function BackgroundImagePicker({
         </DropdownTrigger>
 
         <DropdownList dropdown={dropdown} label="Background options">
-          <DropdownOption selected={!value} onSelect={selectNone}>
+          <DropdownOption selected={!value} onSelect={() => select(undefined)}>
             None
           </DropdownOption>
 
@@ -227,7 +210,7 @@ export function BackgroundImagePicker({
                 <DropdownOption
                   key={p.id}
                   selected={value === p.src}
-                  onSelect={() => selectPreset(p.src)}
+                  onSelect={() => select(p.src)}
                 >
                   {p.label}
                 </DropdownOption>
@@ -238,7 +221,7 @@ export function BackgroundImagePicker({
           <div className="my-1 border-t border-border" />
 
           <DropdownOption
-            selected={Boolean(value && isHttpImageUrl(value))}
+            selected={linkValue !== undefined}
             icon={<Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
             onSelect={selectEnterUrl}
           >

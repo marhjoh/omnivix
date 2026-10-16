@@ -7,8 +7,8 @@ import type { PreviewContentState } from "./preview/types";
 export function isExportBlocked(params: {
   previewState: PreviewContentState;
   stateValid: boolean;
-  /** The background image couldn't be loaded in the browser. */
-  backgroundFailed: boolean;
+  /** The background can't be used: it failed to load, or is an http link. */
+  backgroundUnusable: boolean;
   /**
    * The preview still shows an earlier version while the current one loads (a quick load being
    * held, the previous year's grid, or the previous background); a download now wouldn't match it.
@@ -18,7 +18,7 @@ export function isExportBlocked(params: {
   return (
     params.previewState !== "ready" ||
     !params.stateValid ||
-    params.backgroundFailed ||
+    params.backgroundUnusable ||
     params.previewPending
   );
 }

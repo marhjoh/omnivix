@@ -40,7 +40,7 @@ export function BackgroundAdjustControls({
           type="button"
           onClick={onReset}
           disabled={!canReset}
-          className="btn-secondary px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-secondary px-3 py-1.5 text-xs"
         >
           Reset
         </button>

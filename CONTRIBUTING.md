@@ -15,7 +15,7 @@ Open an issue first for larger changes or new templates, so the direction is agr
 
 - Use `pnpm` only; `pnpm-lock.yaml` is the source of truth.
 - Keep route handlers thin; put logic in `src/*`.
-- A template has a renderer in `src/templates/<template-id>/Renderer.tsx` (drawn through the [shared renderer](README.md#one-renderer-for-preview-and-export)), a definition in `src/templates/definitions.ts`, and an entry in `src/templates/registry.ts`.
+- A template needs its id in `TemplateId` (`src/types/template.ts`), a definition in `src/templates/definitions.ts`, an entry in `src/templates/registry.ts`, and a renderer in `src/templates/<template-id>/Renderer.tsx` wired into `src/templates/BannerRenderer.tsx` (the [shared renderer](README.md#one-renderer-for-preview-and-export)). For the landing page and link previews, add `public/landing/<template-id>.webp` (listed in `src/landing/landingPreviewAssets.ts`) and a JPEG copy in `src/og/banners/`.
 - Derive values during render instead of copying them into state with `useEffect` + `setState`.
 - Upgrade `playwright` and `@sparticuz/chromium` together (see [Export flow](README.md#export-flow)).
 

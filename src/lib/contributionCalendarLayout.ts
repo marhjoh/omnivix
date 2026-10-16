@@ -75,7 +75,6 @@ function sundayOfWeek(ymd: string): number {
 export function buildCalendarLayout(options: {
   weeks: ContributionWeekNormalized[];
   months: ContributionMonthNormalized[];
-  rangeStartYmd: string;
   rangeEndYmd: string;
   renderPaddingDays?: boolean;
 }): {

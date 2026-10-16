@@ -1,7 +1,7 @@
 import type { ExportRequest } from "@/src/types/template";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
-const DEFAULT_TTL_SECONDS = 120;
+const TOKEN_TTL_SECONDS = 120;
 
 /**
  * Without `EXPORT_TOKEN_SECRET`, a random secret per server process: tokens can't be forged, but
@@ -28,14 +28,9 @@ type TokenBody = {
   payload: ExportRequest;
 };
 
-/**
- * Stateless export token: HMAC-signed payload embedded in the URL.
- *
- * Required for serverless (e.g. Vercel): `/api/export` and `/render/...` often run on different
- * lambdas, so an in-memory Map is not shared and would always 404 the render page.
- */
+/** Stateless export token: the HMAC-signed payload, embedded in the render URL. */
 export function createExportToken(payload: ExportRequest): string {
-  const exp = Math.floor(Date.now() / 1000) + DEFAULT_TTL_SECONDS;
+  const exp = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS;
   const body: TokenBody = { exp, payload };
   const encoded = Buffer.from(JSON.stringify(body)).toString("base64url");
   return `${encoded}.${sign(encoded)}`;

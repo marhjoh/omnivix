@@ -16,13 +16,12 @@ function userNotFound(username: string) {
 export async function githubRoute<T>(
   request: NextRequest,
   failure: string,
-  load: (username: string, params: URLSearchParams) => Promise<T>,
+  load: (username: string) => Promise<T>,
 ) {
-  const params = request.nextUrl.searchParams;
-  const username = params.get("username")?.trim() ?? "";
+  const username = request.nextUrl.searchParams.get("username")?.trim() ?? "";
   if (!GITHUB_USERNAME.test(username)) return userNotFound(username);
   try {
-    return NextResponse.json(await load(username, params));
+    return NextResponse.json(await load(username));
   } catch (error) {
     if (isUserNotFound(error)) return userNotFound(username);
     console.error(failure, error);

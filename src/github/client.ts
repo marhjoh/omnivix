@@ -74,10 +74,7 @@ const LEVELS: Record<string, ContributionDayNormalized["level"]> = {
 };
 
 /** Contributions for a calendar year, or for the last 365 days when `year` is "latest". */
-export function getContributions(
-  username: string,
-  year = "latest",
-): Promise<ContributionsNormalized> {
+export function getContributions(username: string, year: string): Promise<ContributionsNormalized> {
   if (!isContributionYear(year)) {
     return Promise.reject(new Error(`Invalid contribution year: ${year}`));
   }
@@ -150,7 +147,6 @@ export function getContributions(
           })),
         })),
         months: calendar.months,
-        rangeStartYmd: from.slice(0, 10),
         rangeEndYmd: to.slice(0, 10),
       };
     },

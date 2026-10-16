@@ -19,7 +19,7 @@ export function computePreviewContentState(params: {
     return "error";
   }
 
-  if (params.needsUsername && username && !params.dataReady) {
+  if (params.needsUsername && !params.dataReady) {
     return "loading";
   }
 

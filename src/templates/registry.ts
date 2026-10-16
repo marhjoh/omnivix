@@ -1,14 +1,14 @@
 import {
   contributionBannerDefinition,
   githubBannerDefinition,
-  pinnedReposDefinition,
+  reposBannerDefinition,
   quoteBannerDefinition,
 } from "@/src/templates/definitions";
 import type { TemplateId } from "@/src/types/template";
 
 export const templateRegistry = {
   "github-banner": githubBannerDefinition,
-  "repos-banner": pinnedReposDefinition,
+  "repos-banner": reposBannerDefinition,
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
 } as const;

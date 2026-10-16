@@ -43,7 +43,7 @@ export function Toast({ toast, onDismiss }: { toast: ToastMessage | null; onDism
             <span className="min-w-0">{toast.message}</span>
             <button
               type="button"
-              onClick={onDismiss}
+              onClick={() => onDismiss()}
               className="btn-ghost -mr-1 shrink-0 rounded p-0.5"
               aria-label="Dismiss"
             >

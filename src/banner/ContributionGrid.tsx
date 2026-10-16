@@ -19,8 +19,8 @@ function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number
 interface ContributionGridProps {
   contributions: ContributionsNormalized;
   theme: ThemePreset;
-  cellSize?: number;
-  gap?: number;
+  cellSize: number;
+  gap: number;
   showMonthLabels?: boolean;
   /**
    * Semantic Mon/Wed/Fri labels in the left gutter.
@@ -33,44 +33,36 @@ interface ContributionGridProps {
   /** Stretch SVG to fill its container (CSS only, no layout change). */
   fill?: boolean;
   cellOutline?: boolean;
-  labelFill?: string;
-  totalFill?: string;
   cellShape?: ContributionCellShape;
 }
 
 export function ContributionGrid({
   contributions,
   theme,
-  cellSize = 11,
-  gap = 3,
+  cellSize,
+  gap,
   showMonthLabels = false,
   showDayLabels = false,
   showTotal = false,
   renderPaddingDays = false,
   fill = false,
   cellOutline = true,
-  labelFill,
-  totalFill,
   cellShape = "rounded",
 }: ContributionGridProps) {
-  // Without explicit colors, labels use the banner's text color.
-  const monthDayColor = labelFill ?? "currentColor";
-  const footerColor = totalFill ?? "currentColor";
   const { rx, ry } = cellRadii(cellShape, cellSize);
   // About 370 cells; worth keeping while the banner re-renders (e.g. dragging the background).
   const { placedDays, monthLabels, columnCount } = useMemo(
     () =>
       buildCalendarLayout({
-        weeks: contributions.weeks ?? [],
-        months: contributions.months ?? [],
-        rangeStartYmd: contributions.rangeStartYmd,
+        weeks: contributions.weeks,
+        months: contributions.months,
         rangeEndYmd: contributions.rangeEndYmd,
         renderPaddingDays,
       }),
     [contributions, renderPaddingDays],
   );
 
-  if (!contributions.weeks?.length) {
+  if (!contributions.weeks.length) {
     return (
       <div
         style={{
@@ -78,7 +70,7 @@ export function ContributionGrid({
           textAlign: "center",
           fontSize: 13,
           lineHeight: 1.45,
-          color: monthDayColor,
+          color: "currentColor",
           maxWidth: 300,
         }}
       >
@@ -121,7 +113,7 @@ export function ContributionGrid({
               key={`m-${colIndex}-${label}`}
               x={dayLabelWidth + colIndex * step}
               y={monthLabelHeight - 6}
-              fill={monthDayColor}
+              fill="currentColor"
               fontSize={10}
               fontWeight={500}
             >
@@ -135,7 +127,7 @@ export function ContributionGrid({
               key={`d-${row}`}
               x={2}
               y={monthLabelHeight + row * step + cellSize * 0.72}
-              fill={monthDayColor}
+              fill="currentColor"
               fontSize={9}
               fontWeight={500}
             >
@@ -163,7 +155,7 @@ export function ContributionGrid({
           <text
             x={svgW - 1}
             y={monthLabelHeight + gridH + 17}
-            fill={footerColor}
+            fill="currentColor"
             fontSize={11}
             textAnchor="end"
             dominantBaseline="alphabetic"

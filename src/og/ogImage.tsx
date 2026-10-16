@@ -6,6 +6,7 @@ import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { SITE_PLATFORMS, SITE_TAGLINE } from "@/src/lib/site";
 import type { TemplateId } from "@/src/types/template";
+import { templateRegistry } from "@/src/templates/registry";
 
 // ImageResponse (Satori) can't decode WebP, so src/og/banners holds 1200px JPEG copies
 // of public/landing/*.webp. Regenerate them when the landing banners change.
@@ -144,11 +145,8 @@ export async function renderSiteOgImage(size: { width: number; height: number } 
 }
 
 /** Per-template preview: logo, template title and description, and that template's banner. */
-export async function renderTemplateOgImage(
-  templateId: TemplateId,
-  title: string,
-  description: string,
-) {
+export async function renderTemplateOgImage(templateId: TemplateId) {
+  const { title, description } = templateRegistry[templateId].meta;
   const [{ fonts, logo }, banner] = await Promise.all([assets, bannerSrc(templateId)]);
 
   return toJpeg(

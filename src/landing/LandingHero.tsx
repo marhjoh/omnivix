@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { HeroMarquee } from "@/src/landing/HeroMarquee";
 import { BANNER_PLATFORMS } from "@/src/lib/sizes";
+import { SITE_NAME, SITE_TAGLINE } from "@/src/lib/site";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import landingStyles from "@/src/landing/landing.module.css";
 
@@ -50,7 +51,7 @@ export function LandingHero() {
                   <span
                     className={`${landingStyles.heroWordmark} text-[clamp(1.75rem,1.075rem+6.85vw,4.5rem)] leading-[0.97] font-bold`}
                   >
-                    Omnivix
+                    {SITE_NAME}
                   </span>{" "}
                   <span
                     className={`${landingStyles.heroSubline} text-[clamp(1.25rem,0.9125rem+1.92vw,1.875rem)] leading-tight`}
@@ -58,7 +59,7 @@ export function LandingHero() {
                     a banner generator
                   </span>{" "}
                   <span className="mx-auto mt-5 block max-w-md text-[clamp(1rem,0.9rem+0.4vw,1.125rem)] leading-relaxed font-medium tracking-normal text-pretty text-muted sm:mt-6">
-                    Create profile banners you actually want to use
+                    {SITE_TAGLINE}
                   </span>
                 </h1>
               </div>

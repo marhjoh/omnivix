@@ -12,7 +12,7 @@
   --color-danger: var(--danger);
 }
 
-/* App chrome tokens: server sets exactly one of data-theme="dark" | "light" on <html>. */
+/* App chrome tokens: THEME_INIT_SCRIPT (app/layout.tsx) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
@@ -71,15 +71,27 @@ body {
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
-    background: var(--accent);
-    border: 1px solid var(--accent);
-    color: #fff;
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
     cursor: pointer;
     /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
     transition-property: background-color, border-color, box-shadow, color;
     transition-duration: 0.15s;
+  }
+
+  .btn-primary:disabled,
+  .btn-secondary:disabled,
+  .btn-primary,
+  .btn-secondary {
+    @apply px-4 py-2.5;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #fff;
   }
 
   .btn-primary:hover:not(:disabled) {
@@ -88,20 +100,10 @@ body {
     box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
-  .btn-primary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
-    cursor: pointer;
-    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
-    transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
   }
 
   .btn-secondary:hover:not(:disabled) {
@@ -109,20 +111,10 @@ body {
     border-color: var(--accent);
   }
 
-  .btn-secondary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
     background: transparent;
     border: 1px solid transparent;
     color: var(--muted);
-    cursor: pointer;
-    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
-    transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
   }
 
   .btn-ghost:hover:not(:disabled) {

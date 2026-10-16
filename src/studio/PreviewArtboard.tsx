@@ -4,8 +4,9 @@ import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
 import { RenderData } from "@/src/templates/renderers/types";
-import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import {
+  type PreviewContentState,
+  type PreviewProblem,
   PreviewEmptyState,
   PreviewErrorState,
   PreviewFrame,
@@ -49,7 +50,7 @@ export function PreviewArtboard({
 }) {
   const dims = BANNER_SIZES[size];
   const { meta } = templateRegistry[templateId];
-  const emptyCopy = previewEmptyCopy(meta.needsUsername ?? false);
+  const emptyCopy = previewEmptyCopy(meta.needsUsername);
   const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const scale = available ? fitScale(available, dims) : null;
