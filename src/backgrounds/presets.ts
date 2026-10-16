@@ -3,7 +3,7 @@
  *
  * Photos are from Unsplash (https://unsplash.com/license), vendored in-repo for reliable export and
  * preview. `pnpm backgrounds` regenerates them; see `scripts/backgrounds.mts`. The abstract SVGs
- * are hand-written. Old preset paths redirect to these in `next.config.ts`.
+ * are hand-written.
  */
 interface BackgroundPreset {
   id: string;
