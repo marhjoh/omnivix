@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.4.0](https://github.com/marhjoh/omnivix/compare/v1.3.1...v1.4.0) (2026-10-16)
+
+
+### Features
+
+* accept larger and AVIF background uploads ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* move and zoom the banner background ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* render the studio's GitHub data on the server so the banner shows on first paint ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* replace background presets with sharper, varied images ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+
+
+### Bug Fixes
+
+* consistent wording and accessibility in the studio ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* harden the export and GitHub routes and validate banner settings on the server ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* keep the studio preview steady while data and backgrounds load ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* keep the username in the username dialog ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* only use public https image links as backgrounds ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* render saved studio settings from cookies ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* send uploaded backgrounds to the export ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+* show studio problems as toasts and preview states, with input limits ([f3297ee](https://github.com/marhjoh/omnivix/commit/f3297eed0f8909c1948062dd5675a4c7d40f4fab))
+
 ## [1.3.1](https://github.com/marhjoh/omnivix/compare/v1.3.0...v1.3.1) (2026-10-14)
 
 
