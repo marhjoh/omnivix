@@ -1,5 +1,22 @@
 import Link from "next/link";
-import { Download, Loader2, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
+import { useId } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Loader2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  User,
+} from "lucide-react";
+import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
+import {
+  DropdownGroupLabel,
+  DropdownList,
+  DropdownOption,
+  DropdownRoot,
+  useDropdown,
+} from "@/src/ui/Dropdown";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
@@ -15,6 +32,9 @@ export function TopBar({
   onChangeUsername,
   sidebarExpanded,
   onToggleSidebar,
+  pixelRatio,
+  onPixelRatioChange,
+  bannerSize,
 }: {
   title: string;
   onDownload: () => void;
@@ -26,8 +46,14 @@ export function TopBar({
   onChangeUsername: () => void;
   sidebarExpanded: boolean;
   onToggleSidebar: () => void;
+  pixelRatio: ExportPixelRatio;
+  onPixelRatioChange: (ratio: ExportPixelRatio) => void;
+  /** The chosen format's size at 1×, for the pixel sizes in the resolution menu. */
+  bannerSize: { width: number; height: number };
 }) {
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
+  const resolutionMenu = useDropdown(useId());
+  const MenuChevron = resolutionMenu.open ? ChevronUp : ChevronDown;
   return (
     <>
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
@@ -100,27 +126,64 @@ export function TopBar({
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        {/* 36px tall and round like the other header controls; icon-only on phones (aria-label keeps the name). */}
-        <button
-          className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
-          onClick={onDownload}
-          disabled={isDownloading || exportBlocked}
-          aria-label={isDownloading ? "Exporting…" : "Download PNG"}
-          aria-busy={isDownloading}
-          type="button"
-        >
-          {isDownloading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="hidden sm:inline">Exporting&hellip;</span>
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download PNG</span>
-            </>
-          )}
-        </button>
+        {/*
+          36px tall and round like the other header controls; icon-only on phones (aria-label keeps
+          the name). The chevron half opens the resolution menu.
+        */}
+        <DropdownRoot dropdown={resolutionMenu} className="relative flex shrink-0">
+          <button
+            className="btn-primary h-9 w-9 rounded-l-full rounded-r-none p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
+            onClick={onDownload}
+            disabled={isDownloading || exportBlocked}
+            aria-label={isDownloading ? "Exporting…" : "Download PNG"}
+            aria-busy={isDownloading}
+            type="button"
+          >
+            {isDownloading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="hidden sm:inline">Exporting&hellip;</span>
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Download PNG</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            id={resolutionMenu.triggerId}
+            className="btn-primary h-9 w-8 rounded-l-none rounded-r-full border-l-white/30 p-0"
+            onClick={() => resolutionMenu.setOpen((open) => !open)}
+            disabled={isDownloading}
+            aria-haspopup="listbox"
+            aria-expanded={resolutionMenu.open}
+            aria-controls={resolutionMenu.open ? resolutionMenu.listId : undefined}
+            aria-label={`Download resolution: ${pixelRatio}×`}
+          >
+            <MenuChevron className="h-4 w-4" aria-hidden />
+          </button>
+          <DropdownList
+            dropdown={resolutionMenu}
+            label="Download resolution"
+            className="right-0 w-max"
+          >
+            <DropdownGroupLabel>Resolution</DropdownGroupLabel>
+            {EXPORT_PIXEL_RATIOS.map((ratio) => (
+              <DropdownOption
+                key={ratio}
+                selected={ratio === pixelRatio}
+                onSelect={() => {
+                  onPixelRatioChange(ratio);
+                  resolutionMenu.close();
+                }}
+              >
+                {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
+              </DropdownOption>
+            ))}
+          </DropdownList>
+        </DropdownRoot>
       </HoverHighlightGroup>
     </>
   );

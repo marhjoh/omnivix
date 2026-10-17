@@ -2,7 +2,7 @@ import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
-import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
+import { EXPORT_PIXEL_RATIO, type ExportPixelRatio } from "@/src/export/viewport";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
@@ -57,7 +57,7 @@ export async function captureBannerPng({
 }: {
   url: string;
   size: BannerSize;
-  pixelRatio?: 1 | 2 | 3;
+  pixelRatio?: ExportPixelRatio;
   /** Uploaded or linked background, served at `EXPORT_BACKGROUND_PATH`. */
   background?: ExportBackground;
 }) {
