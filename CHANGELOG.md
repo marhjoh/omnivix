@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/marhjoh/omnivix/compare/v1.4.1...v1.4.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* render the repo social preview at the site's Open Graph size ([#135](https://github.com/marhjoh/omnivix/issues/135)) ([26a7ff5](https://github.com/marhjoh/omnivix/commit/26a7ff54a51791331c914e4e0b99e7630bbcb290))
+
 ## [1.4.1](https://github.com/marhjoh/omnivix/compare/v1.4.0...v1.4.1) (2026-10-16)
 
 
