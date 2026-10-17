@@ -83,6 +83,11 @@ body {
 
   .btn-primary:disabled,
   .btn-secondary:disabled,
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
   .btn-primary,
   .btn-secondary {
     @apply px-4 py-2.5;
@@ -120,10 +125,5 @@ body {
   .btn-ghost:hover:not(:disabled) {
     color: var(--text);
     background: var(--surface);
-  }
-
-  .btn-ghost:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
   }
 }
