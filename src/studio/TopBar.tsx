@@ -171,32 +171,37 @@ export function TopBar({
             <MenuChevron className="h-4 w-4" aria-hidden />
           </button>
           <DropdownList dropdown={optionsMenu} label="Download options" className="right-0 w-max">
-            <DropdownGroupLabel>Resolution</DropdownGroupLabel>
-            {EXPORT_PIXEL_RATIOS.map((ratio) => (
-              <DropdownOption
-                key={ratio}
-                selected={ratio === pixelRatio}
-                onSelect={() => {
-                  onPixelRatioChange(ratio);
-                  optionsMenu.close();
-                }}
-              >
-                {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
-              </DropdownOption>
-            ))}
-            <DropdownGroupLabel>Format</DropdownGroupLabel>
-            {EXPORT_FORMATS.map((option) => (
-              <DropdownOption
-                key={option}
-                selected={option === format}
-                onSelect={() => {
-                  onFormatChange(option);
-                  optionsMenu.close();
-                }}
-              >
-                {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
-              </DropdownOption>
-            ))}
+            {/* One choice per group, so screen readers know the two selected options are separate. */}
+            <div role="group" aria-label="Resolution">
+              <DropdownGroupLabel>Resolution</DropdownGroupLabel>
+              {EXPORT_PIXEL_RATIOS.map((ratio) => (
+                <DropdownOption
+                  key={ratio}
+                  selected={ratio === pixelRatio}
+                  onSelect={() => {
+                    onPixelRatioChange(ratio);
+                    optionsMenu.close();
+                  }}
+                >
+                  {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
+                </DropdownOption>
+              ))}
+            </div>
+            <div role="group" aria-label="Format">
+              <DropdownGroupLabel>Format</DropdownGroupLabel>
+              {EXPORT_FORMATS.map((option) => (
+                <DropdownOption
+                  key={option}
+                  selected={option === format}
+                  onSelect={() => {
+                    onFormatChange(option);
+                    optionsMenu.close();
+                  }}
+                >
+                  {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
+                </DropdownOption>
+              ))}
+            </div>
           </DropdownList>
         </DropdownRoot>
       </HoverHighlightGroup>
