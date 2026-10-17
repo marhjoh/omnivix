@@ -3,6 +3,7 @@ import { useId } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  Copy,
   Download,
   Loader2,
   PanelLeftClose,
@@ -26,7 +27,8 @@ import { ThemedIcon } from "@/src/theme/ThemedBrand";
 export function TopBar({
   title,
   onDownload,
-  isDownloading,
+  onCopy,
+  exporting,
   exportBlocked,
   username,
   needsUsername,
@@ -41,7 +43,9 @@ export function TopBar({
 }: {
   title: string;
   onDownload: () => void;
-  isDownloading: boolean;
+  onCopy: () => void;
+  /** The export that's running, if any; both buttons wait for it. */
+  exporting: "download" | "copy" | null;
   /** Nothing to export yet (or a problem with it); the button is disabled. */
   exportBlocked: boolean;
   username: string;
@@ -59,6 +63,8 @@ export function TopBar({
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
   const optionsMenu = useDropdown(useId());
   const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
+  const isDownloading = exporting === "download";
+  const isCopying = exporting === "copy";
   const MenuChevron = optionsMenu.open ? ChevronUp : ChevronDown;
   return (
     <>
@@ -132,6 +138,24 @@ export function TopBar({
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
+        {/* Always a PNG: browsers only put PNG images on the clipboard. */}
+        <HoverHighlightItem id="copy">
+          <button
+            type="button"
+            onClick={onCopy}
+            disabled={exporting !== null || exportBlocked}
+            aria-label={isCopying ? "Copying…" : "Copy image"}
+            aria-busy={isCopying}
+            className={`${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`}
+          >
+            {isCopying ? (
+              <Loader2 className="h-[18px] w-[18px] shrink-0 animate-spin" />
+            ) : (
+              <Copy className="h-[18px] w-[18px] shrink-0" />
+            )}
+            <span className="hidden sm:inline">Copy image</span>
+          </button>
+        </HoverHighlightItem>
         {/*
           36px tall and round like the other header controls; icon-only on phones (aria-label keeps
           the name). The chevron half opens the resolution and format menu.
@@ -140,7 +164,7 @@ export function TopBar({
           <button
             className="btn-primary h-9 w-9 rounded-l-full rounded-r-none p-0 sm:w-auto sm:min-w-[10.5rem] sm:px-4"
             onClick={onDownload}
-            disabled={isDownloading || exportBlocked}
+            disabled={exporting !== null || exportBlocked}
             aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
             aria-busy={isDownloading}
             type="button"
@@ -162,7 +186,7 @@ export function TopBar({
             id={optionsMenu.triggerId}
             className="btn-primary h-9 w-8 rounded-l-none rounded-r-full border-l-white/30 p-0"
             onClick={() => optionsMenu.setOpen((open) => !open)}
-            disabled={isDownloading}
+            disabled={exporting !== null}
             aria-haspopup="listbox"
             aria-expanded={optionsMenu.open}
             aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}

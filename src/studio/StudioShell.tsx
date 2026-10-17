@@ -497,12 +497,16 @@ export function StudioShell({
     setRetryNonces((n) => ({ ...n, repos: n.repos + 1 }));
   }, []);
 
-  const [isDownloading, setIsDownloading] = useState(false);
+  /** Which export is running: one at a time, since both use the same headless browser. */
+  const [exporting, setExporting] = useState<"download" | "copy" | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const showError = useCallback((message: string) => {
     const id = Date.now();
     setToast({ id, message });
     return id;
+  }, []);
+  const showSuccess = useCallback((message: string) => {
+    setToast({ id: Date.now(), message, tone: "success" });
   }, []);
   /** Hides the toast; with an id, only if that toast is still the one showing. */
   const dismissToast = useCallback((id?: number) => {
@@ -619,12 +623,11 @@ export function StudioShell({
       shownBackground !== backgroundFields,
   });
 
-  async function onDownload() {
-    if (exportBlocked) return;
-    setIsDownloading(true);
-    dismissToast();
+  /** Exports the banner; a failure throws an Error whose message can be shown as is. */
+  async function exportBanner(exportFormat: ExportFormat): Promise<Blob> {
+    let response: Response;
     try {
-      const response = await fetch("/api/export", {
+      response = await fetch("/api/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -632,16 +635,26 @@ export function StudioShell({
           size,
           state,
           pixelRatio,
-          format,
+          format: exportFormat,
           uiTheme: appTheme,
         }),
       });
-      if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as { error?: string };
-        showError(body.error ?? "Couldn't export the banner. Try again.");
-        return;
-      }
-      const blob = await response.blob();
+    } catch {
+      throw new Error("Couldn't reach the server. Check your connection and try again.");
+    }
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? "Couldn't export the banner. Try again.");
+    }
+    return response.blob();
+  }
+
+  async function onDownload() {
+    if (exportBlocked || exporting) return;
+    setExporting("download");
+    dismissToast();
+    try {
+      const blob = await exportBanner(format);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -649,10 +662,35 @@ export function StudioShell({
       anchor.download = `omnivix-${templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[format].extension}`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
-    } catch {
-      showError("Couldn't reach the server. Check your connection and try again.");
+    } catch (error) {
+      showError((error as Error).message);
     } finally {
-      setIsDownloading(false);
+      setExporting(null);
+    }
+  }
+
+  async function onCopy() {
+    if (exportBlocked || exporting) return;
+    dismissToast();
+    if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
+      showError("This browser can't copy images. Download the banner instead.");
+      return;
+    }
+    setExporting("copy");
+    // Browsers only put PNG images on the clipboard. Safari only allows the write during the
+    // click, so the image goes in as a promise that resolves when the export is done.
+    const png = exportBanner("png");
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+      showSuccess("Banner copied to the clipboard.");
+    } catch {
+      const exportError = await png.then(
+        () => null,
+        (error: Error) => error.message,
+      );
+      showError(exportError ?? "Couldn't copy the banner. Download it instead.");
+    } finally {
+      setExporting(null);
     }
   }
 
@@ -675,7 +713,8 @@ export function StudioShell({
         <TopBar
           title={definition.meta.title}
           onDownload={onDownload}
-          isDownloading={isDownloading}
+          exporting={exporting}
+          onCopy={onCopy}
           exportBlocked={exportBlocked}
           username={username}
           needsUsername={needsUsername}

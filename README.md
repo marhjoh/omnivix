@@ -25,7 +25,7 @@
 - **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
 - **Backgrounds:** 14 built-in city, nature and abstract backgrounds, a link to an https image, or your own upload (PNG, JPEG, WebP, AVIF or HEIC, up to 12 MB). Drag it into place and zoom up to 150%.
 - **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
-- **Export:** PNG or JPEG at 1×, 2× or 3× resolution (3× is 4752 × 1188 for LinkedIn); the last choice is remembered
+- **Export:** PNG or JPEG at 1×, 2× or 3× resolution (3× is 4752 × 1188 for LinkedIn); the last choice is remembered. Or copy the banner to the clipboard as a PNG
 - **Studio:** light and dark mode, and works on phones as well as desktop
 - **Privacy:** no sign-in, and only public GitHub data
 
