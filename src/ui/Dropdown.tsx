@@ -125,8 +125,14 @@ export function DropdownTrigger({
 export function DropdownList({
   dropdown,
   label,
+  className = "right-0 left-0",
   children,
-}: PropsWithChildren<{ dropdown: Dropdown; label: string }>) {
+}: PropsWithChildren<{
+  dropdown: Dropdown;
+  label: string;
+  /** Horizontal placement; by default the list is as wide as its root. */
+  className?: string;
+}>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
   return (
@@ -135,7 +141,7 @@ export function DropdownList({
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg"
+      className={`absolute top-full z-50 mt-1 max-h-64 ${className} overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg`}
     >
       {children}
     </div>

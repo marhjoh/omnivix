@@ -9,6 +9,7 @@ import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
+import { parsePixelRatioCookie, PIXEL_RATIO_COOKIE_NAME } from "@/src/studio/pixelRatioCookie";
 import {
   parseSettingsCookie,
   parseUsernameCookie,
@@ -68,6 +69,7 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
         initialSidebarCollapsed={parseSidebarCollapsedCookie(
           cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
         )}
+        initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
         savedSettings={savedSettings}
         savedUsername={savedUsername}
         initialGithubData={initialGithubData}

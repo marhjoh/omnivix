@@ -40,7 +40,12 @@ import type {
   RepoNormalized,
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
+import type { ExportPixelRatio } from "@/src/export/viewport";
+import {
+  parsePixelRatioCookie,
+  PIXEL_RATIO_COOKIE_NAME,
+  setPixelRatioCookieClient,
+} from "@/src/studio/pixelRatioCookie";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -231,12 +236,15 @@ function subscribePhone(onChange: () => void) {
 export function StudioShell({
   templateId,
   initialSidebarCollapsed,
+  initialPixelRatio,
   savedSettings,
   savedUsername,
   initialGithubData,
 }: {
   templateId: TemplateId;
   initialSidebarCollapsed: boolean;
+  /** Download resolution from its cookie (3× when none is saved). */
+  initialPixelRatio: ExportPixelRatio;
   /** This template's settings from its cookie (null: none saved yet). */
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
@@ -262,6 +270,17 @@ export function StudioShell({
   const [state, setState] = useState<Record<string, unknown>>(() =>
     applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
   );
+
+  // Remembered per browser; read again on the client for the same reason as the settings above.
+  const [pixelRatio, setPixelRatio] = useState(() =>
+    typeof document === "undefined"
+      ? initialPixelRatio
+      : parsePixelRatioCookie(readCookieClient(PIXEL_RATIO_COOKIE_NAME)),
+  );
+  function changePixelRatio(ratio: ExportPixelRatio) {
+    setPixelRatio(ratio);
+    setPixelRatioCookieClient(ratio);
+  }
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarCollapsed);
@@ -605,7 +624,7 @@ export function StudioShell({
           templateId,
           size,
           state,
-          pixelRatio: EXPORT_PIXEL_RATIO,
+          pixelRatio,
           uiTheme: appTheme,
         }),
       });
@@ -655,6 +674,9 @@ export function StudioShell({
           onChangeUsername={openUsernameModal}
           sidebarExpanded={sidebarExpanded}
           onToggleSidebar={toggleSidebar}
+          pixelRatio={pixelRatio}
+          onPixelRatioChange={changePixelRatio}
+          bannerSize={BANNER_SIZES[size]}
         />
       </header>
       <div

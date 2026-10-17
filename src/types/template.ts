@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
+import type { ExportPixelRatio } from "@/src/export/viewport";
 
 export const TEMPLATE_IDS = [
   "github-banner",
@@ -59,7 +60,7 @@ export interface ExportRequest {
   templateId: TemplateId;
   size: BannerSize;
   state: Record<string, unknown>;
-  pixelRatio?: 1 | 2 | 3;
+  pixelRatio?: ExportPixelRatio;
   /** Matches editor app theme so PNG matches on-screen preview. */
   uiTheme?: Theme;
 }

@@ -1,7 +1,7 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { MAX_BACKGROUND_UPLOAD_BYTES } from "@/src/lib/backgroundImageUpload";
 import { BANNER_SIZES } from "@/src/lib/sizes";
-import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
+import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { SITE_LICENSE } from "@/src/lib/site";
 import { SITE_LINKS } from "@/src/lib/site-links";
 
@@ -15,6 +15,12 @@ function bannerFormatsSummary() {
         `${f.label} (${f.width} × ${f.height} px) for ${f.platforms.map((p) => p.name).join(", ")}`,
     )
     .join("; ");
+}
+
+/** "1×, 2× or 3×" */
+function pixelRatiosSummary() {
+  const ratios = EXPORT_PIXEL_RATIOS.map((ratio) => `${ratio}×`);
+  return `${ratios.slice(0, -1).join(", ")} or ${ratios.at(-1)}`;
 }
 
 export const HOW_IT_WORKS = [
@@ -53,7 +59,7 @@ export const FAQ = [
   },
   {
     question: "Which banner sizes does Omnivix support?",
-    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG at ${EXPORT_PIXEL_RATIO}× resolution, so they stay sharp on high-resolution screens.`,
+    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG at ${pixelRatiosSummary()} resolution: 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens.`,
   },
   {
     question: "Can I use my own background image?",
