@@ -9,7 +9,12 @@ import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
-import { parsePixelRatioCookie, PIXEL_RATIO_COOKIE_NAME } from "@/src/studio/pixelRatioCookie";
+import {
+  FORMAT_COOKIE_NAME,
+  parseFormatCookie,
+  parsePixelRatioCookie,
+  PIXEL_RATIO_COOKIE_NAME,
+} from "@/src/studio/downloadCookies";
 import {
   parseSettingsCookie,
   parseUsernameCookie,
@@ -70,6 +75,7 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
           cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
         )}
         initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
+        initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
         savedSettings={savedSettings}
         savedUsername={savedUsername}
         initialGithubData={initialGithubData}

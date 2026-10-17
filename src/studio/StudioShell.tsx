@@ -41,11 +41,15 @@ import type {
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio } from "@/src/export/viewport";
+import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import {
+  FORMAT_COOKIE_NAME,
+  parseFormatCookie,
   parsePixelRatioCookie,
   PIXEL_RATIO_COOKIE_NAME,
+  setFormatCookieClient,
   setPixelRatioCookieClient,
-} from "@/src/studio/pixelRatioCookie";
+} from "@/src/studio/downloadCookies";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -237,6 +241,7 @@ export function StudioShell({
   templateId,
   initialSidebarCollapsed,
   initialPixelRatio,
+  initialFormat,
   savedSettings,
   savedUsername,
   initialGithubData,
@@ -245,6 +250,8 @@ export function StudioShell({
   initialSidebarCollapsed: boolean;
   /** Download resolution from its cookie (3× when none is saved). */
   initialPixelRatio: ExportPixelRatio;
+  /** Download format from its cookie (PNG when none is saved). */
+  initialFormat: ExportFormat;
   /** This template's settings from its cookie (null: none saved yet). */
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
@@ -280,6 +287,15 @@ export function StudioShell({
   function changePixelRatio(ratio: ExportPixelRatio) {
     setPixelRatio(ratio);
     setPixelRatioCookieClient(ratio);
+  }
+  const [format, setFormat] = useState(() =>
+    typeof document === "undefined"
+      ? initialFormat
+      : parseFormatCookie(readCookieClient(FORMAT_COOKIE_NAME)),
+  );
+  function changeFormat(next: ExportFormat) {
+    setFormat(next);
+    setFormatCookieClient(next);
   }
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
@@ -625,6 +641,7 @@ export function StudioShell({
           size,
           state,
           pixelRatio,
+          format,
           uiTheme: appTheme,
         }),
       });
@@ -638,7 +655,7 @@ export function StudioShell({
       const anchor = document.createElement("a");
       anchor.href = url;
       const ratioSlug = BANNER_SIZES[size].label.replace(":", "x");
-      anchor.download = `omnivix-${templateId}-${ratioSlug}.png`;
+      anchor.download = `omnivix-${templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[format].extension}`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {
@@ -676,6 +693,8 @@ export function StudioShell({
           onToggleSidebar={toggleSidebar}
           pixelRatio={pixelRatio}
           onPixelRatioChange={changePixelRatio}
+          format={format}
+          onFormatChange={changeFormat}
           bannerSize={BANNER_SIZES[size]}
         />
       </header>

@@ -4,7 +4,7 @@ import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
 
 /**
  * Path the render page loads an uploaded or linked background from during export. No route
- * serves it: Playwright answers the request from memory (see `captureBannerPng`), so an upload
+ * serves it: Playwright answers the request from memory (see `captureBanner`), so an upload
  * never has to fit in the render URL's token and Playwright never loads a link itself.
  */
 export const EXPORT_BACKGROUND_PATH = "/__export/background";

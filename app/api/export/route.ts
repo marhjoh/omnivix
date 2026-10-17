@@ -4,7 +4,8 @@ import { resolveExportBackground } from "@/src/export/background";
 import { createExportToken } from "@/src/export/export-token";
 import { getPublicOrigin } from "@/src/export/request-origin";
 import { buildRenderUrl } from "@/src/export/render-url";
-import { captureBannerPng } from "@/src/export/playwright";
+import { captureBanner } from "@/src/export/playwright";
+import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
@@ -42,17 +43,20 @@ export async function POST(request: NextRequest) {
     if (renderUrl.length > MAX_RENDER_URL_LENGTH) {
       return error("Banner settings are too long to export. Shorten the text.", 413);
     }
-    const pngBuffer = await captureBannerPng({
+    const format = payload.format ?? EXPORT_FORMAT;
+    const image = await captureBanner({
       url: renderUrl,
       size: payload.size,
       pixelRatio: payload.pixelRatio,
+      format,
       background,
     });
-    return new NextResponse(new Uint8Array(pngBuffer), {
+    const { contentType, extension } = EXPORT_FORMAT_DETAILS[format];
+    return new NextResponse(new Uint8Array(image), {
       status: 200,
       headers: {
-        "Content-Type": "image/png",
-        "Content-Disposition": `attachment; filename="${payload.templateId}.png"`,
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${payload.templateId}.${extension}"`,
       },
     });
   } catch (exportError) {
