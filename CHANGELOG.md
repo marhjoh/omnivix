@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/marhjoh/omnivix/compare/v1.6.0...v1.7.0) (2026-10-17)
+
+
+### Features
+
+* copy the banner to the clipboard ([#142](https://github.com/marhjoh/omnivix/issues/142)) ([0412073](https://github.com/marhjoh/omnivix/commit/04120734d0a83f39fc95a11a47586047e962022e))
+
 ## [1.6.0](https://github.com/marhjoh/omnivix/compare/v1.5.0...v1.6.0) (2026-10-17)
 
 
