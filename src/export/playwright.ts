@@ -3,7 +3,7 @@ import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
 import { EXPORT_PIXEL_RATIO, type ExportPixelRatio } from "@/src/export/viewport";
-import { EXPORT_FORMAT, type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
+import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
@@ -54,13 +54,13 @@ export async function captureBanner({
   url,
   size,
   pixelRatio = EXPORT_PIXEL_RATIO,
-  format = EXPORT_FORMAT,
+  format,
   background,
 }: {
   url: string;
   size: BannerSize;
   pixelRatio?: ExportPixelRatio;
-  format?: ExportFormat;
+  format: ExportFormat;
   /** Uploaded or linked background, served at `EXPORT_BACKGROUND_PATH`. */
   background?: ExportBackground;
 }) {

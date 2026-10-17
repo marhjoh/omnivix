@@ -47,9 +47,8 @@ import {
   parseFormatCookie,
   parsePixelRatioCookie,
   PIXEL_RATIO_COOKIE_NAME,
-  setFormatCookieClient,
-  setPixelRatioCookieClient,
 } from "@/src/studio/downloadCookies";
+import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -278,25 +277,17 @@ export function StudioShell({
     applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
   );
 
-  // Remembered per browser; read again on the client for the same reason as the settings above.
-  const [pixelRatio, setPixelRatio] = useState(() =>
-    typeof document === "undefined"
-      ? initialPixelRatio
-      : parsePixelRatioCookie(readCookieClient(PIXEL_RATIO_COOKIE_NAME)),
+  // Download resolution and format, remembered per browser.
+  const [pixelRatio, changePixelRatio] = useCookieChoice(
+    PIXEL_RATIO_COOKIE_NAME,
+    parsePixelRatioCookie,
+    initialPixelRatio,
   );
-  function changePixelRatio(ratio: ExportPixelRatio) {
-    setPixelRatio(ratio);
-    setPixelRatioCookieClient(ratio);
-  }
-  const [format, setFormat] = useState(() =>
-    typeof document === "undefined"
-      ? initialFormat
-      : parseFormatCookie(readCookieClient(FORMAT_COOKIE_NAME)),
+  const [format, changeFormat] = useCookieChoice(
+    FORMAT_COOKIE_NAME,
+    parseFormatCookie,
+    initialFormat,
   );
-  function changeFormat(next: ExportFormat) {
-    setFormat(next);
-    setFormatCookieClient(next);
-  }
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarCollapsed);
