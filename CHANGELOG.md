@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/marhjoh/omnivix/compare/v1.4.2...v1.5.0) (2026-10-17)
+
+
+### Features
+
+* choose the download resolution ([#137](https://github.com/marhjoh/omnivix/issues/137)) ([d7280f1](https://github.com/marhjoh/omnivix/commit/d7280f1aedd1043708897a33ae9c3f521a156cda))
+
 ## [1.4.2](https://github.com/marhjoh/omnivix/compare/v1.4.1...v1.4.2) (2026-10-17)
 
 
