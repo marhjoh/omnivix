@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/marhjoh/omnivix/compare/v1.5.0...v1.6.0) (2026-10-17)
+
+
+### Features
+
+* download banners as JPEG ([#139](https://github.com/marhjoh/omnivix/issues/139)) ([b087fd7](https://github.com/marhjoh/omnivix/commit/b087fd77e44ead2cbd49d3aa344d4b44dd50404f))
+
 ## [1.5.0](https://github.com/marhjoh/omnivix/compare/v1.4.2...v1.5.0) (2026-10-17)
 
 
