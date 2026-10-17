@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { useId } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
   Copy,
   Download,
   Loader2,
   PanelLeftClose,
   PanelLeftOpen,
+  SlidersHorizontal,
   User,
 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
@@ -65,7 +64,6 @@ export function TopBar({
   const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
-  const MenuChevron = optionsMenu.open ? ChevronUp : ChevronDown;
   return (
     <>
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
@@ -138,7 +136,63 @@ export function TopBar({
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        {/* Always a PNG: browsers only put PNG images on the clipboard. */}
+        {/*
+          Resolution applies to Copy and Download; format only to Download, since Copy is always a
+          PNG. The current choice is the label from sm, an icon on phones.
+        */}
+        <HoverHighlightItem id="export-options">
+          <DropdownRoot dropdown={optionsMenu} className="relative">
+            <button
+              type="button"
+              id={optionsMenu.triggerId}
+              onClick={() => optionsMenu.setOpen((open) => !open)}
+              disabled={exporting !== null}
+              aria-haspopup="listbox"
+              aria-expanded={optionsMenu.open}
+              aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}
+              aria-label={`Export options: ${pixelRatio}×, ${formatLabel}`}
+              className={`${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`}
+            >
+              <SlidersHorizontal className="h-[18px] w-[18px] shrink-0" />
+              <span className="hidden whitespace-nowrap sm:inline">
+                {pixelRatio}× · {formatLabel}
+              </span>
+            </button>
+            <DropdownList dropdown={optionsMenu} label="Export options" className="right-0 w-max">
+              {/* One choice per group, so screen readers know the two selected options are separate. */}
+              <div role="group" aria-label="Resolution">
+                <DropdownGroupLabel>Resolution</DropdownGroupLabel>
+                {EXPORT_PIXEL_RATIOS.map((ratio) => (
+                  <DropdownOption
+                    key={ratio}
+                    selected={ratio === pixelRatio}
+                    onSelect={() => {
+                      onPixelRatioChange(ratio);
+                      optionsMenu.close();
+                    }}
+                  >
+                    {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
+                  </DropdownOption>
+                ))}
+              </div>
+              <div role="group" aria-label="Download format">
+                <DropdownGroupLabel>Download format</DropdownGroupLabel>
+                {EXPORT_FORMATS.map((option) => (
+                  <DropdownOption
+                    key={option}
+                    selected={option === format}
+                    onSelect={() => {
+                      onFormatChange(option);
+                      optionsMenu.close();
+                    }}
+                  >
+                    {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
+                  </DropdownOption>
+                ))}
+              </div>
+            </DropdownList>
+          </DropdownRoot>
+        </HoverHighlightItem>
         <HoverHighlightItem id="copy">
           <button
             type="button"
@@ -153,81 +207,33 @@ export function TopBar({
             ) : (
               <Copy className="h-[18px] w-[18px] shrink-0" />
             )}
-            <span className="hidden sm:inline">Copy image</span>
+            <span className="hidden sm:inline">Copy</span>
           </button>
         </HoverHighlightItem>
         {/*
-          36px tall and round like the other header controls; icon-only on phones (aria-label keeps
-          the name). The chevron half opens the resolution and format menu.
+          36px tall and round like the other header controls; icon-only on phones. The aria-labels
+          name the format and what's copied, which the visible labels leave to the options button.
         */}
-        <DropdownRoot dropdown={optionsMenu} className="relative flex shrink-0">
-          <button
-            className="btn-primary h-9 w-9 rounded-l-full rounded-r-none p-0 sm:w-auto sm:min-w-[10.5rem] sm:px-4"
-            onClick={onDownload}
-            disabled={exporting !== null || exportBlocked}
-            aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
-            aria-busy={isDownloading}
-            type="button"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="hidden sm:inline">Exporting&hellip;</span>
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Download {formatLabel}</span>
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            id={optionsMenu.triggerId}
-            className="btn-primary h-9 w-8 rounded-l-none rounded-r-full border-l-white/30 p-0"
-            onClick={() => optionsMenu.setOpen((open) => !open)}
-            disabled={exporting !== null}
-            aria-haspopup="listbox"
-            aria-expanded={optionsMenu.open}
-            aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}
-            aria-label={`Download options: ${pixelRatio}×, ${formatLabel}`}
-          >
-            <MenuChevron className="h-4 w-4" aria-hidden />
-          </button>
-          <DropdownList dropdown={optionsMenu} label="Download options" className="right-0 w-max">
-            {/* One choice per group, so screen readers know the two selected options are separate. */}
-            <div role="group" aria-label="Resolution">
-              <DropdownGroupLabel>Resolution</DropdownGroupLabel>
-              {EXPORT_PIXEL_RATIOS.map((ratio) => (
-                <DropdownOption
-                  key={ratio}
-                  selected={ratio === pixelRatio}
-                  onSelect={() => {
-                    onPixelRatioChange(ratio);
-                    optionsMenu.close();
-                  }}
-                >
-                  {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
-                </DropdownOption>
-              ))}
-            </div>
-            <div role="group" aria-label="Format">
-              <DropdownGroupLabel>Format</DropdownGroupLabel>
-              {EXPORT_FORMATS.map((option) => (
-                <DropdownOption
-                  key={option}
-                  selected={option === format}
-                  onSelect={() => {
-                    onFormatChange(option);
-                    optionsMenu.close();
-                  }}
-                >
-                  {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
-                </DropdownOption>
-              ))}
-            </div>
-          </DropdownList>
-        </DropdownRoot>
+        <button
+          className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[8.5rem] sm:px-4"
+          onClick={onDownload}
+          disabled={exporting !== null || exportBlocked}
+          aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
+          aria-busy={isDownloading}
+          type="button"
+        >
+          {isDownloading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="hidden sm:inline">Exporting&hellip;</span>
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Download</span>
+            </>
+          )}
+        </button>
       </HoverHighlightGroup>
     </>
   );
