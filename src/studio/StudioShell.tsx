@@ -23,6 +23,8 @@ import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
+import { ExportControls } from "@/src/studio/ExportControls";
+import { useBannerExport } from "@/src/studio/useBannerExport";
 import { UsernameModal } from "@/src/studio/UsernameModal";
 import {
   parseSettingsCookie,
@@ -41,7 +43,7 @@ import type {
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio } from "@/src/export/viewport";
-import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
+import type { ExportFormat } from "@/src/export/format";
 import {
   FORMAT_COOKIE_NAME,
   parseFormatCookie,
@@ -497,8 +499,6 @@ export function StudioShell({
     setRetryNonces((n) => ({ ...n, repos: n.repos + 1 }));
   }, []);
 
-  /** Which export is running: one at a time, since both use the same headless browser. */
-  const [exporting, setExporting] = useState<"download" | "copy" | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const showError = useCallback((message: string) => {
     const id = Date.now();
@@ -623,76 +623,14 @@ export function StudioShell({
       shownBackground !== backgroundFields,
   });
 
-  /** Exports the banner; a failure throws an Error whose message can be shown as is. */
-  async function exportBanner(exportFormat: ExportFormat): Promise<Blob> {
-    let response: Response;
-    try {
-      response = await fetch("/api/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateId,
-          size,
-          state,
-          pixelRatio,
-          format: exportFormat,
-          uiTheme: appTheme,
-        }),
-      });
-    } catch {
-      throw new Error("Couldn't reach the server. Check your connection and try again.");
-    }
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(body.error ?? "Couldn't export the banner. Try again.");
-    }
-    return response.blob();
-  }
-
-  async function onDownload() {
-    if (exportBlocked || exporting) return;
-    setExporting("download");
-    dismissToast();
-    try {
-      const blob = await exportBanner(format);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      const ratioSlug = BANNER_SIZES[size].label.replace(":", "x");
-      anchor.download = `omnivix-${templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[format].extension}`;
-      anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    } catch (error) {
-      showError((error as Error).message);
-    } finally {
-      setExporting(null);
-    }
-  }
-
-  async function onCopy() {
-    if (exportBlocked || exporting) return;
-    dismissToast();
-    if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
-      showError("This browser can't copy images. Download the banner instead.");
-      return;
-    }
-    setExporting("copy");
-    // Browsers only put PNG images on the clipboard. Safari only allows the write during the
-    // click, so the image goes in as a promise that resolves when the export is done.
-    const png = exportBanner("png");
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
-      showSuccess("Banner copied to the clipboard.");
-    } catch {
-      const exportError = await png.then(
-        () => null,
-        (error: Error) => error.message,
-      );
-      showError(exportError ?? "Couldn't copy the banner. Download it instead.");
-    } finally {
-      setExporting(null);
-    }
-  }
+  const bannerExport = useBannerExport({
+    request: { templateId, size, state, pixelRatio, uiTheme: appTheme },
+    format,
+    blocked: exportBlocked,
+    showError,
+    showSuccess,
+    dismissToast,
+  });
 
   function handleUsernameSubmit(newUsername: string) {
     updateState("username", newUsername);
@@ -712,21 +650,24 @@ export function StudioShell({
       <header className={styles.topbar}>
         <TopBar
           title={definition.meta.title}
-          onDownload={onDownload}
-          exporting={exporting}
-          onCopy={onCopy}
-          exportBlocked={exportBlocked}
           username={username}
           needsUsername={needsUsername}
           onChangeUsername={openUsernameModal}
           sidebarExpanded={sidebarExpanded}
           onToggleSidebar={toggleSidebar}
-          pixelRatio={pixelRatio}
-          onPixelRatioChange={changePixelRatio}
-          format={format}
-          onFormatChange={changeFormat}
-          bannerSize={BANNER_SIZES[size]}
-        />
+        >
+          <ExportControls
+            onDownload={bannerExport.download}
+            onCopy={bannerExport.copy}
+            exporting={bannerExport.exporting}
+            exportBlocked={exportBlocked}
+            pixelRatio={pixelRatio}
+            onPixelRatioChange={changePixelRatio}
+            format={format}
+            onFormatChange={changeFormat}
+            bannerSize={BANNER_SIZES[size]}
+          />
+        </TopBar>
       </header>
       <div
         className={styles.content}

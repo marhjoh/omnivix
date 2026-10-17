@@ -1,23 +1,6 @@
 import Link from "next/link";
-import { useId } from "react";
-import {
-  Copy,
-  Download,
-  Loader2,
-  PanelLeftClose,
-  PanelLeftOpen,
-  SlidersHorizontal,
-  User,
-} from "lucide-react";
-import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
-import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
-import {
-  DropdownGroupLabel,
-  DropdownList,
-  DropdownOption,
-  DropdownRoot,
-  useDropdown,
-} from "@/src/ui/Dropdown";
+import type { ReactNode } from "react";
+import { PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
@@ -25,45 +8,23 @@ import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 export function TopBar({
   title,
-  onDownload,
-  onCopy,
-  exporting,
-  exportBlocked,
   username,
   needsUsername,
   onChangeUsername,
   sidebarExpanded,
   onToggleSidebar,
-  pixelRatio,
-  onPixelRatioChange,
-  format,
-  onFormatChange,
-  bannerSize,
+  children,
 }: {
   title: string;
-  onDownload: () => void;
-  onCopy: () => void;
-  /** The export that's running, if any; both buttons wait for it. */
-  exporting: "download" | "copy" | null;
-  /** Nothing to export yet (or a problem with it); the button is disabled. */
-  exportBlocked: boolean;
   username: string;
   needsUsername: boolean;
   onChangeUsername: () => void;
   sidebarExpanded: boolean;
   onToggleSidebar: () => void;
-  pixelRatio: ExportPixelRatio;
-  onPixelRatioChange: (ratio: ExportPixelRatio) => void;
-  format: ExportFormat;
-  onFormatChange: (format: ExportFormat) => void;
-  /** The chosen format's size at 1×, for the pixel sizes in the resolution menu. */
-  bannerSize: { width: number; height: number };
+  /** The export buttons, at the end of the right group (HoverHighlightItems). */
+  children: ReactNode;
 }) {
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
-  const optionsMenu = useDropdown(useId());
-  const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
-  const isDownloading = exporting === "download";
-  const isCopying = exporting === "copy";
   return (
     <>
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
@@ -136,104 +97,7 @@ export function TopBar({
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        {/*
-          Resolution applies to Copy and Download; format only to Download, since Copy is always a
-          PNG. The current choice is the label from sm, an icon on phones.
-        */}
-        <HoverHighlightItem id="export-options">
-          <DropdownRoot dropdown={optionsMenu} className="relative">
-            <button
-              type="button"
-              id={optionsMenu.triggerId}
-              onClick={() => optionsMenu.setOpen((open) => !open)}
-              disabled={exporting !== null}
-              aria-haspopup="listbox"
-              aria-expanded={optionsMenu.open}
-              aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}
-              aria-label={`Export options: ${pixelRatio}×, ${formatLabel}`}
-              className={`${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`}
-            >
-              <SlidersHorizontal className="h-[18px] w-[18px] shrink-0" />
-              <span className="hidden whitespace-nowrap sm:inline">
-                {pixelRatio}× · {formatLabel}
-              </span>
-            </button>
-            <DropdownList dropdown={optionsMenu} label="Export options" className="right-0 w-max">
-              {/* One choice per group, so screen readers know the two selected options are separate. */}
-              <div role="group" aria-label="Resolution">
-                <DropdownGroupLabel>Resolution</DropdownGroupLabel>
-                {EXPORT_PIXEL_RATIOS.map((ratio) => (
-                  <DropdownOption
-                    key={ratio}
-                    selected={ratio === pixelRatio}
-                    onSelect={() => {
-                      onPixelRatioChange(ratio);
-                      optionsMenu.close();
-                    }}
-                  >
-                    {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
-                  </DropdownOption>
-                ))}
-              </div>
-              <div role="group" aria-label="Download format">
-                <DropdownGroupLabel>Download format</DropdownGroupLabel>
-                {EXPORT_FORMATS.map((option) => (
-                  <DropdownOption
-                    key={option}
-                    selected={option === format}
-                    onSelect={() => {
-                      onFormatChange(option);
-                      optionsMenu.close();
-                    }}
-                  >
-                    {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
-                  </DropdownOption>
-                ))}
-              </div>
-            </DropdownList>
-          </DropdownRoot>
-        </HoverHighlightItem>
-        <HoverHighlightItem id="copy">
-          <button
-            type="button"
-            onClick={onCopy}
-            disabled={exporting !== null || exportBlocked}
-            aria-label={isCopying ? "Copying…" : "Copy image"}
-            aria-busy={isCopying}
-            className={`${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`}
-          >
-            {isCopying ? (
-              <Loader2 className="h-[18px] w-[18px] shrink-0 animate-spin" />
-            ) : (
-              <Copy className="h-[18px] w-[18px] shrink-0" />
-            )}
-            <span className="hidden sm:inline">Copy</span>
-          </button>
-        </HoverHighlightItem>
-        {/*
-          36px tall and round like the other header controls; icon-only on phones. The aria-labels
-          name the format and what's copied, which the visible labels leave to the options button.
-        */}
-        <button
-          className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[8.5rem] sm:px-4"
-          onClick={onDownload}
-          disabled={exporting !== null || exportBlocked}
-          aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
-          aria-busy={isDownloading}
-          type="button"
-        >
-          {isDownloading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="hidden sm:inline">Exporting&hellip;</span>
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Download</span>
-            </>
-          )}
-        </button>
+        {children}
       </HoverHighlightGroup>
     </>
   );
