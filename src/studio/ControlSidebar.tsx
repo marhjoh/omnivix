@@ -103,7 +103,7 @@ function RepoRow({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={on}
-      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-default disabled:opacity-40 ${
+      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
         on
           ? "border-accent bg-accent/10 text-text"
           : "border-transparent text-muted enabled:hover:bg-surface"
@@ -442,7 +442,7 @@ export function ControlSidebar({
                   aria-label={field.label}
                   disabled={disabled}
                   onClick={() => onChange(field.key, !checked)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-default disabled:opacity-50 ${
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                     checked ? "bg-accent" : "bg-surface-2"
                   }`}
                 >

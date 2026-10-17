@@ -114,7 +114,7 @@ export function DropdownTrigger({
       aria-controls={open ? listId : undefined}
       disabled={disabled}
       onClick={() => setOpen((o) => !o)}
-      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors focus:outline-hidden focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/15 disabled:cursor-default disabled:opacity-50"
+      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors focus:outline-hidden focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
       <Chevron className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />

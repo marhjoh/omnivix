@@ -85,7 +85,7 @@ body {
   .btn-secondary:disabled,
   .btn-ghost:disabled {
     opacity: 0.4;
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .btn-primary,

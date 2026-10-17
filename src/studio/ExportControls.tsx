@@ -14,7 +14,7 @@ import { highlightItemClass } from "@/src/ui/highlightClasses";
 import type { ExportKind } from "@/src/studio/useBannerExport";
 
 /** Labeled from sm (the icon alone on phones); dimmed while disabled. */
-const labeledItemClass = `${highlightItemClass} disabled:cursor-default disabled:opacity-40 sm:w-auto sm:px-[9px]`;
+const labeledItemClass = `${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`;
 
 /** Export options, Copy and Download, for the studio header's right group. */
 export function ExportControls({
