@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/marhjoh/omnivix/compare/v1.7.0...v1.7.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* dim disabled primary and secondary buttons again ([#144](https://github.com/marhjoh/omnivix/issues/144)) ([dd2a960](https://github.com/marhjoh/omnivix/commit/dd2a960f36ec0274fb3de8aa68e6379d2b39ead1))
+
 ## [1.7.0](https://github.com/marhjoh/omnivix/compare/v1.6.0...v1.7.0) (2026-10-17)
 
 
