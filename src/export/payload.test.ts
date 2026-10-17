@@ -12,3 +12,13 @@ describe("exportRequestSchema pixelRatio", () => {
     expect(exportRequestSchema.safeParse({ ...request, pixelRatio }).success).toBe(false);
   });
 });
+
+describe("exportRequestSchema format", () => {
+  it.each(["png", "jpeg", undefined])("accepts %s", (format) => {
+    expect(exportRequestSchema.safeParse({ ...request, format }).success).toBe(true);
+  });
+
+  it.each(["jpg", "webp", "PNG", 1])("rejects %s", (format) => {
+    expect(exportRequestSchema.safeParse({ ...request, format }).success).toBe(false);
+  });
+});

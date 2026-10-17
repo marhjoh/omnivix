@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
+import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import {
   DropdownGroupLabel,
   DropdownList,
@@ -34,6 +35,8 @@ export function TopBar({
   onToggleSidebar,
   pixelRatio,
   onPixelRatioChange,
+  format,
+  onFormatChange,
   bannerSize,
 }: {
   title: string;
@@ -48,12 +51,15 @@ export function TopBar({
   onToggleSidebar: () => void;
   pixelRatio: ExportPixelRatio;
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
+  format: ExportFormat;
+  onFormatChange: (format: ExportFormat) => void;
   /** The chosen format's size at 1×, for the pixel sizes in the resolution menu. */
   bannerSize: { width: number; height: number };
 }) {
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
-  const resolutionMenu = useDropdown(useId());
-  const MenuChevron = resolutionMenu.open ? ChevronUp : ChevronDown;
+  const optionsMenu = useDropdown(useId());
+  const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
+  const MenuChevron = optionsMenu.open ? ChevronUp : ChevronDown;
   return (
     <>
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
@@ -128,14 +134,14 @@ export function TopBar({
         </HoverHighlightItem>
         {/*
           36px tall and round like the other header controls; icon-only on phones (aria-label keeps
-          the name). The chevron half opens the resolution menu.
+          the name). The chevron half opens the resolution and format menu.
         */}
-        <DropdownRoot dropdown={resolutionMenu} className="relative flex shrink-0">
+        <DropdownRoot dropdown={optionsMenu} className="relative flex shrink-0">
           <button
-            className="btn-primary h-9 w-9 rounded-l-full rounded-r-none p-0 sm:w-auto sm:min-w-[10rem] sm:px-4"
+            className="btn-primary h-9 w-9 rounded-l-full rounded-r-none p-0 sm:w-auto sm:min-w-[10.5rem] sm:px-4"
             onClick={onDownload}
             disabled={isDownloading || exportBlocked}
-            aria-label={isDownloading ? "Exporting…" : "Download PNG"}
+            aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
             aria-busy={isDownloading}
             type="button"
           >
@@ -147,41 +153,55 @@ export function TopBar({
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Download PNG</span>
+                <span className="hidden sm:inline">Download {formatLabel}</span>
               </>
             )}
           </button>
           <button
             type="button"
-            id={resolutionMenu.triggerId}
+            id={optionsMenu.triggerId}
             className="btn-primary h-9 w-8 rounded-l-none rounded-r-full border-l-white/30 p-0"
-            onClick={() => resolutionMenu.setOpen((open) => !open)}
+            onClick={() => optionsMenu.setOpen((open) => !open)}
             disabled={isDownloading}
             aria-haspopup="listbox"
-            aria-expanded={resolutionMenu.open}
-            aria-controls={resolutionMenu.open ? resolutionMenu.listId : undefined}
-            aria-label={`Download resolution: ${pixelRatio}×`}
+            aria-expanded={optionsMenu.open}
+            aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}
+            aria-label={`Download options: ${pixelRatio}×, ${formatLabel}`}
           >
             <MenuChevron className="h-4 w-4" aria-hidden />
           </button>
-          <DropdownList
-            dropdown={resolutionMenu}
-            label="Download resolution"
-            className="right-0 w-max"
-          >
-            <DropdownGroupLabel>Resolution</DropdownGroupLabel>
-            {EXPORT_PIXEL_RATIOS.map((ratio) => (
-              <DropdownOption
-                key={ratio}
-                selected={ratio === pixelRatio}
-                onSelect={() => {
-                  onPixelRatioChange(ratio);
-                  resolutionMenu.close();
-                }}
-              >
-                {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
-              </DropdownOption>
-            ))}
+          <DropdownList dropdown={optionsMenu} label="Download options" className="right-0 w-max">
+            {/* One choice per group, so screen readers know the two selected options are separate. */}
+            <div role="group" aria-label="Resolution">
+              <DropdownGroupLabel>Resolution</DropdownGroupLabel>
+              {EXPORT_PIXEL_RATIOS.map((ratio) => (
+                <DropdownOption
+                  key={ratio}
+                  selected={ratio === pixelRatio}
+                  onSelect={() => {
+                    onPixelRatioChange(ratio);
+                    optionsMenu.close();
+                  }}
+                >
+                  {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
+                </DropdownOption>
+              ))}
+            </div>
+            <div role="group" aria-label="Format">
+              <DropdownGroupLabel>Format</DropdownGroupLabel>
+              {EXPORT_FORMATS.map((option) => (
+                <DropdownOption
+                  key={option}
+                  selected={option === format}
+                  onSelect={() => {
+                    onFormatChange(option);
+                    optionsMenu.close();
+                  }}
+                >
+                  {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
+                </DropdownOption>
+              ))}
+            </div>
           </DropdownList>
         </DropdownRoot>
       </HoverHighlightGroup>

@@ -34,7 +34,7 @@ export const HOW_IT_WORKS = [
   },
   {
     title: "Customize and download",
-    body: "Choose a background and layout, then download a sharp PNG sized for LinkedIn, X, Bluesky, Twitch and more.",
+    body: "Choose a background and layout, then download a sharp PNG or JPEG sized for LinkedIn, X, Bluesky, Twitch and more.",
   },
 ] as const;
 
@@ -59,7 +59,7 @@ export const FAQ = [
   },
   {
     question: "Which banner sizes does Omnivix support?",
-    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG at ${pixelRatiosSummary()} resolution: 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens.`,
+    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG or JPEG at ${pixelRatiosSummary()} resolution: 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     question: "Can I use my own background image?",

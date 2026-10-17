@@ -25,7 +25,7 @@
 - **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
 - **Backgrounds:** 14 built-in city, nature and abstract backgrounds, a link to an https image, or your own upload (PNG, JPEG, WebP, AVIF or HEIC, up to 12 MB). Drag it into place and zoom up to 150%.
 - **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
-- **Export:** a PNG at 3× resolution (for example 4752 × 1188 for LinkedIn)
+- **Export:** PNG or JPEG at 1×, 2× or 3× resolution (3× is 4752 × 1188 for LinkedIn); the last choice is remembered
 - **Studio:** light and dark mode, and works on phones as well as desktop
 - **Privacy:** no sign-in, and only public GitHub data
 
@@ -95,7 +95,7 @@ CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull re
 | `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                |
 | `/studio/[templateId]`                                     | The editor for one template                                                             |
 | `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                        |
-| `POST /api/export`                                         | Renders a banner and returns the PNG                                                    |
+| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                          |
 | `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories) |
 | `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                            |
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants                                    |
@@ -135,10 +135,10 @@ The GitHub, contribution and repos banners lay out their content at a fixed natu
 
 ### Export flow
 
-1. The studio posts the template, size and settings to `POST /api/export`.
+1. The studio posts the template, size, settings, resolution and format to `POST /api/export`.
 2. The server puts them in a stateless, HMAC-signed token that expires after 2 minutes. It's stateless because the API route and the render page can run on different serverless instances.
-3. Playwright opens `/render/[templateId]?token=…` at the banner's size with a pixel ratio of 3, waits for fonts, images and content sizing, and screenshots `.banner-export-root`.
-4. The PNG is returned as a download.
+3. Playwright opens `/render/[templateId]?token=…` at the banner's size and chosen pixel ratio (1, 2 or 3), waits for fonts, images and content sizing, and screenshots `.banner-export-root`.
+4. The screenshot (PNG, or JPEG at 90% quality) is returned as a download.
 
 Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
 
