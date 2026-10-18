@@ -18,11 +18,15 @@ export function settingsCookieName(templateId: string): string {
   return `omnivix-settings-${templateId}`;
 }
 
+export function isGithubUsername(value: string): boolean {
+  return GITHUB_USERNAME.test(value);
+}
+
 export function parseUsernameCookie(value: string | undefined): string | null {
   if (value === undefined) return null;
   try {
     const username = decodeURIComponent(value);
-    return GITHUB_USERNAME.test(username) ? username : null;
+    return isGithubUsername(username) ? username : null;
   } catch {
     return null;
   }

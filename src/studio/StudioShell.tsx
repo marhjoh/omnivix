@@ -54,6 +54,7 @@ import {
   PIXEL_RATIO_COOKIE_NAME,
 } from "@/src/studio/downloadCookies";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
+import type { LinkSettings } from "@/src/studio/linkSettings";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -255,6 +256,7 @@ export function StudioShell({
   initialFormat,
   savedSettings,
   savedUsername,
+  link,
   initialGithubData,
 }: {
   templateId: TemplateId;
@@ -267,6 +269,8 @@ export function StudioShell({
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
   savedUsername: string | null;
+  /** Settings from a studio link (`?username=…&themeId=…`), applied over the saved ones. */
+  link: LinkSettings | null;
   /** GitHub data the server already loaded, by the url the studio fetches it from. */
   initialGithubData: Record<string, unknown>;
 }) {
@@ -286,8 +290,18 @@ export function StudioShell({
         },
   );
   const [state, setState] = useState<Record<string, unknown>>(() =>
-    applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
+    applySavedSettings(
+      { ...definition.initialState },
+      templateId,
+      link ? { ...saved.settings, ...link.settings } : saved.settings,
+      link?.username ?? saved.username,
+    ),
   );
+  // The link is applied once: drop it from the address bar, so a reload keeps later changes
+  // (saved in cookies like any other).
+  useEffect(() => {
+    if (link) window.history.replaceState(null, "", window.location.pathname);
+  }, [link]);
 
   // Download resolution and format, remembered per browser.
   const [pixelRatio, changePixelRatio] = useCookieChoice(
@@ -538,8 +552,10 @@ export function StudioShell({
   const dismissToast = useCallback((id?: number) => {
     setToast((current) => (id === undefined || current?.id === id ? null : current));
   }, []);
-  // GitHub banners ask for a username right away when none is saved.
-  const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !saved.username);
+  // GitHub banners ask for a username right away when none is saved or linked.
+  const [showUsernameModal, setShowUsernameModal] = useState(
+    needsUsername && !(link?.username ?? saved.username),
+  );
   const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
   const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);
 

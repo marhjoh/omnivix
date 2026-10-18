@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
 import { applySavedSettings } from "@/src/studio/savedSettings";
+import { parseLinkSettings } from "@/src/studio/linkSettings";
 import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
@@ -49,7 +50,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function StudioPage({ params }: { params: Promise<{ templateId: string }> }) {
+export default async function StudioPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ templateId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { templateId } = await params;
   if (!isTemplateId(templateId)) {
     notFound();
@@ -57,12 +64,14 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
   const cookieStore = await cookies();
   const savedSettings = parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value);
   const savedUsername = parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value);
+  // A studio link's settings win over the saved ones (see linkSettings.ts).
+  const link = parseLinkSettings(templateId, await searchParams);
   // The same settings the studio starts from, so the GitHub data matches what it shows.
   const initialState = applySavedSettings(
     { ...templateRegistry[templateId].initialState },
     templateId,
-    savedSettings,
-    savedUsername,
+    link ? { ...savedSettings, ...link.settings } : savedSettings,
+    link?.username ?? savedUsername,
   );
   const initialGithubData = await loadInitialGithubData(templateId, initialState);
   return (
@@ -78,6 +87,7 @@ export default async function StudioPage({ params }: { params: Promise<{ templat
         initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
         savedSettings={savedSettings}
         savedUsername={savedUsername}
+        link={link}
         initialGithubData={initialGithubData}
       />
     </ThemeProvider>

@@ -91,15 +91,15 @@ CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull re
 
 ## Routes
 
-| Route                                                      | Purpose                                                                                 |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                |
-| `/studio/[templateId]`                                     | The editor for one template                                                             |
-| `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                        |
-| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                          |
-| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories) |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                            |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API          |
+| Route                                                      | Purpose                                                                                       |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                      |
+| `/studio/[templateId]`                                     | The editor for one template; query parameters prefill settings (`src/studio/linkSettings.ts`) |
+| `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                              |
+| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                                |
+| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories)       |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                                  |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API                |
 
 ## Architecture
 
