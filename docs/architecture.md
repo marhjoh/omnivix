@@ -1,6 +1,6 @@
 # Architecture
 
-Omnivix is a Next.js app without a database. The export is a screenshot of the same component the studio shows.
+Omnivix is a Next.js app on Vercel, without a database or user accounts. GitHub data is fetched when a banner needs it, and the visitor's choices stay in their browser's cookies.
 
 ## Rendering
 
@@ -16,8 +16,8 @@ flowchart LR
 
 Two kinds of scaling keep the preview and the export identical:
 
-- **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`fitScale.ts`). Layout and text wrapping are the same as in the export at any window size.
-- **The content inside it:** the GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL is the largest size that fits with a margin, and each step down to XS is 80% of the one above, so every size works in every format. The quote banner uses fixed type sizes instead.
+- **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`fitScale.ts`).
+- **The content inside it:** the GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
 
 ## Export flow
 
@@ -44,15 +44,15 @@ sequenceDiagram
 Two details the diagram doesn't show:
 
 - **The token is stateless,** because the API route and the render page can run on different serverless instances.
-- **Backgrounds don't go in the token.** An upload or a link is served to the render page from memory by Playwright (`background.ts`). Links are downloaded by the server first, and only from public https addresses (`backgroundLink.ts`).
+- **Backgrounds don't go in the token.** Playwright serves an upload or link to the render page from memory (`background.ts`); links are downloaded first, from public https addresses only (`backgroundLink.ts`).
 
 See also: request fields and responses in [api.md](api.md#export-api), and the rate limit and Chromium version in [deployment.md](deployment.md).
 
 ## Theme and saved settings
 
-Everything the visitor chooses is kept in cookies, so the server can render it on the first paint, with no flash of defaults:
+Everything the visitor chooses is kept in cookies, so the server renders it on the first paint:
 
-- **Theme:** the `omnivix-theme` cookie. An inline script in `<head>` applies it before the page paints. The studio also reads it on the server, because the preview picks colors in JavaScript.
+- **Theme:** the `omnivix-theme` cookie, applied by an inline script in `<head>`. The studio also reads it on the server, because the preview picks colors in JavaScript.
 - **Studio settings:** one cookie per template, plus one for the GitHub username.
 - **Background:** a built-in background or link is saved with its position and zoom. An upload isn't saved, because it's too large for a cookie.
 
