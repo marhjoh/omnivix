@@ -19,7 +19,7 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
     throw new Error("Couldn't reach the server. Check your connection and try again.");
   }
   if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string; resetAt?: string };
+    const body = (await response.json().catch(() => ({}))) as { error?: unknown; resetAt?: string };
     if (body.resetAt) throw new Error(githubLimitMessage(new Date(body.resetAt)));
     if (response.status === 429) {
       const retryAfter = Number(response.headers.get("Retry-After"));
@@ -27,7 +27,10 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
         exportLimitMessage(retryAfter > 0 ? new Date(Date.now() + retryAfter * 1000) : null),
       );
     }
-    throw new Error(body.error ?? "Couldn't export the banner. Try again.");
+    // Only our API's own messages are strings; Vercel's error pages have an object there.
+    throw new Error(
+      typeof body.error === "string" ? body.error : "Couldn't export the banner. Try again.",
+    );
   }
   return response.blob();
 }

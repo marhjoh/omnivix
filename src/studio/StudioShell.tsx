@@ -109,10 +109,11 @@ class FetchError extends Error {
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string; resetAt?: string };
-    // Platform errors (a timeout page, an HTML 500) have no message; the caller's fallback is used.
+    const body = (await res.json().catch(() => ({}))) as { error?: unknown; resetAt?: string };
+    // Platform errors (a timeout page, an HTML 500, Vercel's JSON error with an object) have no
+    // message of ours; the caller's fallback is used.
     throw new FetchError(
-      body.error ?? "",
+      typeof body.error === "string" ? body.error : "",
       res.status,
       body.resetAt ? new Date(body.resetAt) : null,
     );
