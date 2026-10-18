@@ -1,12 +1,18 @@
 ## Summary
 
-<!-- Why this change, in a sentence or two. -->
+<!-- What this PR does, in a sentence or two. -->
 
 Closes #
 
 <!-- Use "Refs #" for related issues this PR doesn't close. -->
 
-## What changed
+## Why
+
+<!-- The problem it solves. -->
+
+## What
+
+<!-- The main changes, one line each. -->
 
 ## Screenshots
 
