@@ -6,6 +6,7 @@ import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { DEFAULT_THEME } from "@/src/theme/theme";
 import { verifyExportToken } from "@/src/export/export-token";
 import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
+import { GITHUB_LIMIT_ATTRIBUTE, GithubRateLimitError } from "@/src/github/rateLimit";
 
 export default async function RenderPage({
   params,
@@ -27,7 +28,7 @@ export default async function RenderPage({
   // Only the data this banner draws, fetched in parallel. The export route has already checked
   // the settings against the template's schema, which fills in defaults such as the year.
   const needs = new Set(templateRegistry[templateId].meta.githubData);
-  const [user, contributions, repos] = await Promise.all([
+  const data = await Promise.all([
     needs.has("user") ? getUserSummary(username) : undefined,
     needs.has("contributions") ? getContributions(username, String(state.year)) : undefined,
     needs.has("repos")
@@ -35,7 +36,15 @@ export default async function RenderPage({
           reposForBanner(lists, state.mode, String(state.selectedRepos ?? "")),
         )
       : undefined,
-  ]);
+  ]).catch((error: unknown) => {
+    if (error instanceof GithubRateLimitError) return error;
+    throw error;
+  });
+  // No banner without the data: a marker tells the export when GitHub's limit resets.
+  if (data instanceof GithubRateLimitError) {
+    return <main {...{ [GITHUB_LIMIT_ATTRIBUTE]: data.resetAt.toISOString() }} />;
+  }
+  const [user, contributions, repos] = data;
 
   return (
     <main

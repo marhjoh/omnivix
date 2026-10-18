@@ -10,7 +10,7 @@ export function PreviewErrorState({
 }: {
   message: string;
   hint: string;
-  action?: { label: string; onClick: () => void };
+  action?: { label: string; onClick: () => void; disabled?: boolean };
 }) {
   return (
     <div className={styles.stateInner} role="alert">
@@ -22,6 +22,7 @@ export function PreviewErrorState({
           type="button"
           className={`btn-secondary ${styles.retryButton}`}
           onClick={action.onClick}
+          disabled={action.disabled}
         >
           {action.label}
         </button>

@@ -7,6 +7,7 @@ import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
+import { GITHUB_LIMIT_ATTRIBUTE, GithubRateLimitError } from "@/src/github/rateLimit";
 
 /** How long each step of a render may take: loading the page, the banner, fonts and images. */
 const RENDER_TIMEOUT_MS = 25_000;
@@ -115,6 +116,11 @@ export async function captureBanner({
     if (finalUrl.includes("vercel.com/login")) {
       throw new Error("Render page blocked by Vercel Deployment Protection");
     }
+    const githubLimitUntil = await page.evaluate(
+      (attribute) => document.querySelector(`[${attribute}]`)?.getAttribute(attribute) ?? null,
+      GITHUB_LIMIT_ATTRIBUTE,
+    );
+    if (githubLimitUntil) throw new GithubRateLimitError(new Date(githubLimitUntil));
     const target = page.locator(".banner-export-root");
     await target.waitFor({ state: "visible" });
     await waitForRasterReady(page);

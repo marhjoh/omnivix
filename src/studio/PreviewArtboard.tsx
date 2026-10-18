@@ -18,6 +18,7 @@ import previewStyles from "@/src/studio/preview/preview.module.css";
 import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
+import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
 
 export function PreviewArtboard({
@@ -53,6 +54,7 @@ export function PreviewArtboard({
   const emptyCopy = previewEmptyCopy(meta.needsUsername);
   const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
+  const retryReached = useTimeReached(problem?.retryAt);
   const scale = available ? fitScale(available, dims) : null;
 
   // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
@@ -96,7 +98,7 @@ export function PreviewArtboard({
                   hint={problem.hint}
                   action={
                     problem.action === "retry"
-                      ? { label: "Try again", onClick: onRetry }
+                      ? { label: "Try again", onClick: onRetry, disabled: !retryReached }
                       : problem.action === "change-username"
                         ? { label: "Change username", onClick: onChangeUsername }
                         : undefined

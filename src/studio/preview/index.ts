@@ -2,6 +2,7 @@ export type { PreviewContentState, PreviewProblem } from "./types";
 export {
   computePreviewContentState,
   fetchErrorProblem,
+  githubLimitProblem,
   noReposProblem,
   userNotFoundProblem,
   previewEmptyCopy,
