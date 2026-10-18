@@ -43,18 +43,20 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 
 CI runs these on every pull request, and all must pass before merging. Run them locally before you push:
 
-| Check      | Command             | Tip                                   |
-| ---------- | ------------------- | ------------------------------------- |
-| Formatting | `pnpm format:check` | `pnpm format` fixes it                |
-| Lint       | `pnpm lint`         | `pnpm lint --fix` fixes simple errors |
-| Types      | `pnpm typecheck`    |                                       |
-| Tests      | `pnpm test`         | `pnpm test:watch` reruns as you edit  |
-| Build      | `pnpm build`        | Works without `.env.local`            |
+| Check       | Command             | Tip                                                       |
+| ----------- | ------------------- | --------------------------------------------------------- |
+| Formatting  | `pnpm format:check` | `pnpm format` fixes it                                    |
+| Lint        | `pnpm lint`         | `pnpm lint --fix` fixes simple errors                     |
+| Unused code | `pnpm knip`         | `pnpm knip --fix` removes unused exports and dependencies |
+| Types       | `pnpm typecheck`    |                                                           |
+| Tests       | `pnpm test`         | `pnpm test:watch` reruns as you edit                      |
+| Build       | `pnpm build`        | Works without `.env.local`                                |
 
 ## Maintenance scripts
 
-| Command                   | What it does                                                   |
-| ------------------------- | -------------------------------------------------------------- |
-| `pnpm backgrounds`        | Regenerate the background photos from Unsplash (all, or by id) |
-| `pnpm social-preview`     | Regenerate the repository's social preview image               |
-| `pnpm readme-screenshots` | Regenerate the README screenshots from a running `pnpm dev`    |
+| Command                   | What it does                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm backgrounds`        | Regenerate the background photos from Unsplash (all, or by id)                                                             |
+| `pnpm social-preview`     | Regenerate the repository's social preview image                                                                           |
+| `pnpm readme-screenshots` | Regenerate the README screenshots from a running `pnpm dev`                                                                |
+| `pnpm doctor`             | Check React code for effect, state and performance problems with [React Doctor](https://github.com/millionco/react-doctor) |
