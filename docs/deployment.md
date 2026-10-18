@@ -12,7 +12,7 @@ Omnivix runs on Vercel. This page covers what a deployment needs beyond the [loc
 
 Set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Production** and the **Preview** environments, or exports and GitHub data fail on preview deployments.
 
-Without `EXPORT_TOKEN_SECRET`, each server process makes up a random secret. That works for one process (such as `pnpm dev`), but on Vercel the export page can run in another instance than the API route, so the export fails.
+Without `EXPORT_TOKEN_SECRET`, each server process makes up its own secret. That works for `pnpm dev`, but on Vercel the render page may run in another instance than the API route ([why](architecture.md#export-flow)), so the export fails.
 
 `VERCEL_PROJECT_PRODUCTION_URL` and `VERCEL_URL` are set by Vercel automatically, and are used for absolute URLs in metadata and for the export's render URL.
 

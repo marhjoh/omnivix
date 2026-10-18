@@ -1,10 +1,10 @@
 # Architecture
 
-Omnivix is a Next.js app without a database. The studio renders each banner as a React component in the browser, and the export takes a screenshot of that same component on the server. This page explains how that works, then maps where the code lives.
+Omnivix is a Next.js app without a database. The export is a screenshot of the same component the studio shows.
 
 ## Rendering
 
-Both the studio and the page the export screenshots render `BannerRenderer`:
+The studio and the export render the same component, `BannerRenderer`:
 
 ```mermaid
 flowchart LR
@@ -14,11 +14,10 @@ flowchart LR
   banner --> renderer["each template's Renderer.tsx"]
 ```
 
-The preview renders the banner at its real export size (for example 1584 × 396) and scales it down with a CSS `transform` to fit the window (`fitScale.ts`), so layout and text wrapping match the export at any window size.
+Two kinds of scaling keep the preview and the export identical:
 
-## Content sizing
-
-The GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL is the largest size that fits the banner minus a margin, and each step down to XS is 80% of the one above, so every size works in every format. The quote banner uses fixed type sizes instead.
+- **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`fitScale.ts`). Layout and text wrapping are the same as in the export at any window size.
+- **The content inside it:** the GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL is the largest size that fits with a margin, and each step down to XS is 80% of the one above, so every size works in every format. The quote banner uses fixed type sizes instead.
 
 ## Export flow
 
@@ -42,24 +41,26 @@ sequenceDiagram
   API-->>Studio: PNG, or JPEG at 90% quality
 ```
 
-The request fields and responses are listed in [api.md](api.md#export-api).
+Two details the diagram doesn't show:
 
-- The token is stateless because the API route and the render page can run on different serverless instances.
-- An uploaded or linked background doesn't go in the token: Playwright serves it to the render page from memory (`background.ts`). Links are downloaded by the server first, and only from public https addresses (`backgroundLink.ts`).
+- **The token is stateless,** because the API route and the render page can run on different serverless instances.
+- **Backgrounds don't go in the token.** An upload or a link is served to the render page from memory by Playwright (`background.ts`). Links are downloaded by the server first, and only from public https addresses (`backgroundLink.ts`).
 
-The export rate limit and the Chromium version are covered in [deployment.md](deployment.md).
+See also: request fields and responses in [api.md](api.md#export-api), and the rate limit and Chromium version in [deployment.md](deployment.md).
 
 ## Theme and saved settings
 
-The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint, so pages never flash the wrong theme. The studio also reads the cookie on the server, because its preview picks colors in JavaScript.
+Everything the visitor chooses is kept in cookies, so the server can render it on the first paint, with no flash of defaults:
 
-The studio's settings (one cookie per template) and the GitHub username are cookies too, so the studio renders them from the first paint. A built-in background or `https` link is saved with its position and zoom; an upload isn't, because it's too large for a cookie.
+- **Theme:** the `omnivix-theme` cookie. An inline script in `<head>` applies it before the page paints. The studio also reads it on the server, because the preview picks colors in JavaScript.
+- **Studio settings:** one cookie per template, plus one for the GitHub username.
+- **Background:** a built-in background or link is saved with its position and zoom. An upload isn't saved, because it's too large for a cookie.
 
 ## Code map
 
 ### `app/`
 
-Routes only: pages, API handlers and metadata files (robots, sitemap, `llms.txt`), listed in [api.md](api.md#routes). Handlers stay thin and call into `src/`.
+Routes only: pages, API handlers and metadata files, listed in [api.md](api.md#routes). Handlers stay thin and call into `src/`.
 
 ### `src/templates/`
 
