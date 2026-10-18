@@ -48,20 +48,43 @@
 
 ## Getting started
 
-**Requirements:** Node.js 24 and pnpm 10. Run `corepack enable` once, and the `packageManager` field in `package.json` picks the right pnpm version.
+You need Node.js 24.
 
-```bash
-git clone https://github.com/marhjoh/omnivix.git
-cd omnivix
-pnpm install
-pnpm exec playwright install chromium   # browser used for PNG export
-cp .env.example .env.local              # then fill in GITHUB_TOKEN
-pnpm dev
-```
+1. **Set up pnpm** (once per machine). Corepack comes with Node.js and installs the pnpm version set in `package.json`.
 
-Open http://localhost:3000. For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks).
+   ```bash
+   corepack enable
+   ```
 
-Without a `GITHUB_TOKEN`, the landing page and the Quote Banner still work, but the GitHub templates can't load data.
+2. **Install.**
+
+   ```bash
+   git clone https://github.com/marhjoh/omnivix.git
+   cd omnivix
+   pnpm install
+   ```
+
+3. **Add the export browser.** The export takes screenshots with Playwright's Chromium.
+
+   ```bash
+   pnpm exec playwright install chromium
+   ```
+
+4. **Add a GitHub token.** Copy the example file, then set `GITHUB_TOKEN` in `.env.local` ([create one](https://github.com/settings/tokens), no scopes needed). Without it, only the landing page and the Quote Banner work.
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+5. **Run it.**
+
+   ```bash
+   pnpm dev
+   ```
+
+   Open http://localhost:3000.
+
+For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks).
 
 ### Environment variables
 
