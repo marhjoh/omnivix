@@ -17,6 +17,7 @@ import {
 } from "@/src/studio/preview";
 import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { githubLimitMessage } from "@/src/lib/rateLimitMessage";
+import { readApiError } from "@/src/lib/apiError";
 import { isHttpImageUrl, isInsecureImageLink } from "@/src/lib/imageLink";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
@@ -109,13 +110,9 @@ class FetchError extends Error {
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string; resetAt?: string };
-    // Platform errors (a timeout page, an HTML 500) have no message; the caller's fallback is used.
-    throw new FetchError(
-      body.error ?? "",
-      res.status,
-      body.resetAt ? new Date(body.resetAt) : null,
-    );
+    const { message, resetAt } = await readApiError(res);
+    // Without a message of ours, the caller's fallback is used.
+    throw new FetchError(message ?? "", res.status, resetAt);
   }
   return res.json() as Promise<T>;
 }

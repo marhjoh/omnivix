@@ -145,6 +145,8 @@ Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromiu
 
 The settings travel in the signed token in the render URL, except an uploaded or linked background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`). Links are downloaded by the server first, and only from public https addresses (`src/export/backgroundLink.ts`). The render page can't load anything except the app itself and GitHub profile photos.
 
+Exports are rate limited by a Vercel Firewall rule, not in the code: **Rate limit exports**, `POST /api/export`, 30 requests per 10 minutes per IP, answering `429`. It's configured in the Vercel dashboard (Firewall) or with `vercel firewall rules`, so a fork has no limit until it adds one. The studio shows a `429` without GitHub's reset time as "Too many exports. Try again in a few minutes." (`src/lib/rateLimitMessage.ts`).
+
 ### GitHub data
 
 `src/github/client.ts` queries GitHub's GraphQL API with `GITHUB_TOKEN` and normalizes the results into stable types. Results are cached briefly in server memory to stay within GitHub's rate limits (durations in `client.ts`). Nothing is stored in a database.
