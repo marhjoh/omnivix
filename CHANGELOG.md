@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/marhjoh/omnivix/compare/v1.8.0...v1.9.0) (2026-10-18)
+
+
+### Features
+
+* tell users when they've exported too many banners ([#151](https://github.com/marhjoh/omnivix/issues/151)) ([1f7c129](https://github.com/marhjoh/omnivix/commit/1f7c129aa13310fe9de843b83c7f63a326555508))
+
 ## [1.8.0](https://github.com/marhjoh/omnivix/compare/v1.7.2...v1.8.0) (2026-10-18)
 
 
