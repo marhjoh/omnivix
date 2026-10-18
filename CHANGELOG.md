@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.0](https://github.com/marhjoh/omnivix/compare/v1.11.0...v1.12.0) (2026-10-18)
+
+
+### Features
+
+* open the studio with settings from a link ([1e2a0a3](https://github.com/marhjoh/omnivix/commit/1e2a0a30eb1fde586846509bde89a85a574d4f97))
+* remember preset and https backgrounds in the studio ([1e2a0a3](https://github.com/marhjoh/omnivix/commit/1e2a0a30eb1fde586846509bde89a85a574d4f97))
+
 ## [1.11.0](https://github.com/marhjoh/omnivix/compare/v1.10.0...v1.11.0) (2026-10-18)
 
 
