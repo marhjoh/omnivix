@@ -4,11 +4,11 @@ Omnivix runs on Vercel. This page covers what a deployment needs beyond the [loc
 
 ## Environment variables
 
-| Variable                          | Needed                          | What it's for                                                        |
-| --------------------------------- | ------------------------------- | -------------------------------------------------------------------- |
-| `GITHUB_TOKEN`                    | For the GitHub templates        | Reads public profiles, repos and contributions                       |
-| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens; use a long random string        |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export open `/render` (see [below](#deployment-protection)) |
+| Variable                          | Needed                          | What it's for                                                                                    |
+| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `GITHUB_TOKEN`                    | For the GitHub templates        | Reads public data: a classic token with no scopes, or a fine-grained one with public read access |
+| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens; use a long random string                                    |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export open `/render` (see [below](#deployment-protection))                             |
 
 Set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Production** and the **Preview** environments, or exports and GitHub data fail on preview deployments.
 

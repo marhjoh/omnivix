@@ -50,7 +50,7 @@
 
 You need Node.js 24.
 
-1. **Set up pnpm** (once per machine). Corepack comes with Node.js and installs the pnpm version set in `package.json`.
+1. **Set up pnpm** (once per machine).
 
    ```bash
    corepack enable
@@ -64,13 +64,13 @@ You need Node.js 24.
    pnpm install
    ```
 
-3. **Add the export browser.** The export takes screenshots with Playwright's Chromium.
+3. **Add the export browser.**
 
    ```bash
    pnpm exec playwright install chromium
    ```
 
-4. **Add a GitHub token.** Copy the example file, then set `GITHUB_TOKEN` in `.env.local`: a classic token with no scopes, or a fine-grained token with public read access ([create one](https://github.com/settings/tokens)). Without it, only the landing page and the Quote Banner work.
+4. **Add a [GitHub token](https://github.com/settings/tokens)** as `GITHUB_TOKEN` in `.env.local`.
 
    ```bash
    cp .env.example .env.local
@@ -83,8 +83,6 @@ You need Node.js 24.
    ```
 
    Open http://localhost:3000.
-
-For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks). The other environment variables are only needed on Vercel; see [Deployment](docs/deployment.md#environment-variables).
 
 ## Documentation
 
