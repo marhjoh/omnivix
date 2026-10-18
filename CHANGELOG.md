@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/marhjoh/omnivix/compare/v1.7.2...v1.8.0) (2026-10-18)
+
+
+### Features
+
+* tell users when GitHub's rate limit is reached and when to try again ([#149](https://github.com/marhjoh/omnivix/issues/149)) ([aa943d4](https://github.com/marhjoh/omnivix/commit/aa943d4397e96897bc04bd9e9b45960d80aa131f))
+
 ## [1.7.2](https://github.com/marhjoh/omnivix/compare/v1.7.1...v1.7.2) (2026-10-18)
 
 
