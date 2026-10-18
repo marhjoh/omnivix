@@ -87,7 +87,7 @@ You need Node.js 24.
 
 - [Architecture](docs/architecture.md): rendering, export flow, saved settings and a code map
 - [API](docs/api.md): routes, the export API and studio links
-- [Deployment](docs/deployment.md): running your own copy on Vercel
+- [Deployment](docs/deployment.md): how the site is configured on Vercel
 - [`/llms.txt`](https://omnivix.vercel.app/llms.txt): every template's settings, generated from the code
 
 ## Contributing
