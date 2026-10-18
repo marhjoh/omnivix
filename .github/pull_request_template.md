@@ -1,5 +1,7 @@
 Closes #
 
+<!-- Use "Refs #" for related issues this PR doesn't close. -->
+
 ## What changed
 
 ## Screenshots
