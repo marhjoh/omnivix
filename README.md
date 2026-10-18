@@ -85,7 +85,7 @@ You need Node.js 24.
 
 ## Documentation
 
-- [Architecture](docs/architecture.md): project layout, rendering, export flow, GitHub data, theme
+- [Architecture](docs/architecture.md): rendering, export flow, theme and a code map
 - [API](docs/api.md): routes, the export API and studio links
 - [Deployment](docs/deployment.md): running your own copy on Vercel
 - [`/llms.txt`](https://omnivix.vercel.app/llms.txt): every template's settings, generated from the code
