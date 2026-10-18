@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { exportRequestSchema } from "@/src/export/payload";
+import { parseExportRequest } from "@/src/export/payload";
 import { resolveExportBackground } from "@/src/export/background";
 import { createExportToken } from "@/src/export/export-token";
 import { getPublicOrigin } from "@/src/export/request-origin";
 import { buildRenderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS } from "@/src/export/format";
-import { templateRegistry } from "@/src/templates/registry";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { githubRateLimited } from "@/src/github/route";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
 
-/** The studio sent something it never would; reloading gets a fresh, valid state. */
+/** The studio only sends an invalid request when its state is stale; others read `issues`. */
 const INVALID_REQUEST = "Couldn't export this banner. Reload the page and try again.";
 
 export const runtime = "nodejs";
@@ -23,20 +22,13 @@ function error(message: string, status: number) {
 }
 
 export async function POST(request: NextRequest) {
-  const parsed = exportRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return error(INVALID_REQUEST, 400);
-
-  // The same checks the studio runs (text limits, choices, required username), plus their
-  // defaults. Unknown keys are kept, so nothing a renderer reads is dropped.
-  const { stateSchema } = templateRegistry[parsed.data.templateId];
-  const state = stateSchema.safeParse(parsed.data.state);
-  if (!state.success) return error(INVALID_REQUEST, 400);
+  const parsed = parseExportRequest(await request.json().catch(() => null));
+  if (!parsed.ok) {
+    return NextResponse.json({ error: INVALID_REQUEST, issues: parsed.issues }, { status: 400 });
+  }
 
   try {
-    const resolved = await resolveExportBackground({
-      ...parsed.data,
-      state: { ...parsed.data.state, ...state.data },
-    });
+    const resolved = await resolveExportBackground(parsed.request);
     if (!resolved.ok) return error(resolved.error, 400);
     const { payload, background } = resolved;
 
