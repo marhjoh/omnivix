@@ -52,7 +52,7 @@ function accepts(field: EditorFieldSchema): string {
   }
 }
 
-/** The default as written in the docs; the year is computed when the site is built, so it's "this year". */
+/** The default as written; the year default is set at build time, so it says "this year". */
 function defaultOf(key: string, value: unknown): string {
   if (key === "year") return "this year";
   return value === undefined || value === "" ? "none" : code(value);
@@ -91,17 +91,18 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     "- `200`: the image (`image/png` or `image/jpeg`).",
     '- `400`: `{ "error": "…", "issues": [{ "path": "state.username", "message": "Required" }] }`, one issue per field that failed.',
-    '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "resetAt": "<ISO time>" }`. Or the export limit, 30 per 10 minutes per IP address, with no `resetAt`.',
     '- `404`: the GitHub user doesn\'t exist, with `issues: [{ "path": "state.username", … }]`.',
+    '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "resetAt": "<ISO time>" }`. Or the export limit, 30 per 10 minutes per IP address, with no `resetAt`.',
     "- `500`: the export failed; trying again may work.",
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
       const defaults = initialState as Record<string, unknown>;
       const rows = schema
         .filter((field) => field.type !== "sizeSelect")
-        .map((field) => {
-          return `| \`${field.key}\` | ${field.label}: ${accepts(field)} | ${defaultOf(field.key, defaults[field.key])} |`;
-        });
+        .map(
+          (field) =>
+            `| \`${field.key}\` | ${field.label}: ${accepts(field)} | ${defaultOf(field.key, defaults[field.key])} |`,
+        );
       if (meta.needsUsername) rows.unshift("| `username` | GitHub username, required | |");
       return [
         `### ${meta.title} (\`${meta.id}\`)`,
