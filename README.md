@@ -99,7 +99,7 @@ CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull re
 | `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                          |
 | `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories) |
 | `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                            |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants                                    |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API          |
 
 ## Architecture
 
@@ -159,7 +159,7 @@ The light/dark choice is stored in the `omnivix-theme` cookie. An inline script 
 
 ### Link previews and search
 
-Titles, descriptions and Open Graph images are set per page. The landing page's "How it works" and FAQ copy lives in `src/landing/landingContent.ts`; the visible FAQ, the JSON-LD and `/llms.txt` are all generated from it.
+Titles, descriptions and Open Graph images are set per page. The landing page's "How it works" and FAQ copy lives in `src/landing/landingContent.ts`; the visible FAQ, the JSON-LD and `/llms.txt` are all generated from it. The export API section of `/llms.txt` is generated from the templates, sizes and formats (`src/export/apiDocs.ts`), so it stays in step with what the API accepts.
 
 ## Contributing
 
