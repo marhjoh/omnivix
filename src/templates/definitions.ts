@@ -20,7 +20,7 @@ import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
-export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
+const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
 
 export type ContributionCellShape = (typeof CONTRIBUTION_CELL_SHAPES)[number];
 
