@@ -19,15 +19,14 @@
 
 - **Four templates**
   - **GitHub Banner:** avatar, username and contribution calendar
-  - **Repos Banner:** pinned or hand-picked repositories with languages, stars and forks
-  - **Contribution Banner:** a large contribution heatmap
-  - **Quote Banner:** a quote and author; needs no GitHub username
-- **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
-- **Backgrounds:** 14 built-in city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
+  - **Repos Banner:** pinned or selected repositories with languages, stars and forks
+  - **Contribution Banner:** contribution heatmap
+  - **Quote Banner:** quote and author
+- **Three formats:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
+- **Backgrounds:** 14 city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
 - **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
-- **Export:** PNG or JPEG at 1×, 2× or 3× resolution, or copy the banner to the clipboard
-- **Studio:** light and dark mode, and works on phones as well as desktop
-- **Privacy:** no sign-in, and only public GitHub data
+- **Export:** PNG or JPEG at up to 3× resolution, or copy the banner to the clipboard
+- **Studio:** light and dark mode, on phones and desktop
 
 ## Screenshots
 
