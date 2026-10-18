@@ -4,7 +4,7 @@ For setup, see [Getting started](README.md#getting-started). By taking part, you
 
 ## Before you start
 
-Open an issue first for larger changes or new templates, so the direction is agreed early.
+Open an issue first for larger changes or new templates, so the direction is agreed early. The issue templates ask for what's needed. Report security problems privately, as described in [SECURITY.md](SECURITY.md).
 
 ## Branches and commits
 
@@ -15,40 +15,46 @@ Open an issue first for larger changes or new templates, so the direction is agr
 
 - Use `pnpm` only; `pnpm-lock.yaml` is the source of truth.
 - Keep route handlers thin; put logic in `src/*`.
-- A template needs its id in `TemplateId` (`src/types/template.ts`), a definition in `src/templates/definitions.ts`, an entry in `src/templates/registry.ts`, and a renderer in `src/templates/<template-id>/Renderer.tsx` wired into `src/templates/BannerRenderer.tsx` (the [shared renderer](README.md#one-renderer-for-preview-and-export)). For the landing page and link previews, add `public/landing/<template-id>.webp` (listed in `src/landing/landingPreviewAssets.ts`) and a JPEG copy in `src/og/banners/`.
 - Derive values during render instead of copying them into state with `useEffect` + `setState`.
-- Upgrade `playwright` and `@sparticuz/chromium` together (see [Export flow](README.md#export-flow)).
+- Upgrade `playwright` and `@sparticuz/chromium` together (see [Chromium](docs/deployment.md#chromium)).
+
+How the pieces fit together is described in [docs/architecture.md](docs/architecture.md).
+
+## Adding a template
+
+1. Add its id to `TemplateId` (`src/types/template.ts`).
+2. Add a definition in `src/templates/definitions.ts` and an entry in `src/templates/registry.ts`.
+3. Add a renderer in `src/templates/<template-id>/Renderer.tsx` and wire it into `src/templates/BannerRenderer.tsx`, the [shared renderer](docs/architecture.md#rendering) for preview and export.
+4. For the landing page, add a 2× export as `public/landing/<template-id>.webp`, and add the id to `LANDING_TEMPLATE_ORDER` in `src/landing/landingPreviewAssets.ts`.
+5. For link previews, add a JPEG copy in `src/og/banners/`.
 
 ## Pull requests
 
-- Keep PRs small and focused, and link the issue they close.
+- Keep PRs small and focused, and link related issues: `Closes #` for the ones it finishes, `Refs #` for the rest.
 - Add screenshots for UI changes.
 - PRs are squash-merged, and the PR title becomes the commit on `main`. Write it as a Conventional Commit; CI checks it.
-- If a PR has more than one change for the release notes, list each one in the PR description:
-
-  ```
-  BEGIN_COMMIT_OVERRIDE
-  fix: correct cache duration in the FAQ
-  feat: add a dark theme to the studio
-  END_COMMIT_OVERRIDE
-  ```
+- If a PR has more than one change for the release notes, list each one in the `BEGIN_COMMIT_OVERRIDE` block of the PR template.
 
 ## Releases
 
-Releases are automated with [release-please](https://github.com/googleapis/release-please) and follow [Semantic Versioning](https://semver.org). The types of the commits on `main` (your PR titles) decide the next version: `fix:` bumps the patch, `feat:` the minor, and a breaking change (`feat!:` or a `BREAKING CHANGE:` footer) the major. Other types, like `docs:` and `chore:`, don't trigger a release.
-
-After a merge to `main` with a `feat:` or `fix:` commit, the release workflow opens a release PR and merges it once CI passes. That bumps `package.json`, updates `CHANGELOG.md`, tags `vX.Y.Z` and publishes a GitHub Release with the notes. Don't edit the version or the changelog by hand.
+Releases are automated with [release-please](https://github.com/googleapis/release-please) and follow [Semantic Versioning](https://semver.org). Your PR title decides the next version: `fix:` bumps the patch, `feat:` the minor, and `feat!:` the major. Other types, like `docs:` and `chore:`, don't trigger a release. Don't edit the version or `CHANGELOG.md` by hand.
 
 ## Checks
 
-CI runs every check below on each pull request, and a PR must pass all of them before it's merged. To reproduce a failure locally, run the same command:
+CI runs these on every pull request, and all must pass before merging. Run them locally before you push:
 
-| Check      | Command             | Fix                                   |
+| Check      | Command             | Tip                                   |
 | ---------- | ------------------- | ------------------------------------- |
-| Formatting | `pnpm format:check` | `pnpm format`                         |
-| Lint       | `pnpm lint`         | `pnpm lint --fix` for the simple ones |
+| Formatting | `pnpm format:check` | `pnpm format` fixes it                |
+| Lint       | `pnpm lint`         | `pnpm lint --fix` fixes simple errors |
 | Types      | `pnpm typecheck`    |                                       |
-| Tests      | `pnpm test`         | add `--coverage` for the summary      |
-| Build      | `pnpm build`        |                                       |
+| Tests      | `pnpm test`         | `pnpm test:watch` reruns as you edit  |
+| Build      | `pnpm build`        | Works without `.env.local`            |
 
-`pnpm build` doesn't need `.env.local`, because secrets are only read at request time.
+## Maintenance scripts
+
+| Command                   | What it does                                                   |
+| ------------------------- | -------------------------------------------------------------- |
+| `pnpm backgrounds`        | Regenerate the background photos from Unsplash (all, or by id) |
+| `pnpm social-preview`     | Regenerate the repository's social preview image               |
+| `pnpm readme-screenshots` | Regenerate the README screenshots from a running `pnpm dev`    |

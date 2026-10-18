@@ -22,7 +22,7 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
   if (!response.ok) {
     const { message, resetAt } = await readApiError(response);
     if (resetAt) throw new Error(githubLimitMessage(resetAt));
-    // A 429 without GitHub's reset time is the export limit (Vercel Firewall, see README).
+    // A 429 without GitHub's reset time is the export limit (Vercel Firewall, see docs/deployment.md).
     if (response.status === 429) throw new Error(EXPORT_LIMIT_MESSAGE);
     throw new Error(message ?? "Couldn't export the banner. Try again.");
   }
