@@ -32,6 +32,7 @@ import { UsernameModal } from "@/src/studio/UsernameModal";
 import {
   parseSettingsCookie,
   parseUsernameCookie,
+  fitsInCookie,
   readCookieClient,
   settingsCookieName,
   setCookieClient,
@@ -54,10 +55,15 @@ import {
   PIXEL_RATIO_COOKIE_NAME,
 } from "@/src/studio/downloadCookies";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
+import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
-import { applySavedSettings, clampSelectedRepos } from "@/src/studio/savedSettings";
+import {
+  applySavedSettings,
+  clampSelectedRepos,
+  isSavableBackground,
+} from "@/src/studio/savedSettings";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
@@ -85,14 +91,15 @@ function previewErrorFor(githubData: readonly GithubDataKind[], e: FetchSlotErro
 /** The part of the state that's saved per template, as JSON. */
 function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {
   const clone = { ...state };
-  // Uploads are too large to store; position and zoom only make sense with their image.
+  // Username is global; avoid stale per-template copies.
+  if (needsUsername) delete clone.username;
+  const json = JSON.stringify(clone);
+  // Presets and https links are kept, with their position and zoom. Uploads are too large, and a
+  // very long link is left out rather than losing every setting to the cookie size limit.
+  if (isSavableBackground(clone.backgroundImage) && fitsInCookie(json)) return json;
   delete clone.backgroundImage;
   delete clone.backgroundPosition;
   delete clone.backgroundZoom;
-  if (needsUsername) {
-    // Username is global; avoid stale per-template copies.
-    delete clone.username;
-  }
   return JSON.stringify(clone);
 }
 
@@ -255,6 +262,7 @@ export function StudioShell({
   initialFormat,
   savedSettings,
   savedUsername,
+  link,
   initialGithubData,
 }: {
   templateId: TemplateId;
@@ -267,6 +275,8 @@ export function StudioShell({
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
   savedUsername: string | null;
+  /** Settings from a studio link (`?username=…&themeId=…`), applied over the saved ones. */
+  link: LinkSettings | null;
   /** GitHub data the server already loaded, by the url the studio fetches it from. */
   initialGithubData: Record<string, unknown>;
 }) {
@@ -277,17 +287,26 @@ export function StudioShell({
   // Saved settings come from cookies, so the server renders them and nothing switches after load.
   // The browser reads the cookies again when the studio is opened by navigating (Back, Forward, a
   // link): Next.js may reuse the page from an earlier visit then, with props holding older settings.
+  // A studio link is applied over them (withLink).
   const [saved] = useState(() =>
-    typeof document === "undefined"
-      ? { settings: savedSettings, username: savedUsername }
-      : {
-          settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
-          username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
-        },
+    withLink(
+      typeof document === "undefined"
+        ? { settings: savedSettings, username: savedUsername }
+        : {
+            settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
+            username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
+          },
+      link,
+    ),
   );
   const [state, setState] = useState<Record<string, unknown>>(() =>
     applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
   );
+  // The link is applied once: drop it from the address bar, so a reload keeps later changes
+  // (saved in cookies like any other).
+  useEffect(() => {
+    if (link) window.history.replaceState(null, "", window.location.pathname);
+  }, [link]);
 
   // Download resolution and format, remembered per browser.
   const [pixelRatio, changePixelRatio] = useCookieChoice(
@@ -538,7 +557,7 @@ export function StudioShell({
   const dismissToast = useCallback((id?: number) => {
     setToast((current) => (id === undefined || current?.id === id ? null : current));
   }, []);
-  // GitHub banners ask for a username right away when none is saved.
+  // GitHub banners ask for a username right away when none is saved or linked.
   const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !saved.username);
   const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
   const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);

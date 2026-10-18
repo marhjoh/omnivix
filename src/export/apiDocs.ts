@@ -1,5 +1,5 @@
-// The export API section of /llms.txt, generated from the templates, sizes and formats, so it
-// stays in step with what the API accepts.
+// The export API and studio link sections of /llms.txt, generated from the templates, sizes and
+// formats, so they stay in step with what the API and the studio accept.
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
@@ -7,7 +7,7 @@ import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { BANNER_SIZES, BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
-import type { EditorFieldSchema } from "@/src/types/template";
+import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 /** The example request in the docs; a test checks that the API accepts it. */
@@ -15,6 +15,12 @@ export const EXAMPLE_REQUEST = {
   templateId: "github-banner",
   size: "wide",
   state: { username: "octocat" },
+};
+
+/** The example studio link in the docs; a test checks that the studio reads all of it. */
+export const EXAMPLE_LINK: { templateId: TemplateId; query: Record<string, string> } = {
+  templateId: "contribution-banner",
+  query: { username: "octocat", size: "header", themeId: "sunset" },
 };
 
 const code = (value: unknown) => `\`${typeof value === "string" ? value : JSON.stringify(value)}\``;
@@ -94,6 +100,18 @@ export function exportApiDocs(siteUrl: URL): string[] {
     '- `404`: the GitHub user doesn\'t exist, with `issues: [{ "path": "state.username", … }]`.',
     '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "resetAt": "<ISO time>" }`. Or the export limit, 30 per 10 minutes per IP address, with no `resetAt`.',
     "- `500`: the export failed; trying again may work.",
+    "",
+    "## Studio links",
+    "",
+    "To give a user a banner they can still adjust, link to the studio with the same settings as query parameters:",
+    "",
+    `${new URL(`/studio/${EXAMPLE_LINK.templateId}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
+    "",
+    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link; uploaded images can't be linked. The studio leaves out values that aren't valid and keeps the rest.",
+    "",
+    "## Template settings",
+    "",
+    "For the export API's `state`, and studio links.",
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
       const defaults = initialState as Record<string, unknown>;

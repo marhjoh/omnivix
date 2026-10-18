@@ -4,12 +4,11 @@
  * checked again where they're used.
  */
 
+import { isGithubUsername } from "@/src/lib/githubUsername";
+
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 /** Browsers drop cookies over 4 KB; settings that don't fit just aren't remembered. */
 const MAX_COOKIE_VALUE_LENGTH = 3800;
-
-/** GitHub's username rules (letters, digits, single hyphens, at most 39 characters). */
-const GITHUB_USERNAME = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
 export const USERNAME_COOKIE = "omnivix-username";
 
@@ -22,7 +21,7 @@ export function parseUsernameCookie(value: string | undefined): string | null {
   if (value === undefined) return null;
   try {
     const username = decodeURIComponent(value);
-    return GITHUB_USERNAME.test(username) ? username : null;
+    return isGithubUsername(username) ? username : null;
   } catch {
     return null;
   }
@@ -49,11 +48,16 @@ export function readCookieClient(name: string): string | undefined {
     ?.slice(prefix.length);
 }
 
+/** Whether a value fits in a cookie once encoded; setCookieClient skips values that don't. */
+export function fitsInCookie(value: string): boolean {
+  return encodeURIComponent(value).length <= MAX_COOKIE_VALUE_LENGTH;
+}
+
 /** Client-only: saves a cookie for a year, for the next page request. */
 export function setCookieClient(name: string, value: string): void {
   if (typeof document === "undefined") return;
+  if (!fitsInCookie(value)) return;
   const encoded = encodeURIComponent(value);
-  if (encoded.length > MAX_COOKIE_VALUE_LENGTH) return;
   const secure = window.location.protocol === "https:";
   document.cookie = `${name}=${encoded}; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax${secure ? "; Secure" : ""}`;
 }

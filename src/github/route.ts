@@ -2,9 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isUserNotFound } from "@/src/github/client";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { GITHUB_LIMIT_TITLE } from "@/src/lib/rateLimitMessage";
-
-/** GitHub's rules: letters, digits and single hyphens (not at the ends), at most 39 characters. */
-const GITHUB_USERNAME = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+import { isGithubUsername } from "@/src/lib/githubUsername";
 
 /** The user doesn't exist, as a 404 naming `state.username`. Also used by the export. */
 export function githubUserNotFound(username: string) {
@@ -41,7 +39,7 @@ export async function githubRoute<T>(
   load: (username: string) => Promise<T>,
 ) {
   const username = request.nextUrl.searchParams.get("username")?.trim() ?? "";
-  if (!GITHUB_USERNAME.test(username)) return githubUserNotFound(username);
+  if (!isGithubUsername(username)) return githubUserNotFound(username);
   try {
     return NextResponse.json(await load(username));
   } catch (error) {

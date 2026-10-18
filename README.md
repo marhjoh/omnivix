@@ -91,15 +91,15 @@ CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull re
 
 ## Routes
 
-| Route                                                      | Purpose                                                                                 |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                |
-| `/studio/[templateId]`                                     | The editor for one template                                                             |
-| `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                        |
-| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                          |
-| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories) |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                            |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API          |
+| Route                                                      | Purpose                                                                                       |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                      |
+| `/studio/[templateId]`                                     | The editor for one template; query parameters prefill settings (`src/studio/linkSettings.ts`) |
+| `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                              |
+| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                                |
+| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories)       |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                                  |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API                |
 
 ## Architecture
 
@@ -155,7 +155,7 @@ If the token's rate limit is reached anyway, `src/github/rateLimit.ts` stops sen
 
 ### Theme
 
-The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), so pages never flash the wrong theme. The studio page also reads the cookie on the server, because its banner preview picks colors in JavaScript. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint.
+The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), so pages never flash the wrong theme. The studio page also reads the cookie on the server, because its banner preview picks colors in JavaScript. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint. A built-in background or `https` link is saved with its position and zoom; an upload isn't, because it's too large for a cookie.
 
 ### Link previews and search
 
