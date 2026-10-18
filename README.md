@@ -85,6 +85,7 @@ On Vercel, set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Productio
 | `pnpm test` / `pnpm test:watch`     | Unit tests (Vitest), once or on file changes                   |
 | `pnpm backgrounds`                  | Regenerate the background photos from Unsplash (all, or by id) |
 | `pnpm social-preview`               | Regenerate the repository's social preview image               |
+| `pnpm readme-screenshots`           | Regenerate the README screenshots from a running `pnpm dev`    |
 
 CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull request.
 
