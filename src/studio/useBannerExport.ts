@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
-import { githubLimitMessage } from "@/src/lib/rateLimitMessage";
+import { exportLimitMessage, githubLimitMessage } from "@/src/lib/rateLimitMessage";
 
 export type ExportKind = "download" | "copy";
 
@@ -21,6 +21,12 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string; resetAt?: string };
     if (body.resetAt) throw new Error(githubLimitMessage(new Date(body.resetAt)));
+    if (response.status === 429) {
+      const retryAfter = Number(response.headers.get("Retry-After"));
+      throw new Error(
+        exportLimitMessage(retryAfter > 0 ? new Date(Date.now() + retryAfter * 1000) : null),
+      );
+    }
     throw new Error(body.error ?? "Couldn't export the banner. Try again.");
   }
   return response.blob();
