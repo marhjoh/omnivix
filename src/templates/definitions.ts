@@ -50,11 +50,14 @@ const AUTHOR_MAX_LENGTH = 60;
 
 const baseState = z.object({
   size: z.enum(BANNER_SIZE_KEYS),
-  themeId: z.enum(THEME_PRESETS.map((preset) => preset.id) as [string, ...string[]]),
+  themeId: z.enum(THEME_PRESETS.map((preset) => preset.id)),
   backgroundImage: z.string().optional(),
   backgroundPosition: z.object({ x: percent, y: percent }).optional(),
   backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
 });
+
+/** GitHub username, for the banners that load GitHub data. */
+const usernameState = z.string().min(1, "Required");
 
 /** Horizontal placement of the content; in the quote banner also the text alignment. */
 const alignmentField: EditorFieldSchema = {
@@ -140,7 +143,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showDisplayName", label: "Full name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1, "Required"),
+    username: usernameState,
     year: yearState,
     showMonthLabels: z.boolean().default(true),
     showDayLabels: z.boolean().default(true),
@@ -220,7 +223,7 @@ export const reposBannerDefinition: TemplateDefinition<{
     { key: "showForks", label: "Forks", type: "toggle" },
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1, "Required"),
+    username: usernameState,
     showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
     profilePosition: profilePositionState,
@@ -281,7 +284,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     cellShapeField,
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1, "Required"),
+    username: usernameState,
     alignment: alignmentState,
     contentSize: z.enum(CONTENT_SIZES_OR_FILL),
     year: yearState,

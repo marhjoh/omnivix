@@ -12,10 +12,7 @@ import { githubRateLimited } from "@/src/github/route";
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
 
-/**
- * The studio never sends an invalid request, so for it reloading gets a fresh, valid state. Other
- * callers (agents, scripts) get `issues`, naming each field that failed.
- */
+/** The studio only sends an invalid request when its state is stale; others read `issues`. */
 const INVALID_REQUEST = "Couldn't export this banner. Reload the page and try again.";
 
 export const runtime = "nodejs";
@@ -25,8 +22,6 @@ function error(message: string, status: number) {
 }
 
 export async function POST(request: NextRequest) {
-  // The same checks the studio runs (text limits, choices, required username), on top of the
-  // template's defaults.
   const parsed = parseExportRequest(await request.json().catch(() => null));
   if (!parsed.ok) {
     return NextResponse.json({ error: INVALID_REQUEST, issues: parsed.issues }, { status: 400 });
