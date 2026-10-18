@@ -559,9 +559,13 @@ export function StudioShell({
       : undefined,
   );
   const backgroundFailed = backgroundStatus === "failed";
-  // A background that can't be used (it failed to load, or is an http link) is left out of the
-  // preview, so the banner never shows a broken-image icon; the sidebar keeps the choice.
-  const backgroundUnusable = backgroundFailed || isInsecureImageLink(state.backgroundImage);
+  /** Text in the background's link field that isn't a link; the picker reports it. */
+  const [unusableLinkText, setUnusableLinkText] = useState(false);
+  // A background that can't be used (it failed to load, is an http link, or the link field holds
+  // something else) is left out of the preview, so the banner never shows a broken-image icon and
+  // the export is blocked; the sidebar keeps the choice.
+  const backgroundUnusable =
+    backgroundFailed || isInsecureImageLink(state.backgroundImage) || unusableLinkText;
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
   const adjustableBackground = backgroundUnusable ? undefined : background;
   const adjustingBackground =
@@ -692,6 +696,7 @@ export function StudioShell({
               onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
               onError={showError}
               onErrorResolved={dismissToast}
+              onUnusableLinkText={setUnusableLinkText}
             />
           </div>
         </aside>

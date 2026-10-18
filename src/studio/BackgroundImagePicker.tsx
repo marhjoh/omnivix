@@ -49,6 +49,7 @@ export function BackgroundImagePicker({
   onChange,
   onError,
   onErrorResolved,
+  onUnusableLinkText,
 }: {
   id: string;
   label: string;
@@ -58,6 +59,8 @@ export function BackgroundImagePicker({
   onError: (message: string) => number;
   /** Hides the toast with this id (a reported link was changed or now works). */
   onErrorResolved: (toastId: number) => void;
+  /** The link field holds text that isn't a link, so the export must be blocked. */
+  onUnusableLinkText: (unusable: boolean) => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,9 +148,10 @@ export function BackgroundImagePicker({
     (raw: string) => {
       const link = raw.trim();
       setSettledLink(link);
+      onUnusableLinkText(link !== "" && !isHttpImageUrl(link));
       if (!link) onChange(undefined);
     },
-    [onChange],
+    [onChange, onUnusableLinkText],
   );
 
   const onUrlChange = (raw: string) => {
@@ -166,6 +170,7 @@ export function BackgroundImagePicker({
   /** A preset, or no background (`undefined`). */
   const select = (src: string | undefined) => {
     setSettledLink(undefined);
+    onUnusableLinkText(false);
     setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
@@ -176,11 +181,19 @@ export function BackgroundImagePicker({
   const selectEnterUrl = () => {
     setUrlEditorOpen(true);
     dropdown.close();
-    setUrlDraft(linkValue ? undefined : "");
+    if (linkValue) {
+      setUrlDraft(undefined);
+      return;
+    }
+    // Start over with an empty field.
+    setUrlDraft("");
+    setSettledLink(undefined);
+    onUnusableLinkText(false);
   };
 
   const selectUpload = () => {
     setSettledLink(undefined);
+    onUnusableLinkText(false);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();

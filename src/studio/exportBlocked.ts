@@ -7,7 +7,10 @@ import type { PreviewContentState } from "./preview/types";
 export function isExportBlocked(params: {
   previewState: PreviewContentState;
   stateValid: boolean;
-  /** The background can't be used: it failed to load, or is an http link. */
+  /**
+   * The background can't be used: it failed to load, is an http link, or the link field holds
+   * something else.
+   */
   backgroundUnusable: boolean;
   /**
    * The preview still shows an earlier version while the current one loads (a quick load being
