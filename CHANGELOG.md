@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/marhjoh/omnivix/compare/v1.7.1...v1.7.2) (2026-10-18)
+
+
+### Bug Fixes
+
+* block export while the background link field holds something that isn't a link ([#146](https://github.com/marhjoh/omnivix/issues/146)) ([b57dba9](https://github.com/marhjoh/omnivix/commit/b57dba952004cd1d8f2f369e0f6294e297a1e0d6))
+
 ## [1.7.1](https://github.com/marhjoh/omnivix/compare/v1.7.0...v1.7.1) (2026-10-17)
 
 
