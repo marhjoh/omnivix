@@ -23,9 +23,9 @@
   - **Contribution Banner:** a large contribution heatmap
   - **Quote Banner:** a quote and author; needs no GitHub username
 - **Three formats, one per aspect ratio:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
-- **Backgrounds:** 14 built-in city, nature and abstract backgrounds, a link to an https image, or your own upload (PNG, JPEG, WebP, AVIF or HEIC, up to 12 MB). Drag it into place and zoom up to 150%.
+- **Backgrounds:** 14 built-in city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
 - **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
-- **Export:** PNG or JPEG at 1×, 2× or 3× resolution (3× is 4752 × 1188 for LinkedIn); the last choice is remembered. Or copy the banner to the clipboard as a PNG
+- **Export:** PNG or JPEG at 1×, 2× or 3× resolution, or copy the banner to the clipboard
 - **Studio:** light and dark mode, and works on phones as well as desktop
 - **Privacy:** no sign-in, and only public GitHub data
 
@@ -59,111 +59,28 @@ cp .env.example .env.local              # then fill in GITHUB_TOKEN
 pnpm dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks).
 
 Without a `GITHUB_TOKEN`, the landing page and the Quote Banner still work, but the GitHub templates can't load data.
 
 ### Environment variables
 
-| Variable                          | Needed                          | What it's for                                                                                                                                                                                                     |
-| --------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`                    | For the GitHub templates        | GitHub API token for reading public profiles, repos and contributions. Either a classic token with no scopes, or a fine-grained token with read-only access to public repositories, works.                        |
-| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Without it, each server process makes up a random secret, which works for one process (such as `pnpm dev`); on Vercel the export fails without it. Use a long random string. |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export's headless browser open `/render` on a protected deployment (usually Preview). Vercel sets it when _Protection Bypass for Automation_ is enabled under **Settings → Deployment Protection**.      |
+| Variable                          | Needed                          | What it's for                                                                                                                    |
+| --------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN`                    | For the GitHub templates        | Reads public profiles, repos and contributions. A classic token with no scopes, or a fine-grained token with public read access. |
+| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Use a long random string.                                                                   |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export open `/render` on a protected deployment. See [Deployment](docs/deployment.md#deployment-protection).            |
 
-On Vercel, set `GITHUB_TOKEN` and `EXPORT_TOKEN_SECRET` for both the **Production** and the **Preview** environments, or exports and GitHub data fail on preview deployments. `VERCEL_PROJECT_PRODUCTION_URL` and `VERCEL_URL` are set by Vercel automatically and are used for absolute URLs in metadata and for the export's render URL.
+## Documentation
 
-### Scripts
-
-| Command                             | What it does                                                   |
-| ----------------------------------- | -------------------------------------------------------------- |
-| `pnpm dev`                          | Development server on port 3000                                |
-| `pnpm build` / `pnpm start`         | Production build and server                                    |
-| `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting                      |
-| `pnpm lint`                         | ESLint                                                         |
-| `pnpm typecheck`                    | TypeScript, no emit                                            |
-| `pnpm test` / `pnpm test:watch`     | Unit tests (Vitest), once or on file changes                   |
-| `pnpm backgrounds`                  | Regenerate the background photos from Unsplash (all, or by id) |
-| `pnpm social-preview`               | Regenerate the repository's social preview image               |
-| `pnpm readme-screenshots`           | Regenerate the README screenshots from a running `pnpm dev`    |
-
-CI runs the [checks in CONTRIBUTING.md](CONTRIBUTING.md#checks) on every pull request.
-
-## Routes
-
-| Route                                                      | Purpose                                                                                       |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `/`                                                        | Landing page: hero, template showcase, how it works, FAQ                                      |
-| `/studio/[templateId]`                                     | The editor for one template; query parameters prefill settings (`src/studio/linkSettings.ts`) |
-| `/render/[templateId]`                                     | Headless page the export screenshots; needs a valid export token                              |
-| `POST /api/export`                                         | Renders a banner and returns it as PNG or JPEG                                                |
-| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio (`/repos` returns both pinned and owned public repositories)       |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time                                                  |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI assistants, including the export API                |
-
-## Architecture
-
-### Project layout
-
-```
-app/                 Routes (App Router): pages, API handlers, metadata files
-src/templates/       Template definitions (fields, state schema, defaults), registry and renderers
-src/banner/          Building blocks the renderers share: frame, background, grid, cards, fitting
-src/studio/          Studio UI: shell, sidebar, preview
-src/export/          Export: token signing, render URL, Playwright capture
-src/github/          GitHub GraphQL client, normalization and in-memory cache
-src/landing/         Landing page sections and the shared FAQ copy
-src/og/              Link-preview image rendering
-src/theme/           Light/dark theme
-src/backgrounds/     Background presets
-src/lib/             Shared helpers: banner sizes, uploads, repository selection, site copy
-src/types/           Shared types and the contribution grid themes
-src/ui/              Generic UI pieces: dropdown, toast, hover highlight, icons
-public/              Brand assets, background photos, landing banners
-```
-
-### One renderer for preview and export
-
-The studio preview and the exported PNG use the same component tree: `src/templates/BannerRenderer.tsx` and each template's `Renderer.tsx`. There is no separate export-only version, so what you see in the studio is what you download.
-
-### Preview scaling
-
-The preview renders the banner at its real export size (for example 1584 × 396) and scales it down with a CSS `transform` to fit the available space (`src/studio/PreviewArtboard.tsx`, `src/studio/preview/fitScale.ts`). Layout and text wrapping are therefore identical to the export at any window size.
-
-### Content sizing
-
-The GitHub, contribution and repos banners lay out their content at a fixed natural size and scale it to the banner (`src/banner/FitContent.tsx`). XL is the largest size that fits the banner minus a margin, and each step down to XS is 80% of the one above, so every size works in every format. The quote banner uses fixed type sizes instead.
-
-### Export flow
-
-1. The studio posts the template, size, settings, resolution and format to `POST /api/export`. Settings that aren't sent use the template's defaults; an invalid request gets a `400` with `issues`, one `{ path, message }` per field that failed (`src/export/payload.ts`), and a GitHub user that doesn't exist gets a `404` (`src/export/renderProblem.ts`).
-2. The server puts them in a stateless, HMAC-signed token that expires after 2 minutes. It's stateless because the API route and the render page can run on different serverless instances.
-3. Playwright opens `/render/[templateId]?token=…` at the banner's size and chosen pixel ratio (1, 2 or 3), waits for fonts, images and content sizing, and screenshots `.banner-export-root`.
-4. The screenshot (PNG, or JPEG at 90% quality) is returned as a download.
-
-Locally, Playwright uses its own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
-
-The settings travel in the signed token in the render URL, except an uploaded or linked background: `/api/export` takes it out of the token and Playwright serves it to the render page from memory (`src/export/background.ts`). Links are downloaded by the server first, and only from public https addresses (`src/export/backgroundLink.ts`). The render page can't load anything except the app itself and GitHub profile photos.
-
-Exports are rate limited by a Vercel Firewall rule, not in the code: **Rate limit exports**, `POST /api/export`, 30 requests per 10 minutes per IP, answering `429`. It's configured in the Vercel dashboard (Firewall) or with `vercel firewall rules`, so a fork has no limit until it adds one. The studio shows a `429` without GitHub's reset time as "Too many exports. Try again in a few minutes." (`src/lib/rateLimitMessage.ts`).
-
-### GitHub data
-
-`src/github/client.ts` queries GitHub's GraphQL API with `GITHUB_TOKEN` and normalizes the results into stable types. Results are cached briefly in server memory to stay within GitHub's rate limits (durations in `client.ts`). Nothing is stored in a database.
-
-If the token's rate limit is reached anyway, `src/github/rateLimit.ts` stops sending requests until it resets and logs it once. The API routes and the export answer `429` with the reset time, and the studio shows "GitHub's limit is reached. Try again at 14:05." in the visitor's time, with Try again turned off until then.
-
-### Theme
-
-The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), so pages never flash the wrong theme. The studio page also reads the cookie on the server, because its banner preview picks colors in JavaScript. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint. A built-in background or `https` link is saved with its position and zoom; an upload isn't, because it's too large for a cookie.
-
-### Link previews and search
-
-Titles, descriptions and Open Graph images are set per page. The landing page's "How it works" and FAQ copy lives in `src/landing/landingContent.ts`; the visible FAQ, the JSON-LD and `/llms.txt` are all generated from it. The export API section of `/llms.txt` is generated from the templates, sizes and formats (`src/export/apiDocs.ts`), so it stays in step with what the API accepts.
+- [Architecture](docs/architecture.md): project layout, rendering, export flow, GitHub data, theme
+- [API](docs/api.md): routes, the export API and studio links
+- [Deployment](docs/deployment.md): running your own copy on Vercel
+- [`/llms.txt`](https://omnivix.vercel.app/llms.txt): every template's settings, generated from the code
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, code guidelines and how to open a pull request.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, code guidelines and how to open a pull request. To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Author
 

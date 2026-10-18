@@ -14,7 +14,7 @@ export function githubLimitMessage(resetAt: Date): string {
 }
 
 /**
- * Omnivix's own export limit: a Vercel Firewall rule (see README) that counts exports per IP in
+ * Omnivix's own export limit: a Vercel Firewall rule (see docs/deployment.md) that counts exports per IP in
  * 10-minute windows. Its 429 doesn't say when the window ends, so there's no exact time.
  */
 export const EXPORT_LIMIT_MESSAGE = "Too many exports. Try again in a few minutes.";

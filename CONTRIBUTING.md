@@ -4,7 +4,7 @@ For setup, see [Getting started](README.md#getting-started). By taking part, you
 
 ## Before you start
 
-Open an issue first for larger changes or new templates, so the direction is agreed early.
+Open an issue first for larger changes or new templates, so the direction is agreed early. The issue templates ask for what's needed: a problem and when it's done for a task, steps and a studio link for a bug. Report security problems privately, as described in [SECURITY.md](SECURITY.md).
 
 ## Branches and commits
 
@@ -15,16 +15,25 @@ Open an issue first for larger changes or new templates, so the direction is agr
 
 - Use `pnpm` only; `pnpm-lock.yaml` is the source of truth.
 - Keep route handlers thin; put logic in `src/*`.
-- A template needs its id in `TemplateId` (`src/types/template.ts`), a definition in `src/templates/definitions.ts`, an entry in `src/templates/registry.ts`, and a renderer in `src/templates/<template-id>/Renderer.tsx` wired into `src/templates/BannerRenderer.tsx` (the [shared renderer](README.md#one-renderer-for-preview-and-export)). For the landing page and link previews, add `public/landing/<template-id>.webp` (listed in `src/landing/landingPreviewAssets.ts`) and a JPEG copy in `src/og/banners/`.
 - Derive values during render instead of copying them into state with `useEffect` + `setState`.
-- Upgrade `playwright` and `@sparticuz/chromium` together (see [Export flow](README.md#export-flow)).
+- Upgrade `playwright` and `@sparticuz/chromium` together (see [Chromium](docs/deployment.md#chromium)).
+
+How the pieces fit together is described in [docs/architecture.md](docs/architecture.md).
+
+## Adding a template
+
+1. Add its id to `TemplateId` (`src/types/template.ts`).
+2. Add a definition in `src/templates/definitions.ts` and an entry in `src/templates/registry.ts`.
+3. Add a renderer in `src/templates/<template-id>/Renderer.tsx` and wire it into `src/templates/BannerRenderer.tsx`, the [shared renderer](docs/architecture.md#rendering) for preview and export.
+4. For the landing page, add `public/landing/<template-id>.webp` and list it in `src/landing/landingPreviewAssets.ts`.
+5. For link previews, add a JPEG copy in `src/og/banners/`.
 
 ## Pull requests
 
 - Keep PRs small and focused, and link the issue they close.
 - Add screenshots for UI changes.
 - PRs are squash-merged, and the PR title becomes the commit on `main`. Write it as a Conventional Commit; CI checks it.
-- If a PR has more than one change for the release notes, list each one in the PR description:
+- If a PR has more than one change for the release notes, list each one in the PR description. The PR template has the block ready:
 
   ```
   BEGIN_COMMIT_OVERRIDE
@@ -51,4 +60,12 @@ CI runs every check below on each pull request, and a PR must pass all of them b
 | Tests      | `pnpm test`         | add `--coverage` for the summary      |
 | Build      | `pnpm build`        |                                       |
 
-`pnpm build` doesn't need `.env.local`, because secrets are only read at request time.
+`pnpm build` doesn't need `.env.local`, because secrets are only read at request time. While working, `pnpm test:watch` reruns the tests on file changes.
+
+## Maintenance scripts
+
+| Command                   | What it does                                                   |
+| ------------------------- | -------------------------------------------------------------- |
+| `pnpm backgrounds`        | Regenerate the background photos from Unsplash (all, or by id) |
+| `pnpm social-preview`     | Regenerate the repository's social preview image               |
+| `pnpm readme-screenshots` | Regenerate the README screenshots from a running `pnpm dev`    |
