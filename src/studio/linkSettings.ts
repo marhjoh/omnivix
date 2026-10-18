@@ -1,13 +1,9 @@
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
-import { isGithubUsername } from "@/src/studio/studioCookies";
+import { isGithubUsername } from "@/src/lib/githubUsername";
 import { isSavableBackground } from "@/src/studio/savedSettings";
 
-/**
- * Settings from a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the
- * export API's `size` and `state` keys, as text. Values that aren't valid are left out, so the
- * studio uses its saved setting or the default instead.
- */
+/** Settings from a studio link, with the username apart (it's saved for every template). */
 export interface LinkSettings {
   settings: Record<string, unknown>;
   username: string | null;
@@ -15,6 +11,11 @@ export interface LinkSettings {
 
 type Query = Record<string, string | string[] | undefined>;
 
+/**
+ * Reads a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the export
+ * API's `size` and `state` keys, as text. Values that aren't valid are left out, so the studio
+ * uses the saved setting or the default instead.
+ */
 export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSettings | null {
   const { schema, stateSchema, initialState, meta } = templateRegistry[templateId];
   const fieldTypes = new Map(schema.map((field) => [field.key, field.type]));
@@ -39,11 +40,29 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
   }
   if (Object.keys(candidate).length === 0) return null;
 
-  // Check every value with the template's rules, on top of its defaults, and drop the ones that fail.
+  // Drop the values the template's rules reject. A placeholder username keeps a link without one
+  // from failing on it.
   const result = stateSchema.safeParse({ ...initialState, username: "user", ...candidate });
   if (!result.success) {
     for (const issue of result.error.issues) delete candidate[String(issue.path[0])];
   }
   const { username, ...settings } = candidate;
   return { settings, username: typeof username === "string" ? username : null };
+}
+
+/**
+ * Saved settings with a link's applied over them. A linked background replaces the saved one's
+ * position and zoom, which belong to that image.
+ */
+export function withLink(
+  saved: { settings: Record<string, unknown> | null; username: string | null },
+  link: LinkSettings | null,
+): { settings: Record<string, unknown> | null; username: string | null } {
+  if (!link) return saved;
+  const settings = { ...saved.settings };
+  if ("backgroundImage" in link.settings) {
+    delete settings.backgroundPosition;
+    delete settings.backgroundZoom;
+  }
+  return { settings: { ...settings, ...link.settings }, username: link.username ?? saved.username };
 }

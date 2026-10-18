@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
 import { applySavedSettings } from "@/src/studio/savedSettings";
-import { parseLinkSettings } from "@/src/studio/linkSettings";
+import { parseLinkSettings, withLink } from "@/src/studio/linkSettings";
 import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
@@ -66,12 +66,13 @@ export default async function StudioPage({
   const savedUsername = parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value);
   // A studio link's settings win over the saved ones (see linkSettings.ts).
   const link = parseLinkSettings(templateId, await searchParams);
+  const start = withLink({ settings: savedSettings, username: savedUsername }, link);
   // The same settings the studio starts from, so the GitHub data matches what it shows.
   const initialState = applySavedSettings(
     { ...templateRegistry[templateId].initialState },
     templateId,
-    link ? { ...savedSettings, ...link.settings } : savedSettings,
-    link?.username ?? savedUsername,
+    start.settings,
+    start.username,
   );
   const initialGithubData = await loadInitialGithubData(templateId, initialState);
   return (

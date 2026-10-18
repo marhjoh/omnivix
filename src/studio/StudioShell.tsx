@@ -55,7 +55,7 @@ import {
   PIXEL_RATIO_COOKIE_NAME,
 } from "@/src/studio/downloadCookies";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
-import type { LinkSettings } from "@/src/studio/linkSettings";
+import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -287,21 +287,20 @@ export function StudioShell({
   // Saved settings come from cookies, so the server renders them and nothing switches after load.
   // The browser reads the cookies again when the studio is opened by navigating (Back, Forward, a
   // link): Next.js may reuse the page from an earlier visit then, with props holding older settings.
+  // A studio link is applied over them (withLink).
   const [saved] = useState(() =>
-    typeof document === "undefined"
-      ? { settings: savedSettings, username: savedUsername }
-      : {
-          settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
-          username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
-        },
+    withLink(
+      typeof document === "undefined"
+        ? { settings: savedSettings, username: savedUsername }
+        : {
+            settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
+            username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
+          },
+      link,
+    ),
   );
   const [state, setState] = useState<Record<string, unknown>>(() =>
-    applySavedSettings(
-      { ...definition.initialState },
-      templateId,
-      link ? { ...saved.settings, ...link.settings } : saved.settings,
-      link?.username ?? saved.username,
-    ),
+    applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
   );
   // The link is applied once: drop it from the address bar, so a reload keeps later changes
   // (saved in cookies like any other).
@@ -559,9 +558,7 @@ export function StudioShell({
     setToast((current) => (id === undefined || current?.id === id ? null : current));
   }, []);
   // GitHub banners ask for a username right away when none is saved or linked.
-  const [showUsernameModal, setShowUsernameModal] = useState(
-    needsUsername && !(link?.username ?? saved.username),
-  );
+  const [showUsernameModal, setShowUsernameModal] = useState(needsUsername && !saved.username);
   const openUsernameModal = useCallback(() => setShowUsernameModal(true), []);
   const closeUsernameModal = useCallback(() => setShowUsernameModal(false), []);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLinkSettings } from "./linkSettings";
+import { parseLinkSettings, withLink } from "./linkSettings";
 
 describe("parseLinkSettings", () => {
   it("reads settings with the export API's keys", () => {
@@ -58,5 +58,40 @@ describe("parseLinkSettings", () => {
     expect(parseLinkSettings("quote-banner", { quote: ["Hi", "Bye"] })?.settings).toEqual({
       quote: "Hi",
     });
+  });
+});
+
+describe("withLink", () => {
+  const saved = {
+    settings: {
+      alignment: "right",
+      backgroundImage: "/backgrounds/seoul.avif",
+      backgroundPosition: { x: 20, y: 70 },
+      backgroundZoom: 1.25,
+    },
+    username: "saved-user",
+  };
+
+  it("applies the link over the saved settings and username", () => {
+    expect(withLink(saved, { settings: { alignment: "left" }, username: "linked-user" })).toEqual({
+      settings: { ...saved.settings, alignment: "left" },
+      username: "linked-user",
+    });
+  });
+
+  it("doesn't move a linked background to the saved one's position and zoom", () => {
+    const result = withLink(saved, {
+      settings: { backgroundImage: "/backgrounds/sydney.avif" },
+      username: null,
+    });
+    expect(result.settings).toEqual({
+      alignment: "right",
+      backgroundImage: "/backgrounds/sydney.avif",
+    });
+    expect(result.username).toBe("saved-user");
+  });
+
+  it("keeps the saved settings without a link", () => {
+    expect(withLink(saved, null)).toBe(saved);
   });
 });

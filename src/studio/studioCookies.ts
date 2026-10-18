@@ -4,22 +4,17 @@
  * checked again where they're used.
  */
 
+import { isGithubUsername } from "@/src/lib/githubUsername";
+
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 /** Browsers drop cookies over 4 KB; settings that don't fit just aren't remembered. */
 const MAX_COOKIE_VALUE_LENGTH = 3800;
-
-/** GitHub's username rules (letters, digits, single hyphens, at most 39 characters). */
-const GITHUB_USERNAME = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
 export const USERNAME_COOKIE = "omnivix-username";
 
 /** One cookie per template, holding that template's settings as JSON. */
 export function settingsCookieName(templateId: string): string {
   return `omnivix-settings-${templateId}`;
-}
-
-export function isGithubUsername(value: string): boolean {
-  return GITHUB_USERNAME.test(value);
 }
 
 export function parseUsernameCookie(value: string | undefined): string | null {
