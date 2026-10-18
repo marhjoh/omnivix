@@ -17,6 +17,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "knip": "knip",
+    "doctor": "pnpm dlx react-doctor@latest --no-telemetry",
     "social-preview": "tsx scripts/social-preview.mts",
     "readme-screenshots": "tsx scripts/readme-screenshots.mts",
     "backgrounds": "tsx scripts/backgrounds.mts"
@@ -43,6 +45,7 @@
     "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "knip": "^6.42.0",
     "postcss": "^8.5.29",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",

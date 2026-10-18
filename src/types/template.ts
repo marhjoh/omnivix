@@ -15,7 +15,7 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export type { BannerSize };
 
-export type EditorFieldType =
+type EditorFieldType =
   | "text"
   | "textarea"
   | "toggle"
@@ -38,7 +38,7 @@ export interface EditorFieldSchema {
   maxLength?: number;
 }
 
-export interface TemplateMeta {
+interface TemplateMeta {
   id: TemplateId;
   title: string;
   description: string;

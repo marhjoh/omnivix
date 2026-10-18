@@ -36,6 +36,10 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm lint
 
+      - name: Unused code
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm knip
+
       - name: Typecheck
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm typecheck
