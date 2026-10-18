@@ -4,7 +4,7 @@ For setup, see [Getting started](README.md#getting-started). By taking part, you
 
 ## Before you start
 
-Open an issue first for larger changes or new templates, so the direction is agreed early. The issue templates ask for what's needed: a problem and when it's done for a task, steps and a studio link for a bug. Report security problems privately, as described in [SECURITY.md](SECURITY.md).
+Open an issue first for larger changes or new templates, so the direction is agreed early. The issue templates ask for what's needed: a problem and when it's done for a task, steps and the banner's settings for a bug. Report security problems privately, as described in [SECURITY.md](SECURITY.md).
 
 ## Branches and commits
 

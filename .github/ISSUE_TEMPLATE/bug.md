@@ -14,6 +14,6 @@ labels: bug
 
 ## Browser and device
 
-## Banner link
+## Banner
 
-<!-- Copy the studio link, so the banner can be opened with the same settings. Uploaded backgrounds aren't included. -->
+<!-- Template, GitHub username and format, plus any settings you changed. A screenshot helps. -->
