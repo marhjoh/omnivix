@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/marhjoh/omnivix/compare/v1.10.0...v1.11.0) (2026-10-18)
+
+
+### Features
+
+* document the export API in llms.txt ([#155](https://github.com/marhjoh/omnivix/issues/155)) ([c30b7cc](https://github.com/marhjoh/omnivix/commit/c30b7cc7a97b4e705c72a95abdfca42a16b3346c))
+
 ## [1.10.0](https://github.com/marhjoh/omnivix/compare/v1.9.0...v1.10.0) (2026-10-18)
 
 
