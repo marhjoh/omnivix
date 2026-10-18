@@ -17,6 +17,7 @@ import { isOneOf } from "@/src/lib/isOneOf";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { THEME_PRESETS } from "@/src/types/theme";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -49,7 +50,7 @@ const AUTHOR_MAX_LENGTH = 60;
 
 const baseState = z.object({
   size: z.enum(BANNER_SIZE_KEYS),
-  themeId: z.string(),
+  themeId: z.enum(THEME_PRESETS.map((preset) => preset.id) as [string, ...string[]]),
   backgroundImage: z.string().optional(),
   backgroundPosition: z.object({ x: percent, y: percent }).optional(),
   backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
@@ -139,7 +140,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showDisplayName", label: "Full name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1),
+    username: z.string().min(1, "Required"),
     year: yearState,
     showMonthLabels: z.boolean().default(true),
     showDayLabels: z.boolean().default(true),
@@ -219,7 +220,7 @@ export const reposBannerDefinition: TemplateDefinition<{
     { key: "showForks", label: "Forks", type: "toggle" },
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1),
+    username: z.string().min(1, "Required"),
     showAvatar: z.boolean().default(true),
     showDisplayName: z.boolean().default(false),
     profilePosition: profilePositionState,
@@ -280,7 +281,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     cellShapeField,
   ],
   stateSchema: baseState.extend({
-    username: z.string().min(1),
+    username: z.string().min(1, "Required"),
     alignment: alignmentState,
     contentSize: z.enum(CONTENT_SIZES_OR_FILL),
     year: yearState,
@@ -329,7 +330,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
   ],
   stateSchema: baseState.extend({
-    quote: z.string().min(1).max(QUOTE_MAX_LENGTH),
+    quote: z.string().min(1, "Required").max(QUOTE_MAX_LENGTH),
     author: z.string().max(AUTHOR_MAX_LENGTH).default(""),
     alignment: alignmentState,
     contentSize: contentSizeState,

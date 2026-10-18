@@ -136,7 +136,7 @@ The GitHub, contribution and repos banners lay out their content at a fixed natu
 
 ### Export flow
 
-1. The studio posts the template, size, settings, resolution and format to `POST /api/export`.
+1. The studio posts the template, size, settings, resolution and format to `POST /api/export`. Settings that aren't sent use the template's defaults; an invalid request gets a `400` with `issues`, one `{ path, message }` per field that failed (`src/export/payload.ts`).
 2. The server puts them in a stateless, HMAC-signed token that expires after 2 minutes. It's stateless because the API route and the render page can run on different serverless instances.
 3. Playwright opens `/render/[templateId]?token=…` at the banner's size and chosen pixel ratio (1, 2 or 3), waits for fonts, images and content sizing, and screenshots `.banner-export-root`.
 4. The screenshot (PNG, or JPEG at 90% quality) is returned as a download.
