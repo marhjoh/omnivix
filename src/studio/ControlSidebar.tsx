@@ -327,6 +327,7 @@ export function ControlSidebar({
   onToggleBackgroundAdjusting,
   onError,
   onErrorResolved,
+  onUnusableLinkText,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -347,6 +348,8 @@ export function ControlSidebar({
   onError: (message: string) => number;
   /** Hides the toast with this id, if it's still showing. */
   onErrorResolved: (toastId: number) => void;
+  /** The background's link field holds text that isn't a link (see BackgroundImagePicker). */
+  onUnusableLinkText: (unusable: boolean) => void;
 }) {
   const mode = state.mode as string | undefined;
 
@@ -517,6 +520,7 @@ export function ControlSidebar({
                 onChange={(next) => onChange(field.key, next)}
                 onError={onError}
                 onErrorResolved={onErrorResolved}
+                onUnusableLinkText={onUnusableLinkText}
               />
               {background ? (
                 <BackgroundAdjustControls

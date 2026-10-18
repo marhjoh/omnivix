@@ -49,6 +49,7 @@ export function BackgroundImagePicker({
   onChange,
   onError,
   onErrorResolved,
+  onUnusableLinkText,
 }: {
   id: string;
   label: string;
@@ -58,6 +59,11 @@ export function BackgroundImagePicker({
   onError: (message: string) => number;
   /** Hides the toast with this id (a reported link was changed or now works). */
   onErrorResolved: (toastId: number) => void;
+  /**
+   * Whether the link field holds text that isn't a link (`fake`, `example.png`). It never becomes
+   * the background, so the studio is told separately, to block the export like a link that fails.
+   */
+  onUnusableLinkText: (unusable: boolean) => void;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,9 +151,10 @@ export function BackgroundImagePicker({
     (raw: string) => {
       const link = raw.trim();
       setSettledLink(link);
+      onUnusableLinkText(link !== "" && !isHttpImageUrl(link));
       if (!link) onChange(undefined);
     },
-    [onChange],
+    [onChange, onUnusableLinkText],
   );
 
   const onUrlChange = (raw: string) => {
@@ -166,6 +173,7 @@ export function BackgroundImagePicker({
   /** A preset, or no background (`undefined`). */
   const select = (src: string | undefined) => {
     setSettledLink(undefined);
+    onUnusableLinkText(false);
     setUploadSession(null);
     onChange(src);
     setUrlDraft(undefined);
@@ -181,6 +189,7 @@ export function BackgroundImagePicker({
 
   const selectUpload = () => {
     setSettledLink(undefined);
+    onUnusableLinkText(false);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
     fileInputRef.current?.click();
