@@ -5,6 +5,7 @@ import {
   fetchErrorProblem,
   noReposProblem,
   userNotFoundProblem,
+  githubLimitProblem,
 } from "./computePreviewContentState";
 
 describe("computePreviewContentState", () => {
@@ -105,5 +106,17 @@ describe("previewLoadingMessage", () => {
     expect(previewLoadingMessage(["contributions"])).toBe("Loading contributions…");
     expect(previewLoadingMessage(["user", "repos"])).toBe("Loading profile and repositories…");
     expect(previewLoadingMessage([])).toBe("Loading…");
+  });
+});
+
+describe("githubLimitProblem", () => {
+  it("says when the limit resets and keeps Try again off until then", () => {
+    const resetAt = new Date(2026, 9, 18, 14, 5);
+    expect(githubLimitProblem(resetAt)).toEqual({
+      title: "GitHub's limit is reached",
+      hint: `Try again at ${resetAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`,
+      action: "retry",
+      retryAt: resetAt,
+    });
   });
 });

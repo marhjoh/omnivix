@@ -8,6 +8,7 @@ import {
 } from "@/src/github/normalize";
 import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
+import { guardRateLimit } from "@/src/github/rateLimit";
 
 /** TTL: latest/current year data changes within the day. Historical years are stable. */
 // The landing FAQ (src/landing/landingContent.ts) states these durations; update it if they change.
@@ -23,9 +24,12 @@ function graphqlClient() {
   if (!token) {
     throw new Error("GITHUB_TOKEN is not set");
   }
-  return graphql.defaults({
+  const client = graphql.defaults({
     headers: { authorization: `token ${token}` },
   });
+  // Every request goes through the rate-limit guard (see rateLimit.ts).
+  return <T>(query: string, variables?: Parameters<typeof client>[1]) =>
+    guardRateLimit(() => client<T>(query, variables));
 }
 
 /** GitHub logins are case-insensitive, so cache keys are too. */

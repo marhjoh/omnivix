@@ -7,6 +7,8 @@ import { buildRenderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
+import { GithubRateLimitError } from "@/src/github/rateLimit";
+import { githubRateLimited } from "@/src/github/route";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (exportError) {
+    if (exportError instanceof GithubRateLimitError) return githubRateLimited(exportError);
     console.error("Export failed", exportError);
     return error("Couldn't export the banner. Try again.", 500);
   }

@@ -149,6 +149,8 @@ The settings travel in the signed token in the render URL, except an uploaded or
 
 `src/github/client.ts` queries GitHub's GraphQL API with `GITHUB_TOKEN` and normalizes the results into stable types. Results are cached briefly in server memory to stay within GitHub's rate limits (durations in `client.ts`). Nothing is stored in a database.
 
+If the token's rate limit is reached anyway, `src/github/rateLimit.ts` stops sending requests until it resets and logs it once. The API routes and the export answer `429` with the reset time, and the studio shows "GitHub's limit is reached. Try again at 14:05." in the visitor's time, with Try again turned off until then.
+
 ### Theme
 
 The light/dark choice is stored in the `omnivix-theme` cookie. An inline script in `<head>` sets `data-theme` before the first paint (from the cookie, or the system setting), so pages never flash the wrong theme. The studio page also reads the cookie on the server, because its banner preview picks colors in JavaScript. The export uses the same theme for the banner's interface elements. The studio's settings (one cookie per template) and GitHub username are cookies too, so the studio renders them from the first paint.

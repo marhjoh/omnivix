@@ -8,6 +8,7 @@ import type { RepoNormalized } from "@/src/github/normalize";
 import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
+import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -125,6 +126,7 @@ function RepoMultiSelect({
   catalog,
   loading,
   error,
+  retryAt,
   onRetry,
   valueCsv,
   maxPick,
@@ -133,11 +135,14 @@ function RepoMultiSelect({
   catalog: RepoNormalized[];
   loading: boolean;
   error: string | null;
+  /** Until then Retry is disabled (GitHub's rate limit). */
+  retryAt: Date | null;
   onRetry: () => void;
   valueCsv: string;
   maxPick: number;
   onChange: (csv: string) => void;
 }) {
+  const retryReached = useTimeReached(retryAt);
   const selected = parseRepoSelection(valueCsv);
   // The picks from when the list opened come first, so they show (checked) while the rest
   // loads and don't move when it arrives. Clicking later doesn't reorder anything.
@@ -194,8 +199,13 @@ function RepoMultiSelect({
             <p className="text-xs text-danger" role="alert">
               {error}
             </p>
-            <button type="button" onClick={onRetry} className="btn-secondary px-3 py-1 text-xs">
-              Retry
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={!retryReached}
+              className="btn-secondary px-3 py-1 text-xs"
+            >
+              Try again
             </button>
           </div>
         ) : loading ? (
@@ -320,6 +330,7 @@ export function ControlSidebar({
   repoCatalog,
   repoCatalogLoading,
   repoCatalogError,
+  repoCatalogRetryAt,
   onRetryRepoCatalog,
   disabledFields,
   adjustableBackground: background,
@@ -336,6 +347,8 @@ export function ControlSidebar({
   repoCatalog: RepoNormalized[];
   repoCatalogLoading: boolean;
   repoCatalogError: string | null;
+  /** When GitHub's rate limit resets, if that's why the repositories didn't load. */
+  repoCatalogRetryAt: Date | null;
   onRetryRepoCatalog: () => void;
   /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
   disabledFields: ReadonlySet<string>;
@@ -383,6 +396,7 @@ export function ControlSidebar({
               catalog={repoCatalog}
               loading={repoCatalogLoading}
               error={repoCatalogError}
+              retryAt={repoCatalogRetryAt}
               onRetry={onRetryRepoCatalog}
               valueCsv={String(state.selectedRepos ?? "")}
               maxPick={MAX_REPOS}

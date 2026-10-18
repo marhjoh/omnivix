@@ -2,6 +2,7 @@ import { useState } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
+import { githubLimitMessage } from "@/src/lib/rateLimitMessage";
 
 export type ExportKind = "download" | "copy";
 
@@ -18,7 +19,8 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
     throw new Error("Couldn't reach the server. Check your connection and try again.");
   }
   if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string };
+    const body = (await response.json().catch(() => ({}))) as { error?: string; resetAt?: string };
+    if (body.resetAt) throw new Error(githubLimitMessage(new Date(body.resetAt)));
     throw new Error(body.error ?? "Couldn't export the banner. Try again.");
   }
   return response.blob();
