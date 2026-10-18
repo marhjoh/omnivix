@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/marhjoh/omnivix/compare/v1.9.0...v1.10.0) (2026-10-18)
+
+
+### Features
+
+* name the fields that failed in export errors and fill in default settings ([#153](https://github.com/marhjoh/omnivix/issues/153)) ([3ab9c29](https://github.com/marhjoh/omnivix/commit/3ab9c292fcedd61a0f82abd5108ee7722108688f))
+
 ## [1.9.0](https://github.com/marhjoh/omnivix/compare/v1.8.0...v1.9.0) (2026-10-18)
 
 
