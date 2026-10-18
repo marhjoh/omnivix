@@ -1,6 +1,6 @@
 ---
 name: Task
-about: A feature, change or chore, described by its problem and when it's done
+about: A feature, change or chore
 ---
 
 ## Problem
