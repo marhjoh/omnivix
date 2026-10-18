@@ -1,6 +1,7 @@
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 import { isGithubUsername } from "@/src/studio/studioCookies";
+import { isSavableBackground } from "@/src/studio/savedSettings";
 
 /**
  * Settings from a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the
@@ -31,8 +32,7 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
     } else if (type === "range") {
       if (value.trim() !== "" && Number.isFinite(Number(value))) candidate[key] = Number(value);
     } else if (type === "backgroundPicker") {
-      // Uploads are data URLs, far too long for a link; presets and https links are fine.
-      if (!value.startsWith("data:")) candidate[key] = value;
+      if (isSavableBackground(value)) candidate[key] = value;
     } else {
       candidate[key] = value;
     }

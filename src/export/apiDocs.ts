@@ -107,7 +107,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${new URL(`/studio/${EXAMPLE_LINK.templateId}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
     "",
-    "`size` and the settings below work as in the export API; toggles are `true` or `false`. Uploaded images can't be linked. The studio leaves out values that aren't valid and keeps the rest.",
+    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link; uploaded images can't be linked. The studio leaves out values that aren't valid and keeps the rest.",
     "",
     "## Template settings",
     "",

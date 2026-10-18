@@ -44,6 +44,16 @@ describe("parseLinkSettings", () => {
     ).toBeNull();
   });
 
+  it("accepts presets and https links as backgrounds", () => {
+    expect(
+      parseLinkSettings("quote-banner", { backgroundImage: "https://example.com/photo.jpg" })
+        ?.settings,
+    ).toEqual({ backgroundImage: "https://example.com/photo.jpg" });
+    expect(
+      parseLinkSettings("quote-banner", { backgroundImage: "http://example.com/photo.jpg" }),
+    ).toBeNull();
+  });
+
   it("uses the first of repeated values", () => {
     expect(parseLinkSettings("quote-banner", { quote: ["Hi", "Bye"] })?.settings).toEqual({
       quote: "Hi",

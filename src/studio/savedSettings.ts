@@ -3,6 +3,12 @@ import { normalizeBannerSize } from "@/src/lib/sizes";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSize, TemplateId } from "@/src/types/template";
 import { THEME_PRESETS } from "@/src/types/theme";
+import { presetBySrc } from "@/src/backgrounds/presets";
+
+/** A background that can be saved and linked: a preset or an https link, not an upload. */
+export function isSavableBackground(value: unknown): value is string {
+  return typeof value === "string" && (!!presetBySrc(value) || /^https:\/\//i.test(value));
+}
 
 /**
  * The template's defaults with saved settings applied. Saved values come from the browser, so
@@ -24,6 +30,11 @@ export function applySavedSettings(
   }
   if (templateRegistry[templateId].meta.needsUsername) {
     merged.username = username ?? "";
+  }
+  if (merged.backgroundImage !== undefined && !isSavableBackground(merged.backgroundImage)) {
+    delete merged.backgroundImage;
+    delete merged.backgroundPosition;
+    delete merged.backgroundZoom;
   }
   const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
   if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {

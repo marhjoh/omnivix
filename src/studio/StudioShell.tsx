@@ -32,6 +32,7 @@ import { UsernameModal } from "@/src/studio/UsernameModal";
 import {
   parseSettingsCookie,
   parseUsernameCookie,
+  fitsInCookie,
   readCookieClient,
   settingsCookieName,
   setCookieClient,
@@ -58,7 +59,11 @@ import type { LinkSettings } from "@/src/studio/linkSettings";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
-import { applySavedSettings, clampSelectedRepos } from "@/src/studio/savedSettings";
+import {
+  applySavedSettings,
+  clampSelectedRepos,
+  isSavableBackground,
+} from "@/src/studio/savedSettings";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
@@ -86,14 +91,15 @@ function previewErrorFor(githubData: readonly GithubDataKind[], e: FetchSlotErro
 /** The part of the state that's saved per template, as JSON. */
 function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {
   const clone = { ...state };
-  // Uploads are too large to store; position and zoom only make sense with their image.
+  // Username is global; avoid stale per-template copies.
+  if (needsUsername) delete clone.username;
+  const json = JSON.stringify(clone);
+  // Presets and https links are kept, with their position and zoom. Uploads are too large, and a
+  // very long link is left out rather than losing every setting to the cookie size limit.
+  if (isSavableBackground(clone.backgroundImage) && fitsInCookie(json)) return json;
   delete clone.backgroundImage;
   delete clone.backgroundPosition;
   delete clone.backgroundZoom;
-  if (needsUsername) {
-    // Username is global; avoid stale per-template copies.
-    delete clone.username;
-  }
   return JSON.stringify(clone);
 }
 

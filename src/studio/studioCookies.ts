@@ -53,11 +53,16 @@ export function readCookieClient(name: string): string | undefined {
     ?.slice(prefix.length);
 }
 
+/** Whether a value fits in a cookie once encoded; setCookieClient skips values that don't. */
+export function fitsInCookie(value: string): boolean {
+  return encodeURIComponent(value).length <= MAX_COOKIE_VALUE_LENGTH;
+}
+
 /** Client-only: saves a cookie for a year, for the next page request. */
 export function setCookieClient(name: string, value: string): void {
   if (typeof document === "undefined") return;
+  if (!fitsInCookie(value)) return;
   const encoded = encodeURIComponent(value);
-  if (encoded.length > MAX_COOKIE_VALUE_LENGTH) return;
   const secure = window.location.protocol === "https:";
   document.cookie = `${name}=${encoded}; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax${secure ? "; Secure" : ""}`;
 }
