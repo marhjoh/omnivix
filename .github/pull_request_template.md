@@ -1,3 +1,7 @@
+## Summary
+
+<!-- Why this change, in a sentence or two. -->
+
 Closes #
 
 <!-- Use "Refs #" for related issues this PR doesn't close. -->
