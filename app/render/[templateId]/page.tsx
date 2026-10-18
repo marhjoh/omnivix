@@ -5,8 +5,14 @@ import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { DEFAULT_THEME } from "@/src/theme/theme";
 import { verifyExportToken } from "@/src/export/export-token";
-import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
-import { GITHUB_LIMIT_ATTRIBUTE, GithubRateLimitError } from "@/src/github/rateLimit";
+import {
+  getContributions,
+  getRepoLists,
+  getUserSummary,
+  isUserNotFound,
+} from "@/src/github/client";
+import { GithubRateLimitError } from "@/src/github/rateLimit";
+import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
 
 export default async function RenderPage({
   params,
@@ -37,13 +43,14 @@ export default async function RenderPage({
         )
       : undefined,
   ]).catch((error: unknown) => {
-    if (error instanceof GithubRateLimitError) return error;
+    // No banner without the data: a marker tells the export why (see renderProblem.ts).
+    if (error instanceof GithubRateLimitError) {
+      return <main {...{ [GITHUB_LIMIT_ATTRIBUTE]: error.resetAt.toISOString() }} />;
+    }
+    if (isUserNotFound(error)) return <main {...{ [GITHUB_USER_MISSING_ATTRIBUTE]: "" }} />;
     throw error;
   });
-  // No banner without the data: a marker tells the export when GitHub's limit resets.
-  if (data instanceof GithubRateLimitError) {
-    return <main {...{ [GITHUB_LIMIT_ATTRIBUTE]: data.resetAt.toISOString() }} />;
-  }
+  if (!Array.isArray(data)) return data;
   const [user, contributions, repos] = data;
 
   return (

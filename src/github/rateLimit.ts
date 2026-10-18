@@ -1,9 +1,3 @@
-/**
- * Set by the export's render page, instead of drawing the banner, when GitHub's limit is reached;
- * holds the reset time (ISO). The headless browser reads it, so the export can say why it failed.
- */
-export const GITHUB_LIMIT_ATTRIBUTE = "data-github-limit-until";
-
 /** Used when GitHub reports a limit without saying when it resets. */
 const DEFAULT_WAIT_MS = 60_000;
 

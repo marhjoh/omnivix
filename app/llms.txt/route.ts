@@ -2,6 +2,7 @@ import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib
 import { SITE_LINKS } from "@/src/lib/site-links";
 import { getTemplates } from "@/src/templates/registry";
 import { FAQ, HOW_IT_WORKS } from "@/src/landing/landingContent";
+import { exportApiDocs } from "@/src/export/apiDocs";
 
 // https://llmstxt.org: a Markdown summary of the site for AI assistants.
 export const dynamic = "force-static";
@@ -28,6 +29,7 @@ export function GET() {
     "## FAQ",
     "",
     ...FAQ.flatMap(({ question, answer }) => [`### ${question}`, "", answer, ""]),
+    ...exportApiDocs(siteUrl),
     "## Links",
     "",
     `- [Source code](${SITE_LINKS.repo}) (${SITE_LICENSE.name} license)`,
