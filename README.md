@@ -70,7 +70,7 @@ You need Node.js 24.
    pnpm exec playwright install chromium
    ```
 
-4. **Add a GitHub token.** Copy the example file, then set `GITHUB_TOKEN` in `.env.local` ([create one](https://github.com/settings/tokens), no scopes needed). Without it, only the landing page and the Quote Banner work.
+4. **Add a GitHub token.** Copy the example file, then set `GITHUB_TOKEN` in `.env.local`: a classic token with no scopes, or a fine-grained token with public read access ([create one](https://github.com/settings/tokens)). Without it, only the landing page and the Quote Banner work.
 
    ```bash
    cp .env.example .env.local
@@ -84,15 +84,7 @@ You need Node.js 24.
 
    Open http://localhost:3000.
 
-For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks).
-
-### Environment variables
-
-| Variable                          | Needed                          | What it's for                                                                                                                    |
-| --------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`                    | For the GitHub templates        | Reads public profiles, repos and contributions. A classic token with no scopes, or a fine-grained token with public read access. |
-| `EXPORT_TOKEN_SECRET`             | On Vercel                       | Signs the short-lived export tokens. Use a long random string.                                                                   |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Only with Deployment Protection | Lets the export open `/render` on a protected deployment. See [Deployment](docs/deployment.md#deployment-protection).            |
+For a production build, run `pnpm build && pnpm start`. The checks CI runs are listed in [CONTRIBUTING.md](CONTRIBUTING.md#checks). The other environment variables are only needed on Vercel; see [Deployment](docs/deployment.md#environment-variables).
 
 ## Documentation
 
