@@ -52,6 +52,8 @@ CI runs these on every pull request, and all must pass before merging. Run them 
 | Tests       | `pnpm test`         | `pnpm test:watch` reruns as you edit                      |
 | Build       | `pnpm build`        | Works without `.env.local`                                |
 
+CodeQL also scans each pull request for security problems; its findings show on the PR.
+
 ## Maintenance scripts
 
 | Command                   | What it does                                                                                                               |
