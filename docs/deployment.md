@@ -1,21 +1,33 @@
 # Deployment
 
-[omnivix.vercel.app](https://omnivix.vercel.app) runs on Vercel, configured as below.
+[omnivix.vercel.app](https://omnivix.vercel.app) runs on Vercel. Here's how it's set up, and what differs from running it locally.
 
 ## Environment variables
 
-Set for both Production and Preview:
+Locally, Omnivix needs only a GitHub token. On Vercel, the export needs two more secrets.
 
-| Variable                          | Purpose                                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`                    | Reads public GitHub data                                                                                            |
-| `EXPORT_TOKEN_SECRET`             | Signs the export tokens; without it, exports fail ([why](architecture.md#export-flow))                              |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Lets the export open `/render` on protected Preview deployments; set by enabling _Protection Bypass for Automation_ |
+### Local
 
-## Firewall
+- `GITHUB_TOKEN`: reads public GitHub data
 
-- **Rate limit exports:** `POST /api/export`, 30 requests per 10 minutes per IP, answers `429`.
+The export works without the other two, because everything runs in one process that makes up its own secret, and nothing is behind a login.
+
+### Vercel
+
+**Production** is the live site, built from `main`. **Preview** deployments are built for all other branches and pull requests. Both use the same variables:
+
+- `GITHUB_TOKEN`
+- `EXPORT_TOKEN_SECRET`
+- `VERCEL_AUTOMATION_BYPASS_SECRET` (set by Vercel)
+
+To [export](architecture.md#export-flow) a banner, the server opens it in a headless browser and screenshots it. The banner's settings reach that browser in a short-lived token, signed with `EXPORT_TOKEN_SECRET`. The request and the screenshot can run on different servers, so both need the same secret.
+
+Preview deployments are also behind a Vercel login. The headless browser isn't logged in, so it sends `VERCEL_AUTOMATION_BYPASS_SECRET` to get through.
 
 ## Chromium
 
-Locally, the export uses Playwright's own Chromium. On Vercel it uses `@sparticuz/chromium`. When upgrading `playwright`, upgrade `@sparticuz/chromium` to the matching Chromium version in the same PR; a mismatch breaks export on Vercel only.
+Locally, the export uses Playwright's own Chromium, and on Vercel it uses `@sparticuz/chromium`. Their versions must match, so upgrade both in the same PR.
+
+## Export rate limit
+
+A firewall rule allows 30 exports per 10 minutes per IP on `POST /api/export`, and answers `429` beyond that.

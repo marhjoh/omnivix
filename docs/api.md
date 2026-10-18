@@ -30,7 +30,7 @@ Responses:
 - `200`: the image (`image/png` or `image/jpeg`).
 - `400`: `{ "error": "…", "issues": [{ "path": "state.username", "message": "Required" }] }`, one issue per field that failed.
 - `404`: the GitHub user doesn't exist.
-- `429`: a rate limit. GitHub's comes with a `resetAt` time. The export limit, 30 per 10 minutes per IP address on omnivix.vercel.app, has none (see [deployment.md](deployment.md#firewall)).
+- `429`: a rate limit. GitHub's comes with a `resetAt` time. The export limit, 30 per 10 minutes per IP address on omnivix.vercel.app, has none (see [deployment.md](deployment.md#export-rate-limit)).
 - `500`: the export failed; trying again may work.
 
 How an export is rendered is described in [architecture.md](architecture.md#export-flow).
