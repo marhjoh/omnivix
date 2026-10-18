@@ -8,6 +8,7 @@ import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS } from "@/src/export/format";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { githubRateLimited } from "@/src/github/route";
+import { GithubUserNotFoundError } from "@/src/export/renderProblem";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
@@ -55,6 +56,16 @@ export async function POST(request: NextRequest) {
     });
   } catch (exportError) {
     if (exportError instanceof GithubRateLimitError) return githubRateLimited(exportError);
+    if (exportError instanceof GithubUserNotFoundError) {
+      const username = String(parsed.request.state.username ?? "");
+      return NextResponse.json(
+        {
+          error: `No GitHub user named @${username}`,
+          issues: [{ path: "state.username", message: "No GitHub user with this name" }],
+        },
+        { status: 404 },
+      );
+    }
     console.error("Export failed", exportError);
     return error("Couldn't export the banner. Try again.", 500);
   }
