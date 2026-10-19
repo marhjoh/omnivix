@@ -55,24 +55,29 @@ export const FAQ = [
   },
   {
     topic: "About Omnivix",
+    question: "Do I need to sign in with GitHub?",
+    answer:
+      "No. Omnivix only needs your GitHub username. It never asks for your password or access to your account.",
+  },
+  {
+    topic: "About Omnivix",
     question: "Is Omnivix open source?",
     answer: `Yes. Omnivix is open source under the ${SITE_LICENSE.name} license, and the code is on GitHub at ${SITE_LINKS.repo}.`,
   },
   {
     topic: "Banners",
     question: "Which banner sizes does Omnivix support?",
-    answer: `One format per aspect ratio: ${bannerFormatsSummary()}. Banners download as PNG or JPEG at ${pixelRatiosSummary()} resolution: 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
+    answer: `One format per aspect ratio: ${bannerFormatsSummary()}.`,
+  },
+  {
+    topic: "Banners",
+    question: "What file formats and resolutions can I download?",
+    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution. 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     topic: "Banners",
     question: "Can I use my own background image?",
     answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own PNG, JPEG, WebP, AVIF or HEIC image (up to ${MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
-  },
-  {
-    topic: "Your GitHub data",
-    question: "Do I need to sign in with GitHub?",
-    answer:
-      "No. Omnivix only needs your GitHub username. It never asks for your password or access to your account.",
   },
   {
     topic: "Your GitHub data",
@@ -84,7 +89,7 @@ export const FAQ = [
     topic: "Your GitHub data",
     question: "Why are some of my contributions missing?",
     answer:
-      "Omnivix shows the same contributions as your GitHub profile. Private repositories count once you turn on “Include private contributions on my profile” at https://github.com/settings/profile, and only the counts are shown. Work on a separate account, GitLab, GitHub Enterprise Server, an unlinked email address or a non-default branch never counts. Changes can take up to 3 minutes to show. More at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
+      "Omnivix shows the same contributions as your GitHub profile. Private work only counts once you turn on “Include private contributions on my profile” at https://github.com/settings/profile. Commits from another account or service, an email address not linked to your account, or a non-default branch never count. New contributions can take up to 3 minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
   },
 ] as const satisfies readonly {
   topic: (typeof FAQ_TOPICS)[number];
