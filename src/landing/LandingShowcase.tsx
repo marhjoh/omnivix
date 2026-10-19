@@ -6,6 +6,7 @@ import { BANNER_SIZES } from "@/src/lib/sizes";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
 import { LinkPendingSpinner } from "@/src/landing/LinkPendingSpinner";
+import { SectionHeading } from "@/src/landing/SectionHeading";
 
 /** Two columns in the 72rem container (16px side padding, 24px gap) from the sm breakpoint. */
 const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
@@ -44,18 +45,10 @@ export function LandingShowcase() {
     <section
       id="showcase"
       aria-labelledby="showcase-heading"
-      className="scroll-mt-[5.5rem] bg-bg px-4 pt-6 pb-20 sm:pt-10 sm:pb-24 md:scroll-mt-24"
+      className="scroll-mt-[5.5rem] overflow-x-clip bg-bg px-4 pt-6 pb-20 sm:pt-10 sm:pb-28 md:scroll-mt-24"
     >
       <div className="mx-auto max-w-6xl">
-        <header className="mb-10 text-center md:mb-12">
-          <h2
-            id="showcase-heading"
-            className="text-2xl font-semibold tracking-tight text-text sm:text-3xl"
-          >
-            Templates
-          </h2>
-        </header>
-
+        <SectionHeading id="showcase-heading">Templates.</SectionHeading>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
           {LANDING_TEMPLATE_ORDER.map((templateId) => (
             <ShowcaseCard key={templateId} templateId={templateId} />
