@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.13.0](https://github.com/marhjoh/omnivix/compare/v1.12.0...v1.13.0) (2026-10-19)
+
+
+### Features
+
+* group the FAQ by topic ([8b31631](https://github.com/marhjoh/omnivix/commit/8b31631325f28c14c6a4a9905bc7ddda67982f6c))
+* redesign the landing page ([8b31631](https://github.com/marhjoh/omnivix/commit/8b31631325f28c14c6a4a9905bc7ddda67982f6c))
+* show long FAQ links as their domain ([8b31631](https://github.com/marhjoh/omnivix/commit/8b31631325f28c14c6a4a9905bc7ddda67982f6c))
+* split banner sizes and file formats into separate FAQ questions ([8b31631](https://github.com/marhjoh/omnivix/commit/8b31631325f28c14c6a4a9905bc7ddda67982f6c))
+
 ## [1.12.0](https://github.com/marhjoh/omnivix/compare/v1.11.0...v1.12.0) (2026-10-18)
 
 
