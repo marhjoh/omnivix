@@ -1,45 +1,3 @@
-/* --- Hero --- */
-.heroMesh {
-  position: absolute;
-  inset: -25%;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.5;
-  background:
-    radial-gradient(
-      ellipse 55% 48% at 18% 28%,
-      color-mix(in oklab, var(--accent) 42%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      ellipse 50% 44% at 88% 42%,
-      color-mix(in oklab, var(--accent-hover) 38%, transparent),
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 42% 38% at 52% 92%,
-      color-mix(in oklab, var(--surface) 55%, transparent),
-      transparent 55%
-    );
-  animation: heroMeshDrift 20s ease-in-out infinite alternate;
-}
-
-@keyframes heroMeshDrift {
-  0% {
-    transform: translate(-2.5%, 1%) scale(1);
-  }
-  100% {
-    transform: translate(3%, -2.5%) scale(1.08);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .heroMesh {
-    animation: none;
-    opacity: 0.28;
-  }
-}
-
 .heroScrim {
   position: absolute;
   inset: 0;
@@ -54,19 +12,6 @@
   );
 }
 
-.heroAtmosphere {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.5;
-  background: radial-gradient(
-    ellipse 90% 58% at 50% -5%,
-    color-mix(in oklab, var(--surface) 45%, transparent),
-    transparent 55%
-  );
-}
-
 .heroStripVignette {
   position: absolute;
   inset: 0;
@@ -78,112 +23,6 @@
     color-mix(in oklab, var(--bg) 35%, transparent) 72%,
     color-mix(in oklab, var(--bg) 55%, transparent) 100%
   );
-}
-
-.heroCopyFrame {
-  position: relative;
-  z-index: 0;
-  width: 100%;
-  max-width: 44rem;
-  margin-inline: auto;
-  padding: 0;
-  border: 1px solid color-mix(in oklab, var(--border) 52%, transparent);
-  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--text) 5%, transparent);
-}
-
-.heroCopyFrame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.16;
-  background-image:
-    linear-gradient(color-mix(in oklab, var(--text) 9%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--text) 9%, transparent) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-html[data-theme="light"] .heroCopyFrame::before {
-  opacity: 0.22;
-  background-image:
-    linear-gradient(color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--text) 6%, transparent) 1px, transparent 1px);
-}
-
-.heroCopyInner {
-  position: relative;
-  z-index: 1;
-  /* Fluid, like the hero type: 2rem 1rem 2.25rem on phones → 2.5rem 2rem 2.75rem on desktop. */
-  padding: clamp(2rem, 1.6rem + 1vw, 2.5rem) clamp(1rem, 0.25rem + 3vw, 2rem)
-    clamp(2.25rem, 1.85rem + 1vw, 2.75rem);
-}
-
-html[data-theme="light"] .heroCopyFrame {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
-.heroAccentBar {
-  width: 3rem;
-  height: 2px;
-  margin: 0 auto 1.25rem;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklab, var(--accent) 70%, transparent),
-    transparent
-  );
-}
-
-@media (min-width: 640px) {
-  .heroAccentBar {
-    width: 3.5rem;
-    margin-bottom: 1.5rem;
-  }
-}
-
-.heroWordmark {
-  display: block;
-  background: linear-gradient(
-    118deg,
-    var(--text) 8%,
-    color-mix(in oklab, var(--text) 55%, var(--accent)) 42%,
-    var(--accent-hover) 92%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 2px 24px color-mix(in oklab, var(--accent) 38%, transparent));
-}
-
-html[data-theme="light"] .heroWordmark {
-  filter: drop-shadow(0 2px 20px color-mix(in oklab, var(--accent) 22%, transparent));
-}
-
-.heroSubline {
-  display: block;
-  margin-top: 0.35rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: transparent;
-  -webkit-text-stroke: 1px color-mix(in oklab, var(--muted) 90%, transparent);
-}
-
-@media (min-width: 640px) {
-  .heroSubline {
-    margin-top: 0.5rem;
-  }
-}
-
-html[data-theme="light"] .heroSubline {
-  -webkit-text-stroke: 1px color-mix(in oklab, var(--text) 28%, transparent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .heroAtmosphere {
-    opacity: 0.35;
-  }
 }
 
 .showcaseTile {
@@ -365,21 +204,229 @@ html[data-theme="light"] .siteHeader[data-scrolled="true"] .navBar {
   }
 }
 
-/* Hero copy slides up on load (LandingHero sets the distance, delay and duration). No fade: the
-   copy is visible in the server HTML before anything runs. */
-.heroSlide {
-  animation: heroSlideIn var(--slide-duration, 0.55s) cubic-bezier(0.22, 1, 0.36, 1)
-    var(--slide-delay, 0s) both;
+/* FAQ: a plus that turns into a cross when its question is open. */
+.faqToggle {
+  position: relative;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
-@keyframes heroSlideIn {
-  from {
-    transform: translateY(var(--slide-from, 16px));
-  }
+.faqToggle::before,
+.faqToggle::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1.5px;
+  margin-top: -0.75px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.faqToggle::after {
+  transform: rotate(90deg);
+}
+
+details[open] .faqToggle {
+  transform: rotate(45deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heroSlide {
-    animation: none;
+  .faqToggle {
+    transition: none;
+  }
+}
+
+/* FAQ: answers slide open. ::details-content with interpolate-size animates the height where
+   supported (the answer just appears elsewhere); @starting-style fades the text in everywhere. */
+.faqItem {
+  interpolate-size: allow-keywords;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faqItem::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+      content-visibility 0.35s allow-discrete;
+  }
+
+  .faqItem[open]::details-content {
+    block-size: auto;
+  }
+
+  .faqItem[open] > .faqAnswer {
+    transition:
+      opacity 0.3s ease 0.05s,
+      translate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s;
+  }
+
+  @starting-style {
+    .faqItem[open] > .faqAnswer {
+      opacity: 0;
+      translate: 0 -0.375rem;
+    }
+  }
+
+  .faqToggle {
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 0.2s ease;
+  }
+}
+
+/* Big type: one scale (hero name > section headings > step words) and one gradient, the brand's,
+   for the hero name and the section headings. On scroll, headings wipe in and step words fill in
+   from an outline that then fades out. The scroll effects need animation-timeline (not in
+   Firefox yet) and skip reduced motion; both show the finished, still state instead. */
+.gradientText {
+  color: transparent;
+  background-image: linear-gradient(
+    118deg,
+    var(--text) 8%,
+    color-mix(in oklab, var(--text) 55%, var(--accent)) 42%,
+    var(--accent-hover) 92%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* Room below the line box, so the gradient also paints descenders (the p in Templates). */
+  padding-bottom: 0.12em;
+}
+
+/* No drop-shadow: .heroGlow gives the halo, and a shadow on a word this wide reaches the page
+   edge on phones, where it gets cut off. */
+.heroName {
+  display: block;
+  font-size: clamp(4.5rem, 1.75rem + 11vw, 10rem);
+  line-height: 0.9;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+/* Solid, not outlined: at this size an outline shows where the font's letter shapes overlap. */
+.heroSubline {
+  display: block;
+  font-size: clamp(1.75rem, 1rem + 3.5vw, 3.5rem);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--muted);
+}
+
+/* One soft glow behind the name. "closest-side" fades it out before its own edges, so wherever
+   the page clips it, no hard edge shows. */
+.heroGlow {
+  position: absolute;
+  /* Sideways, no further than the page's 1rem side padding until there's room to spare. */
+  inset: -2rem -1rem auto -1rem;
+  /* Scales with the name, so the glow stays centered behind it on phones too. */
+  height: clamp(12rem, 8rem + 14vw, 22rem);
+  max-width: 48rem;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse closest-side,
+    color-mix(in oklab, var(--accent) 24%, transparent),
+    transparent 75%
+  );
+}
+
+@media (min-width: 1280px) {
+  .heroGlow {
+    left: -3rem;
+    right: -3rem;
+  }
+}
+
+html[data-theme="light"] .heroGlow {
+  background: radial-gradient(
+    ellipse closest-side,
+    color-mix(in oklab, var(--accent) 12%, transparent),
+    transparent 75%
+  );
+}
+
+.sectionHeading,
+.stepWord {
+  display: block;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  -webkit-text-stroke: 1.5px transparent;
+  paint-order: stroke fill;
+}
+
+.sectionHeading {
+  font-size: clamp(2.75rem, 1.4rem + 6vw, 6rem);
+}
+
+/* One size below the section headings, so "How it works." stays the larger. */
+.stepWord {
+  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
+  color: var(--text);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sectionHeading {
+      animation: headingWipe linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 40%;
+    }
+
+    .stepWord {
+      animation: stepWordFill linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 42%;
+    }
+
+    .stepText {
+      animation: stepTextFade linear both;
+      animation-timeline: view();
+      animation-range: entry 60% cover 50%;
+    }
+  }
+}
+
+@keyframes headingWipe {
+  from {
+    background-size: 0% 100%;
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  }
+
+  70% {
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 40%, transparent);
+  }
+
+  to {
+    background-size: 100% 100%;
+    -webkit-text-stroke-color: transparent;
+  }
+}
+
+@keyframes stepWordFill {
+  from {
+    color: transparent;
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  }
+
+  to {
+    color: var(--text);
+    -webkit-text-stroke-color: transparent;
+  }
+}
+
+@keyframes stepTextFade {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
