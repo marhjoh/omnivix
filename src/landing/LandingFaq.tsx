@@ -1,5 +1,6 @@
 import { FAQ, FAQ_TOPICS } from "@/src/landing/landingContent";
 import { SectionHeading } from "@/src/landing/SectionHeading";
+import { linkText } from "@/src/lib/linkText";
 import { SITE_LINKS } from "@/src/lib/site-links";
 import landingStyles from "@/src/landing/landing.module.css";
 
@@ -14,7 +15,7 @@ function AnswerText({ text }: { text: string }) {
   return text.split(URL_PATTERN).map((part, i) =>
     i % 2 === 1 ? (
       <a key={part} href={part} target="_blank" rel="noopener noreferrer" className={linkClass}>
-        {part.replace(/^https:\/\//, "")}
+        {linkText(part)}
       </a>
     ) : (
       part
