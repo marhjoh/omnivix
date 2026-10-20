@@ -73,7 +73,7 @@ export function ThemeProvider({
 }) {
   const theme = useSyncExternalStore(subscribe, getDomTheme, () => initialTheme);
 
-  // Restores the theme where the inline script's attribute is missing (see applyStoredTheme).
+  // For renders where THEME_INIT_SCRIPT didn't run.
   useLayoutEffect(applyStoredTheme, []);
 
   const setTheme = useCallback((next: Theme) => applyTheme(next), []);

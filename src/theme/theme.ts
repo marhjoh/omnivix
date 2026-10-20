@@ -62,9 +62,8 @@ function readThemeCookieClient(): Theme | null {
 }
 
 /**
- * Client-only: what THEME_INIT_SCRIPT does, for pages React renders without it having run (in
- * development after Strict Mode's remount, and the error pages after a server error, whose
- * document Next builds on the client).
+ * Client-only THEME_INIT_SCRIPT, for renders where it didn't run: Strict Mode remounts in
+ * development, and error pages after a server error.
  */
 export function applyStoredTheme(): void {
   const root = document.documentElement;
