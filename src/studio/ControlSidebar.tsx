@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useId, useRef } from "react";
+import { Check } from "lucide-react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
@@ -13,6 +14,8 @@ import { BackgroundAdjustControls } from "@/src/studio/BackgroundAdjustControls"
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
+import { fieldLabel, groupFields } from "@/src/studio/settingGroups";
+import controls from "@/src/studio/controls.module.css";
 
 const currentYear = new Date().getFullYear();
 
@@ -52,6 +55,14 @@ function DebouncedInput({
     };
   }, []);
 
+  // Leaving the field saves what's waiting, e.g. before switching template in the header.
+  const flush = () => {
+    if (!timeoutRef.current) return;
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+    onChange(localValue);
+  };
+
   return (
     <input
       id={id}
@@ -60,6 +71,7 @@ function DebouncedInput({
       maxLength={maxLength}
       value={localValue}
       onChange={handleChange}
+      onBlur={flush}
     />
   );
 }
@@ -75,7 +87,7 @@ function FieldWrapper({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-xs font-medium text-muted">
+      <label htmlFor={htmlFor} className="field-label">
         {label}
       </label>
       {children}
@@ -186,7 +198,7 @@ function RepoMultiSelect({
 
   return (
     <div className="space-y-1.5" role="group" aria-labelledby="repositories-label">
-      <span id="repositories-label" className="block text-xs font-medium text-muted">
+      <span id="repositories-label" className="field-label">
         Repositories
       </span>
       {/* The box keeps one height whether loading, loaded or failed, so nothing below it moves. */}
@@ -236,39 +248,37 @@ function RepoMultiSelect({
   );
 }
 
-function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+function ThemePicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (id: string) => void;
+}) {
   const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
-
   return (
-    <div className="space-y-2">
-      <span className="block text-xs font-medium text-muted">Theme</span>
-      <div className="flex flex-col gap-2">
+    <TileGroup label={label}>
+      <div className="grid grid-cols-2 gap-2">
         {THEME_PRESETS.map((preset) => (
           <button
             key={preset.id}
             type="button"
             onClick={() => onChange(preset.id)}
             aria-pressed={resolvedId === preset.id}
-            className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-xs transition-all ${
-              resolvedId === preset.id
-                ? "border-accent bg-accent/10 text-text"
-                : "border-border bg-surface-2 text-muted hover:border-accent/40"
-            }`}
+            className={`${controls.tile} ${controls.colorTile}`}
           >
-            <span className="font-medium">{preset.label}</span>
-            <span className="ml-auto flex gap-1" aria-hidden>
-              {preset.gridLevels.map((color, i) => (
-                <span
-                  key={i}
-                  className="block h-4 w-4 rounded-xs"
-                  style={{ backgroundColor: color }}
-                />
+            <span className={controls.colorStrip} aria-hidden>
+              {preset.gridLevels.slice(1).map((color) => (
+                <span key={color} style={{ backgroundColor: color }} />
               ))}
             </span>
+            <span className="truncate text-left">{preset.label}</span>
           </button>
         ))}
       </div>
-    </div>
+    </TileGroup>
   );
 }
 
@@ -282,8 +292,7 @@ function SizePicker({
   label: string;
 }) {
   return (
-    <div className="space-y-2">
-      <span className="block text-xs font-medium text-muted">{label}</span>
+    <TileGroup label={label}>
       <div className="grid grid-cols-3 gap-2">
         {BANNER_SIZE_KEYS.map((key) => {
           const format = BANNER_SIZES[key];
@@ -295,21 +304,10 @@ function SizePicker({
               onClick={() => onChange(key)}
               aria-pressed={value === key}
               aria-label={`${format.label}: ${platforms}`}
-              className={`flex flex-col items-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs transition-all ${
-                value === key
-                  ? "border-accent bg-accent/10 text-text"
-                  : "border-border bg-surface-2 text-muted hover:border-accent/40"
-              }`}
+              className={controls.tile}
             >
-              <span className="flex h-6 items-center">
-                <span
-                  aria-hidden
-                  className="block rounded-[2px] border border-current opacity-70"
-                  style={{ width: 40, aspectRatio: `${format.width} / ${format.height}` }}
-                />
-              </span>
-              <span className="font-medium">{format.label}</span>
-              <span className="flex flex-wrap justify-center gap-1 opacity-70">
+              <span className="font-semibold">{format.label}</span>
+              <span className="flex flex-wrap justify-center gap-1">
                 {format.platforms.map((platform) => (
                   <PlatformIcon key={platform.name} icon={platform.icon} />
                 ))}
@@ -318,7 +316,60 @@ function SizePicker({
           );
         })}
       </div>
+    </TileGroup>
+  );
+}
+
+/** A labeled group of tiles: the visible label names the group for screen readers. */
+function TileGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  const labelId = useId();
+  return (
+    <div role="group" aria-labelledby={labelId} className="space-y-1.5">
+      <span id={labelId} className="field-label">
+        {label}
+      </span>
+      {children}
     </div>
+  );
+}
+
+/** Show/hide settings as tiles with a check, in two columns. */
+function ShowTiles({
+  fields,
+  state,
+  disabledFields,
+  onChange,
+}: {
+  fields: EditorFieldSchema[];
+  state: Record<string, unknown>;
+  disabledFields: ReadonlySet<string>;
+  onChange: (key: string, value: unknown) => void;
+}) {
+  return (
+    <TileGroup label="Show">
+      <div className="grid grid-cols-2 gap-2">
+        {fields.map((field) => {
+          const disabled = disabledFields.has(field.key);
+          // Shown off while disabled, without changing the saved value.
+          const checked = !disabled && Boolean(state[field.key] ?? false);
+          return (
+            <button
+              key={field.key}
+              type="button"
+              aria-pressed={checked}
+              disabled={disabled}
+              onClick={() => onChange(field.key, !checked)}
+              className={`${controls.tile} ${controls.showTile}`}
+            >
+              <span className={controls.check} aria-hidden>
+                <Check className="h-3 w-3" strokeWidth={3} />
+              </span>
+              <span className="truncate">{fieldLabel(field)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </TileGroup>
   );
 }
 
@@ -371,198 +422,181 @@ export function ControlSidebar({
     String(currentYear - i),
   );
 
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="mb-1 text-sm font-semibold text-text">Customize</h3>
-        <p className="text-xs text-muted">Adjust settings to personalize your banner.</p>
-      </div>
+  const renderField = (field: EditorFieldSchema) => {
+    if (field.key === "username") return null;
 
-      {schema.map((field) => {
-        if (field.key === "username") return null;
+    // Selected mode shows the repository picker instead of the amount slider.
+    if (field.key === "maxRepos" && mode === "selected") {
+      return null;
+    }
 
-        // Selected mode shows the repository picker instead of the amount slider.
-        if (field.key === "maxRepos" && mode === "selected") {
-          return null;
-        }
+    if (field.type === "repoMultiSelect") {
+      if (mode !== "selected") {
+        return null;
+      }
+      return (
+        <RepoMultiSelect
+          key={field.key}
+          catalog={repoCatalog}
+          loading={repoCatalogLoading}
+          error={repoCatalogError}
+          retryAt={repoCatalogRetryAt}
+          onRetry={onRetryRepoCatalog}
+          valueCsv={String(state.selectedRepos ?? "")}
+          maxPick={MAX_REPOS}
+          onChange={(csv) => onChange("selectedRepos", csv)}
+        />
+      );
+    }
 
-        if (field.type === "repoMultiSelect") {
-          if (mode !== "selected") {
-            return null;
-          }
-          return (
-            <RepoMultiSelect
-              key={field.key}
-              catalog={repoCatalog}
-              loading={repoCatalogLoading}
-              error={repoCatalogError}
-              retryAt={repoCatalogRetryAt}
-              onRetry={onRetryRepoCatalog}
-              valueCsv={String(state.selectedRepos ?? "")}
-              maxPick={MAX_REPOS}
-              onChange={(csv) => onChange("selectedRepos", csv)}
-            />
-          );
-        }
+    if (field.type === "sizeSelect") {
+      return (
+        <SizePicker
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          onChange={(v) => onChange(field.key, v)}
+        />
+      );
+    }
 
-        if (field.type === "sizeSelect") {
-          return (
-            <SizePicker
-              key={field.key}
-              label={field.label}
-              value={String(state[field.key] ?? "")}
-              onChange={(v) => onChange(field.key, v)}
-            />
-          );
-        }
+    if (field.key === "themeId") {
+      return (
+        <ThemePicker
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          onChange={(v) => onChange(field.key, v)}
+        />
+      );
+    }
 
-        if (field.key === "themeId") {
-          return (
-            <ThemePicker
-              key={field.key}
-              value={String(state[field.key] ?? "")}
-              onChange={(v) => onChange(field.key, v)}
-            />
-          );
-        }
+    if (field.key === "year") {
+      const yearOptions = [
+        { value: "latest", label: "Last 365 days" },
+        ...years.map((y) => ({ value: y, label: y })),
+      ];
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? currentYear)}
+          options={yearOptions}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
 
-        if (field.key === "year") {
-          const yearOptions = [
-            { value: "latest", label: "Last 365 days" },
-            ...years.map((y) => ({ value: y, label: y })),
-          ];
-          return (
-            <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <Select
-                id={field.key}
-                label={field.label}
-                value={String(state[field.key] ?? currentYear)}
-                options={yearOptions}
-                onChange={(value) => onChange(field.key, value)}
-              />
-            </FieldWrapper>
-          );
-        }
+    if (field.type === "range") {
+      const val = Number(state[field.key] ?? field.min ?? 1);
+      return (
+        <FieldWrapper key={field.key} label={`${fieldLabel(field)}: ${val}`} htmlFor={field.key}>
+          <input
+            id={field.key}
+            type="range"
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            value={val}
+            onChange={(e) => onChange(field.key, Number(e.target.value))}
+            className="w-full accent-accent"
+          />
+        </FieldWrapper>
+      );
+    }
 
-        if (field.type === "toggle") {
-          const disabled = disabledFields.has(field.key);
-          // Shown off while disabled, without changing the saved value.
-          const checked = !disabled && Boolean(state[field.key] ?? false);
-          return (
-            <div key={field.key}>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted">{field.label}</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={checked}
-                  aria-label={field.label}
-                  disabled={disabled}
-                  onClick={() => onChange(field.key, !checked)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                    checked ? "bg-accent" : "bg-surface-2"
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-                      checked ? "translate-x-4" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-          );
-        }
+    if (field.type === "select") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={field.options ?? []}
+          onChange={(value) => onChange(field.key, value)}
+          disabled={disabledFields.has(field.key)}
+        />
+      );
+    }
 
-        if (field.type === "range") {
-          const val = Number(state[field.key] ?? field.min ?? 1);
-          return (
-            <FieldWrapper key={field.key} label={`${field.label}: ${val}`} htmlFor={field.key}>
-              <input
-                id={field.key}
-                type="range"
-                min={field.min}
-                max={field.max}
-                step={field.step}
-                value={val}
-                onChange={(e) => onChange(field.key, Number(e.target.value))}
-                className="w-full accent-accent"
-              />
-            </FieldWrapper>
-          );
-        }
+    if (field.type === "textarea") {
+      return (
+        <FieldWrapper key={field.key} label={fieldLabel(field)} htmlFor={field.key}>
+          <textarea
+            id={field.key}
+            maxLength={field.maxLength}
+            rows={4}
+            className="field-input resize-y"
+            value={String(state[field.key] ?? "")}
+            onChange={(e) => onChange(field.key, e.target.value)}
+          />
+        </FieldWrapper>
+      );
+    }
 
-        if (field.type === "select") {
-          return (
-            <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <Select
-                id={field.key}
-                label={field.label}
-                value={String(state[field.key] ?? "")}
-                options={field.options ?? []}
-                onChange={(value) => onChange(field.key, value)}
-                disabled={disabledFields.has(field.key)}
-              />
-            </FieldWrapper>
-          );
-        }
-
-        if (field.type === "textarea") {
-          return (
-            <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-              <textarea
-                id={field.key}
-                maxLength={field.maxLength}
-                rows={4}
-                className="field-input resize-y"
-                value={String(state[field.key] ?? "")}
-                onChange={(e) => onChange(field.key, e.target.value)}
-              />
-            </FieldWrapper>
-          );
-        }
-
-        if (field.type === "backgroundPicker") {
-          return (
-            <div key={field.key} className="space-y-3">
-              <BackgroundImagePicker
-                id={field.key}
-                label={field.label}
-                value={
-                  typeof state[field.key] === "string" ? (state[field.key] as string) : undefined
-                }
-                onChange={(next) => onChange(field.key, next)}
-                onError={onError}
-                onErrorResolved={onErrorResolved}
-                onUnusableLinkText={onUnusableLinkText}
-              />
-              {background ? (
-                <BackgroundAdjustControls
-                  id={field.key}
-                  adjusting={backgroundAdjusting}
-                  onToggleAdjusting={onToggleBackgroundAdjusting}
-                  zoom={background.zoom}
-                  onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
-                  canReset={!isDefaultBackgroundFraming(background)}
-                  onReset={() => {
-                    onChange("backgroundPosition", undefined);
-                    onChange("backgroundZoom", undefined);
-                  }}
-                />
-              ) : null}
-            </div>
-          );
-        }
-
-        return (
-          <FieldWrapper key={field.key} label={field.label} htmlFor={field.key}>
-            <DebouncedInput
+    if (field.type === "backgroundPicker") {
+      return (
+        <div key={field.key} className="space-y-3">
+          <BackgroundImagePicker
+            id={field.key}
+            label={field.label}
+            value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
+            onChange={(next) => onChange(field.key, next)}
+            onError={onError}
+            onErrorResolved={onErrorResolved}
+            onUnusableLinkText={onUnusableLinkText}
+          />
+          {background ? (
+            <BackgroundAdjustControls
               id={field.key}
-              maxLength={field.maxLength}
-              value={String(state[field.key] ?? "")}
-              onChange={(v) => onChange(field.key, v)}
+              adjusting={backgroundAdjusting}
+              onToggleAdjusting={onToggleBackgroundAdjusting}
+              zoom={background.zoom}
+              onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
+              canReset={!isDefaultBackgroundFraming(background)}
+              onReset={() => {
+                onChange("backgroundPosition", undefined);
+                onChange("backgroundZoom", undefined);
+              }}
             />
-          </FieldWrapper>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <FieldWrapper key={field.key} label={fieldLabel(field)} htmlFor={field.key}>
+        <DebouncedInput
+          id={field.key}
+          maxLength={field.maxLength}
+          value={String(state[field.key] ?? "")}
+          onChange={(v) => onChange(field.key, v)}
+        />
+      </FieldWrapper>
+    );
+  };
+
+  return (
+    <div className="space-y-8">
+      {groupFields(schema).map((group) => {
+        const toggles = group.fields.filter((field) => field.type === "toggle");
+        return (
+          <section key={group.title} aria-labelledby={`settings-${group.title}`}>
+            <h2 id={`settings-${group.title}`} className={controls.groupTitle}>
+              {group.title}
+            </h2>
+            <div className="space-y-4">
+              {/* Show/hide options are gathered at the end of their group, as one set of tiles. */}
+              {group.fields.filter((field) => field.type !== "toggle").map(renderField)}
+              {toggles.length > 0 && (
+                <ShowTiles
+                  fields={toggles}
+                  state={state}
+                  disabledFields={disabledFields}
+                  onChange={onChange}
+                />
+              )}
+            </div>
+          </section>
         );
       })}
     </div>

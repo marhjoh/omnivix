@@ -202,7 +202,7 @@ export function BackgroundImagePicker({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-xs font-medium text-muted">
+      <label htmlFor={id} className="field-label">
         {label}
       </label>
 
@@ -277,7 +277,7 @@ export function BackgroundImagePicker({
 
       {showUrlField ? (
         <div className="space-y-1.5">
-          <label htmlFor={`${id}-url`} className="block text-xs font-medium text-muted">
+          <label htmlFor={`${id}-url`} className="field-label">
             Image URL
           </label>
           <input

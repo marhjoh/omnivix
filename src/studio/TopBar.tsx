@@ -5,9 +5,12 @@ import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
+import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
+import type { TemplateId } from "@/src/types/template";
 
 export function TopBar({
   title,
+  templateId,
   username,
   needsUsername,
   onChangeUsername,
@@ -16,6 +19,7 @@ export function TopBar({
   children,
 }: {
   title: string;
+  templateId: TemplateId;
   username: string;
   needsUsername: boolean;
   onChangeUsername: () => void;
@@ -45,22 +49,23 @@ export function TopBar({
           </button>
         </HoverHighlightItem>
         {/*
-          What gives way as the header narrows: first the title (shown from md, truncates there),
-          then the profile pill's text (round icon button below sm). The app icon always stays,
-          and the @username never truncates except when very long.
+          What gives way as the header narrows: the profile pill's text (round icon button below
+          sm) and the "/"; the template picker shows short names below md (TemplateSwitcher). The
+          app icon always stays.
         */}
-        <div className="flex shrink-0 items-center gap-2.5 md:min-w-0 md:shrink">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
           {/* The app icon is the way home. */}
           <HoverHighlightItem id="home">
             <Link href="/" className={highlightItemClass} aria-label="Back to home">
               <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
             </Link>
           </HoverHighlightItem>
-          {/* The visible title below only shows from md, so the h1 is a hidden copy. */}
+          {/* The visible title is the template picker, so the h1 is a hidden copy. */}
           <h1 className="sr-only">{title}</h1>
-          <span className="hidden truncate font-medium md:inline" aria-hidden>
-            {title}
+          <span className="hidden text-border sm:inline" aria-hidden>
+            /
           </span>
+          <TemplateSwitcher templateId={templateId} />
         </div>
         {needsUsername && username && (
           <HoverHighlightItem id="profile" className="md:ml-2">
@@ -94,10 +99,11 @@ export function TopBar({
         layoutId="studio-right-highlight"
         className="flex shrink-0 items-center gap-1"
       >
+        {children}
+        <span className="mx-1 hidden h-6 w-px bg-border/70 sm:block" aria-hidden />
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        {children}
       </HoverHighlightGroup>
     </>
   );

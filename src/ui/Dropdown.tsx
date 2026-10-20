@@ -1,7 +1,7 @@
 "use client";
 
 import { KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useId, useState } from "react";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 const ROOT_ATTRIBUTE = "data-dropdown";
 
@@ -104,7 +104,6 @@ export function DropdownTrigger({
   disabled?: boolean;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
-  const Chevron = open ? ChevronUp : ChevronDown;
   return (
     <button
       type="button"
@@ -114,10 +113,13 @@ export function DropdownTrigger({
       aria-controls={open ? listId : undefined}
       disabled={disabled}
       onClick={() => setOpen((o) => !o)}
-      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-surface-2 px-3 py-[9px] text-left text-sm text-text transition-colors focus:outline-hidden focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
+      className="field-select flex items-center justify-between gap-2 text-left"
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      <Chevron className="h-4 w-4 shrink-0 self-center opacity-60" aria-hidden />
+      <ChevronDown
+        className={`h-4 w-4 shrink-0 self-center text-muted transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+        aria-hidden
+      />
     </button>
   );
 }
@@ -141,7 +143,7 @@ export function DropdownList({
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className={`absolute top-full z-50 mt-1 max-h-64 ${className} overflow-y-auto rounded-lg border border-border bg-surface-2 py-1 shadow-lg`}
+      className={`absolute top-full z-50 mt-1.5 max-h-72 ${className} overflow-y-auto rounded-xl border border-text/10 bg-surface p-1.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)]`}
     >
       {children}
     </div>
@@ -161,11 +163,11 @@ export function DropdownOption({
       role="option"
       tabIndex={-1}
       aria-selected={selected}
-      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text hover:bg-surface focus:bg-surface focus:outline-hidden"
+      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-[7px] text-left text-sm font-medium text-text hover:bg-surface-2 focus:bg-surface-2 focus:outline-hidden"
       onClick={onSelect}
     >
       {selected ? (
-        <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+        <Check className="h-3.5 w-3.5 shrink-0 text-accent-hover" />
       ) : (
         (icon ?? <span className="w-3.5 shrink-0" />)
       )}
@@ -175,51 +177,47 @@ export function DropdownOption({
 }
 
 export function DropdownGroupLabel({ children }: PropsWithChildren) {
-  return (
-    <div className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-muted uppercase">
-      {children}
-    </div>
-  );
+  return <div className="px-2.5 pt-2 pb-1 text-xs font-semibold text-muted">{children}</div>;
 }
 
-/** Replaces a native `<select>`, styled and behaving like the background picker. */
+/**
+ * A native `<select>` with its label: the platform picker on phones, typeahead and screen reader
+ * support built in. Styled by `.field-select` (app/globals.css), with our own list where the
+ * browser allows it.
+ */
 export function Select({
-  id,
   label,
   value,
   options,
   onChange,
   disabled,
 }: {
-  id: string;
-  /** Accessible name for the option list. */
   label: string;
   value: string;
   options: ReadonlyArray<{ label: string; value: string }>;
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
-  const dropdown = useDropdown(id);
-  const current = options.find((option) => option.value === value);
+  // A value that isn't among the options (a saved year older than the list) is shown as is; a
+  // native select would otherwise show the first option, which then couldn't be picked.
+  const shown = options.some((option) => option.value === value)
+    ? options
+    : [{ label: value, value }, ...options];
   return (
-    <DropdownRoot dropdown={dropdown} className="relative">
-      <DropdownTrigger dropdown={dropdown} disabled={disabled}>
-        {current?.label ?? value}
-      </DropdownTrigger>
-      <DropdownList dropdown={dropdown} label={`${label} options`}>
-        {options.map((option) => (
-          <DropdownOption
-            key={option.value}
-            selected={option.value === value}
-            onSelect={() => {
-              onChange(option.value);
-              dropdown.close();
-            }}
-          >
+    <label className="block space-y-1.5">
+      <span className="field-label">{label}</span>
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        className="field-select"
+      >
+        {shown.map((option) => (
+          <option key={option.value} value={option.value}>
             {option.label}
-          </DropdownOption>
+          </option>
         ))}
-      </DropdownList>
-    </DropdownRoot>
+      </select>
+    </label>
   );
 }

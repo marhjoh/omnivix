@@ -127,3 +127,177 @@ body {
     background: var(--surface);
   }
 }
+
+/*
+ * Fields, and native selects (Select in src/ui/Dropdown.tsx, the studio's template picker). Where the
+ * browser supports `appearance: base-select`, the closed select and its list get our look and a
+ * thin chevron; elsewhere they stay native (the platform picker on phones). In the components
+ * layer like the buttons, so utilities such as `hidden` still apply.
+ */
+:root {
+  --chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+@layer components {
+  /* A setting's label, above its control. */
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* Text fields, selects and the background picker's trigger share one frame. */
+  .field-input,
+  .field-select {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+    background: var(--surface);
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+
+  .field-input:hover:not(:disabled),
+  .field-select:hover:not(:disabled) {
+    border-color: var(--border);
+  }
+
+  .field-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+
+  .field-select {
+    cursor: pointer;
+  }
+
+  .field-select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .title-select {
+    max-width: 100%;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  /* The studio header's template picker: a small breadcrumb button like the header's others. */
+  .title-select {
+    min-width: 0;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    padding: 5px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+  }
+
+  .title-select:hover {
+    background: var(--surface);
+    border-color: color-mix(in oklab, var(--border) 70%, transparent);
+  }
+
+  .field-select:focus-visible,
+  .title-select:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+    outline-offset: 1px;
+  }
+
+  @supports (appearance: base-select) {
+    select.field-select,
+    select.field-select::picker(select),
+    select.title-select,
+    select.title-select::picker(select) {
+      appearance: base-select;
+    }
+
+    select.field-select,
+    select.title-select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    select.field-select::picker-icon,
+    select.title-select::picker-icon {
+      content: "";
+      width: 16px;
+      height: 16px;
+      background: var(--muted);
+      -webkit-mask: var(--chevron-down) center / contain no-repeat;
+      mask: var(--chevron-down) center / contain no-repeat;
+      transition: rotate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    select.field-select:open::picker-icon,
+    select.title-select:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    select.field-select::picker(select),
+    select.title-select::picker(select) {
+      margin-top: 6px;
+      max-height: 18rem;
+      border-radius: 12px;
+      border: 1px solid color-mix(in oklab, var(--text) 9%, transparent);
+      background: var(--surface);
+      padding: 6px;
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.12s ease;
+    }
+
+    @starting-style {
+      select.field-select:open::picker(select),
+      select.title-select:open::picker(select) {
+        opacity: 0;
+      }
+    }
+
+    select.field-select option,
+    select.title-select option {
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    select.field-select option:hover,
+    select.field-select option:focus-visible,
+    select.title-select option:hover,
+    select.title-select option:focus-visible {
+      background: var(--surface-2);
+    }
+
+    select.field-select option:checked,
+    select.title-select option:checked {
+      font-weight: 600;
+    }
+
+    select.field-select option::checkmark,
+    select.title-select option::checkmark {
+      color: var(--accent-hover);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    select.field-select::picker(select),
+    select.field-select::picker-icon,
+    select.title-select::picker(select),
+    select.title-select::picker-icon {
+      transition: none;
+    }
+  }
+}

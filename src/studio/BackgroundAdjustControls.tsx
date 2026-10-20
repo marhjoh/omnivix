@@ -45,7 +45,7 @@ export function BackgroundAdjustControls({
           Reset
         </button>
       </div>
-      <label htmlFor={zoomId} className="block text-xs font-medium text-muted">
+      <label htmlFor={zoomId} className="field-label">
         Zoom: {Math.round(zoom * 100)}%
       </label>
       <input

@@ -1,0 +1,291 @@
+/* The studio's controls: tiles for choices, the Download split button and its options panel. */
+
+/* Tiles: aspect ratio, grid colors and show/hide options share one look. */
+.tile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  background: var(--surface);
+  padding: 0.55rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.tile:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+.tile:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tile:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.tile[aria-pressed="true"] {
+  border-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+  color: var(--accent-hover);
+}
+
+/* A grid colors tile: the four colors as one rounded strip, the name below it. */
+.colorTile {
+  align-items: stretch;
+  padding-inline: 0.625rem;
+}
+
+.colorStrip {
+  display: flex;
+  width: 100%;
+  height: 0.625rem;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.colorStrip > span {
+  flex: 1;
+}
+
+/* Show/hide tiles: a check that fills in when on. The tile itself stays neutral, so a row of
+   options that are on isn't all blue. */
+.showTile {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding-inline: 0.625rem;
+}
+
+.showTile[aria-pressed="true"] {
+  border-color: color-mix(in oklab, var(--border) 80%, transparent);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.check {
+  display: flex;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border);
+  color: transparent;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.showTile[aria-pressed="true"] .check {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Split button: Download and its options as one blue unit, a thin light line between them. */
+.split {
+  display: inline-flex;
+  height: 2.25rem;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  background: var(--accent);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.splitMain,
+.splitToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.splitMain {
+  gap: 0.5rem;
+  padding: 0 0.75rem 0 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.splitToggle {
+  width: 2.25rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.splitMain:hover:not(:disabled),
+.splitToggle:hover:not(:disabled),
+.splitToggle[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.splitMain:disabled,
+.splitToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.splitMain:focus-visible,
+.splitToggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+/* The current choice: a fixed width and even digits, so the button never changes size. */
+.splitChoice {
+  min-width: 3.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.splitChevron {
+  width: 1rem;
+  height: 1rem;
+  transition: rotate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.splitToggle[aria-expanded="true"] .splitChevron {
+  rotate: 180deg;
+}
+
+/* The options panel: two segmented choices in neutral grays; blue stays on Download. */
+.panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 50;
+  width: 18.5rem;
+  max-width: calc(100vw - 1rem);
+  border-radius: 1rem;
+  border: 1px solid color-mix(in oklab, var(--text) 9%, transparent);
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 1rem;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--text) 4%, transparent),
+    0 16px 40px -12px rgba(0, 0, 0, 0.55);
+}
+
+:global(html[data-theme="light"]) .panel {
+  background: color-mix(in oklab, #fff 92%, transparent);
+  box-shadow: 0 16px 40px -16px rgba(31, 35, 40, 0.28);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel {
+    transform-origin: top right;
+    animation: panelIn 0.14s ease-out;
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+}
+
+.panelLabel {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.segmented {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  border-radius: 0.75rem;
+  background: color-mix(in oklab, var(--text) 6%, transparent);
+  padding: 3px;
+}
+
+.segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  border-radius: 0.575rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+
+.segment:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.segment:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* The chosen one: a slightly lighter chip that sits on the track. */
+.segment[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--text) 11%, var(--surface));
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--text) 8%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-theme="light"]) .segment[aria-pressed="true"] {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(31, 35, 40, 0.06),
+    0 1px 3px rgba(31, 35, 40, 0.14);
+}
+
+.segment:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.segmentHint {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* Section titles in the sidebar, with a rule below. */
+.groupTitle {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  padding-bottom: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splitChevron {
+    transition: none;
+  }
+}
