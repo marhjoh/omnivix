@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.14.0](https://github.com/marhjoh/omnivix/compare/v1.13.0...v1.14.0) (2026-10-20)
+
+
+### Features
+
+* add 404 and error pages ([5410c46](https://github.com/marhjoh/omnivix/commit/5410c46fd29aa2a90da637c6c15d83331d5e78b9))
+
+
+### Bug Fixes
+
+* only read usernames from github.com profile links ([5410c46](https://github.com/marhjoh/omnivix/commit/5410c46fd29aa2a90da637c6c15d83331d5e78b9))
+
 ## [1.13.0](https://github.com/marhjoh/omnivix/compare/v1.12.0...v1.13.0) (2026-10-19)
 
 
