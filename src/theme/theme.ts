@@ -56,9 +56,21 @@ const COOKIE_ATTRIBUTES = `Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
 export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=document.cookie.match(/${THEME_COOKIE_PATTERN}/),t=m?m[1]:matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";d.setAttribute("data-theme",t);if(!m)document.cookie="${THEME_COOKIE_NAME}="+t+"; ${COOKIE_ATTRIBUTES}"+(location.protocol==="https:"?"; Secure":"")}catch(e){}})()`;
 
 /** Client-only: the theme stored in the cookie, or null if none. */
-export function readThemeCookieClient(): Theme | null {
+function readThemeCookieClient(): Theme | null {
   const match = document.cookie.match(new RegExp(THEME_COOKIE_PATTERN));
   return match ? (match[1] as Theme) : null;
+}
+
+/**
+ * Client-only THEME_INIT_SCRIPT, for renders where it didn't run: Strict Mode remounts in
+ * development, and error pages after a server error.
+ */
+export function applyStoredTheme(): void {
+  const root = document.documentElement;
+  const theme =
+    readThemeCookieClient() ??
+    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  if (root.dataset.theme !== theme) root.dataset.theme = theme;
 }
 
 /** Client-only: persist for the next full page request / SSR. */

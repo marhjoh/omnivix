@@ -60,7 +60,7 @@ Everything the visitor chooses is kept in cookies, so the server renders it on t
 
 ### `app/`
 
-Routes only: pages, API handlers and metadata files, listed in [api.md](api.md#routes). Handlers stay thin and call into `src/`.
+Routes only: pages, API handlers and metadata files, listed in [api.md](api.md#routes). Handlers stay thin and call into `src/`. Exception: `fonts.ts`, shared by the root layout and `global-error.tsx`.
 
 ### `src/templates/`
 
@@ -86,7 +86,11 @@ GitHub GraphQL client (`client.ts`), normalization into stable types, and a shor
 
 ### `src/landing/`, `src/og/`
 
-The landing page, and the link-preview images. The "How it works" and FAQ copy in `landingContent.ts` is the single source for the visible FAQ, the JSON-LD and `/llms.txt`.
+The landing page, the site header and footer (`SiteShell.tsx`), and the link-preview images. The "How it works" and FAQ copy in `landingContent.ts` is the single source for the visible FAQ, the JSON-LD and `/llms.txt`.
+
+### `src/error-pages/`
+
+What `app/not-found.tsx`, `error.tsx` and `global-error.tsx` render.
 
 ### `src/lib/`, `src/types/`, `src/ui/`, `src/theme/`
 

@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_OPEN_GRAPH } from "@/src/lib/site";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
-import { DEFAULT_THEME, THEME_INIT_SCRIPT } from "@/src/theme/theme";
+import { DEFAULT_THEME } from "@/src/theme/theme";
+import { ThemeScript } from "@/src/theme/ThemeScript";
+import { inter } from "./fonts";
 import "./globals.css";
-
-/**
- * Inter (variable, Latin), self-hosted so every visitor and the export's browser use the same font;
- * a system font would make the preview and the downloaded PNG differ. SIL Open Font License.
- */
-const inter = localFont({
-  src: "./fonts/inter-latin-variable.woff2",
-  weight: "100 900",
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
@@ -64,7 +54,7 @@ export default function RootLayout({
     // suppressHydrationWarning: THEME_INIT_SCRIPT adds data-theme before React hydrates.
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <ThemeScript />
       </head>
       <body>
         <ThemeProvider initialTheme={DEFAULT_THEME}>{children}</ThemeProvider>

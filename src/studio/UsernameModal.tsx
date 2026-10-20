@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, X } from "lucide-react";
+import { usernameFromProfileLink } from "@/src/lib/githubUsername";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 
 const externalActionClass =
@@ -72,13 +73,6 @@ export function UsernameModal({
     if (trimmed) onSubmit(trimmed);
   }
 
-  function parseInput(raw: string): string {
-    if (raw.includes("github.com/")) {
-      return raw.split("github.com/").pop()?.split("/")[0]?.split("?")[0] ?? raw;
-    }
-    return raw;
-  }
-
   return (
     <AnimatePresence>
       {open && (
@@ -126,7 +120,7 @@ export function UsernameModal({
                     className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-hidden"
                     aria-labelledby="username-modal-title"
                     value={value}
-                    onChange={(e) => setValue(parseInput(e.target.value))}
+                    onChange={(e) => setValue(usernameFromProfileLink(e.target.value))}
                     ref={inputRef}
                   />
                   {value ? (

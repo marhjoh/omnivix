@@ -350,7 +350,8 @@ html[data-theme="light"] .heroGlow {
 }
 
 .sectionHeading,
-.stepWord {
+.stepWord,
+.headingOnLoad {
   display: block;
   font-weight: 800;
   letter-spacing: -0.05em;
@@ -359,7 +360,8 @@ html[data-theme="light"] .heroGlow {
   paint-order: stroke fill;
 }
 
-.sectionHeading {
+.sectionHeading,
+.headingOnLoad {
   font-size: clamp(2.75rem, 1.4rem + 6vw, 6rem);
 }
 
@@ -428,5 +430,13 @@ html[data-theme="light"] .heroGlow {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Section heading that wipes in on load instead of on scroll, for pages that don't scroll.
+   Starts after the error calendar. */
+@media (prefers-reduced-motion: no-preference) {
+  .headingOnLoad {
+    animation: headingWipe 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s both;
   }
 }

@@ -2,10 +2,8 @@ import { FAQ, FAQ_TOPICS } from "@/src/landing/landingContent";
 import { SectionHeading } from "@/src/landing/SectionHeading";
 import { linkText } from "@/src/lib/linkText";
 import { SITE_LINKS } from "@/src/lib/site-links";
+import { textLinkClass } from "@/src/ui/textLinkClass";
 import landingStyles from "@/src/landing/landing.module.css";
-
-const linkClass =
-  "rounded-sm text-accent-hover underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:outline-hidden";
 
 // Answers stay plain strings for the JSON-LD and /llms.txt; URLs in them become links here.
 // The lookahead leaves sentence punctuation after a URL out of the link.
@@ -14,7 +12,7 @@ const URL_PATTERN = /(https:\/\/\S+?)(?=[.,;:]?(?:\s|$))/;
 function AnswerText({ text }: { text: string }) {
   return text.split(URL_PATTERN).map((part, i) =>
     i % 2 === 1 ? (
-      <a key={part} href={part} target="_blank" rel="noopener noreferrer" className={linkClass}>
+      <a key={part} href={part} target="_blank" rel="noopener noreferrer" className={textLinkClass}>
         {linkText(part)}
       </a>
     ) : (
@@ -37,7 +35,7 @@ export function LandingFaq() {
         </SectionHeading>
         <p className="mb-8 text-sm text-muted md:mb-10">
           Something missing?{" "}
-          <a href={`${SITE_LINKS.repo}/issues/new/choose`} className={linkClass}>
+          <a href={SITE_LINKS.newIssue} className={textLinkClass}>
             Open an issue on GitHub
           </a>
           .
