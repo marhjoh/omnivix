@@ -11,8 +11,8 @@ import {
 import {
   DEFAULT_THEME,
   type Theme,
+  applyStoredTheme,
   parseThemeCookie,
-  readThemeCookieClient,
   setThemeCookieClient,
 } from "@/src/theme/theme";
 
@@ -73,11 +73,8 @@ export function ThemeProvider({
 }) {
   const theme = useSyncExternalStore(subscribe, getDomTheme, () => initialTheme);
 
-  // In development, Strict Mode's remount resets <html> to its JSX attributes; restore the stored theme.
-  useLayoutEffect(() => {
-    const stored = readThemeCookieClient();
-    if (stored && stored !== getDomTheme()) document.documentElement.dataset.theme = stored;
-  }, []);
+  // Restores the theme where the inline script's attribute is missing (see applyStoredTheme).
+  useLayoutEffect(applyStoredTheme, []);
 
   const setTheme = useCallback((next: Theme) => applyTheme(next), []);
   const toggle = useCallback(() => applyTheme(getDomTheme() === "dark" ? "light" : "dark"), []);
