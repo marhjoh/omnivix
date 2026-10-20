@@ -1,21 +1,18 @@
 "use client";
 
 import { SITE_NAME } from "@/src/lib/site";
-import { LandingHeader } from "@/src/landing/LandingHeader";
-import { LandingFooter } from "@/src/landing/LandingFooter";
-import { RuntimeError } from "@/src/landing/RuntimeError";
+import { SiteShell } from "@/src/landing/SiteShell";
+import { RuntimeError } from "@/src/error-pages/RuntimeError";
 
-/** An error while rendering a page. The root layout still renders; global-error.tsx covers it. */
+/** Errors in a page. Errors in the root layout go to global-error.tsx. */
 export default function ErrorPage(props: {
   error: Error & { digest?: string };
   retry: () => void;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <SiteShell>
       <title>{`Something broke · ${SITE_NAME}`}</title>
-      <LandingHeader />
       <RuntimeError {...props} />
-      <LandingFooter />
-    </div>
+    </SiteShell>
   );
 }

@@ -3,19 +3,19 @@
 import { useLayoutEffect } from "react";
 import { SITE_NAME } from "@/src/lib/site";
 import { applyStoredTheme } from "@/src/theme/theme";
-import { RuntimeError } from "@/src/landing/RuntimeError";
+import { RuntimeError } from "@/src/error-pages/RuntimeError";
 import { inter } from "./fonts";
 import "./globals.css";
 
 /**
- * An error in the root layout itself. It replaces the layout, so it brings its own document,
- * styles, font and theme. No header: its theme toggle needs the layout's ThemeProvider.
+ * Errors in the root layout. Replaces it, so it brings its own document, styles and font.
+ * No header: the theme toggle needs ThemeProvider.
  */
 export default function GlobalError(props: {
   error: Error & { digest?: string };
   retry: () => void;
 }) {
-  // Next builds this document on the client, so the layout's inline theme script never runs here.
+  // Rendered on the client, where THEME_INIT_SCRIPT never runs.
   useLayoutEffect(applyStoredTheme, []);
   return (
     // suppressHydrationWarning: applyStoredTheme adds data-theme.

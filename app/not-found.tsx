@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTemplates } from "@/src/templates/registry";
-import { ErrorScreen } from "@/src/landing/ErrorScreen";
-import { LandingHeader } from "@/src/landing/LandingHeader";
-import { LandingFooter } from "@/src/landing/LandingFooter";
+import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
+import { SiteShell } from "@/src/landing/SiteShell";
 
 export const metadata: Metadata = { title: "Page not found" };
 
 /**
- * Unknown URLs and notFound() (an unknown template in the studio or the render page). The status
- * stays 404, which the export checks for: the render page calls notFound() before streaming.
+ * Unknown URLs and notFound(). Status stays 404 (the export checks it) as long as notFound() runs
+ * before streaming.
  */
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <LandingHeader />
+    <SiteShell>
       <ErrorScreen
-        code={["4", "0", "4"]}
-        themeId="ocean"
+        code="404"
         title="Page not found."
         actions={
           <>
@@ -32,7 +29,6 @@ export default function NotFound() {
       >
         <p>The link may be wrong, or the page has moved.</p>
       </ErrorScreen>
-      <LandingFooter />
-    </div>
+    </SiteShell>
   );
 }

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { SITE_LINKS } from "@/src/lib/site-links";
-import { ErrorScreen } from "@/src/landing/ErrorScreen";
+import { textLinkClass } from "@/src/ui/textLinkClass";
+import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
 
-/** What app/error.tsx and app/global-error.tsx show: Try again, and how to report it. */
+/** Shared by app/error.tsx and app/global-error.tsx. */
 export function RuntimeError({
   error,
   retry,
@@ -14,8 +15,7 @@ export function RuntimeError({
 }) {
   return (
     <ErrorScreen
-      code={["E", "R", "R"]}
-      themeId="alternate"
+      code="ERR"
       title="Something broke."
       actions={
         <>
@@ -30,16 +30,12 @@ export function RuntimeError({
     >
       <p>
         Try again. If it keeps happening,{" "}
-        <a
-          href={`${SITE_LINKS.repo}/issues/new/choose`}
-          className="text-text underline underline-offset-4 hover:text-accent-hover"
-        >
+        <a href={SITE_LINKS.newIssue} className={textLinkClass}>
           open an issue on GitHub
         </a>
         .
       </p>
-      {/* Only errors on the server have a digest: a hash that matches the server's log entry
-          (production hides the message itself), so it says nothing to anyone without the logs. */}
+      {/* Only server errors have a digest. It matches the server log, so it's only useful in an issue. */}
       {error.digest && (
         <p className="mt-3 text-sm">
           Include error ID <span className="font-mono text-text">{error.digest}</span> in the issue.
