@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/marhjoh/omnivix/compare/v1.14.0...v1.14.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** bump vite to 7.3.7 and limit the CI token to read-only ([#165](https://github.com/marhjoh/omnivix/issues/165)) ([b5a5cbe](https://github.com/marhjoh/omnivix/commit/b5a5cbebe5523f8d8df2c359aa7a6f3cdb4afd27))
+
 ## [1.14.0](https://github.com/marhjoh/omnivix/compare/v1.13.0...v1.14.0) (2026-10-20)
 
 
