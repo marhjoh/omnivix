@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Link2, X } from "lucide-react";
+import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { isHttpImageUrl } from "@/src/lib/imageLink";
@@ -15,6 +15,7 @@ import {
   useDropdown,
 } from "@/src/ui/Dropdown";
 import { FieldLabel } from "@/src/ui/FieldLabel";
+import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
 /** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
 const BACKGROUND_FILE_ACCEPT =
@@ -167,15 +168,14 @@ export function BackgroundImagePicker({
   };
 
   /**
-   * The × button: the link and the background go, but the field stays open and focused, ready for
-   * another link. Choosing something else in the menu closes it.
+   * The × button: the link and the background go, but the field stays open, ready for another
+   * link. Choosing something else in the menu closes it.
    */
   const removeLink = () => {
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     setUrlDraft("");
     setSettledLink(undefined);
     onChange(undefined);
-    urlInputRef.current?.focus();
   };
 
   /**
@@ -300,37 +300,19 @@ export function BackgroundImagePicker({
             {showUrlField ? (
               <div className="space-y-1.5">
                 <FieldLabel htmlFor={`${id}-url`}>Image URL</FieldLabel>
-                {/* One frame for the fixed https://, the field and its × (field-input's focus
-                    ring shows while the field inside has focus). */}
-                <div className="field-input flex items-center py-0 pr-1">
-                  <span id={`${id}-url-scheme`} className="pr-1 text-muted select-none">
-                    {HTTPS}
-                  </span>
-                  <input
-                    ref={urlInputRef}
-                    id={`${id}-url`}
-                    type="text"
-                    inputMode="url"
-                    autoComplete="url"
-                    spellCheck={false}
-                    aria-describedby={`${id}-url-scheme`}
-                    className="min-w-0 flex-1 bg-transparent py-[9px] outline-none"
-                    value={urlInputValue}
-                    onChange={(e) => onUrlChange(e.target.value)}
-                    onBlur={settleUrl}
-                    onKeyDown={(e) => e.key === "Enter" && settleUrl()}
-                  />
-                  {urlInputValue ? (
-                    <button
-                      type="button"
-                      aria-label="Remove image link"
-                      onClick={removeLink}
-                      className="btn-ghost h-8 w-8 shrink-0 p-0"
-                    >
-                      <X className="h-4 w-4" aria-hidden />
-                    </button>
-                  ) : null}
-                </div>
+                <PrefixedInput
+                  ref={urlInputRef}
+                  id={`${id}-url`}
+                  prefix={HTTPS}
+                  inputMode="url"
+                  autoComplete="url"
+                  value={urlInputValue}
+                  onChange={(e) => onUrlChange(e.target.value)}
+                  onBlur={settleUrl}
+                  onKeyDown={(e) => e.key === "Enter" && settleUrl()}
+                  clearLabel="Remove image link"
+                  onClear={removeLink}
+                />
               </div>
             ) : null}
             {children}

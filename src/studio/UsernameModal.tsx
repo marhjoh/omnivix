@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, X } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { usernameFromProfileLink } from "@/src/lib/githubUsername";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
+import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
-const externalActionClass =
-  "group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-medium text-text shadow-xs transition-[border-color,background-color,box-shadow,color] hover:border-accent hover:bg-accent/10 hover:shadow-md focus-visible:border-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent/15";
+/** The tip's links: secondary buttons, with the studio's faint blue hover. */
+const externalActionClass = "btn-secondary h-9 px-3 py-0";
 
 export function UsernameModal({
   open,
@@ -113,29 +114,17 @@ export function UsernameModal({
               </div>
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-3 flex items-center rounded-md border border-border bg-surface-2 pr-1.5 pl-3">
-                  <span className="text-sm text-muted select-none">https://github.com/</span>
-                  <input
-                    type="text"
-                    className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-text outline-hidden"
+                <div className="mb-3">
+                  <PrefixedInput
+                    ref={inputRef}
+                    prefix="https://github.com/"
+                    autoComplete="username"
                     aria-labelledby="username-modal-title"
                     value={value}
                     onChange={(e) => setValue(usernameFromProfileLink(e.target.value))}
-                    ref={inputRef}
+                    clearLabel="Clear username"
+                    onClear={() => setValue("")}
                   />
-                  {value ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue("");
-                        inputRef.current?.focus();
-                      }}
-                      className="btn-ghost shrink-0 rounded p-1"
-                      aria-label="Clear username"
-                    >
-                      <X className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  ) : null}
                 </div>
 
                 <div className="mb-6 text-xs">
@@ -151,7 +140,7 @@ export function UsernameModal({
                       rel="noopener noreferrer"
                       className={externalActionClass}
                     >
-                      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+                      <ExternalLink className="h-4 w-4 shrink-0 text-muted" aria-hidden />
                       GitHub settings
                     </a>
 
@@ -161,7 +150,7 @@ export function UsernameModal({
                       rel="noopener noreferrer"
                       className={externalActionClass}
                     >
-                      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+                      <ExternalLink className="h-4 w-4 shrink-0 text-muted" aria-hidden />
                       GitHub docs
                     </a>
                   </div>
@@ -170,7 +159,7 @@ export function UsernameModal({
                 <div className="flex flex-col gap-2">
                   <button
                     type="submit"
-                    className="btn-primary w-full justify-center py-3"
+                    className="btn-primary h-10 w-full justify-center py-0"
                     disabled={!value.trim()}
                   >
                     Use username
@@ -178,7 +167,7 @@ export function UsernameModal({
                   <button
                     type="button"
                     onClick={onCancel}
-                    className="btn-secondary w-full justify-center py-3"
+                    className="btn-secondary h-10 w-full justify-center py-0"
                   >
                     Cancel
                   </button>
