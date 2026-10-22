@@ -7,7 +7,7 @@ import { usernameFromProfileLink } from "@/src/lib/githubUsername";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
-/** The tip's links: secondary buttons, so hover is the faint blue border like the studio's. */
+/** The tip's links: secondary buttons, with the studio's faint blue hover. */
 const externalActionClass = "btn-secondary h-9 px-3 py-0";
 
 export function UsernameModal({
@@ -123,10 +123,7 @@ export function UsernameModal({
                     value={value}
                     onChange={(e) => setValue(usernameFromProfileLink(e.target.value))}
                     clearLabel="Clear username"
-                    onClear={() => {
-                      setValue("");
-                      inputRef.current?.focus();
-                    }}
+                    onClear={() => setValue("")}
                   />
                 </div>
 

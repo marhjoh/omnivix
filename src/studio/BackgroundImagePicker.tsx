@@ -168,15 +168,14 @@ export function BackgroundImagePicker({
   };
 
   /**
-   * The × button: the link and the background go, but the field stays open and focused, ready for
-   * another link. Choosing something else in the menu closes it.
+   * The × button: the link and the background go, but the field stays open, ready for another
+   * link. Choosing something else in the menu closes it.
    */
   const removeLink = () => {
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     setUrlDraft("");
     setSettledLink(undefined);
     onChange(undefined);
-    urlInputRef.current?.focus();
   };
 
   /**
