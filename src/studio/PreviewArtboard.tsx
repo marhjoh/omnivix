@@ -41,12 +41,11 @@ export function PreviewArtboard({
   problem: PreviewProblem | null;
   onRetry: () => void;
   onChangeUsername: () => void;
-  /** Set while the background is being adjusted: shows the drag surface over the preview. */
+  /** Set when the banner has a background that can be moved: the preview can then be dragged. */
   backgroundAdjust?: {
     position: BackgroundPosition;
     zoom: number;
     onMove: (position: BackgroundPosition) => void;
-    onDone: () => void;
   };
 }) {
   const dims = BANNER_SIZES[size];

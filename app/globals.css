@@ -111,9 +111,9 @@ body {
     color: var(--text);
   }
 
+  /* Hover: a faint blue border, like the fields and the studio's tiles. */
   .btn-secondary:hover:not(:disabled) {
-    background: var(--surface-2);
-    border-color: var(--accent);
+    border-color: var(--control-border-hover);
   }
 
   .btn-ghost {
@@ -125,5 +125,153 @@ body {
   .btn-ghost:hover:not(:disabled) {
     color: var(--text);
     background: var(--surface);
+  }
+}
+
+/*
+ * Fields, and native selects (Select in src/ui/Dropdown.tsx). Where the browser supports
+ * `appearance: base-select`, the closed select and its list get our look and a thin chevron;
+ * elsewhere they stay native (the platform picker on phones). In the components layer like the
+ * buttons, so utilities such as `hidden` still apply.
+ */
+:root {
+  /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
+  --control-border: color-mix(in oklab, var(--border) 85%, transparent);
+  --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
+  --chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+@layer components {
+  /* A setting's label, above its control: like the landing page's step titles (text color,
+     semibold), one size below the value in the control. */
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Text fields and selects: one frame, 40px tall with the 20px line, 8px corners like buttons. */
+  .field-input,
+  .field-select {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--control-border);
+    background: var(--surface);
+    padding: 9px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text);
+    /* Hover and focus colors fade like the buttons'. */
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: 0.15s;
+  }
+
+  /* Hover: a faint blue border, like the tiles and secondary buttons. :where keeps it weaker
+     than focus, so a focused field keeps its full blue border. */
+  .field-input:where(:hover:not(:disabled)),
+  .field-select:where(:hover:not(:disabled)) {
+    border-color: var(--control-border-hover);
+  }
+
+  /* :focus-within, so a frame holding a field (the background link) shows it too. */
+  .field-input:focus-within,
+  .field-select:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+
+  .field-select {
+    cursor: pointer;
+  }
+
+  /* Open (native or custom dropdown): no hover or focus color, and a square bottom where the list
+     attaches. */
+  .field-select:is(:open, [aria-expanded="true"]) {
+    border-color: var(--control-border);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    box-shadow: none;
+  }
+
+  .field-select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @supports (appearance: base-select) {
+    select.field-select,
+    select.field-select::picker(select) {
+      appearance: base-select;
+    }
+
+    select.field-select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    select.field-select::picker-icon {
+      content: "";
+      width: 16px;
+      height: 16px;
+      background: var(--muted);
+      -webkit-mask: var(--chevron-down) center / contain no-repeat;
+      mask: var(--chevron-down) center / contain no-repeat;
+      transition: rotate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    select.field-select:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    /* Attached under the select, sharing its bottom border. No fallbacks, so it never flips above;
+       its height stops at the window's edge instead. */
+    select.field-select::picker(select) {
+      position-try-fallbacks: none;
+      margin-top: -1px;
+      max-height: min(18rem, 100%);
+      border-radius: 0 0 8px 8px;
+      border: 1px solid var(--control-border);
+      background: var(--surface);
+      padding: 4px;
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.12s ease;
+    }
+
+    @starting-style {
+      select.field-select:open::picker(select) {
+        opacity: 0;
+      }
+    }
+
+    select.field-select option {
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* The gray row is the highlight for mouse and keyboard alike, so no outline on top. */
+    select.field-select option:hover,
+    select.field-select option:focus-visible {
+      outline: none;
+      background: var(--surface-2);
+    }
+
+    select.field-select option::checkmark {
+      color: var(--accent-hover);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    select.field-select::picker(select),
+    select.field-select::picker-icon {
+      transition: none;
+    }
   }
 }
