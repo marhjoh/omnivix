@@ -12,9 +12,9 @@ const LARGE_STEP = 10;
 const round = (value: number) => Math.round(value * 10) / 10;
 
 /**
- * Covers the preview while the background is being adjusted: drag to move it, arrow keys to nudge
- * it, Escape or Enter to finish. Drags are measured from where they started, so the image follows
- * the pointer exactly.
+ * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
+ * arrow keys. No mode to turn on or off. Drags are measured from where they started, so the image
+ * follows the pointer exactly.
  */
 export function BackgroundDragSurface({
   position,
@@ -22,7 +22,6 @@ export function BackgroundDragSurface({
   frame,
   scale,
   onMove,
-  onDone,
 }: {
   position: BackgroundPosition;
   zoom: number;
@@ -31,7 +30,6 @@ export function BackgroundDragSurface({
   /** Preview scale: screen pixels per banner pixel. */
   scale: number;
   onMove: (position: BackgroundPosition) => void;
-  onDone: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; from: BackgroundPosition } | null>(null);
@@ -48,13 +46,6 @@ export function BackgroundDragSurface({
       if (pending.current) onMove(pending.current);
     });
   }
-
-  // Takes focus while adjusting, and gives it back (to the Adjust button) when done.
-  useEffect(() => {
-    const returnFocusTo = document.activeElement as HTMLElement | null;
-    ref.current?.focus({ preventScroll: true });
-    return () => returnFocusTo?.focus({ preventScroll: true });
-  }, []);
 
   function panRange() {
     const img = ref.current?.parentElement?.querySelector<HTMLImageElement>(
@@ -86,11 +77,6 @@ export function BackgroundDragSurface({
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape" || event.key === "Enter") {
-      event.preventDefault();
-      onDone();
-      return;
-    }
     const step = event.shiftKey ? LARGE_STEP : STEP;
     // Arrows move the image, matching a drag: → shows more of the left side.
     const delta = {
@@ -110,15 +96,17 @@ export function BackgroundDragSurface({
       ref={ref}
       tabIndex={0}
       role="application"
-      aria-label="Background position. Drag or use the arrow keys to move it; press Escape when done."
+      aria-label="Background position. Drag or use the arrow keys to move it."
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onKeyDown={onKeyDown}
-      className="absolute inset-0 z-10 cursor-grab touch-none rounded-[inherit] border-2 border-dashed border-accent focus-visible:outline-none active:cursor-grabbing"
+      className="group absolute inset-0 z-10 cursor-grab touch-none rounded-[inherit] border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent"
     >
-      <span className="pointer-events-none absolute top-2 left-2 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium text-white">
+      {/* The dashed frame and this badge show on hover, focus and while dragging, so the banner
+          reads clean otherwise. */}
+      <span className="pointer-events-none absolute top-2 left-2 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
         Drag to move
       </span>
     </div>

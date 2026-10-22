@@ -67,7 +67,7 @@ export function ExportControls({
               {pixelRatio}× · {formatLabel}
             </span>
           </button>
-          <DropdownList dropdown={optionsMenu} label="Export options" className="right-0 w-max">
+          <DropdownList dropdown={optionsMenu} label="Export options" menuPlacement="right-0 w-max">
             {/* One choice per group, so screen readers know the two selected options are separate. */}
             <div role="group" aria-label="Resolution">
               <DropdownGroupLabel>Resolution</DropdownGroupLabel>
