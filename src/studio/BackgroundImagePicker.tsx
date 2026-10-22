@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
@@ -50,6 +50,8 @@ export function BackgroundImagePicker({
   onError,
   onErrorResolved,
   onUnusableLinkText,
+  labelAction,
+  children,
 }: {
   id: string;
   label: string;
@@ -61,6 +63,10 @@ export function BackgroundImagePicker({
   onErrorResolved: (toastId: number) => void;
   /** The link field holds text that isn't a link, so the export must be blocked. */
   onUnusableLinkText: (unusable: boolean) => void;
+  /** A small action at the end of the label row (the sidebar's Reset). */
+  labelAction?: ReactNode;
+  /** Controls for the chosen image, joined under the picker as one frame. */
+  children?: ReactNode;
 }) {
   const dropdown = useDropdown(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +87,7 @@ export function BackgroundImagePicker({
   /** The current background when it's an image link. */
   const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
   const showUrlField = urlEditorOpen || linkValue !== undefined;
+  const joined = showUrlField || Boolean(children);
   const linkStatus = useImageStatus(linkValue);
   // A link that can't be exported (not a link at all, http, or one the browser can't load) is left
   // out of the preview (see StudioShell) and reported once the user has stopped typing it.
@@ -202,98 +209,109 @@ export function BackgroundImagePicker({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-xs font-medium text-muted">
-        {label}
-      </label>
+      <div className="flex items-baseline justify-between">
+        <label htmlFor={id} className="field-label">
+          {label}
+        </label>
+        {labelAction}
+      </div>
 
-      <DropdownRoot dropdown={dropdown} className="relative space-y-1.5">
-        <DropdownTrigger dropdown={dropdown}>
-          {triggerLabel(value, uploadDisplayName)}
-        </DropdownTrigger>
+      <div>
+        <DropdownRoot dropdown={dropdown} className="relative">
+          <DropdownTrigger dropdown={dropdown} joinedBelow={joined}>
+            {triggerLabel(value, uploadDisplayName)}
+          </DropdownTrigger>
 
-        <DropdownList dropdown={dropdown} label="Background options">
-          <DropdownOption selected={!value} onSelect={() => select(undefined)}>
-            None
-          </DropdownOption>
+          <DropdownList dropdown={dropdown} label="Background options">
+            <DropdownOption selected={!value} onSelect={() => select(undefined)}>
+              None
+            </DropdownOption>
 
-          {Array.from(GROUPED_PRESETS.entries()).map(([groupName, presets]) => (
-            <div key={groupName}>
-              <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
-              {presets.map((p) => (
-                <DropdownOption
-                  key={p.id}
-                  selected={value === p.src}
-                  onSelect={() => select(p.src)}
-                >
-                  {p.label}
-                </DropdownOption>
-              ))}
-            </div>
-          ))}
+            {Array.from(GROUPED_PRESETS.entries()).map(([groupName, presets]) => (
+              <div key={groupName}>
+                <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
+                {presets.map((p) => (
+                  <DropdownOption
+                    key={p.id}
+                    selected={value === p.src}
+                    onSelect={() => select(p.src)}
+                  >
+                    {p.label}
+                  </DropdownOption>
+                ))}
+              </div>
+            ))}
 
-          <div className="my-1 border-t border-border" />
+            <div className="my-1 border-t border-border" />
 
-          <DropdownOption
-            selected={linkValue !== undefined}
-            icon={<Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
-            onSelect={selectEnterUrl}
-          >
-            Image from URL
-          </DropdownOption>
-          <DropdownOption
-            selected={Boolean(value && isDataUrl(value))}
-            icon={<ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
-            onSelect={selectUpload}
-          >
-            Upload from device
-          </DropdownOption>
-        </DropdownList>
-        {/*
-          Keep this input mounted outside the dropdown: closing the menu unmounts the list, but the
-          same node must stay in the document until the user finishes the OS file picker or change
-          events can be dropped.
-        */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={BACKGROUND_FILE_ACCEPT}
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            e.target.value = "";
-            if (!file) return;
-            setUrlDraft(undefined);
-            setUrlEditorOpen(false);
-            const result = await normalizeBackgroundImageFile(file);
-            if (!result.ok) {
-              onError(result.error);
-              return;
-            }
-            setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
-            onChange(result.dataUrl);
-          }}
-        />
-      </DropdownRoot>
-
-      {showUrlField ? (
-        <div className="space-y-1.5">
-          <label htmlFor={`${id}-url`} className="block text-xs font-medium text-muted">
-            Image URL
-          </label>
+            <DropdownOption
+              selected={linkValue !== undefined}
+              icon={<Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
+              onSelect={selectEnterUrl}
+            >
+              Image from URL
+            </DropdownOption>
+            <DropdownOption
+              selected={Boolean(value && isDataUrl(value))}
+              icon={<ImagePlus className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
+              onSelect={selectUpload}
+            >
+              Upload from device
+            </DropdownOption>
+          </DropdownList>
+          {/*
+            Keep this input mounted outside the dropdown: closing the menu unmounts the list, but
+            the same node must stay in the document until the user finishes the OS file picker or
+            change events can be dropped.
+          */}
           <input
-            ref={urlInputRef}
-            id={`${id}-url`}
-            type="url"
-            inputMode="url"
-            placeholder="Enter the link to your image…"
-            className="field-input text-xs"
-            value={urlInputValue}
-            onChange={(e) => onUrlChange(e.target.value)}
-            onBlur={settleUrl}
-            onKeyDown={(e) => e.key === "Enter" && settleUrl()}
+            ref={fileInputRef}
+            type="file"
+            accept={BACKGROUND_FILE_ACCEPT}
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setUrlDraft(undefined);
+              setUrlEditorOpen(false);
+              const result = await normalizeBackgroundImageFile(file);
+              if (!result.ok) {
+                onError(result.error);
+                return;
+              }
+              setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
+              onChange(result.dataUrl);
+            }}
           />
-        </div>
-      ) : null}
+        </DropdownRoot>
+        {joined ? (
+          // Shares the trigger's bottom border, so the picker, its link field and the image's
+          // controls read as one frame. The open list covers it.
+          <div className="-mt-px space-y-3 rounded-b-lg border border-(--control-border) bg-surface p-3">
+            {showUrlField ? (
+              <div className="space-y-1.5">
+                <label htmlFor={`${id}-url`} className="field-label">
+                  Image URL
+                </label>
+                <input
+                  ref={urlInputRef}
+                  id={`${id}-url`}
+                  type="url"
+                  inputMode="url"
+                  placeholder="Enter the link to your image…"
+                  className="field-input"
+                  value={urlInputValue}
+                  onChange={(e) => onUrlChange(e.target.value)}
+                  onBlur={settleUrl}
+                  onKeyDown={(e) => e.key === "Enter" && settleUrl()}
+                />
+              </div>
+            ) : null}
+            {children}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

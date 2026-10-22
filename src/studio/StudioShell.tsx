@@ -591,8 +591,6 @@ export function StudioShell({
     [definition.stateSchema, state],
   );
   const background = backgroundFromState(state);
-  /** The image adjust mode was turned on for; choosing another image (or none) ends it. */
-  const [adjustingSrc, setAdjustingSrc] = useState<string | null>(null);
   const moveBackground = useCallback(
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
     [updateState],
@@ -613,13 +611,6 @@ export function StudioShell({
     backgroundFailed || isInsecureImageLink(state.backgroundImage) || unusableLinkText;
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
   const adjustableBackground = backgroundUnusable ? undefined : background;
-  const adjustingBackground =
-    adjustableBackground !== undefined && adjustingSrc === adjustableBackground.src;
-  function toggleBackgroundAdjusting() {
-    setAdjustingSrc(adjustingBackground ? null : (adjustableBackground?.src ?? null));
-    // On phones the settings drawer covers the preview; close it so the background can be dragged.
-    if (isPhone && !adjustingBackground) closeDrawer();
-  }
 
   // Links report their own problems (BackgroundImagePicker); a preset or upload that fails to
   // load is reported here, once per image.
@@ -738,8 +729,6 @@ export function StudioShell({
               onRetryRepoCatalog={retryRepoCatalog}
               disabledFields={disabledFields}
               adjustableBackground={adjustableBackground}
-              backgroundAdjusting={adjustingBackground}
-              onToggleBackgroundAdjusting={toggleBackgroundAdjusting}
               onError={showError}
               onErrorResolved={dismissToast}
               onUnusableLinkText={setUnusableLinkText}
@@ -764,12 +753,11 @@ export function StudioShell({
             onRetry={handlePreviewRetry}
             onChangeUsername={openUsernameModal}
             backgroundAdjust={
-              adjustingBackground && adjustableBackground
+              adjustableBackground
                 ? {
                     position: adjustableBackground.position,
                     zoom: adjustableBackground.zoom,
                     onMove: moveBackground,
-                    onDone: () => setAdjustingSrc(null),
                   }
                 : undefined
             }
