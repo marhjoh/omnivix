@@ -1,4 +1,4 @@
-/* The studio sidebar's controls: tiles for choices, the Show list and the section titles. */
+/* The studio sidebar's controls: tiles for choices, check lists and the section titles. */
 
 /* Tiles: aspect ratio and grid colors share one look. */
 .tile {
@@ -65,16 +65,23 @@
   flex: 1;
 }
 
-/* Show/hide options: one frame with a row per option, like the background picker's frame. The
-   whole row is the button; the check on the right fills in when on. */
-.showList {
+/* Check lists (Show, Repositories): one frame with a row per option, like the background picker's
+   frame. The whole row is the button; the check on the right fills in when on. */
+.checkList {
   overflow: hidden;
   border-radius: 8px;
   border: 1px solid var(--control-border);
   background: var(--surface);
 }
 
-.showRow {
+/* A list that scrolls at a fixed height (Repositories), so loading or a long list doesn't move
+   anything below it. */
+.checkListScroll {
+  height: 13rem;
+  overflow-y: auto;
+}
+
+.checkRow {
   display: flex;
   width: 100%;
   min-height: 2.25rem;
@@ -91,21 +98,21 @@
   transition-duration: 0.15s;
 }
 
-.showRow + .showRow {
+.checkRow + .checkRow {
   border-top: 1px solid var(--control-border);
 }
 
 /* Rows inside a frame: hover is a light background, like the dropdown options. */
-.showRow:hover:not(:disabled) {
+.checkRow:hover:not(:disabled) {
   background: var(--surface-2);
 }
 
-.showRow:disabled {
+.checkRow:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.showRow:focus-visible {
+.checkRow:focus-visible {
   outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
   outline-offset: -2px;
 }
@@ -125,7 +132,7 @@
   transition-duration: 0.15s;
 }
 
-.showRow[aria-pressed="true"] .check {
+.checkRow[aria-pressed="true"] .check {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;

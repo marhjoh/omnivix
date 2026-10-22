@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect, useId, useRef } from "react";
-import { Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
+import { CheckList, CheckRow } from "@/src/studio/CheckList";
+import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
+import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
 import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
-import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
-import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
-import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
+import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields } from "@/src/studio/settingGroups";
 import controls from "@/src/studio/controls.module.css";
 import { textLinkClass } from "@/src/ui/textLinkClass";
@@ -92,163 +92,8 @@ function FieldWrapper({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="field-label">
-        {label}
-      </label>
+      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
       {children}
-    </div>
-  );
-}
-
-/** Shown while the repository list loads slowly; quicker loads go straight to the list. */
-const REPO_LIST_SKELETON_DELAY_MS = 300;
-const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
-
-function RepoRow({
-  name,
-  on,
-  disabled,
-  onClick,
-}: {
-  name: string;
-  on: boolean;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={on}
-      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-        on
-          ? "border-accent bg-accent/10 text-text"
-          : "border-transparent text-muted enabled:hover:bg-surface"
-      }`}
-    >
-      <span
-        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
-          on ? "border-accent bg-accent" : "border-border"
-        }`}
-      >
-        {on ? <span className="text-[8px] leading-none text-white">✓</span> : null}
-      </span>
-      <span className="min-w-0 truncate font-medium">{name}</span>
-    </button>
-  );
-}
-
-function RepoMultiSelect({
-  catalog,
-  loading,
-  error,
-  retryAt,
-  onRetry,
-  valueCsv,
-  maxPick,
-  onChange,
-}: {
-  catalog: RepoNormalized[];
-  loading: boolean;
-  error: string | null;
-  /** Until then Retry is disabled (GitHub's rate limit). */
-  retryAt: Date | null;
-  onRetry: () => void;
-  valueCsv: string;
-  maxPick: number;
-  onChange: (csv: string) => void;
-}) {
-  const retryReached = useTimeReached(retryAt);
-  const selected = parseRepoSelection(valueCsv);
-  // The picks from when the list opened come first, so they show (checked) while the rest
-  // loads and don't move when it arrives. Clicking later doesn't reorder anything.
-  const [initialPicks] = useState(selected);
-  const showSkeleton = useDelayedFlag(loading, REPO_LIST_SKELETON_DELAY_MS);
-
-  const toggle = (name: string) => {
-    const i = selected.indexOf(name);
-    let next: string[];
-    if (i >= 0) {
-      next = [...selected.slice(0, i), ...selected.slice(i + 1)];
-    } else if (selected.length >= maxPick) {
-      return;
-    } else {
-      next = [...selected, name];
-    }
-    onChange(next.join(", "));
-  };
-
-  const row = (name: string, key: string) => {
-    const on = selected.includes(name);
-    return (
-      <RepoRow
-        key={key}
-        name={name}
-        on={on}
-        // At the limit, only already-selected repositories can be clicked (to remove them).
-        disabled={!on && selected.length >= maxPick}
-        onClick={() => toggle(name)}
-      />
-    );
-  };
-
-  // A pick that's no longer in the list (renamed, deleted, made private) still shows, so it can
-  // be removed: otherwise it would count toward the limit with no way to unpick it.
-  const missing = selected.filter((name) => !catalog.some((repo) => repo.name === name));
-  const ordered = [
-    ...initialPicks.flatMap((name) => catalog.find((repo) => repo.name === name) ?? []),
-    ...catalog.filter((repo) => !initialPicks.includes(repo.name)),
-  ];
-
-  return (
-    <div className="space-y-1.5" role="group" aria-labelledby="repositories-label">
-      <span id="repositories-label" className="field-label">
-        Repositories
-      </span>
-      {/* The box keeps one height whether loading, loaded or failed, so nothing below it moves. */}
-      <div
-        className="h-52 space-y-0.5 overflow-y-auto rounded-lg border border-border bg-surface-2 p-1.5"
-        aria-busy={loading}
-      >
-        {error ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
-            <p className="text-xs text-danger" role="alert">
-              {error}
-            </p>
-            <button
-              type="button"
-              onClick={onRetry}
-              disabled={!retryReached}
-              className="btn-secondary px-3 py-1 text-xs"
-            >
-              Try again
-            </button>
-          </div>
-        ) : loading ? (
-          <>
-            {initialPicks.map((name) => row(name, name))}
-            {showSkeleton
-              ? SKELETON_ROW_WIDTHS.slice(initialPicks.length).map((width, i) => (
-                  <div key={i} className="flex items-center gap-2 px-2 py-1.5" aria-hidden>
-                    <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-border/70 motion-safe:animate-pulse" />
-                    <span
-                      className="h-2.5 rounded bg-border/70 motion-safe:animate-pulse"
-                      style={{ width }}
-                    />
-                  </div>
-                ))
-              : null}
-          </>
-        ) : ordered.length === 0 && missing.length === 0 ? (
-          <p className="px-2 py-2 text-xs text-muted">No public repositories found.</p>
-        ) : (
-          <>
-            {missing.map((name) => row(name, `missing:${name}`))}
-            {ordered.map((repo) => row(repo.name, repo.id))}
-          </>
-        )}
-      </div>
     </div>
   );
 }
@@ -264,7 +109,7 @@ function ThemePicker({
 }) {
   const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
   return (
-    <TileGroup label={label}>
+    <LabeledGroup label={label}>
       <div className="grid grid-cols-2 gap-2">
         {THEME_PRESETS.map((preset) => (
           <button
@@ -283,7 +128,7 @@ function ThemePicker({
           </button>
         ))}
       </div>
-    </TileGroup>
+    </LabeledGroup>
   );
 }
 
@@ -297,7 +142,7 @@ function SizePicker({
   label: string;
 }) {
   return (
-    <TileGroup label={label}>
+    <LabeledGroup label={label}>
       <div className="grid grid-cols-3 gap-2">
         {BANNER_SIZE_KEYS.map((key) => {
           const format = BANNER_SIZES[key];
@@ -322,20 +167,7 @@ function SizePicker({
           );
         })}
       </div>
-    </TileGroup>
-  );
-}
-
-/** A labeled group of tiles: the visible label names the group for screen readers. */
-function TileGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  const labelId = useId();
-  return (
-    <div role="group" aria-labelledby={labelId} className="space-y-1.5">
-      <span id={labelId} className="field-label">
-        {label}
-      </span>
-      {children}
-    </div>
+    </LabeledGroup>
   );
 }
 
@@ -352,30 +184,24 @@ function ShowList({
   onChange: (key: string, value: unknown) => void;
 }) {
   return (
-    <TileGroup label="Show">
-      <div className={controls.showList}>
+    <LabeledGroup label="Show">
+      <CheckList>
         {fields.map((field) => {
           const disabled = disabledFields.has(field.key);
           // Shown off while disabled, without changing the saved value.
           const checked = !disabled && Boolean(state[field.key] ?? false);
           return (
-            <button
+            <CheckRow
               key={field.key}
-              type="button"
-              aria-pressed={checked}
+              label={fieldLabel(field)}
+              on={checked}
               disabled={disabled}
               onClick={() => onChange(field.key, !checked)}
-              className={controls.showRow}
-            >
-              <span className="truncate">{fieldLabel(field)}</span>
-              <span className={controls.check} aria-hidden>
-                <Check className="h-3 w-3" strokeWidth={3} />
-              </span>
-            </button>
+            />
           );
         })}
-      </div>
-    </TileGroup>
+      </CheckList>
+    </LabeledGroup>
   );
 }
 
@@ -393,7 +219,6 @@ export function ControlSidebar({
   adjustableBackground: background,
   onError,
   onErrorResolved,
-  onUnusableLinkText,
 }: {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -413,8 +238,6 @@ export function ControlSidebar({
   onError: (message: string) => number;
   /** Hides the toast with this id, if it's still showing. */
   onErrorResolved: (toastId: number) => void;
-  /** The background's link field holds text that isn't a link (see BackgroundImagePicker). */
-  onUnusableLinkText: (unusable: boolean) => void;
 }) {
   const mode = state.mode as string | undefined;
 
@@ -542,7 +365,6 @@ export function ControlSidebar({
           onChange={(next) => onChange(field.key, next)}
           onError={onError}
           onErrorResolved={onErrorResolved}
-          onUnusableLinkText={onUnusableLinkText}
           labelAction={
             // Only once the image has been moved or zoomed in the preview.
             background && !isDefaultBackgroundFraming(background) ? (

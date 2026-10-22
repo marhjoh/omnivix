@@ -151,8 +151,7 @@ body {
     color: var(--text);
   }
 
-  /* Text fields, selects and the background picker's trigger share one frame: 40px tall (with
-     the 20px line), 8px corners like the buttons, the same border as the studio's tiles. */
+  /* Text fields and selects: one frame, 40px tall with the 20px line, 8px corners like buttons. */
   .field-input,
   .field-select {
     display: block;
@@ -176,7 +175,8 @@ body {
     border-color: var(--control-border-hover);
   }
 
-  .field-input:focus,
+  /* :focus-within, so a frame holding a field (the background link) shows it too. */
+  .field-input:focus-within,
   .field-select:focus-visible {
     outline: none;
     border-color: var(--accent);
