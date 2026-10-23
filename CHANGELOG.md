@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/marhjoh/omnivix/compare/v1.15.0...v1.15.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** bump next to 16.4.3 to patch security advisories ([#171](https://github.com/marhjoh/omnivix/issues/171)) ([c719752](https://github.com/marhjoh/omnivix/commit/c719752fb62e26aac010289b3b25e98364f536bb))
+
 ## [1.15.0](https://github.com/marhjoh/omnivix/compare/v1.14.1...v1.15.0) (2026-10-23)
 
 
