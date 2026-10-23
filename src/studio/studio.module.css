@@ -161,6 +161,13 @@
     0 10px 32px rgba(31, 35, 40, 0.08);
 }
 
+/* The banner stays hidden until its content is fitted (FitContent sets data-banner-fit), so the
+   background and the content appear together; before the page's JavaScript runs, the background
+   would show alone. */
+:global(.omnivix-artboard:has([data-banner-fit="pending"]) .banner-export-root) {
+  visibility: hidden;
+}
+
 /* Loading/empty/error copy needs more room than a scaled-down LinkedIn banner on phones. */
 :global(.omnivix-artboard:not([data-state="ready"])) {
   min-height: min(220px, 100%);
