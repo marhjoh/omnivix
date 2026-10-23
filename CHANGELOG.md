@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.15.0](https://github.com/marhjoh/omnivix/compare/v1.14.1...v1.15.0) (2026-10-23)
+
+
+### Features
+
+* **studio:** move the background by dragging the preview ([c1b50e0](https://github.com/marhjoh/omnivix/commit/c1b50e068ec1393d007fd1b0ed7c189102e0187f))
+* **studio:** only allow https background links ([c1b50e0](https://github.com/marhjoh/omnivix/commit/c1b50e068ec1393d007fd1b0ed7c189102e0187f))
+* **studio:** redesign the settings sidebar ([c1b50e0](https://github.com/marhjoh/omnivix/commit/c1b50e068ec1393d007fd1b0ed7c189102e0187f))
+* **studio:** restyle the username dialog ([c1b50e0](https://github.com/marhjoh/omnivix/commit/c1b50e068ec1393d007fd1b0ed7c189102e0187f))
+
+
+### Bug Fixes
+
+* **studio:** show focus in the username field ([c1b50e0](https://github.com/marhjoh/omnivix/commit/c1b50e068ec1393d007fd1b0ed7c189102e0187f))
+
 ## [1.14.1](https://github.com/marhjoh/omnivix/compare/v1.14.0...v1.14.1) (2026-10-21)
 
 
