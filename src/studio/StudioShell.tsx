@@ -24,6 +24,7 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
+import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { ExportControls } from "@/src/studio/ExportControls";
@@ -596,11 +597,27 @@ export function StudioShell({
     [updateState],
   );
 
-  const backgroundStatus = useImageStatus(
+  const backgroundImage =
     typeof state.backgroundImage === "string" && state.backgroundImage
       ? state.backgroundImage
-      : undefined,
-  );
+      : undefined;
+  // The preview loads a photo preset's smaller copy (see PreviewPhotosContext), so the check below
+  // and the preload ask for the same file. The preload starts it from the page's <head>, at high
+  // priority, instead of when the banner is drawn. Not for uploads: their data URL is the image.
+  const backgroundSrcSet = backgroundImage ? previewPhotoSrcSet(backgroundImage) : undefined;
+  const backgroundSizes = backgroundSrcSet ? PREVIEW_PHOTO_SIZES : undefined;
+  if (backgroundImage && !backgroundImage.startsWith("data:")) {
+    preload(backgroundImage, {
+      as: "image",
+      imageSrcSet: backgroundSrcSet,
+      imageSizes: backgroundSizes,
+      fetchPriority: "high",
+    });
+  }
+  const backgroundStatus = useImageStatus(backgroundImage, {
+    srcSet: backgroundSrcSet,
+    sizes: backgroundSizes,
+  });
   const backgroundFailed = backgroundStatus === "failed";
   // A background that can't be used (it failed to load, or is an http link from an older saved
   // setting) is left out of the preview, so the banner never shows a broken-image icon and the
@@ -630,13 +647,6 @@ export function StudioShell({
   // A new background replaces the old one once it has loaded, instead of leaving the banner
   // without one in between.
   const shownBackground = useKeepWhile(backgroundFields, backgroundStatus === "loading");
-  // The background the studio starts with has no earlier one to keep showing, so the preview waits
-  // for it with an empty frame instead of drawing the banner without it. No loading screen: on
-  // phones its minimum height would make the frame jump twice.
-  const waitingForBackground =
-    backgroundStatus === "loading" &&
-    shownBackground === backgroundFields &&
-    Boolean(backgroundFields.backgroundImage);
   const previewBannerState = useMemo(
     () => ({ ...state, ...shownBackground }),
     [state, shownBackground],
@@ -664,8 +674,7 @@ export function StudioShell({
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||
-      shownBackground !== backgroundFields ||
-      waitingForBackground,
+      shownBackground !== backgroundFields,
   });
 
   const bannerExport = useBannerExport({
@@ -756,7 +765,6 @@ export function StudioShell({
             problem={shownPreview.problem}
             onRetry={handlePreviewRetry}
             onChangeUsername={openUsernameModal}
-            waitingForBackground={waitingForBackground}
             backgroundAdjust={
               adjustableBackground
                 ? {

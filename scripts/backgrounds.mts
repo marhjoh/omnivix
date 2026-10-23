@@ -1,10 +1,15 @@
 // Downloads the photo backgrounds from the Unsplash CDN and writes them to public/backgrounds/
-// as AVIF. The widest export is 1584px at 3× (4752px), so photos are stored 4800px wide.
+// as AVIF. The widest export is 1584px at 3× (4752px), so photos are stored 4800px wide, plus
+// smaller copies for the studio preview (PREVIEW_PHOTO_WIDTHS).
 // Run with `pnpm backgrounds`, or `pnpm backgrounds <id> ...` for some of them.
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
-import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
+import {
+  BACKGROUND_PRESETS,
+  PREVIEW_PHOTO_WIDTHS,
+  previewPhotoPath,
+} from "@/src/backgrounds/presets";
 
 const WIDTH = 4800;
 /**
@@ -43,4 +48,12 @@ for (const preset of photos) {
 
   const { size } = await stat(outPath);
   console.log(`Wrote ${outPath} (${Math.round(size / 1024)} KB)`);
+
+  // Smaller copies for the studio preview, from the full-size photo.
+  for (const previewWidth of PREVIEW_PHOTO_WIDTHS) {
+    const previewPath = join(process.cwd(), "public", previewPhotoPath(preset.src, previewWidth));
+    await sharp(outPath).resize(previewWidth).avif({ quality: QUALITY }).toFile(previewPath);
+    const { size: previewSize } = await stat(previewPath);
+    console.log(`Wrote ${previewPath} (${Math.round(previewSize / 1024)} KB)`);
+  }
 }

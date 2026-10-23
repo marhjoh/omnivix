@@ -154,6 +154,27 @@ export function presetBySrc(src: string): BackgroundPreset | undefined {
   return BACKGROUND_PRESETS.find((p) => p.src === src);
 }
 
+/**
+ * Smaller copies of the photo presets, for the studio preview (`pnpm backgrounds` writes them next
+ * to the full-size photo). The export always uses the full-size photo.
+ */
+export const PREVIEW_PHOTO_WIDTHS = [1200, 2400] as const;
+
+/** The preview's width in the layout, for `sizes`: the whole screen on phones, beside the sidebar. */
+export const PREVIEW_PHOTO_SIZES = "(max-width: 767px) 100vw, calc(100vw - 300px)";
+
+export function previewPhotoPath(src: string, width: number): string {
+  return src.replace(/\.avif$/, `-${width}.avif`);
+}
+
+/** `srcset` for a photo preset's preview copies; undefined for other backgrounds. */
+export function previewPhotoSrcSet(src: string): string | undefined {
+  if (!presetBySrc(src)?.credit) return undefined;
+  return PREVIEW_PHOTO_WIDTHS.map((width) => `${previewPhotoPath(src, width)} ${width}w`).join(
+    ", ",
+  );
+}
+
 export function groupPresets(presets: BackgroundPreset[]): Map<string, BackgroundPreset[]> {
   const map = new Map<string, BackgroundPreset[]>();
   for (const p of presets) {

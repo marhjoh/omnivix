@@ -20,6 +20,7 @@ import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
+import { PreviewPhotosContext } from "@/src/banner/Frame";
 
 export function PreviewArtboard({
   templateId,
@@ -30,7 +31,6 @@ export function PreviewArtboard({
   problem,
   onRetry,
   onChangeUsername,
-  waitingForBackground,
   backgroundAdjust,
 }: {
   templateId: TemplateId;
@@ -42,11 +42,6 @@ export function PreviewArtboard({
   problem: PreviewProblem | null;
   onRetry: () => void;
   onChangeUsername: () => void;
-  /**
-   * The background the studio starts with is still loading: the frame stays empty, so the banner
-   * never shows without it.
-   */
-  waitingForBackground?: boolean;
   /** Set when the banner has a background that can be moved: the preview can then be dragged. */
   backgroundAdjust?: {
     position: BackgroundPosition;
@@ -58,7 +53,6 @@ export function PreviewArtboard({
   const { meta } = templateRegistry[templateId];
   const emptyCopy = previewEmptyCopy(meta.needsUsername);
   const loadingMessage = previewLoadingMessage(meta.githubData);
-  const showBanner = previewState === "ready" && !waitingForBackground;
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const retryReached = useTimeReached(problem?.retryAt);
   const scale = available ? fitScale(available, dims) : null;
@@ -76,7 +70,7 @@ export function PreviewArtboard({
   return (
     <div ref={stageRef} className={previewStyles.stage}>
       <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
-        {showBanner ? (
+        {previewState === "ready" ? (
           <div
             className={previewStyles.scaled}
             style={{
@@ -85,10 +79,12 @@ export function PreviewArtboard({
               transform: `scale(${bannerScale})`,
             }}
           >
-            <BannerRenderer templateId={templateId} state={state} data={data} />
+            <PreviewPhotosContext value>
+              <BannerRenderer templateId={templateId} state={state} data={data} />
+            </PreviewPhotosContext>
           </div>
         ) : null}
-        {showBanner && scale !== null && backgroundAdjust ? (
+        {previewState === "ready" && scale !== null && backgroundAdjust ? (
           <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
         ) : null}
         {previewState === "ready" ? null : (
