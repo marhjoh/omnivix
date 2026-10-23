@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.15.2](https://github.com/marhjoh/omnivix/compare/v1.15.1...v1.15.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **studio:** load preview-sized background photos instead of waiting for them ([44dfde6](https://github.com/marhjoh/omnivix/commit/44dfde627e2c9d537797b2aa79a02dc3eefe50cd))
+* **studio:** use the custom dropdown for every setting ([44dfde6](https://github.com/marhjoh/omnivix/commit/44dfde627e2c9d537797b2aa79a02dc3eefe50cd))
+* **theme:** save the theme cookie on pages rendered in the browser ([44dfde6](https://github.com/marhjoh/omnivix/commit/44dfde627e2c9d537797b2aa79a02dc3eefe50cd))
+
 ## [1.15.1](https://github.com/marhjoh/omnivix/compare/v1.15.0...v1.15.1) (2026-10-23)
 
 
