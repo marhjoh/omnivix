@@ -2,6 +2,7 @@
 
 import { KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { FieldLabel } from "@/src/ui/FieldLabel";
 
 const ROOT_ATTRIBUTE = "data-dropdown";
 
@@ -192,9 +193,8 @@ export function DropdownGroupLabel({ children }: PropsWithChildren) {
 }
 
 /**
- * A native `<select>` with its label: the platform picker on phones, typeahead and screen reader
- * support built in. Styled by `.field-select` (app/globals.css), with our own list where the
- * browser allows it.
+ * A setting's dropdown with its label: the same list as the Background picker, so every dropdown
+ * looks and opens the same on every browser and phone.
  */
 export function Select({
   label,
@@ -209,26 +209,36 @@ export function Select({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
-  // A value that isn't among the options (a saved year older than the list) is shown as is; a
-  // native select would otherwise show the first option, which then couldn't be picked.
+  const id = useId();
+  const dropdown = useDropdown(id);
+  // A value that isn't among the options (a saved year older than the list) is shown as is, and
+  // listed first so it stays selected.
   const shown = options.some((option) => option.value === value)
     ? options
     : [{ label: value, value }, ...options];
+  const current = shown.find((option) => option.value === value);
   return (
-    <label className="block space-y-1.5">
-      <span className="field-label">{label}</span>
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        className="field-select"
-      >
-        {shown.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="space-y-1.5">
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <DropdownRoot dropdown={dropdown} className="relative">
+        <DropdownTrigger dropdown={dropdown} disabled={disabled}>
+          {current?.label}
+        </DropdownTrigger>
+        <DropdownList dropdown={dropdown} label={`${label} options`}>
+          {shown.map((option) => (
+            <DropdownOption
+              key={option.value}
+              selected={option.value === value}
+              onSelect={() => {
+                onChange(option.value);
+                dropdown.close();
+              }}
+            >
+              {option.label}
+            </DropdownOption>
+          ))}
+        </DropdownList>
+      </DropdownRoot>
+    </div>
   );
 }
