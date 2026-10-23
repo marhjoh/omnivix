@@ -10,7 +10,7 @@
 .topbar {
   height: 56px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
   display: flex;
   align-items: center;
@@ -37,7 +37,7 @@
   width: 300px;
   flex-shrink: 0;
   overflow: hidden;
-  border-right: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-right: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
   transition:
     width 0.2s ease,
