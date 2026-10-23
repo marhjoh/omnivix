@@ -63,13 +63,15 @@ function readThemeCookieClient(): Theme | null {
 
 /**
  * Client-only THEME_INIT_SCRIPT, for renders where it didn't run: Strict Mode remounts in
- * development, and error pages after a server error.
+ * development, and pages rendered in the browser (a studio 404, where Next sends an empty error
+ * shell, and global-error.tsx). Like the script, it saves the OS preference on a first visit, so
+ * the next studio request is rendered in the same theme.
  */
 export function applyStoredTheme(): void {
   const root = document.documentElement;
-  const theme =
-    readThemeCookieClient() ??
-    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  const stored = readThemeCookieClient();
+  const theme = stored ?? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  if (!stored) setThemeCookieClient(theme);
   if (root.dataset.theme !== theme) root.dataset.theme = theme;
 }
 

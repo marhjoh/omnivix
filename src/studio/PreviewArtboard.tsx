@@ -20,6 +20,7 @@ import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
+import { PreviewPhotosContext } from "@/src/banner/Frame";
 
 export function PreviewArtboard({
   templateId,
@@ -78,7 +79,9 @@ export function PreviewArtboard({
               transform: `scale(${bannerScale})`,
             }}
           >
-            <BannerRenderer templateId={templateId} state={state} data={data} />
+            <PreviewPhotosContext value>
+              <BannerRenderer templateId={templateId} state={state} data={data} />
+            </PreviewPhotosContext>
           </div>
         ) : null}
         {previewState === "ready" && scale !== null && backgroundAdjust ? (

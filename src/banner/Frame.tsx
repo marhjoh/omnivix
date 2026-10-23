@@ -1,6 +1,13 @@
-import { PropsWithChildren } from "react";
+import { createContext, PropsWithChildren, useContext } from "react";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { backgroundImageStyle, type BannerBackground } from "@/src/banner/background";
+import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
+
+/**
+ * Set by the studio preview: a photo preset then loads one of its smaller copies, sized for the
+ * preview. The export leaves it unset, so it always gets the full-size photo.
+ */
+export const PreviewPhotosContext = createContext(false);
 
 /**
  * Banner root, identical in preview and export: the app theme's banner color and text color,
@@ -16,6 +23,8 @@ export function Frame({
   uiTheme: Theme;
 }>) {
   const chrome = bannerUiChrome(uiTheme);
+  const previewPhotos = useContext(PreviewPhotosContext);
+  const srcSet = previewPhotos && background ? previewPhotoSrcSet(background.src) : undefined;
   return (
     <div
       className="banner-export-root"
@@ -32,6 +41,8 @@ export function Frame({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={background.src}
+          srcSet={srcSet}
+          sizes={srcSet ? PREVIEW_PHOTO_SIZES : undefined}
           alt=""
           data-banner-background=""
           style={{

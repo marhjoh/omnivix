@@ -17,9 +17,14 @@ export function useImageStatus(
   src: string | undefined,
   {
     assumeLoaded = false,
+    srcSet,
+    sizes,
   }: {
     /** Report "loaded" while it loads, for an image the page itself is already showing. */
     assumeLoaded?: boolean;
+    /** The `srcset` and `sizes` the page's <img> uses, so the same file is preloaded. */
+    srcSet?: string;
+    sizes?: string;
   } = {},
 ): ImageStatus {
   const [result, setResult] = useState<{ src: string; status: "loaded" | "failed" } | null>(null);
@@ -41,13 +46,16 @@ export function useImageStatus(
       );
     };
     img.onerror = () => settle("failed");
+    // sizes before srcset, so the first pick already uses it.
+    if (sizes) img.sizes = sizes;
+    if (srcSet) img.srcset = srcSet;
     img.src = src;
     return () => {
       cancelled = true;
       img.onload = null;
       img.onerror = null;
     };
-  }, [src]);
+  }, [src, srcSet, sizes]);
 
   if (!src) return "none";
   return result?.src === src
