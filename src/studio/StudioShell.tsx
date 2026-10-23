@@ -630,6 +630,13 @@ export function StudioShell({
   // A new background replaces the old one once it has loaded, instead of leaving the banner
   // without one in between.
   const shownBackground = useKeepWhile(backgroundFields, backgroundStatus === "loading");
+  // The background the studio starts with has no earlier one to keep showing, so the preview waits
+  // for it with an empty frame instead of drawing the banner without it. No loading screen: on
+  // phones its minimum height would make the frame jump twice.
+  const waitingForBackground =
+    backgroundStatus === "loading" &&
+    shownBackground === backgroundFields &&
+    Boolean(backgroundFields.backgroundImage);
   const previewBannerState = useMemo(
     () => ({ ...state, ...shownBackground }),
     [state, shownBackground],
@@ -657,7 +664,8 @@ export function StudioShell({
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||
-      shownBackground !== backgroundFields,
+      shownBackground !== backgroundFields ||
+      waitingForBackground,
   });
 
   const bannerExport = useBannerExport({
@@ -748,6 +756,7 @@ export function StudioShell({
             problem={shownPreview.problem}
             onRetry={handlePreviewRetry}
             onChangeUsername={openUsernameModal}
+            waitingForBackground={waitingForBackground}
             backgroundAdjust={
               adjustableBackground
                 ? {
