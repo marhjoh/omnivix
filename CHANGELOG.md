@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.3](https://github.com/marhjoh/omnivix/compare/v1.15.2...v1.15.3) (2026-10-23)
+
+
+### Bug Fixes
+
+* **studio:** show the banner once its content is fitted, not the background first ([#175](https://github.com/marhjoh/omnivix/issues/175)) ([8a6c5ec](https://github.com/marhjoh/omnivix/commit/8a6c5ecacba954f3f797e2703e199e07529b1d8d))
+
 ## [1.15.2](https://github.com/marhjoh/omnivix/compare/v1.15.1...v1.15.2) (2026-10-23)
 
 
