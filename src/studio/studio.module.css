@@ -1,4 +1,8 @@
 .shell {
+  /* Same height and side padding as the landing header, so the app icon and theme toggle stay
+     put between the pages (up to the landing header's max width). */
+  --topbar-height: 56px;
+  --topbar-padding: 8px;
   height: 100vh;
   /* Dynamic viewport: excludes mobile browser toolbars. */
   height: 100dvh;
@@ -7,8 +11,16 @@
   min-height: 0;
 }
 
+@media (min-width: 640px) {
+  .shell {
+    --topbar-height: 60px;
+    /* The landing nav's 24px padding plus its 1px transparent border. */
+    --topbar-padding: 25px;
+  }
+}
+
 .topbar {
-  height: 56px;
+  height: var(--topbar-height);
   flex-shrink: 0;
   border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
@@ -17,8 +29,9 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  /* Compact 8px padding at every width (TopBar uses gap-1); TopBar handles the responsive changes. */
-  padding: 0 8px;
+  /* Phones keep a compact 8px (the ghost buttons' icons still sit 17px in), leaving room for the
+     title; TopBar handles the other responsive changes. */
+  padding: 0 var(--topbar-padding);
 }
 .content {
   display: flex;
@@ -70,7 +83,7 @@
 @media (max-width: 767px) {
   .sidebar {
     position: fixed;
-    top: 56px;
+    top: var(--topbar-height);
     bottom: 0;
     left: 0;
     z-index: 30;
@@ -101,7 +114,7 @@
   .content[data-sidebar-open="true"] .backdrop {
     display: block;
     position: fixed;
-    inset: 56px 0 0 0;
+    inset: var(--topbar-height) 0 0 0;
     z-index: 20;
     background: rgba(0, 0, 0, 0.45);
     border: 0;

@@ -21,7 +21,7 @@ export function TopBar({
   onChangeUsername: () => void;
   sidebarExpanded: boolean;
   onToggleSidebar: () => void;
-  /** The export buttons, at the end of the right group (HoverHighlightItems). */
+  /** The export buttons, first in the right group, before the theme toggle (HoverHighlightItems). */
   children: ReactNode;
 }) {
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
@@ -30,7 +30,7 @@ export function TopBar({
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
       <HoverHighlightGroup
         layoutId="studio-left-highlight"
-        className="flex min-w-0 items-center gap-1"
+        className="flex min-w-0 items-center gap-1 sm:gap-1.5"
       >
         <HoverHighlightItem id="sidebar">
           <button
@@ -92,12 +92,14 @@ export function TopBar({
       </HoverHighlightGroup>
       <HoverHighlightGroup
         layoutId="studio-right-highlight"
-        className="flex shrink-0 items-center gap-1"
+        className="flex shrink-0 items-center gap-1 sm:gap-1.5"
       >
+        {children}
+        {/* The theme toggle is a page setting, not an export action: last, set apart from sm. */}
+        <span className="mx-1 hidden h-6 w-px bg-border/70 sm:block" aria-hidden />
         <HoverHighlightItem id="theme">
           <ThemeToggle className={highlightItemClass} />
         </HoverHighlightItem>
-        {children}
       </HoverHighlightGroup>
     </>
   );
