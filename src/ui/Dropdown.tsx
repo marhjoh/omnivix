@@ -133,29 +133,21 @@ export function DropdownTrigger({
 export function DropdownList({
   dropdown,
   label,
-  menuPlacement,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
   label: string;
-  /**
-   * For a menu that floats below its own button (the Download options): its horizontal placement.
-   * Without it, the list attaches under a DropdownTrigger like the native selects' lists.
-   */
-  menuPlacement?: string;
 }>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
-  const placement = menuPlacement
-    ? `${menuPlacement} mt-1 rounded-lg border-text/10`
-    : "right-0 left-0 -mt-px rounded-b-lg border-(--control-border)";
+  // Attached under its DropdownTrigger, like the native selects' lists.
   return (
     <div
       id={listId}
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className={`absolute top-full z-50 max-h-72 overflow-y-auto border bg-surface p-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] ${placement}`}
+      className="absolute top-full right-0 left-0 z-50 -mt-px max-h-72 overflow-y-auto rounded-b-lg border border-(--control-border) bg-surface p-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)]"
     >
       {children}
     </div>
