@@ -1,44 +1,46 @@
-import { useEffect, useId, useRef, useState, type FocusEvent } from "react";
-import { ChevronDown, Copy, Download, Link, Loader2 } from "lucide-react";
+import { useId } from "react";
+import { Copy, Download, Link, Loader2 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import { LabeledGroup } from "@/src/ui/FieldLabel";
+import { DropdownChevron } from "@/src/ui/Dropdown";
+import { useDisclosure } from "@/src/ui/useDisclosure";
 import type { ExportKind } from "@/src/studio/useBannerExport";
 import controls from "@/src/studio/controls.module.css";
 
-/**
- * Open/close for a disclosure panel: it closes on Escape (focus goes back to the toggle), on a
- * click outside the root, and when focus moves out of it (Tab past the last option).
- */
-function useDisclosure() {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      // Only close the panel, not the phone settings drawer (StudioShell listens on window).
-      e.stopPropagation();
-      setOpen(false);
-      toggleRef.current?.focus();
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-  // No relatedTarget (a click on nothing focusable) is left to the pointerdown handler.
-  const onBlur = (e: FocusEvent) => {
-    const next = e.relatedTarget;
-    if (next && !rootRef.current?.contains(next)) setOpen(false);
-  };
-  return { open, setOpen, rootRef, toggleRef, onBlur };
+/** One choice as a row of tiles: the value, and a muted hint below it. */
+function ChoiceTiles<T extends string | number>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ReadonlyArray<{ value: T; label: string; hint: string }>;
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <LabeledGroup label={label}>
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={option.value === value}
+            onClick={() => onChange(option.value)}
+            className={`${controls.tile} ${controls.panelTile}`}
+          >
+            <span className="font-semibold">{option.label}</span>
+            <span className={controls.tileHint}>{option.hint}</span>
+          </button>
+        ))}
+      </div>
+    </LabeledGroup>
+  );
 }
 
 /**
@@ -77,12 +79,9 @@ export function ExportControls({
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
   return (
-    <div ref={rootRef} onBlur={onBlur} className="relative">
+    <div ref={rootRef} onBlur={onBlur} className="relative shrink-0">
       <div className={controls.split}>
-        {/*
-            Icon-only on phones. The aria-label names the format, which the visible label leaves to
-            the options (scripts/readme-screenshots.mts waits for it).
-          */}
+        {/* Icon-only on phones. The aria-label names the format (readme-screenshots waits for it). */}
         <button
           type="button"
           onClick={() => {
@@ -119,53 +118,42 @@ export function ExportControls({
           {isCopying ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <ChevronDown className={controls.splitChevron} aria-hidden />
+            <DropdownChevron open={open} />
           )}
         </button>
       </div>
       {open && (
         // A disclosure, not a dialog: it doesn't trap focus, and the toggle's aria-expanded and
         // aria-controls say what it opens. Choices keep it open; the actions close it.
-        <div id={panelId} role="group" aria-label="Export options" className={controls.panel}>
+        <div
+          id={panelId}
+          role="group"
+          aria-label="Export options"
+          className={`popover ${controls.panel}`}
+        >
           <div className="space-y-4">
             {/* Resolution applies to Copy and Download; format only to Download (Copy is a PNG). */}
-            <LabeledGroup label="Resolution">
-              <div className="grid grid-cols-3 gap-2">
-                {EXPORT_PIXEL_RATIOS.map((ratio) => (
-                  <button
-                    key={ratio}
-                    type="button"
-                    aria-pressed={ratio === pixelRatio}
-                    onClick={() => onPixelRatioChange(ratio)}
-                    className={`${controls.tile} ${controls.panelTile}`}
-                  >
-                    <span className="font-semibold">{ratio}×</span>
-                    {/* Thin spaces keep the largest size on one line in the narrow tile. */}
-                    <span className={controls.tileHint}>
-                      {bannerSize.width * ratio}
-                      {"\u2009×\u2009"}
-                      {bannerSize.height * ratio}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </LabeledGroup>
-            <LabeledGroup label="Download format">
-              <div className="grid grid-cols-2 gap-2">
-                {EXPORT_FORMATS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    aria-pressed={option === format}
-                    onClick={() => onFormatChange(option)}
-                    className={`${controls.tile} ${controls.panelTile}`}
-                  >
-                    <span className="font-semibold">{EXPORT_FORMAT_DETAILS[option].label}</span>
-                    <span className={controls.tileHint}>{EXPORT_FORMAT_DETAILS[option].hint}</span>
-                  </button>
-                ))}
-              </div>
-            </LabeledGroup>
+            <ChoiceTiles
+              label="Resolution"
+              options={EXPORT_PIXEL_RATIOS.map((ratio) => ({
+                value: ratio,
+                label: `${ratio}×`,
+                // Thin spaces keep the largest size on one line in the narrow tile.
+                hint: `${bannerSize.width * ratio}\u2009×\u2009${bannerSize.height * ratio}`,
+              }))}
+              value={pixelRatio}
+              onChange={onPixelRatioChange}
+            />
+            <ChoiceTiles
+              label="Download format"
+              options={EXPORT_FORMATS.map((option) => ({
+                value: option,
+                label: EXPORT_FORMAT_DETAILS[option].label,
+                hint: EXPORT_FORMAT_DETAILS[option].hint,
+              }))}
+              value={format}
+              onChange={onFormatChange}
+            />
           </div>
           <div className={controls.panelActions}>
             <button

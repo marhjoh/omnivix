@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { MotionConfig, motion } from "framer-motion";
 
 type GroupState = {
@@ -29,8 +29,9 @@ export function HoverHighlightGroup({
   "aria-label"?: string;
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const group = useMemo(() => ({ active, setActive, layoutId }), [active, layoutId]);
   return (
-    <GroupContext.Provider value={{ active, setActive, layoutId }}>
+    <GroupContext.Provider value={group}>
       <MotionConfig reducedMotion="user">
         <Element className={className} aria-label={ariaLabel} onMouseLeave={() => setActive(null)}>
           {children}

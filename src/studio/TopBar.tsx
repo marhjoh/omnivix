@@ -5,6 +5,7 @@ import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
+import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 
 /**
@@ -13,7 +14,6 @@ import type { TemplateId } from "@/src/types/template";
  * Light and dark are in the sidebar's Style settings.
  */
 export function TopBar({
-  title,
   templateId,
   username,
   needsUsername,
@@ -22,7 +22,6 @@ export function TopBar({
   onToggleSidebar,
   children,
 }: {
-  title: string;
   templateId: TemplateId;
   username: string;
   needsUsername: boolean;
@@ -59,7 +58,7 @@ export function TopBar({
           </Link>
         </HoverHighlightItem>
         {/* The visible title is the template picker, so the h1 is a hidden copy. */}
-        <h1 className="sr-only">{title}</h1>
+        <h1 className="sr-only">{templateRegistry[templateId].meta.title}</h1>
         {/* What gives way on the narrowest phones: the template name truncates. */}
         <HoverHighlightItem id="template" shrink>
           <TemplateSwitcher templateId={templateId} />
@@ -92,7 +91,7 @@ export function TopBar({
           </HoverHighlightItem>
         )}
       </HoverHighlightGroup>
-      <div className="flex shrink-0 items-center">{children}</div>
+      {children}
     </>
   );
 }

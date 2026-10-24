@@ -155,7 +155,8 @@ function AppearancePicker() {
             type="button"
             onClick={() => setTheme(option)}
             aria-pressed={theme === option}
-            className={controls.tile}
+            data-appearance={option}
+            className={`${controls.tile} ${controls.appearanceTile}`}
           >
             <Icon className="h-[18px] w-[18px] text-muted" aria-hidden />
             <span>{label}</span>

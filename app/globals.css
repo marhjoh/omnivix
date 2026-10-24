@@ -128,6 +128,16 @@ body {
   }
 }
 
+@layer components {
+  /* The frame of floating popups: the dropdown lists (src/ui/Dropdown.tsx) and the studio's
+     export options panel. Utilities still override it, such as an attached list's border. */
+  .popover {
+    border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+    background: var(--surface);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
 /*
  * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
  * buttons, so utilities such as `hidden` still apply.

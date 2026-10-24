@@ -42,8 +42,11 @@
 }
 
 /* Selected: a blue frame and tint, like selected things across the app. The content keeps its
-   color. */
-.tile[aria-pressed="true"] {
+   color. Appearance tiles follow <html data-theme>, set before first paint, as the server render
+   may not know the theme yet (a first visit has no cookie). */
+.tile[aria-pressed="true"]:not(.appearanceTile),
+:global(html[data-theme="light"]) .appearanceTile[data-appearance="light"],
+:global(html[data-theme="dark"]) .appearanceTile[data-appearance="dark"] {
   border-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
   background: color-mix(in oklab, var(--accent) 8%, var(--surface));
   cursor: default;
@@ -215,16 +218,6 @@
   outline-offset: -4px;
 }
 
-.splitChevron {
-  width: 1rem;
-  height: 1rem;
-  transition: rotate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.splitToggle[aria-expanded="true"] .splitChevron {
-  rotate: 180deg;
-}
-
 @media (min-width: 640px) {
   .splitMain {
     width: auto;
@@ -232,7 +225,7 @@
   }
 }
 
-/* The options panel: framed like the dropdown lists (src/ui/Dropdown.tsx), under the button. */
+/* The options panel, under the button. Its frame is the dropdown lists' .popover (app/globals.css). */
 .panel {
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -240,10 +233,7 @@
   z-index: 50;
   width: 19.5rem;
   border-radius: 12px;
-  border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
-  background: var(--surface);
   padding: 1rem;
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
 }
 
 /* Phones: pinned under the header at the right edge, so it never runs off the left side. */
@@ -323,10 +313,4 @@
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--muted);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .splitChevron {
-    transition: none;
-  }
 }
