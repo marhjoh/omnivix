@@ -40,9 +40,9 @@ export function TemplateSwitcher({ templateId }: { templateId: TemplateId }) {
         aria-label={`Template: ${title}`}
         aria-busy={switching}
         onClick={() => setOpen((o) => !o)}
-        className={`relative z-10 flex h-9 max-w-full min-w-0 items-center gap-1 rounded-full px-2.5 text-sm font-semibold text-text ${highlightFocusClass}`}
+        className={`relative z-10 flex h-9 max-w-full min-w-0 items-center gap-1 rounded-full pr-1.5 pl-2.5 text-sm font-semibold text-text ${highlightFocusClass}`}
       >
-        {/* Truncates on the narrowest phones instead of running under the buttons next to it. */}
+        {/* Less right padding, as the chevron has its own blank space. Truncates on narrow phones. */}
         <span className="truncate">{shortTitle(title)}</span>
         {switching ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" aria-hidden />
