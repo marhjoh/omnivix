@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Moon, Sun } from "lucide-react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
@@ -14,10 +15,12 @@ import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { fieldLabel, groupFields } from "@/src/studio/settingGroups";
+import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import controls from "@/src/studio/controls.module.css";
 import { textLinkClass } from "@/src/ui/textLinkClass";
 import landingStyles from "@/src/landing/landing.module.css";
+import { useTheme } from "@/src/theme/ThemeProvider";
+import type { Theme } from "@/src/theme/theme";
 
 const currentYear = new Date().getFullYear();
 
@@ -125,6 +128,37 @@ function ThemePicker({
               ))}
             </span>
             <span className="truncate text-left">{preset.label}</span>
+          </button>
+        ))}
+      </div>
+    </LabeledGroup>
+  );
+}
+
+const APPEARANCES: Array<{ theme: Theme; label: string; icon: typeof Sun }> = [
+  { theme: "light", label: "Light", icon: Sun },
+  { theme: "dark", label: "Dark", icon: Moon },
+];
+
+/**
+ * Light or dark for the whole app, which the banner's text and panels follow too. Not a template
+ * setting: it's saved in the theme cookie and shown in every template's Style group.
+ */
+function AppearancePicker() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <LabeledGroup label="Appearance">
+      <div className="grid grid-cols-2 gap-2">
+        {APPEARANCES.map(({ theme: option, label, icon: Icon }) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => setTheme(option)}
+            aria-pressed={theme === option}
+            className={controls.tile}
+          >
+            <Icon className="h-[18px] w-[18px] text-muted" aria-hidden />
+            <span>{label}</span>
           </button>
         ))}
       </div>
@@ -416,6 +450,7 @@ export function ControlSidebar({
               <span className={landingStyles.gradientText}>{group.title}</span>
             </h2>
             <div className="space-y-4">
+              {group.title === STYLE_GROUP && <AppearancePicker />}
               {/* Show/hide options are gathered at the end of their group, as one list. */}
               {group.fields.filter((field) => field.type !== "toggle").map(renderField)}
               {toggles.length > 0 && (

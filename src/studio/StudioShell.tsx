@@ -704,6 +704,7 @@ export function StudioShell({
       <header className={styles.topbar}>
         <TopBar
           title={definition.meta.title}
+          templateId={templateId}
           username={username}
           needsUsername={needsUsername}
           onChangeUsername={openUsernameModal}

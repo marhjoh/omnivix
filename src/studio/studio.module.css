@@ -1,22 +1,14 @@
 .shell {
-  /* Same height and side padding as the landing header, so the app icon and theme toggle stay
-     put between the pages (up to the landing header's max width). */
-  --topbar-height: 56px;
-  --topbar-padding: 8px;
+  /* One height and side padding at every width, so nothing in the header moves when the window
+     is resized. The phone drawer and its backdrop start below it. */
+  --topbar-height: 60px;
+  --topbar-padding: 16px;
   height: 100vh;
   /* Dynamic viewport: excludes mobile browser toolbars. */
   height: 100dvh;
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-@media (min-width: 640px) {
-  .shell {
-    --topbar-height: 60px;
-    /* The landing nav's 24px padding plus its 1px transparent border. */
-    --topbar-padding: 25px;
-  }
 }
 
 .topbar {
@@ -29,8 +21,6 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  /* Phones keep a compact 8px (the ghost buttons' icons still sit 17px in), leaving room for the
-     title; TopBar handles the other responsive changes. */
   padding: 0 var(--topbar-padding);
 }
 .content {

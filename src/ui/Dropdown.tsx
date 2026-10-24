@@ -133,21 +133,29 @@ export function DropdownTrigger({
 export function DropdownList({
   dropdown,
   label,
+  floating = false,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
   label: string;
+  /**
+   * Floats below a frameless button (the studio's template picker), as wide as its options.
+   * Otherwise the list is attached under its DropdownTrigger, like the native selects' lists.
+   */
+  floating?: boolean;
 }>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
-  // Attached under its DropdownTrigger, like the native selects' lists.
+  const placement = floating
+    ? "left-0 mt-1.5 w-max rounded-lg border-text/10"
+    : "right-0 left-0 -mt-px rounded-b-lg border-(--control-border)";
   return (
     <div
       id={listId}
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className="absolute top-full right-0 left-0 z-50 -mt-px max-h-72 overflow-y-auto rounded-b-lg border border-(--control-border) bg-surface p-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)]"
+      className={`absolute top-full z-50 max-h-72 overflow-y-auto border bg-surface p-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] ${placement}`}
     >
       {children}
     </div>

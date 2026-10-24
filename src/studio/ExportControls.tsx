@@ -21,6 +21,8 @@ function useDisclosure() {
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Only close the panel, not the phone settings drawer (StudioShell listens on window).
+      e.stopPropagation();
       setOpen(false);
       toggleRef.current?.focus();
     };
@@ -102,8 +104,11 @@ export function ExportControls({
         <button
           type="button"
           ref={toggleRef}
-          onClick={() => setOpen((isOpen) => !isOpen)}
-          disabled={busy}
+          onClick={() => {
+            if (!busy) setOpen((isOpen) => !isOpen);
+          }}
+          // aria-disabled, not disabled: it keeps focus while Copy image (in the panel) runs.
+          aria-disabled={busy}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
           aria-label={isCopying ? "Copying…" : `Export options: ${pixelRatio}×, ${formatLabel}`}
@@ -166,6 +171,8 @@ export function ExportControls({
             <button
               type="button"
               onClick={() => {
+                // The panel closes, so focus goes back to the toggle instead of the page start.
+                toggleRef.current?.focus();
                 setOpen(false);
                 onCopy();
               }}

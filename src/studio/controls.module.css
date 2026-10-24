@@ -198,13 +198,13 @@
 }
 
 .splitMain:hover:not(:disabled),
-.splitToggle:hover:not(:disabled),
+.splitToggle:hover:not([aria-disabled="true"]),
 .splitToggle[aria-expanded="true"] {
   background: var(--accent-hover);
 }
 
 .splitMain:disabled,
-.splitToggle:disabled {
+.splitToggle[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.4;
 }

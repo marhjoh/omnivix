@@ -1,13 +1,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
-import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass, highlightItemClass } from "@/src/ui/highlightClasses";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
+import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
+import type { TemplateId } from "@/src/types/template";
 
+/**
+ * The studio header. Its one change is at sm, where the profile and Download labels show; nothing
+ * before them moves, as its height and padding are the same at every width (studio.module.css).
+ * Light and dark are in the sidebar's Style settings.
+ */
 export function TopBar({
   title,
+  templateId,
   username,
   needsUsername,
   onChangeUsername,
@@ -16,12 +23,13 @@ export function TopBar({
   children,
 }: {
   title: string;
+  templateId: TemplateId;
   username: string;
   needsUsername: boolean;
   onChangeUsername: () => void;
   sidebarExpanded: boolean;
   onToggleSidebar: () => void;
-  /** The export buttons, first in the right group, before the theme toggle (HoverHighlightItems). */
+  /** The export controls, on the right. */
   children: ReactNode;
 }) {
   const SidebarIcon = sidebarExpanded ? PanelLeftClose : PanelLeftOpen;
@@ -30,7 +38,7 @@ export function TopBar({
       {/* Same rounded buttons and sliding hover/focus highlight as the site header. */}
       <HoverHighlightGroup
         layoutId="studio-left-highlight"
-        className="flex min-w-0 items-center gap-1 sm:gap-1.5"
+        className="flex min-w-0 items-center gap-1"
       >
         <HoverHighlightItem id="sidebar">
           <button
@@ -44,26 +52,20 @@ export function TopBar({
             <SidebarIcon className="h-[18px] w-[18px]" />
           </button>
         </HoverHighlightItem>
-        {/*
-          What gives way as the header narrows: first the title (shown from md, truncates there),
-          then the profile pill's text (round icon button below sm). The app icon always stays,
-          and the @username never truncates except when very long.
-        */}
-        <div className="flex shrink-0 items-center gap-2.5 md:min-w-0 md:shrink">
-          {/* The app icon is the way home. */}
-          <HoverHighlightItem id="home">
-            <Link href="/" className={highlightItemClass} aria-label="Back to home">
-              <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
-            </Link>
-          </HoverHighlightItem>
-          {/* The visible title below only shows from md, so the h1 is a hidden copy. */}
-          <h1 className="sr-only">{title}</h1>
-          <span className="hidden truncate font-medium md:inline" aria-hidden>
-            {title}
-          </span>
-        </div>
+        {/* The app icon is the way home. */}
+        <HoverHighlightItem id="home">
+          <Link href="/" className={highlightItemClass} aria-label="Back to home">
+            <ThemedIcon className="h-[22px] w-[22px] shrink-0" size={22} />
+          </Link>
+        </HoverHighlightItem>
+        {/* The visible title is the template picker, so the h1 is a hidden copy. */}
+        <h1 className="sr-only">{title}</h1>
+        {/* What gives way on the narrowest phones: the template name truncates. */}
+        <HoverHighlightItem id="template" shrink>
+          <TemplateSwitcher templateId={templateId} />
+        </HoverHighlightItem>
         {needsUsername && username && (
-          <HoverHighlightItem id="profile" className="md:ml-2">
+          <HoverHighlightItem id="profile">
             <button
               type="button"
               onClick={onChangeUsername}
@@ -76,7 +78,7 @@ export function TopBar({
           </HoverHighlightItem>
         )}
         {needsUsername && !username && (
-          <HoverHighlightItem id="profile" className="md:ml-2">
+          <HoverHighlightItem id="profile">
             {/* Accent color: choosing a username is the next step. */}
             <button
               type="button"
@@ -90,17 +92,7 @@ export function TopBar({
           </HoverHighlightItem>
         )}
       </HoverHighlightGroup>
-      <HoverHighlightGroup
-        layoutId="studio-right-highlight"
-        className="flex shrink-0 items-center gap-1 sm:gap-1.5"
-      >
-        {children}
-        {/* The theme toggle is a page setting, not an export action: last, set apart from sm. */}
-        <span className="mx-1 hidden h-6 w-px bg-border/70 sm:block" aria-hidden />
-        <HoverHighlightItem id="theme">
-          <ThemeToggle className={highlightItemClass} />
-        </HoverHighlightItem>
-      </HoverHighlightGroup>
+      <div className="flex shrink-0 items-center">{children}</div>
     </>
   );
 }
