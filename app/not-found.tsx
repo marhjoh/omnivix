@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTemplates } from "@/src/templates/registry";
 import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
-import { SiteShell } from "@/src/landing/SiteShell";
+import { LazySiteShell } from "@/src/landing/LazySiteShell";
 
 export const metadata: Metadata = { title: "Page not found" };
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Page not found" };
  */
 export default function NotFound() {
   return (
-    <SiteShell>
+    <LazySiteShell>
       <ErrorScreen
         code="404"
         title="Page not found."
@@ -29,6 +29,6 @@ export default function NotFound() {
       >
         <p>The link may be wrong, or the page has moved.</p>
       </ErrorScreen>
-    </SiteShell>
+    </LazySiteShell>
   );
 }
