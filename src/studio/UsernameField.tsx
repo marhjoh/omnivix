@@ -20,12 +20,9 @@ export function UsernameField({
       >
         <User className="h-4 w-4 shrink-0 text-muted" aria-hidden />
         {username ? (
-          <>
-            <span className="min-w-0 flex-1 truncate">@{username}</span>
-            <span className="shrink-0 text-sm font-medium text-accent-hover">Change</span>
-          </>
+          <span className="min-w-0 flex-1 truncate">@{username}</span>
         ) : (
-          // Accent color, like the header's: choosing a username is the next step.
+          // Accent color: choosing a username is the next step.
           <span className="min-w-0 flex-1 truncate font-medium text-accent">Choose username</span>
         )}
       </button>
