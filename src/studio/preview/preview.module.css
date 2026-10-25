@@ -37,31 +37,40 @@
   container-type: inline-size;
 }
 
+/* The loading, empty and error states share one layout, with rows of the same heights: logo,
+   title, hint (one line, two on narrow cards) and button (kept as space when there's none). So
+   they're equally tall, and centering puts the logo at the same spot in each. Logo and text grow
+   with the preview's width (cqw), from the phone sizes; the spacing is tight for a 4:1 card. */
 .stateInner {
+  --title-size: clamp(17px, 2.8cqw, 22px);
+  --hint-size: clamp(13px, 1.8cqw, 15px);
+  --hint-lines: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: clamp(16px, 4cqw, 40px);
-  max-width: min(420px, 92%);
+  gap: 8px;
+  width: 100%;
+  padding: 8px 24px;
   text-align: center;
 }
 
-.stateLogo {
-  width: 44px;
-  height: 44px;
+@container (max-width: 380px) {
+  .stateInner {
+    --hint-lines: 2;
+  }
 }
 
-.stateLogoMuted {
-  width: 44px;
-  height: 44px;
-  opacity: 0.55;
+/* The hint's row, also holding the loading bars. At least as tall as the two bars. */
+.hintRow {
+  min-height: max(28px, calc(var(--hint-lines) * var(--hint-size) * 1.5));
+}
+
+.stateLogo {
+  width: clamp(44px, 6.5cqw, 56px);
+  height: clamp(44px, 6.5cqw, 56px);
 }
 
 .pulseLogo {
-  width: 44px;
-  height: 44px;
   animation: omnivixPreviewPulse 1.5s ease-in-out infinite;
 }
 
@@ -71,10 +80,11 @@
   }
 }
 
+/* In the title's row (its line height), so the bars below sit where the other states' hint does. */
 .loadingText {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
+  font-size: var(--hint-size);
+  line-height: calc(var(--title-size) * 1.3);
   color: var(--muted);
 }
 
@@ -92,6 +102,13 @@
   animation: omnivixShimmer 1.2s ease-in-out infinite;
 }
 
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Shorter second row; used together with .skeletonRow. */
 .skeletonRowNarrow {
   width: min(160px, 55cqw);
@@ -105,30 +122,29 @@
   }
 }
 
+/* One line, cut short with "…" when it doesn't fit (a long @username). */
 .title {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin: 0;
-  font-size: 17px;
+  font-size: var(--title-size);
   font-weight: 600;
   color: var(--text);
   line-height: 1.3;
 }
 
+/* Short lines for the hint; the title may use the whole width. */
 .description {
+  max-width: 420px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--hint-size);
   line-height: 1.5;
   color: var(--muted);
 }
 
-.errorTitle {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--danger);
-}
-
-.retryButton {
+.action {
   margin-top: 4px;
 }
 

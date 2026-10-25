@@ -7,8 +7,7 @@ import { RenderData } from "@/src/templates/renderers/types";
 import {
   type PreviewContentState,
   type PreviewProblem,
-  PreviewEmptyState,
-  PreviewErrorState,
+  PreviewMessage,
   PreviewFrame,
   PreviewLoadingState,
   previewEmptyCopy,
@@ -31,6 +30,7 @@ export function PreviewArtboard({
   problem,
   onRetry,
   onChangeUsername,
+  onEditSetting,
   backgroundAdjust,
 }: {
   templateId: TemplateId;
@@ -42,6 +42,8 @@ export function PreviewArtboard({
   problem: PreviewProblem | null;
   onRetry: () => void;
   onChangeUsername: () => void;
+  /** Opens the settings with the cursor in this setting's field. */
+  onEditSetting: (key: string) => void;
   /** Set when the banner has a background that can be moved: the preview can then be dragged. */
   backgroundAdjust?: {
     position: BackgroundPosition;
@@ -93,10 +95,21 @@ export function PreviewArtboard({
               {previewState === "loading" ? (
                 <PreviewLoadingState message={loadingMessage} />
               ) : previewState === "empty" ? (
-                <PreviewEmptyState title={emptyCopy.title} description={emptyCopy.description} />
+                <PreviewMessage
+                  title={emptyCopy.title}
+                  hint={emptyCopy.description}
+                  action={{
+                    label: emptyCopy.action.label,
+                    onClick:
+                      emptyCopy.action.setting === "username"
+                        ? onChangeUsername
+                        : () => onEditSetting(emptyCopy.action.setting),
+                  }}
+                />
               ) : problem ? (
-                <PreviewErrorState
-                  message={problem.title}
+                <PreviewMessage
+                  alert
+                  title={problem.title}
                   hint={problem.hint}
                   action={
                     problem.action === "retry"

@@ -81,10 +81,18 @@ body {
     transition-duration: 0.15s;
   }
 
+  /* Disabled: neutral instead of see-through, like every disabled control (--disabled-text). */
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    border-color: var(--control-border);
+    background: var(--surface);
+    box-shadow: none;
+  }
+
   .btn-primary:disabled,
   .btn-secondary:disabled,
   .btn-ghost:disabled {
-    opacity: 0.4;
+    color: var(--disabled-text);
     cursor: not-allowed;
   }
 
@@ -146,6 +154,8 @@ body {
   /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
   --control-border: color-mix(in oklab, var(--border) 85%, transparent);
   --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
+  /* Text and icons of disabled controls, which keep their frame instead of fading out. */
+  --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
 }
 
 @layer components {
@@ -203,7 +213,7 @@ body {
   }
 
   .field-select:disabled {
+    color: var(--disabled-text);
     cursor: not-allowed;
-    opacity: 0.5;
   }
 }

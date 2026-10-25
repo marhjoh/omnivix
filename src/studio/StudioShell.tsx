@@ -377,6 +377,16 @@ export function StudioShell({
     });
   }
 
+  /** Opens the settings (the drawer on phones) with the cursor in a setting's field. */
+  const focusSetting = useCallback(
+    (key: string) => {
+      animateSidebar(() => (isPhone ? setDrawerOpen(true) : setSidebarCollapsed(false)));
+      // The panel is visible from this render on, so its field can take focus next frame.
+      requestAnimationFrame(() => document.getElementById(key)?.focus());
+    },
+    [animateSidebar, isPhone],
+  );
+
   useEffect(() => {
     if (!drawerOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -765,6 +775,7 @@ export function StudioShell({
             problem={shownPreview.problem}
             onRetry={handlePreviewRetry}
             onChangeUsername={openUsernameModal}
+            onEditSetting={focusSetting}
             backgroundAdjust={
               adjustableBackground
                 ? {

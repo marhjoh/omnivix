@@ -80,7 +80,7 @@ export function ExportControls({
   const isCopying = exporting === "copy";
   return (
     <div ref={rootRef} onBlur={onBlur} className="relative shrink-0">
-      <div className={controls.split}>
+      <div className={controls.split} data-busy={busy} data-blocked={exportBlocked && !busy}>
         {/* Icon-only on phones. The aria-label names the format (readme-screenshots waits for it). */}
         <button
           type="button"
@@ -98,7 +98,15 @@ export function ExportControls({
           ) : (
             <Download className="h-4 w-4" />
           )}
-          <span className="hidden sm:inline">{isDownloading ? "Exporting…" : "Download"}</span>
+          {/* Both labels in one cell, so the button keeps one width while exporting. */}
+          <span className="hidden justify-items-center sm:grid" aria-hidden>
+            <span className={`col-start-1 row-start-1 ${isDownloading ? "invisible" : ""}`}>
+              Download
+            </span>
+            <span className={`col-start-1 row-start-1 ${isDownloading ? "" : "invisible"}`}>
+              Exporting…
+            </span>
+          </span>
         </button>
         <button
           type="button"
