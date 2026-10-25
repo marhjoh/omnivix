@@ -15,7 +15,7 @@ describe("groupFields", () => {
       ["Layout", ["alignment", "profilePosition", "contentSize"]],
       [
         "Content",
-        ["year", "showMonthLabels", "showDayLabels", "showTotal", "showAvatar", "showDisplayName"],
+        ["year", "showAvatar", "showDisplayName", "showMonthLabels", "showDayLabels", "showTotal"],
       ],
     ]);
   });

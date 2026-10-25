@@ -136,11 +136,11 @@ export const githubBannerDefinition: TemplateDefinition<{
     profilePositionField,
     contentSizeField,
     cellShapeField,
+    { key: "showAvatar", label: "Profile photo", type: "toggle" },
+    { key: "showDisplayName", label: "Full name", type: "toggle" },
     { key: "showMonthLabels", label: "Months", type: "toggle" },
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
-    { key: "showAvatar", label: "Profile photo", type: "toggle" },
-    { key: "showDisplayName", label: "Full name", type: "toggle" },
   ],
   stateSchema: baseState.extend({
     username: usernameState,

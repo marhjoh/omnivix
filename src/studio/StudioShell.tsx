@@ -704,9 +704,6 @@ export function StudioShell({
       <header className={styles.topbar}>
         <TopBar
           templateId={templateId}
-          username={username}
-          needsUsername={needsUsername}
-          onChangeUsername={openUsernameModal}
           sidebarExpanded={sidebarExpanded}
           onToggleSidebar={toggleSidebar}
         >
@@ -732,6 +729,9 @@ export function StudioShell({
         <aside id="studio-sidebar" className={styles.sidebar} aria-label="Banner settings">
           <div className={styles.sidebarInner}>
             <ControlSidebar
+              profile={
+                needsUsername ? { username, onChangeUsername: openUsernameModal } : undefined
+              }
               schema={definition.schema}
               state={state}
               accountCreatedYear={accountCreatedYear}
