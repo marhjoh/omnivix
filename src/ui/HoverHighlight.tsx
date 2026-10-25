@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { MotionConfig, motion } from "framer-motion";
 
 type GroupState = {
@@ -29,8 +29,9 @@ export function HoverHighlightGroup({
   "aria-label"?: string;
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const group = useMemo(() => ({ active, setActive, layoutId }), [active, layoutId]);
   return (
-    <GroupContext.Provider value={{ active, setActive, layoutId }}>
+    <GroupContext.Provider value={group}>
       <MotionConfig reducedMotion="user">
         <Element className={className} aria-label={ariaLabel} onMouseLeave={() => setActive(null)}>
           {children}
@@ -43,11 +44,14 @@ export function HoverHighlightGroup({
 export function HoverHighlightItem({
   id,
   className = "",
+  shrink = false,
   children,
 }: {
   id: string;
   /** For spacing on the wrapper (margins here keep the highlight the size of the button). */
   className?: string;
+  /** Lets the item narrow when the row is short of room (its content should truncate). */
+  shrink?: boolean;
   children: ReactNode;
 }) {
   const group = useContext(GroupContext);
@@ -55,7 +59,7 @@ export function HoverHighlightItem({
   const { active, setActive, layoutId } = group;
   return (
     <div
-      className={`relative shrink-0 ${className}`}
+      className={`relative ${shrink ? "min-w-0" : "shrink-0"} ${className}`}
       onMouseEnter={() => setActive(id)}
       onFocus={() => setActive(id)}
       onBlur={() => setActive(null)}

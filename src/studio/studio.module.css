@@ -1,4 +1,8 @@
 .shell {
+  /* One height and side padding at every width, so nothing in the header moves when the window
+     is resized. The phone drawer and its backdrop start below it. */
+  --topbar-height: 60px;
+  --topbar-padding: 16px;
   height: 100vh;
   /* Dynamic viewport: excludes mobile browser toolbars. */
   height: 100dvh;
@@ -8,17 +12,16 @@
 }
 
 .topbar {
-  height: 56px;
+  height: var(--topbar-height);
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  /* Compact 8px padding at every width (TopBar uses gap-1); TopBar handles the responsive changes. */
-  padding: 0 8px;
+  padding: 0 var(--topbar-padding);
 }
 .content {
   display: flex;
@@ -37,7 +40,7 @@
   width: 300px;
   flex-shrink: 0;
   overflow: hidden;
-  border-right: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-right: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
   transition:
     width 0.2s ease,
@@ -70,7 +73,7 @@
 @media (max-width: 767px) {
   .sidebar {
     position: fixed;
-    top: 56px;
+    top: var(--topbar-height);
     bottom: 0;
     left: 0;
     z-index: 30;
@@ -101,7 +104,7 @@
   .content[data-sidebar-open="true"] .backdrop {
     display: block;
     position: fixed;
-    inset: 56px 0 0 0;
+    inset: var(--topbar-height) 0 0 0;
     z-index: 20;
     background: rgba(0, 0, 0, 0.45);
     border: 0;

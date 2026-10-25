@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Moon, Sun } from "lucide-react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
@@ -14,10 +15,13 @@ import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { fieldLabel, groupFields } from "@/src/studio/settingGroups";
+import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
+import { UsernameField } from "@/src/studio/UsernameField";
 import controls from "@/src/studio/controls.module.css";
 import { textLinkClass } from "@/src/ui/textLinkClass";
 import landingStyles from "@/src/landing/landing.module.css";
+import { useTheme } from "@/src/theme/ThemeProvider";
+import type { Theme } from "@/src/theme/theme";
 
 const currentYear = new Date().getFullYear();
 
@@ -132,6 +136,38 @@ function ThemePicker({
   );
 }
 
+const APPEARANCES: Array<{ theme: Theme; label: string; icon: typeof Sun }> = [
+  { theme: "light", label: "Light", icon: Sun },
+  { theme: "dark", label: "Dark", icon: Moon },
+];
+
+/**
+ * Light or dark for the whole app, which the banner's text and panels follow too. Not a template
+ * setting: it's saved in the theme cookie and shown in every template's Style group.
+ */
+function AppearancePicker() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <LabeledGroup label="Appearance">
+      <div className="grid grid-cols-2 gap-2">
+        {APPEARANCES.map(({ theme: option, label, icon: Icon }) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => setTheme(option)}
+            aria-pressed={theme === option}
+            data-appearance={option}
+            className={`${controls.tile} ${controls.appearanceTile}`}
+          >
+            <Icon className="h-[18px] w-[18px] text-muted" aria-hidden />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
+    </LabeledGroup>
+  );
+}
+
 function SizePicker({
   value,
   onChange,
@@ -205,7 +241,21 @@ function ShowList({
   );
 }
 
+/** A sidebar section: its title with a rule below, then its settings. */
+function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={`settings-${title}`}>
+      <h2 id={`settings-${title}`} className={controls.groupTitle}>
+        {/* The landing page's heading gradient, on a span so it spans the word, not the row. */}
+        <span className={landingStyles.gradientText}>{title}</span>
+      </h2>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
 export function ControlSidebar({
+  profile,
   schema,
   state,
   accountCreatedYear,
@@ -238,6 +288,8 @@ export function ControlSidebar({
   onError: (message: string) => number;
   /** Hides the toast with this id, if it's still showing. */
   onErrorResolved: (toastId: number) => void;
+  /** For templates that need a username: the Profile section, first. */
+  profile?: { username: string; onChangeUsername: () => void };
 }) {
   const mode = state.mode as string | undefined;
 
@@ -407,27 +459,27 @@ export function ControlSidebar({
 
   return (
     <div className="space-y-8">
+      {profile && (
+        <SettingsSection title="Profile">
+          <UsernameField {...profile} />
+        </SettingsSection>
+      )}
       {groupFields(schema).map((group) => {
         const toggles = group.fields.filter((field) => field.type === "toggle");
         return (
-          <section key={group.title} aria-labelledby={`settings-${group.title}`}>
-            <h2 id={`settings-${group.title}`} className={controls.groupTitle}>
-              {/* The landing page's heading gradient, on a span so it spans the word, not the row. */}
-              <span className={landingStyles.gradientText}>{group.title}</span>
-            </h2>
-            <div className="space-y-4">
-              {/* Show/hide options are gathered at the end of their group, as one list. */}
-              {group.fields.filter((field) => field.type !== "toggle").map(renderField)}
-              {toggles.length > 0 && (
-                <ShowList
-                  fields={toggles}
-                  state={state}
-                  disabledFields={disabledFields}
-                  onChange={onChange}
-                />
-              )}
-            </div>
-          </section>
+          <SettingsSection key={group.title} title={group.title}>
+            {group.title === STYLE_GROUP && <AppearancePicker />}
+            {/* Show/hide options are gathered at the end of their group, as one list. */}
+            {group.fields.filter((field) => field.type !== "toggle").map(renderField)}
+            {toggles.length > 0 && (
+              <ShowList
+                fields={toggles}
+                state={state}
+                disabledFields={disabledFields}
+                onChange={onChange}
+              />
+            )}
+          </SettingsSection>
         );
       })}
     </div>

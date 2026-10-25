@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getTemplates } from "@/src/templates/registry";
-import { fieldLabel, groupFields } from "./settingGroups";
+import { fieldLabel, groupFields, STYLE_GROUP } from "./settingGroups";
 
 const outline = (id: string) => {
   const template = getTemplates().find(({ meta }) => meta.id === id)!;
@@ -15,7 +15,7 @@ describe("groupFields", () => {
       ["Layout", ["alignment", "profilePosition", "contentSize"]],
       [
         "Content",
-        ["year", "showMonthLabels", "showDayLabels", "showTotal", "showAvatar", "showDisplayName"],
+        ["year", "showAvatar", "showDisplayName", "showMonthLabels", "showDayLabels", "showTotal"],
       ],
     ]);
   });
@@ -28,6 +28,11 @@ describe("groupFields", () => {
       "Repositories",
       "Content",
     ]);
+  });
+
+  it("keeps the Style group without any of its settings, for the light/dark setting", () => {
+    const schema = [{ key: "year", label: "Year", type: "select" as const }];
+    expect(groupFields(schema).map((g) => g.title)).toEqual([STYLE_GROUP, "Content"]);
   });
 
   it("keeps every setting except the username, once", () => {

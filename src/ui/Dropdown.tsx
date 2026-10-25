@@ -3,6 +3,7 @@
 import { KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { FieldLabel } from "@/src/ui/FieldLabel";
+import { useDismiss } from "@/src/ui/useDismiss";
 
 const ROOT_ATTRIBUTE = "data-dropdown";
 
@@ -32,25 +33,14 @@ export function useDropdown(triggerId: string) {
     const selected =
       options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
     requestAnimationFrame(() => selected?.focus());
+  }, [open, listId]);
 
-    const onDoc = (e: MouseEvent) => {
-      const root = (e.target as Element | null)?.closest(`[${ROOT_ATTRIBUTE}]`);
-      if (root?.getAttribute(ROOT_ATTRIBUTE) !== listId) setOpen(false);
-    };
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      // Only close the list, not whatever contains it (the phone settings drawer).
-      e.stopPropagation();
-      setOpen(false);
-      document.getElementById(triggerId)?.focus();
-    };
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open, listId, triggerId]);
+  useDismiss({
+    open,
+    isInside: (target) =>
+      target.closest(`[${ROOT_ATTRIBUTE}]`)?.getAttribute(ROOT_ATTRIBUTE) === listId,
+    onDismiss: (reason) => (reason === "escape" ? close() : setOpen(false)),
+  });
 
   const onListKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const options = optionsIn(listId);
@@ -82,6 +72,16 @@ export function useDropdown(triggerId: string) {
 }
 
 type Dropdown = ReturnType<typeof useDropdown>;
+
+/** The down arrow on a button that opens a list or panel; it turns over while that's open. */
+export function DropdownChevron({ open, className = "" }: { open: boolean; className?: string }) {
+  return (
+    <ChevronDown
+      className={`h-4 w-4 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none ${open ? "rotate-180" : ""} ${className}`}
+      aria-hidden
+    />
+  );
+}
 
 /** Wraps trigger and list; clicks inside it don't count as outside clicks. */
 export function DropdownRoot({
@@ -122,10 +122,7 @@ export function DropdownTrigger({
       }`}
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      <ChevronDown
-        className={`h-4 w-4 shrink-0 self-center text-muted transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-        aria-hidden
-      />
+      <DropdownChevron open={open} className="self-center text-muted" />
     </button>
   );
 }
@@ -133,21 +130,22 @@ export function DropdownTrigger({
 export function DropdownList({
   dropdown,
   label,
-  menuPlacement,
+  floating = false,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
   label: string;
   /**
-   * For a menu that floats below its own button (the Download options): its horizontal placement.
-   * Without it, the list attaches under a DropdownTrigger like the native selects' lists.
+   * Floats below a frameless button (the studio's template picker), as wide as its options.
+   * Otherwise the list is attached under its DropdownTrigger, like the native selects' lists.
    */
-  menuPlacement?: string;
+  floating?: boolean;
 }>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
-  const placement = menuPlacement
-    ? `${menuPlacement} mt-1 rounded-lg border-text/10`
+  // The frame is .popover (app/globals.css); an attached list takes the trigger's border color.
+  const placement = floating
+    ? "left-0 mt-1.5 w-max rounded-lg"
     : "right-0 left-0 -mt-px rounded-b-lg border-(--control-border)";
   return (
     <div
@@ -155,7 +153,7 @@ export function DropdownList({
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className={`absolute top-full z-50 max-h-72 overflow-y-auto border bg-surface p-1 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.5)] ${placement}`}
+      className={`popover absolute top-full z-50 max-h-72 overflow-y-auto p-1 ${placement}`}
     >
       {children}
     </div>

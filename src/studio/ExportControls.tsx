@@ -1,22 +1,53 @@
 import { useId } from "react";
-import { Copy, Download, Loader2, SlidersHorizontal } from "lucide-react";
+import { Copy, Download, Link, Loader2 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
-import {
-  DropdownGroupLabel,
-  DropdownList,
-  DropdownOption,
-  DropdownRoot,
-  useDropdown,
-} from "@/src/ui/Dropdown";
-import { HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemClass } from "@/src/ui/highlightClasses";
+import { LabeledGroup } from "@/src/ui/FieldLabel";
+import { DropdownChevron } from "@/src/ui/Dropdown";
+import { useDisclosure } from "@/src/ui/useDisclosure";
 import type { ExportKind } from "@/src/studio/useBannerExport";
+import controls from "@/src/studio/controls.module.css";
 
-/** Labeled from sm (the icon alone on phones); dimmed while disabled. */
-const labeledItemClass = `${highlightItemClass} disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-[9px]`;
+/** One choice as a row of tiles: the value, and a muted hint below it. */
+function ChoiceTiles<T extends string | number>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ReadonlyArray<{ value: T; label: string; hint: string }>;
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <LabeledGroup label={label}>
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={option.value === value}
+            onClick={() => onChange(option.value)}
+            className={`${controls.tile} ${controls.panelTile}`}
+          >
+            <span className="font-semibold">{option.label}</span>
+            <span className={controls.tileHint}>{option.hint}</span>
+          </button>
+        ))}
+      </div>
+    </LabeledGroup>
+  );
+}
 
-/** Export options, Copy and Download, for the studio header's right group. */
+/**
+ * Download joined to its options panel, for the studio header's right group. The panel holds
+ * everything that takes the banner out of the studio: resolution and format, then the copy actions
+ * (Copy image, Copy link, and later the embed URL, #83), so the header stays one button wide.
+ */
 export function ExportControls({
   onDownload,
   onCopy,
@@ -38,111 +69,116 @@ export function ExportControls({
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
   format: ExportFormat;
   onFormatChange: (format: ExportFormat) => void;
-  /** The chosen format's size at 1×, for the pixel sizes in the resolution menu. */
+  /** The chosen format's size at 1×, for the pixel sizes in the options. */
   bannerSize: { width: number; height: number };
 }) {
-  const optionsMenu = useDropdown(useId());
+  const { open, setOpen, rootRef, toggleRef, onBlur } = useDisclosure();
+  const panelId = useId();
   const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
   const busy = exporting !== null;
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
   return (
-    <>
-      {/* Resolution applies to Copy and Download; format only to Download (Copy is always a PNG). */}
-      <HoverHighlightItem id="export-options">
-        <DropdownRoot dropdown={optionsMenu} className="relative">
-          <button
-            type="button"
-            id={optionsMenu.triggerId}
-            onClick={() => optionsMenu.setOpen((open) => !open)}
-            disabled={busy}
-            aria-haspopup="listbox"
-            aria-expanded={optionsMenu.open}
-            aria-controls={optionsMenu.open ? optionsMenu.listId : undefined}
-            aria-label={`Export options: ${pixelRatio}×, ${formatLabel}`}
-            className={labeledItemClass}
-          >
-            <SlidersHorizontal className="h-[18px] w-[18px] shrink-0" />
-            <span className="hidden whitespace-nowrap sm:inline">
-              {pixelRatio}× · {formatLabel}
-            </span>
-          </button>
-          <DropdownList dropdown={optionsMenu} label="Export options" menuPlacement="right-0 w-max">
-            {/* One choice per group, so screen readers know the two selected options are separate. */}
-            <div role="group" aria-label="Resolution">
-              <DropdownGroupLabel>Resolution</DropdownGroupLabel>
-              {EXPORT_PIXEL_RATIOS.map((ratio) => (
-                <DropdownOption
-                  key={ratio}
-                  selected={ratio === pixelRatio}
-                  onSelect={() => {
-                    onPixelRatioChange(ratio);
-                    optionsMenu.close();
-                  }}
-                >
-                  {ratio}× · {bannerSize.width * ratio} × {bannerSize.height * ratio}
-                </DropdownOption>
-              ))}
-            </div>
-            <div role="group" aria-label="Download format">
-              <DropdownGroupLabel>Download format</DropdownGroupLabel>
-              {EXPORT_FORMATS.map((option) => (
-                <DropdownOption
-                  key={option}
-                  selected={option === format}
-                  onSelect={() => {
-                    onFormatChange(option);
-                    optionsMenu.close();
-                  }}
-                >
-                  {EXPORT_FORMAT_DETAILS[option].label} · {EXPORT_FORMAT_DETAILS[option].hint}
-                </DropdownOption>
-              ))}
-            </div>
-          </DropdownList>
-        </DropdownRoot>
-      </HoverHighlightItem>
-      <HoverHighlightItem id="copy">
+    <div ref={rootRef} onBlur={onBlur} className="relative shrink-0">
+      <div className={controls.split}>
+        {/* Icon-only on phones. The aria-label names the format (readme-screenshots waits for it). */}
         <button
           type="button"
-          onClick={onCopy}
+          onClick={() => {
+            setOpen(false);
+            onDownload();
+          }}
           disabled={busy || exportBlocked}
-          aria-label={isCopying ? "Copying…" : "Copy image"}
-          aria-busy={isCopying}
-          className={labeledItemClass}
+          aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
+          aria-busy={isDownloading}
+          className={controls.splitMain}
         >
-          {isCopying ? (
-            <Loader2 className="h-[18px] w-[18px] shrink-0 animate-spin" />
-          ) : (
-            <Copy className="h-[18px] w-[18px] shrink-0" />
-          )}
-          <span className="hidden sm:inline">Copy</span>
-        </button>
-      </HoverHighlightItem>
-      {/*
-        36px tall and round like the other header controls; icon-only on phones. The aria-labels
-        name the format and what's copied, which the visible labels leave to the options button.
-      */}
-      <button
-        className="btn-primary h-9 w-9 rounded-full p-0 sm:w-auto sm:min-w-[8.5rem] sm:px-4"
-        onClick={onDownload}
-        disabled={busy || exportBlocked}
-        aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
-        aria-busy={isDownloading}
-        type="button"
-      >
-        {isDownloading ? (
-          <>
+          {isDownloading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="hidden sm:inline">Exporting&hellip;</span>
-          </>
-        ) : (
-          <>
+          ) : (
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Download</span>
-          </>
-        )}
-      </button>
-    </>
+          )}
+          <span className="hidden sm:inline">{isDownloading ? "Exporting…" : "Download"}</span>
+        </button>
+        <button
+          type="button"
+          ref={toggleRef}
+          onClick={() => {
+            if (!busy) setOpen((isOpen) => !isOpen);
+          }}
+          // aria-disabled, not disabled: it keeps focus while Copy image (in the panel) runs.
+          aria-disabled={busy}
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
+          aria-label={isCopying ? "Copying…" : `Export options: ${pixelRatio}×, ${formatLabel}`}
+          aria-busy={isCopying}
+          className={controls.splitToggle}
+        >
+          {/* The panel closes when Copy image starts, so the toggle shows that it's copying. */}
+          {isCopying ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <DropdownChevron open={open} />
+          )}
+        </button>
+      </div>
+      {open && (
+        // A disclosure, not a dialog: it doesn't trap focus, and the toggle's aria-expanded and
+        // aria-controls say what it opens. Choices keep it open; the actions close it.
+        <div
+          id={panelId}
+          role="group"
+          aria-label="Export options"
+          className={`popover ${controls.panel}`}
+        >
+          <div className="space-y-4">
+            {/* Resolution applies to Copy and Download; format only to Download (Copy is a PNG). */}
+            <ChoiceTiles
+              label="Resolution"
+              options={EXPORT_PIXEL_RATIOS.map((ratio) => ({
+                value: ratio,
+                label: `${ratio}×`,
+                // Thin spaces keep the largest size on one line in the narrow tile.
+                hint: `${bannerSize.width * ratio}\u2009×\u2009${bannerSize.height * ratio}`,
+              }))}
+              value={pixelRatio}
+              onChange={onPixelRatioChange}
+            />
+            <ChoiceTiles
+              label="Download format"
+              options={EXPORT_FORMATS.map((option) => ({
+                value: option,
+                label: EXPORT_FORMAT_DETAILS[option].label,
+                hint: EXPORT_FORMAT_DETAILS[option].hint,
+              }))}
+              value={format}
+              onChange={onFormatChange}
+            />
+          </div>
+          <div className={controls.panelActions}>
+            <button
+              type="button"
+              onClick={() => {
+                // The panel closes, so focus goes back to the toggle instead of the page start.
+                toggleRef.current?.focus();
+                setOpen(false);
+                onCopy();
+              }}
+              disabled={exportBlocked}
+              className={controls.panelAction}
+            >
+              <Copy className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+              Copy image
+            </button>
+            {/* Placeholder: a studio link with these settings (#132's link format). */}
+            <button type="button" disabled className={controls.panelAction}>
+              <Link className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+              Copy link
+              <span className={controls.soon}>Coming soon</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
