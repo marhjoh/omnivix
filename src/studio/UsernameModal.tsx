@@ -75,7 +75,9 @@ export function UsernameModal({
   }
 
   return (
-    <AnimatePresence>
+    // No fade for a dialog that's open on load (a first visit): it shows with the first paint
+    // instead of after the page's JavaScript. Opening it later still fades in.
+    <AnimatePresence initial={false}>
       {open && (
         // Scrolls when the dialog is taller than the window (short phones, landscape).
         <motion.div
