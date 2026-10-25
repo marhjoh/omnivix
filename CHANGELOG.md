@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.16.0](https://github.com/marhjoh/omnivix/compare/v1.15.3...v1.16.0) (2026-10-25)
+
+
+### Features
+
+* **studio:** download with an options panel for resolution, format and copy actions ([a0c9b63](https://github.com/marhjoh/omnivix/commit/a0c9b636bad1b44c6aa5bf0f9ce1a49b30f67bb7))
+* **studio:** move the username and light/dark into the settings sidebar ([a0c9b63](https://github.com/marhjoh/omnivix/commit/a0c9b636bad1b44c6aa5bf0f9ce1a49b30f67bb7))
+* **studio:** redesign the studio header with a template switcher ([a0c9b63](https://github.com/marhjoh/omnivix/commit/a0c9b636bad1b44c6aa5bf0f9ce1a49b30f67bb7))
+
+
+### Bug Fixes
+
+* **studio:** match the header and sidebar lines to the landing page ([a0c9b63](https://github.com/marhjoh/omnivix/commit/a0c9b636bad1b44c6aa5bf0f9ce1a49b30f67bb7))
+
 ## [1.15.3](https://github.com/marhjoh/omnivix/compare/v1.15.2...v1.15.3) (2026-10-23)
 
 
