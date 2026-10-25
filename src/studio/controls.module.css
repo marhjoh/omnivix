@@ -31,9 +31,18 @@
   border-color: var(--control-border-hover);
 }
 
+/* Disabled controls keep their frame; text and icons turn --disabled-text (app/globals.css). */
 .tile:disabled {
+  color: var(--disabled-text);
   cursor: not-allowed;
-  opacity: 0.5;
+}
+
+.tile:disabled svg {
+  color: var(--disabled-text);
+}
+
+.tile:disabled .colorStrip {
+  opacity: 0.4;
 }
 
 .tile:focus-visible {
@@ -120,8 +129,8 @@
 }
 
 .checkRow:disabled {
+  color: var(--disabled-text);
   cursor: not-allowed;
-  opacity: 0.5;
 }
 
 .checkRow:focus-visible {
@@ -161,9 +170,8 @@
   color: var(--text);
 }
 
-/* Download split button: one blue pill, a thin light line before the options toggle. Each half
-   has its own background, so a disabled half dims alone (Download waits for the preview, the
-   options don't). 36px tall and round like the other header buttons. */
+/* Download split button: one blue pill, a thin light line before the options toggle. 36px tall
+   and round like the other header buttons. */
 .split {
   display: inline-flex;
   height: 2.25rem;
@@ -181,7 +189,7 @@
   background: var(--accent);
   cursor: pointer;
   /* Hover colors fade like the buttons' (app/globals.css). */
-  transition-property: background-color, opacity;
+  transition-property: background-color, color;
   transition-duration: 0.15s;
 }
 
@@ -206,10 +214,44 @@
   background: var(--accent-hover);
 }
 
-.splitMain:disabled,
-.splitToggle[aria-disabled="true"] {
+.splitMain:disabled {
   cursor: not-allowed;
-  opacity: 0.4;
+}
+
+/* Exporting: the pill stays blue; the running half shows a spinner, the other one fades. */
+.split[data-busy="true"] .splitMain:not([aria-busy="true"]),
+.split[data-busy="true"] .splitToggle:not([aria-busy="true"]) {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.split[data-busy="true"] > * {
+  cursor: progress;
+}
+
+/* Blocked (nothing to export yet): one neutral pill, framed like the fields. The options toggle
+   still works, so it keeps the text color. The outline adds no width, so the size stays. */
+.split[data-blocked="true"] {
+  outline: 1px solid var(--control-border);
+  outline-offset: -1px;
+}
+
+.split[data-blocked="true"] .splitMain,
+.split[data-blocked="true"] .splitToggle {
+  background: var(--surface);
+}
+
+.split[data-blocked="true"] .splitMain {
+  color: var(--disabled-text);
+}
+
+.split[data-blocked="true"] .splitToggle {
+  border-left-color: var(--control-border);
+  color: var(--text);
+}
+
+.split[data-blocked="true"] .splitToggle:hover,
+.split[data-blocked="true"] .splitToggle[aria-expanded="true"] {
+  background: var(--surface-2);
 }
 
 .splitMain:focus-visible,
@@ -294,9 +336,13 @@
   background: var(--surface-2);
 }
 
+.panelAction:disabled,
+.panelAction:disabled svg {
+  color: var(--disabled-text);
+}
+
 .panelAction:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
 }
 
 .panelAction:focus-visible {
