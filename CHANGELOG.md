@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.17.0](https://github.com/marhjoh/omnivix/compare/v1.16.0...v1.17.0) (2026-10-25)
+
+
+### Features
+
+* **studio:** calmer preview messages that line up, with a next step when the banner is empty ([6b9ce9d](https://github.com/marhjoh/omnivix/commit/6b9ce9d1c33aa5ccebffcef1a3cb543036f16e97))
+
+
+### Bug Fixes
+
+* **studio:** keep the Download button one width, and make disabled controls neutral instead of faded ([6b9ce9d](https://github.com/marhjoh/omnivix/commit/6b9ce9d1c33aa5ccebffcef1a3cb543036f16e97))
+* **studio:** show the preview card's frame in light mode ([6b9ce9d](https://github.com/marhjoh/omnivix/commit/6b9ce9d1c33aa5ccebffcef1a3cb543036f16e97))
+
+
+### Performance Improvements
+
+* load the error and 404 pages' header and footer only when they show ([6b9ce9d](https://github.com/marhjoh/omnivix/commit/6b9ce9d1c33aa5ccebffcef1a3cb543036f16e97))
+* **studio:** show the first-visit username dialog with the first paint ([6b9ce9d](https://github.com/marhjoh/omnivix/commit/6b9ce9d1c33aa5ccebffcef1a3cb543036f16e97))
+
 ## [1.16.0](https://github.com/marhjoh/omnivix/compare/v1.15.3...v1.16.0) (2026-10-25)
 
 
