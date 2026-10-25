@@ -91,15 +91,24 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
     : "Loading…";
 }
 
-/** GitHub banners wait for a username; the quote banner for its quote. */
-export function previewEmptyCopy(needsUsername: boolean): { title: string; description: string } {
+/**
+ * GitHub banners wait for a username; the quote banner for its quote. The action opens the
+ * username dialog, or puts the cursor in that setting's field.
+ */
+export function previewEmptyCopy(needsUsername: boolean): {
+  title: string;
+  description: string;
+  action: { label: string; setting: "username" | "quote" };
+} {
   return needsUsername
     ? {
         title: "Choose a GitHub username",
         description: "Enter a username to load this banner's data.",
+        action: { label: "Choose username", setting: "username" },
       }
     : {
         title: "Add your quote",
         description: "Enter quote text in the sidebar to see it here.",
+        action: { label: "Add quote", setting: "quote" },
       };
 }
