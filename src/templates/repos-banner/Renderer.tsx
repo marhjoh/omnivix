@@ -2,7 +2,7 @@ import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
-import { normalizeContentAlign } from "@/src/banner/contentAlign";
+import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { RepoCard } from "@/src/banner/RepoCard";
 import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
@@ -40,7 +40,6 @@ export function ReposBannerRenderer({
   const showDisplayName = state.showDisplayName === true;
   const showAvatar = state.showAvatar !== false;
   const profileRight = state.profilePosition === "right";
-  const alignment = normalizeContentAlign(state.alignment);
   const contentSize = normalizeContentSize(state.contentSize);
 
   const showDescription = state.showDescription !== false;
@@ -50,7 +49,7 @@ export function ReposBannerRenderer({
 
   return (
     <Frame uiTheme={uiTheme} background={background}>
-      <FitContent size={contentSize} align={alignment}>
+      <FitContent size={contentSize} position={contentPositionFromState(state)}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
             user={data.user}

@@ -1,10 +1,13 @@
 import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
+import { alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
+import { BANNER_CONTENT_ATTRIBUTE, contentBox } from "@/src/banner/fit";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { quoteBannerDefinition } from "@/src/templates/definitions";
 import { RenderData } from "@/src/templates/renderers/types";
+import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 
 /** A quote longer than this is set smaller and may run to more lines. */
 const LONG_QUOTE_CHARS = 120;
@@ -31,7 +34,10 @@ export function QuoteBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const background = backgroundFromState(state);
-  const alignment = normalizeContentAlign(state.alignment);
+  const position = contentPositionFromState(state);
+  // Text at the left, the center or the right lines up that way, whatever `alignment` says.
+  const alignment = alignmentAt(position.x) ?? normalizeContentAlign(state.alignment);
+  const { inset } = contentBox(BANNER_SIZES[normalizeBannerSize(state.size)]);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
   const quoteScale =
@@ -46,46 +52,53 @@ export function QuoteBannerRenderer({
 
   return (
     <Frame uiTheme={uiTheme} background={background}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          height: "100%",
-          padding: "32px 40px",
-          textAlign: alignment,
-          overflow: "hidden",
-        }}
-      >
-        <blockquote
+      {/* The padded box the quote moves in, like the other banners' content. */}
+      <div style={{ position: "absolute", inset, overflow: "hidden" }}>
+        {/* As wide as its longest line, at most the box, so a short quote can move sideways.
+            left/top plus the opposite translate place it at `position` in the room around it, so
+            it's in place from the server render on. */}
+        <div
+          {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
           style={{
-            fontSize: quoteFontSize,
-            lineHeight: 1.2,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: longText ? QUOTE_LINES.long : QUOTE_LINES.short,
-            WebkitBoxOrient: "vertical",
-            wordBreak: "break-word",
+            position: "absolute",
+            left: `${position.x}%`,
+            top: `${position.y}%`,
+            transform: `translate(-${position.x}%, -${position.y}%)`,
+            width: "max-content",
+            maxWidth: "100%",
+            textAlign: alignment,
           }}
         >
-          &ldquo;{quote}&rdquo;
-        </blockquote>
-        {author && (
-          <p
+          <blockquote
             style={{
-              marginTop: 16,
-              fontSize: quoteScale.author,
-              color: chrome.textMuted,
+              fontSize: quoteFontSize,
+              lineHeight: 1.2,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
               overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              display: "-webkit-box",
+              WebkitLineClamp: longText ? QUOTE_LINES.long : QUOTE_LINES.short,
+              WebkitBoxOrient: "vertical",
+              wordBreak: "break-word",
             }}
           >
-            — {author}
-          </p>
-        )}
+            &ldquo;{quote}&rdquo;
+          </blockquote>
+          {author && (
+            <p
+              style={{
+                marginTop: 16,
+                fontSize: quoteScale.author,
+                color: chrome.textMuted,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              — {author}
+            </p>
+          )}
+        </div>
       </div>
     </Frame>
   );

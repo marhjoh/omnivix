@@ -3,7 +3,7 @@ import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSizeOrFill } from "@/src/banner/contentSize";
-import { normalizeContentAlign } from "@/src/banner/contentAlign";
+import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import type { Theme } from "@/src/theme/theme";
 import { RenderData } from "@/src/templates/renderers/types";
@@ -43,7 +43,7 @@ export function ContributionBannerRenderer({
             cellShape={cellShape}
           />
         ) : (
-          <FitContent size={contentSize} align={normalizeContentAlign(state.alignment)}>
+          <FitContent size={contentSize} position={contentPositionFromState(state)}>
             <ContributionGrid
               contributions={data.contributions}
               theme={theme}

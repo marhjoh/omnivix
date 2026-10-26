@@ -54,12 +54,17 @@ const baseState = z.object({
   backgroundImage: z.string().optional(),
   backgroundPosition: z.object({ x: percent, y: percent }).optional(),
   backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
+  /** Set by dragging the content in the preview; see `src/banner/contentPosition.ts`. */
+  contentPosition: z.object({ x: percent, y: percent }).optional(),
 });
 
 /** GitHub username, for the banners that load GitHub data. */
 const usernameState = z.string().min(1, "Required");
 
-/** Horizontal placement of the content; in the quote banner also the text alignment. */
+/**
+ * Horizontal placement of the content (its x in `contentPosition`); in the quote banner also the
+ * text alignment.
+ */
 const alignmentField: EditorFieldSchema = {
   key: "alignment",
   label: "Alignment",
