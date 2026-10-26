@@ -24,6 +24,11 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
+import {
+  alignmentAt,
+  contentPositionFromState,
+  type ContentPosition,
+} from "@/src/banner/contentPosition";
 import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
@@ -582,6 +587,8 @@ export function StudioShell({
           delete next.backgroundPosition;
           delete next.backgroundZoom;
         }
+        // Picking an alignment puts the content at that spot, centered vertically.
+        if (key === "alignment") delete next.contentPosition;
         return next;
       });
     },
@@ -606,6 +613,15 @@ export function StudioShell({
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
     [updateState],
   );
+  // Content moved to the left, the center or the right shows that alignment again (and in the
+  // quote banner aligns the text that way); in between, the alignment is kept for the text.
+  const moveContent = useCallback((position: ContentPosition) => {
+    setState((prev) => ({
+      ...prev,
+      contentPosition: position,
+      alignment: alignmentAt(position.x) ?? prev.alignment,
+    }));
+  }, []);
 
   const backgroundImage =
     typeof state.backgroundImage === "string" && state.backgroundImage
@@ -784,6 +800,9 @@ export function StudioShell({
                     onMove: moveBackground,
                   }
                 : undefined
+            }
+            contentAdjust={
+              fill ? undefined : { position: contentPositionFromState(state), onMove: moveContent }
             }
           />
         </main>

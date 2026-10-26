@@ -1,20 +1,17 @@
-import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { useRef, type KeyboardEvent, type PointerEvent } from "react";
 import {
   backgroundPanRange,
   dragBackgroundPosition,
   type BackgroundPosition,
 } from "@/src/banner/background";
-
-/** Arrow keys move the background this many percent; with Shift, `LARGE_STEP`. */
-const STEP = 2;
-const LARGE_STEP = 10;
+import { arrowStep, useMoveOncePerFrame } from "@/src/studio/preview/dragMoves";
 
 const round = (value: number) => Math.round(value * 10) / 10;
 
 /**
  * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
  * arrow keys. No mode to turn on or off. Drags are measured from where they started, so the image
- * follows the pointer exactly.
+ * follows the pointer exactly. The content has its own surface on top (`ContentDragSurface`).
  */
 export function BackgroundDragSurface({
   position,
@@ -33,19 +30,7 @@ export function BackgroundDragSurface({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; from: BackgroundPosition } | null>(null);
-  /** Moves are applied once per frame; pointer events can fire faster than the screen updates. */
-  const moveFrame = useRef<number | null>(null);
-  const pending = useRef<BackgroundPosition | null>(null);
-
-  useEffect(() => () => cancelAnimationFrame(moveFrame.current ?? 0), []);
-
-  function scheduleMove(next: BackgroundPosition) {
-    pending.current = next;
-    moveFrame.current ??= requestAnimationFrame(() => {
-      moveFrame.current = null;
-      if (pending.current) onMove(pending.current);
-    });
-  }
+  const scheduleMove = useMoveOncePerFrame(onMove);
 
   function panRange() {
     const img = ref.current?.parentElement?.querySelector<HTMLImageElement>(
@@ -77,18 +62,12 @@ export function BackgroundDragSurface({
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const step = event.shiftKey ? LARGE_STEP : STEP;
-    // Arrows move the image, matching a drag: → shows more of the left side.
-    const delta = {
-      ArrowLeft: { x: step, y: 0 },
-      ArrowRight: { x: -step, y: 0 },
-      ArrowUp: { x: 0, y: step },
-      ArrowDown: { x: 0, y: -step },
-    }[event.key];
-    if (!delta) return;
+    const step = arrowStep(event);
+    if (!step) return;
     event.preventDefault();
+    // Arrows move the image, matching a drag: → shows more of the left side.
     const clamp = (value: number) => Math.min(100, Math.max(0, value));
-    onMove({ x: round(clamp(position.x + delta.x)), y: round(clamp(position.y + delta.y)) });
+    onMove({ x: round(clamp(position.x - step.x)), y: round(clamp(position.y - step.y)) });
   }
 
   return (
@@ -107,7 +86,7 @@ export function BackgroundDragSurface({
       {/* The dashed frame and this badge show on hover, focus and while dragging, so the banner
           reads clean otherwise. */}
       <span className="pointer-events-none absolute top-2 left-2 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
-        Drag to move
+        Drag to move background
       </span>
     </div>
   );

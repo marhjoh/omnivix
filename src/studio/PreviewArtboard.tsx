@@ -17,8 +17,10 @@ import previewStyles from "@/src/studio/preview/preview.module.css";
 import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
+import { ContentDragSurface } from "@/src/studio/preview/ContentDragSurface";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
+import type { ContentPosition } from "@/src/banner/contentPosition";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
 
 export function PreviewArtboard({
@@ -32,6 +34,7 @@ export function PreviewArtboard({
   onChangeUsername,
   onEditSetting,
   backgroundAdjust,
+  contentAdjust,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -49,6 +52,11 @@ export function PreviewArtboard({
     position: BackgroundPosition;
     zoom: number;
     onMove: (position: BackgroundPosition) => void;
+  };
+  /** Set when the banner's content can be moved (not when it fills the banner). */
+  contentAdjust?: {
+    position: ContentPosition;
+    onMove: (position: ContentPosition) => void;
   };
 }) {
   const dims = BANNER_SIZES[size];
@@ -88,6 +96,9 @@ export function PreviewArtboard({
         ) : null}
         {previewState === "ready" && scale !== null && backgroundAdjust ? (
           <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
+        ) : null}
+        {previewState === "ready" && scale !== null && contentAdjust ? (
+          <ContentDragSurface {...contentAdjust} frame={dims} scale={scale} />
         ) : null}
         {previewState === "ready" ? null : (
           <PreviewFrame>
