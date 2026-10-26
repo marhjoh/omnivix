@@ -17,7 +17,8 @@ import previewStyles from "@/src/studio/preview/preview.module.css";
 import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
-import { ContentDragSurface } from "@/src/studio/preview/ContentDragSurface";
+import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
+import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/fit";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
 import type { ContentPosition } from "@/src/banner/contentPosition";
@@ -98,7 +99,13 @@ export function PreviewArtboard({
           <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
         ) : null}
         {previewState === "ready" && scale !== null && contentAdjust ? (
-          <ContentDragSurface {...contentAdjust} frame={dims} scale={scale} />
+          <PlacementDragSurface
+            {...contentAdjust}
+            target={BANNER_CONTENT_ATTRIBUTE}
+            name="content"
+            frame={dims}
+            scale={scale}
+          />
         ) : null}
         {previewState === "ready" ? null : (
           <PreviewFrame>

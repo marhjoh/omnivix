@@ -1,21 +1,15 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import {
-  contentRoom,
-  dragContentPosition,
-  nudgeContentPosition,
-  snapLine,
-  type ContentPosition,
-} from "@/src/banner/contentPosition";
-import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/fit";
+import { dragPlacement, nudgePlacement, placementRoom, snapLine } from "@/src/banner/placement";
+import type { Position } from "@/src/banner/position";
 import { arrowStep, useMoveOncePerFrame } from "@/src/studio/preview/dragMoves";
 
-/** The content snaps to an edge or the middle within this many screen pixels. */
+/** An item snaps to an edge or the middle within this many screen pixels. */
 const SNAP_DISTANCE = 6;
 
-/** Space between the content and its dashed frame, in screen pixels. */
+/** Space between the item and its dashed frame, in screen pixels. */
 const FRAME_GAP = 4;
 
-/** The content's box on screen, relative to the preview. */
+/** The item's box on screen, relative to the preview. */
 interface Rect {
   left: number;
   top: number;
@@ -27,44 +21,51 @@ const sameRect = (a: Rect, b: Rect) =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 
 /**
- * Sits over the banner's content, above the background's surface: drag the content to move it,
- * or focus it and use the arrow keys. It stops at the banner's padding and snaps to the edges and
- * the middle, with a guide line while it's snapped.
+ * Sits over an item the banner places (the content, the logo), above the background's surface:
+ * drag the item to move it, or focus it and use the arrow keys. It stops at the banner's padding
+ * and snaps to the edges and the middle, with a guide line while it's snapped. A later surface sits
+ * above an earlier one, as the banner draws its items.
  */
-export function ContentDragSurface({
+export function PlacementDragSurface({
+  target,
+  name,
   position,
   frame,
   scale,
   onMove,
 }: {
-  position: ContentPosition;
+  /** The attribute that marks the item in the banner, e.g. `BANNER_CONTENT_ATTRIBUTE`. */
+  target: string;
+  /** What the item is called, e.g. "content", for its label and badge. */
+  name: string;
+  position: Position;
   /** Banner size in CSS pixels. */
   frame: { width: number; height: number };
   /** Preview scale: screen pixels per banner pixel. */
   scale: number;
-  onMove: (position: ContentPosition) => void;
+  onMove: (position: Position) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [rect, setRect] = useState<Rect | null>(null);
-  const [snapped, setSnapped] = useState<Partial<ContentPosition>>({});
+  const [snapped, setSnapped] = useState<Partial<Position>>({});
   const drag = useRef<{
     x: number;
     y: number;
-    from: ContentPosition;
+    from: Position;
     room: { width: number; height: number };
   } | null>(null);
   const scheduleMove = useMoveOncePerFrame(onMove);
 
-  // Measured after every render, as the banner places its content in the same commit, and when
-  // the content or its box changes size later: a web font loads, or the format changes. The
+  // Measured after every render, as the banner places its items in the same commit, and when the
+  // item or its box changes size later: a web font or an image loads, or the format changes. The
   // banner re-fits on those itself, so the measure waits a frame for it.
   useLayoutEffect(() => {
     const preview = ref.current?.parentElement;
-    const content = preview?.querySelector<HTMLElement>(`[${BANNER_CONTENT_ATTRIBUTE}]`);
-    if (!preview || !content) return;
+    const item = preview?.querySelector<HTMLElement>(`[${target}]`);
+    if (!preview || !item) return;
     const measure = () => {
       const outer = preview.getBoundingClientRect();
-      const inner = content.getBoundingClientRect();
+      const inner = item.getBoundingClientRect();
       const next = {
         left: inner.left - outer.left,
         top: inner.top - outer.top,
@@ -79,17 +80,17 @@ export function ContentDragSurface({
       cancelAnimationFrame(frameId);
       frameId = requestAnimationFrame(measure);
     });
-    observer.observe(content);
-    if (content.parentElement) observer.observe(content.parentElement);
+    observer.observe(item);
+    if (item.parentElement) observer.observe(item.parentElement);
     return () => {
       cancelAnimationFrame(frameId);
       observer.disconnect();
     };
   });
 
-  /** How far the content can move, in banner pixels. */
+  /** How far the item can move, in banner pixels. */
   function room(box: Rect) {
-    return contentRoom(frame, { width: box.width / scale, height: box.height / scale });
+    return placementRoom(frame, { width: box.width / scale, height: box.height / scale });
   }
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -101,7 +102,7 @@ export function ContentDragSurface({
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
     const start = drag.current;
     if (!start) return;
-    const next = dragContentPosition(
+    const next = dragPlacement(
       start.from,
       { x: (event.clientX - start.x) / scale, y: (event.clientY - start.y) / scale },
       start.room,
@@ -122,7 +123,7 @@ export function ContentDragSurface({
     const step = arrowStep(event);
     if (!step || !rect) return;
     event.preventDefault();
-    onMove(nudgeContentPosition(position, step, room(rect)));
+    onMove(nudgePlacement(position, step, room(rect)));
   }
 
   return (
@@ -131,7 +132,7 @@ export function ContentDragSurface({
         ref={ref}
         tabIndex={0}
         role="application"
-        aria-label="Content position. Drag or use the arrow keys to move it."
+        aria-label={`${name[0].toUpperCase()}${name.slice(1)} position. Drag or use the arrow keys to move it.`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -152,7 +153,7 @@ export function ContentDragSurface({
         {/* Like the background's: the dashed frame and this badge show on hover, focus and while
             dragging. */}
         <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
-          Drag to move content
+          Drag to move {name}
         </span>
       </div>
       {snapped.x === undefined ? null : (

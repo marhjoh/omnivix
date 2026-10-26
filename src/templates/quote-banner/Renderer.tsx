@@ -3,6 +3,7 @@ import { backgroundFromState } from "@/src/banner/background";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
 import { BANNER_CONTENT_ATTRIBUTE, contentBox } from "@/src/banner/fit";
+import { placementStyle } from "@/src/banner/placement";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { quoteBannerDefinition } from "@/src/templates/definitions";
@@ -55,15 +56,11 @@ export function QuoteBannerRenderer({
       {/* The padded box the quote moves in, like the other banners' content. */}
       <div style={{ position: "absolute", inset, overflow: "hidden" }}>
         {/* As wide as its longest line, at most the box, so a short quote can move sideways.
-            left/top plus the opposite translate place it at `position` in the room around it, so
-            it's in place from the server render on. */}
+            Placed with CSS alone, so it's in place from the server render on. */}
         <div
           {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
           style={{
-            position: "absolute",
-            left: `${position.x}%`,
-            top: `${position.y}%`,
-            transform: `translate(-${position.x}%, -${position.y}%)`,
+            ...placementStyle(position),
             width: "max-content",
             maxWidth: "100%",
             textAlign: alignment,
