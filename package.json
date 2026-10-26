@@ -1,6 +1,6 @@
 {
   "name": "omnivix",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@10.18.0",

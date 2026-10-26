@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/marhjoh/omnivix/compare/v1.17.0...v1.17.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **deps:** upgrade zod to 4.6.7 to patch GHSA-mrhx-c7xc-m3w5 ([#183](https://github.com/marhjoh/omnivix/issues/183)) ([5e0a854](https://github.com/marhjoh/omnivix/commit/5e0a854642386cefb1a08e5e267b4e590273067a))
+
 ## [1.17.0](https://github.com/marhjoh/omnivix/compare/v1.16.0...v1.17.0) (2026-10-25)
 
 
