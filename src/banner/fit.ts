@@ -3,9 +3,6 @@
 /** "pending" until `FitContent` has fitted its content with fonts loaded, then "ready". */
 export const FIT_STATUS_ATTRIBUTE = "data-banner-fit";
 
-/** Marks the content that can be moved, so the studio preview can find it to drag. */
-export const BANNER_CONTENT_ATTRIBUTE = "data-banner-content";
-
 interface Box {
   width: number;
   height: number;

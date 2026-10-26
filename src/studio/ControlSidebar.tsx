@@ -93,6 +93,20 @@ function DebouncedInput({
   );
 }
 
+/** A setting's Reset, at the end of its label row, for what was changed in the preview. */
+function ResetButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={`text-[13px] font-medium ${textLinkClass}`}
+    >
+      Reset
+    </button>
+  );
+}
+
 function FieldWrapper({
   label,
   htmlFor,
@@ -407,14 +421,10 @@ export function ControlSidebar({
           labelAction={
             // Only once the logo has been moved in the preview.
             logo && !isDefaultLogoPosition(state) ? (
-              <button
-                type="button"
-                aria-label="Reset logo position"
+              <ResetButton
+                label="Reset logo position"
                 onClick={() => onChange("logoPosition", undefined)}
-                className={`text-[13px] font-medium ${textLinkClass}`}
-              >
-                Reset
-              </button>
+              />
             ) : null
           }
         >
@@ -446,14 +456,10 @@ export function ControlSidebar({
           labelAction={
             // Only once the content has been moved in the preview.
             disabled || isDefaultContentPosition(state) ? null : (
-              <button
-                type="button"
-                aria-label="Reset content position"
+              <ResetButton
+                label="Reset content position"
                 onClick={() => onChange("contentPosition", undefined)}
-                className={`text-[13px] font-medium ${textLinkClass}`}
-              >
-                Reset
-              </button>
+              />
             )
           }
         />
@@ -504,17 +510,13 @@ export function ControlSidebar({
           labelAction={
             // Only once the image has been moved or zoomed in the preview.
             background && !isDefaultBackgroundFraming(background) ? (
-              <button
-                type="button"
-                aria-label="Reset position and zoom"
+              <ResetButton
+                label="Reset position and zoom"
                 onClick={() => {
                   onChange("backgroundPosition", undefined);
                   onChange("backgroundZoom", undefined);
                 }}
-                className={`text-[13px] font-medium ${textLinkClass}`}
-              >
-                Reset
-              </button>
+              />
             ) : null
           }
         >

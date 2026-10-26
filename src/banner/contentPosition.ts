@@ -3,7 +3,7 @@ import {
   normalizeContentAlign,
   type ContentAlign,
 } from "@/src/banner/contentAlign";
-import { clampPosition, isPosition, type Position } from "@/src/banner/position";
+import { positionOr, type Position } from "@/src/banner/position";
 
 /**
  * Where the content sits in the padded box, as a placement (see `placement.ts`).
@@ -11,14 +11,16 @@ import { clampPosition, isPosition, type Position } from "@/src/banner/position"
 export type ContentPosition = Position;
 
 /** Each alignment's place on the x axis. By default the content is centered vertically. */
-export const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 };
+const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 };
 
 const MIDDLE = 50;
 
 /** The content's position from banner state: a moved one, or its alignment, centered vertically. */
 export function contentPositionFromState(state: Record<string, unknown>): ContentPosition {
-  if (isPosition(state.contentPosition)) return clampPosition(state.contentPosition);
-  return { x: ALIGN_X[normalizeContentAlign(state.alignment)], y: MIDDLE };
+  return positionOr(state.contentPosition, {
+    x: ALIGN_X[normalizeContentAlign(state.alignment)],
+    y: MIDDLE,
+  });
 }
 
 /** The alignment the content is at, or undefined between them (after a free drag). */

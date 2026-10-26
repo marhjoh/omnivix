@@ -1,11 +1,15 @@
 import { contentBox } from "@/src/banner/fit";
-import type { Position } from "@/src/banner/position";
+import { clampPercent, roundPercent, type Position } from "@/src/banner/position";
 
 /**
  * Placing an item (the content, the logo) in the banner's padded box (`contentBox`). Its position
  * is a percentage of the room left around it: 0 is the left/top, 100 the right/bottom. Like the
  * background's position, it carries over when the format or the item's size changes.
  */
+
+/** Mark the items the banner places, so the studio preview can find them to drag. */
+export const BANNER_CONTENT_ATTRIBUTE = "data-banner-content";
+export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
 
 /** Where an item snaps while dragged: an edge or the middle of the box, on each axis. */
 const SNAP_POINTS = [0, 50, 100];
@@ -14,9 +18,6 @@ interface Size {
   width: number;
   height: number;
 }
-
-const clamp = (value: number) => Math.min(100, Math.max(0, value));
-const round = (value: number) => Math.round(value * 10) / 10;
 
 /** CSS that places an item at `position` in the room inside its box, with no measuring. */
 export function placementStyle({ x, y }: Position) {
@@ -50,11 +51,11 @@ export function dragPlacement(
   const snapped: Partial<Position> = {};
   const move = (axis: "x" | "y", by: number, space: number) => {
     if (space < 1) return from[axis];
-    const next = clamp(from[axis] + (by / space) * 100);
+    const next = clampPercent(from[axis] + (by / space) * 100);
     const snap = SNAP_POINTS.find(
       (point) => (Math.abs(next - point) / 100) * space <= snapDistance,
     );
-    if (snap === undefined) return round(next);
+    if (snap === undefined) return roundPercent(next);
     snapped[axis] = snap;
     return snap;
   };
@@ -71,7 +72,7 @@ export function nudgePlacement(
   room: Size,
 ): Position {
   const move = (value: number, by: number, space: number) =>
-    space < 1 ? value : round(clamp(value + by));
+    space < 1 ? value : roundPercent(clampPercent(value + by));
   return { x: move(from.x, step.x, room.width), y: move(from.y, step.y, room.height) };
 }
 

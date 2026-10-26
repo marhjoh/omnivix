@@ -1,10 +1,7 @@
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { contentBox } from "@/src/banner/fit";
-import { clampPosition, isPosition, type Position } from "@/src/banner/position";
+import { positionOr, type Position } from "@/src/banner/position";
 import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
-
-/** Marks the logo, so the studio preview can find it to drag. */
-export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
 
 export const DEFAULT_LOGO_SIZE: ContentSize = "m";
 
@@ -32,7 +29,7 @@ export interface BannerLogo {
 
 /** The logo's position from banner state: a moved one, or the top right. */
 export function logoPositionFromState(state: Record<string, unknown>): Position {
-  return isPosition(state.logoPosition) ? clampPosition(state.logoPosition) : DEFAULT_LOGO_POSITION;
+  return positionOr(state.logoPosition, DEFAULT_LOGO_POSITION);
 }
 
 /** True when the logo is at its default place, so there's nothing to reset. */

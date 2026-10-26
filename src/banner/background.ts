@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
-import { clampPosition, isPosition, type Position } from "@/src/banner/position";
+import { clampPercent, positionOr, type Position } from "@/src/banner/position";
 
 export const MIN_BACKGROUND_ZOOM = 1;
 export const MAX_BACKGROUND_ZOOM = 1.5;
@@ -27,8 +27,7 @@ function defaultBackgroundPosition(src: string): BackgroundPosition {
 export function backgroundFromState(state: Record<string, unknown>): BannerBackground | undefined {
   const src = state.backgroundImage;
   if (typeof src !== "string" || !src) return undefined;
-  const raw = state.backgroundPosition;
-  const position = isPosition(raw) ? clampPosition(raw) : defaultBackgroundPosition(src);
+  const position = positionOr(state.backgroundPosition, defaultBackgroundPosition(src));
   const zoom =
     typeof state.backgroundZoom === "number" && Number.isFinite(state.backgroundZoom)
       ? clamp(state.backgroundZoom, MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)
@@ -78,6 +77,6 @@ export function dragBackgroundPosition(
   range: Size,
 ): BackgroundPosition {
   const move = (value: number, by: number, room: number) =>
-    room < 1 ? value : clamp(value - (by / room) * 100, 0, 100);
+    room < 1 ? value : clampPercent(value - (by / room) * 100);
   return { x: move(position.x, delta.x, range.width), y: move(position.y, delta.y, range.height) };
 }

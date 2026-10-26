@@ -1,7 +1,13 @@
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { dragPlacement, nudgePlacement, placementRoom, snapLine } from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
-import { arrowStep, useMoveOncePerFrame } from "@/src/studio/preview/dragMoves";
+import {
+  arrowStep,
+  DRAG_FRAME_CLASS,
+  DragBadge,
+  useMoveOncePerFrame,
+  usePointerDrag,
+} from "@/src/studio/preview/dragSurface";
 
 /** An item snaps to an edge or the middle within this many screen pixels. */
 const SNAP_DISTANCE = 6;
@@ -48,12 +54,6 @@ export function PlacementDragSurface({
   const ref = useRef<HTMLDivElement>(null);
   const [rect, setRect] = useState<Rect | null>(null);
   const [snapped, setSnapped] = useState<Partial<Position>>({});
-  const drag = useRef<{
-    x: number;
-    y: number;
-    from: Position;
-    room: { width: number; height: number };
-  } | null>(null);
   const scheduleMove = useMoveOncePerFrame(onMove);
 
   // Measured after every render, as the banner places its items in the same commit, and when the
@@ -93,31 +93,18 @@ export function PlacementDragSurface({
     return placementRoom(frame, { width: box.width / scale, height: box.height / scale });
   }
 
-  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (!rect) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { x: event.clientX, y: event.clientY, from: position, room: room(rect) };
-  }
-
-  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const start = drag.current;
-    if (!start) return;
-    const next = dragPlacement(
-      start.from,
-      { x: (event.clientX - start.x) / scale, y: (event.clientY - start.y) / scale },
-      start.room,
-      SNAP_DISTANCE / scale,
-    );
-    setSnapped((prev) =>
-      prev.x === next.snapped.x && prev.y === next.snapped.y ? prev : next.snapped,
-    );
-    scheduleMove(next.position);
-  }
-
-  function onPointerUp() {
-    drag.current = null;
-    setSnapped({});
-  }
+  const pointer = usePointerDrag({
+    scale,
+    begin: () => (rect ? { from: position, room: room(rect) } : null),
+    move: ({ from, room }, delta) => {
+      const next = dragPlacement(from, delta, room, SNAP_DISTANCE / scale);
+      setSnapped((prev) =>
+        prev.x === next.snapped.x && prev.y === next.snapped.y ? prev : next.snapped,
+      );
+      scheduleMove(next.position);
+    },
+    end: () => setSnapped({}),
+  });
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const step = arrowStep(event);
@@ -133,10 +120,7 @@ export function PlacementDragSurface({
         tabIndex={0}
         role="application"
         aria-label={`${name[0].toUpperCase()}${name.slice(1)} position. Drag or use the arrow keys to move it.`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        {...pointer}
         onKeyDown={onKeyDown}
         style={
           rect
@@ -148,13 +132,9 @@ export function PlacementDragSurface({
               }
             : { visibility: "hidden" }
         }
-        className="group absolute z-20 cursor-grab touch-none rounded-md border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent"
+        className={`${DRAG_FRAME_CLASS} z-20 rounded-md`}
       >
-        {/* Like the background's: the dashed frame and this badge show on hover, focus and while
-            dragging. */}
-        <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
-          Drag to move {name}
-        </span>
+        <DragBadge>Drag to move {name}</DragBadge>
       </div>
       {snapped.x === undefined ? null : (
         <div

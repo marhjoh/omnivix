@@ -3,12 +3,8 @@
 import { PropsWithChildren, useEffectEvent, useLayoutEffect, useRef } from "react";
 import { CONTENT_SIZE_FACTOR, type ContentSize } from "@/src/banner/contentSize";
 import { type ContentPosition } from "@/src/banner/contentPosition";
-import {
-  BANNER_CONTENT_ATTRIBUTE,
-  contentBox,
-  FIT_STATUS_ATTRIBUTE,
-  fitScale,
-} from "@/src/banner/fit";
+import { contentBox, FIT_STATUS_ATTRIBUTE, fitScale } from "@/src/banner/fit";
+import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
 
 /**
  * Scales content laid out at its natural size to fit the banner: `xl` is the largest scale that
