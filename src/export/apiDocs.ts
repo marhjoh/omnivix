@@ -107,11 +107,13 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${new URL(`/studio/${EXAMPLE_LINK.templateId}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
     "",
-    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link; uploaded images can't be linked. The studio leaves out values that aren't valid and keeps the rest.",
+    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",
     "## Template settings",
     "",
     "For the export API's `state`, and studio links.",
+    "",
+    'Every template also takes `contentPosition` and `backgroundPosition`, which the studio sets when the preview is dragged: `{ "x": 0–100, "y": 0–100 }`, where 0 is the left or top and 100 the right or bottom. `contentPosition` places the content in the room left around it inside the banner\'s padding; by default it follows `alignment` and is centered vertically. `backgroundPosition` places the background image; by default it\'s centered, or at a built-in background\'s focus.',
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
       const defaults = initialState as Record<string, unknown>;

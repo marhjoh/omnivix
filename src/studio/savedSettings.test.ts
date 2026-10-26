@@ -41,3 +41,38 @@ describe("applySavedSettings backgrounds", () => {
     expect(state.backgroundZoom).toBeUndefined();
   });
 });
+
+describe("applySavedSettings positions", () => {
+  const defaults = { ...templateRegistry["github-banner"].initialState };
+
+  it("restores a moved content, kept between 0 and 100", () => {
+    expect(
+      applySavedSettings(defaults, "github-banner", { contentPosition: { x: 30, y: 120 } }, "a")
+        .contentPosition,
+    ).toEqual({ x: 30, y: 100 });
+  });
+
+  it("gives content at the left, the center or the right that alignment", () => {
+    const at = (x: number) =>
+      applySavedSettings(
+        { ...templateRegistry["quote-banner"].initialState },
+        "quote-banner",
+        { alignment: "center", contentPosition: { x, y: 50 } },
+        null,
+      ).alignment;
+    expect(at(0)).toBe("left");
+    expect(at(100)).toBe("right");
+    expect(at(30)).toBe("center");
+  });
+
+  it("drops a position that isn't one", () => {
+    const result = applySavedSettings(
+      defaults,
+      "github-banner",
+      { contentPosition: "30,10", backgroundPosition: { x: 1 } },
+      "a",
+    );
+    expect(result).not.toHaveProperty("contentPosition");
+    expect(result).not.toHaveProperty("backgroundPosition");
+  });
+});

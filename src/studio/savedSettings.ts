@@ -4,11 +4,16 @@ import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSize, TemplateId } from "@/src/types/template";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { presetBySrc } from "@/src/backgrounds/presets";
+import { alignmentAt } from "@/src/banner/contentPosition";
+import { clampPosition, isPosition } from "@/src/banner/position";
 
 /** A background that can be saved and linked: a preset or an https link, not an upload. */
 export function isSavableBackground(value: unknown): value is string {
   return typeof value === "string" && (!!presetBySrc(value) || /^https:\/\//i.test(value));
 }
+
+/** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
+export const POSITION_KEYS = ["contentPosition", "backgroundPosition"] as const;
 
 /**
  * The template's defaults with saved settings applied. Saved values come from the browser, so
@@ -35,6 +40,16 @@ export function applySavedSettings(
     delete merged.backgroundImage;
     delete merged.backgroundPosition;
     delete merged.backgroundZoom;
+  }
+  for (const key of POSITION_KEYS) {
+    const position = merged[key];
+    if (isPosition(position)) merged[key] = clampPosition(position);
+    else delete merged[key];
+  }
+  // Content at the left, the center or the right has that alignment, as after a drag. A link can
+  // set both apart, which in the quote banner would align the text differently from the sidebar.
+  if (isPosition(merged.contentPosition) && "alignment" in prev) {
+    merged.alignment = alignmentAt(merged.contentPosition.x) ?? merged.alignment;
   }
   const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
   if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {

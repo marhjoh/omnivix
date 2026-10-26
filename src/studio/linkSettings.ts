@@ -1,7 +1,8 @@
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { isSavableBackground } from "@/src/studio/savedSettings";
+import { isSavableBackground, POSITION_KEYS } from "@/src/studio/savedSettings";
+import { parsePositionText } from "@/src/banner/position";
 
 /** Settings from a studio link, with the username apart (it's saved for every template). */
 export interface LinkSettings {
@@ -13,13 +14,15 @@ type Query = Record<string, string | string[] | undefined>;
 
 /**
  * Reads a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the export
- * API's `size` and `state` keys, as text. Values that aren't valid are left out, so the studio
- * uses the saved setting or the default instead.
+ * API's `size` and `state` keys, as text, with positions as `x,y` (`contentPosition=100,0`).
+ * Values that aren't valid are left out, so the studio uses the saved setting or the default
+ * instead.
  */
 export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSettings | null {
   const { schema, stateSchema, initialState, meta } = templateRegistry[templateId];
-  const fieldTypes = new Map(schema.map((field) => [field.key, field.type]));
+  const fieldTypes = new Map<string, string>(schema.map((field) => [field.key, field.type]));
   if (meta.needsUsername) fieldTypes.set("username", "text");
+  for (const key of POSITION_KEYS) fieldTypes.set(key, "position");
 
   const candidate: Record<string, unknown> = {};
   for (const [key, raw] of Object.entries(query)) {
@@ -34,6 +37,9 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
       if (value.trim() !== "" && Number.isFinite(Number(value))) candidate[key] = Number(value);
     } else if (type === "backgroundPicker") {
       if (isSavableBackground(value)) candidate[key] = value;
+    } else if (type === "position") {
+      const position = parsePositionText(value);
+      if (position) candidate[key] = position;
     } else {
       candidate[key] = value;
     }
