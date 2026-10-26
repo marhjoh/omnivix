@@ -13,6 +13,11 @@ import { EditorFieldSchema } from "@/src/types/template";
 import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
+import {
+  alignmentShown,
+  contentPositionFromState,
+  isDefaultContentPosition,
+} from "@/src/banner/contentPosition";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
@@ -376,6 +381,36 @@ export function ControlSidebar({
             className="w-full accent-accent"
           />
         </FieldWrapper>
+      );
+    }
+
+    // Dragged anywhere but the three spots, the content is at none of them.
+    if (field.key === "alignment") {
+      const disabled = disabledFields.has(field.key);
+      const at = alignmentShown(contentPositionFromState(state));
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={at ?? ""}
+          options={field.options ?? []}
+          onChange={(value) => onChange(field.key, value)}
+          disabled={disabled}
+          placeholder="Custom"
+          labelAction={
+            // Only once the content has been moved in the preview.
+            disabled || isDefaultContentPosition(state) ? null : (
+              <button
+                type="button"
+                aria-label="Reset content position"
+                onClick={() => onChange("contentPosition", undefined)}
+                className={`text-[13px] font-medium ${textLinkClass}`}
+              >
+                Reset
+              </button>
+            )
+          }
+        />
       );
     }
 
