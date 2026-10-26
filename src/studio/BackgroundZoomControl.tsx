@@ -5,7 +5,7 @@ import { FieldLabel } from "@/src/ui/FieldLabel";
 const ZOOM_STEP = 0.05;
 
 /**
- * The background's zoom, shown in the picker's frame (BackgroundImagePicker) once an image is
+ * The background's zoom, shown in the picker's frame (ImagePicker) once an image is
  * chosen. The image is moved by dragging the preview (BackgroundDragSurface).
  */
 export function BackgroundZoomControl({

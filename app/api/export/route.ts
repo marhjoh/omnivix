@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseExportRequest } from "@/src/export/payload";
-import { resolveExportBackground } from "@/src/export/background";
+import { resolveExportImages } from "@/src/export/images";
 import { createExportToken } from "@/src/export/export-token";
 import { getPublicOrigin } from "@/src/export/request-origin";
 import { buildRenderUrl } from "@/src/export/render-url";
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const resolved = await resolveExportBackground(parsed.request);
+    const resolved = await resolveExportImages(parsed.request);
     if (!resolved.ok) return error(resolved.error, 400);
-    const { payload, background } = resolved;
+    const { payload, images } = resolved;
 
     const token = createExportToken(payload);
     const renderUrl = buildRenderUrl(getPublicOrigin(request), payload.templateId, token);
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       size: payload.size,
       pixelRatio: payload.pixelRatio,
       format,
-      background,
+      images,
     });
     const { contentType, extension } = EXPORT_FORMAT_DETAILS[format];
     return new NextResponse(new Uint8Array(image), {

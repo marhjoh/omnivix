@@ -10,7 +10,9 @@ import { CheckList, CheckRow } from "@/src/studio/CheckList";
 import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
 import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
 import { EditorFieldSchema } from "@/src/types/template";
-import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
+import { ImagePicker } from "@/src/studio/ImagePicker";
+import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
+import { BACKGROUND_UPLOAD } from "@/src/lib/imageUpload";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import {
@@ -444,10 +446,13 @@ export function ControlSidebar({
 
     if (field.type === "backgroundPicker") {
       return (
-        <BackgroundImagePicker
+        <ImagePicker
           key={field.key}
           id={field.key}
           label={fieldLabel(field)}
+          menuLabel="Background options"
+          presets={BACKGROUND_PRESETS}
+          policy={BACKGROUND_UPLOAD}
           value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
           onChange={(next) => onChange(field.key, next)}
           onError={onError}
@@ -476,7 +481,7 @@ export function ControlSidebar({
               onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
             />
           ) : null}
-        </BackgroundImagePicker>
+        </ImagePicker>
       );
     }
 

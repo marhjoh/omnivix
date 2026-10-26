@@ -18,9 +18,9 @@ import {
 import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { githubLimitMessage } from "@/src/lib/rateLimitMessage";
 import { readApiError } from "@/src/lib/apiError";
-import { isHttpImageUrl, isInsecureImageLink } from "@/src/lib/imageLink";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
@@ -29,7 +29,6 @@ import {
   contentPositionFromState,
   type ContentPosition,
 } from "@/src/banner/contentPosition";
-import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
 import { TopBar } from "@/src/studio/TopBar";
 import { ExportControls } from "@/src/studio/ExportControls";
@@ -68,7 +67,9 @@ import { reposForBanner } from "@/src/lib/repoSelection";
 import {
   applySavedSettings,
   clampSelectedRepos,
-  isSavableBackground,
+  IMAGE_SETTINGS,
+  isSavableImage,
+  removeImage,
 } from "@/src/studio/savedSettings";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 
@@ -99,13 +100,14 @@ function storedStateJson(state: Record<string, unknown>, needsUsername: boolean)
   const clone = { ...state };
   // Username is global; avoid stale per-template copies.
   if (needsUsername) delete clone.username;
+  // Presets and https links are kept, with what belongs to them. Uploads are too large.
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (clone[key] !== undefined && !isSavableImage(key, clone[key])) removeImage(clone, key);
+  }
   const json = JSON.stringify(clone);
-  // Presets and https links are kept, with their position and zoom. Uploads are too large, and a
-  // very long link is left out rather than losing every setting to the cookie size limit.
-  if (isSavableBackground(clone.backgroundImage) && fitsInCookie(json)) return json;
-  delete clone.backgroundImage;
-  delete clone.backgroundPosition;
-  delete clone.backgroundZoom;
+  if (fitsInCookie(json)) return json;
+  // A very long link is left out rather than losing every setting to the cookie size limit.
+  for (const key of Object.keys(IMAGE_SETTINGS)) removeImage(clone, key);
   return JSON.stringify(clone);
 }
 
@@ -582,11 +584,9 @@ export function StudioShell({
     (key: string, value: unknown) => {
       setState((prev) => {
         const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
-        // A new background starts at its own default position.
-        if (key === "backgroundImage") {
-          delete next.backgroundPosition;
-          delete next.backgroundZoom;
-        }
+        // A new image starts without the old one's settings: a background at its own default
+        // position.
+        for (const related of IMAGE_SETTINGS[key] ?? []) delete next[related];
         // Picking an alignment puts the content at that spot, centered vertically.
         if (key === "alignment") delete next.contentPosition;
         return next;
@@ -623,45 +623,11 @@ export function StudioShell({
     }));
   }, []);
 
-  const backgroundImage =
-    typeof state.backgroundImage === "string" && state.backgroundImage
-      ? state.backgroundImage
-      : undefined;
-  // The preview loads a photo preset's smaller copy (see PreviewPhotosContext), so the check below
-  // and the preload ask for the same file. The preload starts it from the page's <head>, at high
-  // priority, instead of when the banner is drawn. Not for uploads: their data URL is the image.
-  const backgroundSrcSet = backgroundImage ? previewPhotoSrcSet(backgroundImage) : undefined;
-  const backgroundSizes = backgroundSrcSet ? PREVIEW_PHOTO_SIZES : undefined;
-  if (backgroundImage && !backgroundImage.startsWith("data:")) {
-    preload(backgroundImage, {
-      as: "image",
-      imageSrcSet: backgroundSrcSet,
-      imageSizes: backgroundSizes,
-      fetchPriority: "high",
-    });
-  }
-  const backgroundStatus = useImageStatus(backgroundImage, {
-    srcSet: backgroundSrcSet,
-    sizes: backgroundSizes,
-  });
-  const backgroundFailed = backgroundStatus === "failed";
-  // A background that can't be used (it failed to load, or is an http link from an older saved
-  // setting) is left out of the preview, so the banner never shows a broken-image icon and the
-  // export is blocked; the sidebar keeps the choice.
-  const backgroundUnusable = backgroundFailed || isInsecureImageLink(state.backgroundImage);
+  const backgroundImage = useBannerImage(state.backgroundImage, "background", showError);
+  const backgroundUnusable = backgroundImage.unusable;
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
   const adjustableBackground = backgroundUnusable ? undefined : background;
 
-  // Links report their own problems (BackgroundImagePicker); a preset or upload that fails to
-  // load is reported here, once per image.
-  const reportedBackgroundRef = useRef<string | null>(null);
-  const backgroundSrc = background?.src;
-  useEffect(() => {
-    if (!backgroundFailed || !backgroundSrc || isHttpImageUrl(backgroundSrc)) return;
-    if (reportedBackgroundRef.current === backgroundSrc) return;
-    reportedBackgroundRef.current = backgroundSrc;
-    showError("Couldn't load this background.");
-  }, [backgroundFailed, backgroundSrc, showError]);
   const backgroundFields = useMemo(
     () => ({
       backgroundImage: backgroundUnusable ? undefined : state.backgroundImage,
@@ -672,7 +638,7 @@ export function StudioShell({
   );
   // A new background replaces the old one once it has loaded, instead of leaving the banner
   // without one in between.
-  const shownBackground = useKeepWhile(backgroundFields, backgroundStatus === "loading");
+  const shownBackground = useKeepWhile(backgroundFields, backgroundImage.status === "loading");
   const previewBannerState = useMemo(
     () => ({ ...state, ...shownBackground }),
     [state, shownBackground],
@@ -696,7 +662,7 @@ export function StudioShell({
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
     stateValid,
-    backgroundUnusable,
+    imageUnusable: backgroundUnusable,
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||

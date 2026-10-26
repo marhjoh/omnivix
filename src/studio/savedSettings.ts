@@ -7,9 +7,27 @@ import { presetBySrc } from "@/src/backgrounds/presets";
 import { alignmentAt } from "@/src/banner/contentPosition";
 import { clampPosition, isPosition } from "@/src/banner/position";
 
-/** A background that can be saved and linked: a preset or an https link, not an upload. */
-export function isSavableBackground(value: unknown): value is string {
-  return typeof value === "string" && (!!presetBySrc(value) || /^https:\/\//i.test(value));
+/**
+ * The banner's image settings, each with the settings that belong to that one image: a background's
+ * position and zoom go with it.
+ */
+export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
+  backgroundImage: ["backgroundPosition", "backgroundZoom"],
+};
+
+/**
+ * An image that can be saved and linked: an https link, or a built-in background. Not an upload,
+ * which is too large.
+ */
+export function isSavableImage(key: string, value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  return /^https:\/\//i.test(value) || (key === "backgroundImage" && !!presetBySrc(value));
+}
+
+/** Removes an image setting and the settings that belong to it, in place. */
+export function removeImage(state: Record<string, unknown>, key: string): void {
+  delete state[key];
+  for (const related of IMAGE_SETTINGS[key] ?? []) delete state[related];
 }
 
 /** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
@@ -36,10 +54,8 @@ export function applySavedSettings(
   if (templateRegistry[templateId].meta.needsUsername) {
     merged.username = username ?? "";
   }
-  if (merged.backgroundImage !== undefined && !isSavableBackground(merged.backgroundImage)) {
-    delete merged.backgroundImage;
-    delete merged.backgroundPosition;
-    delete merged.backgroundZoom;
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (merged[key] !== undefined && !isSavableImage(key, merged[key])) removeImage(merged, key);
   }
   for (const key of POSITION_KEYS) {
     const position = merged[key];

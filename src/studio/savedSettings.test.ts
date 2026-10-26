@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { applySavedSettings, isSavableBackground } from "./savedSettings";
+import { applySavedSettings, isSavableImage } from "./savedSettings";
 import { templateRegistry } from "@/src/templates/registry";
 
-describe("isSavableBackground", () => {
+describe("isSavableImage", () => {
   it.each(["/backgrounds/seoul.avif", "https://example.com/photo.jpg"])("keeps %s", (value) => {
-    expect(isSavableBackground(value)).toBe(true);
+    expect(isSavableImage("backgroundImage", value)).toBe(true);
   });
 
   it.each([
@@ -14,7 +14,7 @@ describe("isSavableBackground", () => {
     "/etc/passwd",
     undefined,
   ])("leaves out %s", (value) => {
-    expect(isSavableBackground(value)).toBe(false);
+    expect(isSavableImage("backgroundImage", value)).toBe(false);
   });
 });
 

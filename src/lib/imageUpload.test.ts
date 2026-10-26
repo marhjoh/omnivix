@@ -1,16 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  BACKGROUND_UPLOAD,
   dataUrlByteLength,
   isGifMagicBytes,
-  MAX_BACKGROUND_UPLOAD_BYTES,
+  MAX_IMAGE_FILE_BYTES,
   readFileHead,
   shouldDecodeHeicWithHeic2any,
-  SUPPORTED_BACKGROUND_FORMATS_MESSAGE,
+  supportedFormatsMessage,
   truncateMiddle,
-  validateBackgroundUploadMeta,
-} from "./backgroundImageUpload";
+  validateImageUploadMeta,
+} from "./imageUpload";
 
-describe("validateBackgroundUploadMeta", () => {
+const SUPPORTED_BACKGROUND_FORMATS_MESSAGE = supportedFormatsMessage(BACKGROUND_UPLOAD);
+const validateBackgroundUploadMeta = (file: File) =>
+  validateImageUploadMeta(file, BACKGROUND_UPLOAD);
+
+describe("validateImageUploadMeta for backgrounds", () => {
   it("accepts png under size limit", () => {
     const f = new File([], "photo.png", { type: "image/png" });
     expect(validateBackgroundUploadMeta(f)).toBeNull();
@@ -18,7 +23,7 @@ describe("validateBackgroundUploadMeta", () => {
 
   it("rejects oversize files", () => {
     const f = new File([], "big.png", { type: "image/png" });
-    Object.defineProperty(f, "size", { value: MAX_BACKGROUND_UPLOAD_BYTES + 1 });
+    Object.defineProperty(f, "size", { value: MAX_IMAGE_FILE_BYTES + 1 });
     expect(validateBackgroundUploadMeta(f)).toMatch(/MB or smaller/);
   });
 

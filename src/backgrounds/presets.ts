@@ -175,8 +175,8 @@ export function previewPhotoSrcSet(src: string): string | undefined {
   );
 }
 
-export function groupPresets(presets: BackgroundPreset[]): Map<string, BackgroundPreset[]> {
-  const map = new Map<string, BackgroundPreset[]>();
+export function groupPresets<T extends { group: string }>(presets: readonly T[]): Map<string, T[]> {
+  const map = new Map<string, T[]>();
   for (const p of presets) {
     const list = map.get(p.group) ?? [];
     list.push(p);

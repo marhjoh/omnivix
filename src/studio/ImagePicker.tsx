@@ -2,10 +2,10 @@
 
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
-import { BACKGROUND_PRESETS, groupPresets, presetBySrc } from "@/src/backgrounds/presets";
+import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { isHttpImageUrl } from "@/src/lib/imageLink";
-import { normalizeBackgroundImageFile, truncateMiddle } from "@/src/lib/backgroundImageUpload";
+import { normalizeImageFile, truncateMiddle, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import {
   DropdownGroupLabel,
   DropdownRoot,
@@ -17,17 +17,26 @@ import {
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
-/** `accept` hint only — validation runs in `normalizeBackgroundImageFile`. */
-const BACKGROUND_FILE_ACCEPT =
-  "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
+/** `accept` hint only — validation runs in `normalizeImageFile`. */
+function fileAccept(policy: ImageUploadPolicy): string {
+  const raster =
+    "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
+  return policy.svg ? `${raster},image/svg+xml,.svg` : raster;
+}
+
+/** A built-in image, listed in the menu under its group. */
+interface ImagePreset {
+  id: string;
+  label: string;
+  group: string;
+  src: string;
+}
 
 function isDataUrl(s: string) {
   return s.startsWith("data:");
 }
 
 const TRIGGER_LABEL_MAX = 44;
-
-const GROUPED_PRESETS = groupPresets(BACKGROUND_PRESETS);
 
 /** How long the link field must be idle before a link that can't be used is reported. */
 const LINK_SETTLE_MS = 1000;
@@ -40,22 +49,35 @@ function withoutScheme(link: string): string {
   return link.trim().replace(/^https?:\/\//i, "");
 }
 
-function triggerLabel(value: string | undefined, uploadedFileName: string | null): string {
+function triggerLabel(
+  value: string | undefined,
+  uploadedFileName: string | null,
+  presets: readonly ImagePreset[],
+): string {
   if (!value) return "None";
   if (isDataUrl(value)) {
     const name = uploadedFileName?.trim();
     return name ? truncateMiddle(name, TRIGGER_LABEL_MAX) : "Uploaded image";
   }
-  const preset = presetBySrc(value);
+  const preset = presets.find((p) => p.src === value);
   if (preset) return preset.label;
   // The link itself shows in the field below the picker.
   if (isHttpImageUrl(value)) return "Image from URL";
   return "Custom";
 }
 
-export function BackgroundImagePicker({
+const NO_PRESETS: readonly ImagePreset[] = [];
+
+/**
+ * An image setting (the background, the logo): None, built-in images if any, a link, or an upload
+ * from the device, processed under `policy`.
+ */
+export function ImagePicker({
   id,
   label,
+  menuLabel,
+  presets = NO_PRESETS,
+  policy,
   value,
   onChange,
   onError,
@@ -65,6 +87,10 @@ export function BackgroundImagePicker({
 }: {
   id: string;
   label: string;
+  /** Names the menu for screen readers, e.g. "Background options". */
+  menuLabel: string;
+  presets?: readonly ImagePreset[];
+  policy: ImageUploadPolicy;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
   /** An upload was rejected, or an image link can't be used; shown as a toast. Returns its id. */
@@ -77,6 +103,7 @@ export function BackgroundImagePicker({
   children?: ReactNode;
 }) {
   const dropdown = useDropdown(id);
+  const groupedPresets = groupPresets(presets);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
@@ -92,7 +119,7 @@ export function BackgroundImagePicker({
   /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
   const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
-  /** The current background when it's an image link. */
+  /** The current image when it's a link. */
   const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
   const showUrlField = urlEditorOpen || linkValue !== undefined;
   const joined = showUrlField || Boolean(children);
@@ -104,9 +131,9 @@ export function BackgroundImagePicker({
       ? "Couldn't load this image link."
       : null;
 
-  // A settled link that isn't the background yet. It becomes the background once the browser has
-  // loaded it or it has failed; until then the banner keeps the background it has, so typing never
-  // makes it flicker.
+  // A settled link that isn't the image yet. It becomes the image once the browser has loaded it
+  // or it has failed; until then the banner keeps the image it has, so typing never makes it
+  // flicker.
   const pendingLink = settledLink && settledLink !== linkValue ? settledLink : undefined;
   const pendingStatus = useImageStatus(pendingLink);
   useEffect(() => {
@@ -141,13 +168,13 @@ export function BackgroundImagePicker({
     };
   }, []);
 
-  // uploadSession only ever holds a data URL, so a match means the background is that upload.
+  // uploadSession only ever holds a data URL, so a match means the image is that upload.
   const uploadDisplayName =
     uploadSession && uploadSession.dataUrl === value ? uploadSession.fileName : null;
 
   /**
-   * The user has stopped typing: a link is checked, and an emptied field removes the background if
-   * that was a link. A preset or upload stays when the field is opened and left empty.
+   * The user has stopped typing: a link is checked, and an emptied field removes the image if that
+   * was a link. A preset or upload stays when the field is opened and left empty.
    */
   const settle = useCallback(
     (draft: string) => {
@@ -168,8 +195,8 @@ export function BackgroundImagePicker({
   };
 
   /**
-   * The × button: the link and the background go, but the field stays open, ready for another
-   * link. Choosing something else in the menu closes it.
+   * The × button: the link and the image go, but the field stays open, ready for another link.
+   * Choosing something else in the menu closes it.
    */
   const removeLink = () => {
     if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
@@ -188,7 +215,7 @@ export function BackgroundImagePicker({
     settle(urlDraft);
   };
 
-  /** A preset, or no background (`undefined`). */
+  /** A preset, or no image (`undefined`). */
   const select = (src: string | undefined) => {
     setSettledLink(undefined);
     setUploadSession(null);
@@ -227,18 +254,18 @@ export function BackgroundImagePicker({
       <div>
         <DropdownRoot dropdown={dropdown} className="relative">
           <DropdownTrigger dropdown={dropdown} joinedBelow={joined}>
-            {triggerLabel(value, uploadDisplayName)}
+            {triggerLabel(value, uploadDisplayName, presets)}
           </DropdownTrigger>
 
-          <DropdownList dropdown={dropdown} label="Background options">
+          <DropdownList dropdown={dropdown} label={menuLabel}>
             <DropdownOption selected={!value} onSelect={() => select(undefined)}>
               None
             </DropdownOption>
 
-            {Array.from(GROUPED_PRESETS.entries()).map(([groupName, presets]) => (
+            {Array.from(groupedPresets.entries()).map(([groupName, group]) => (
               <div key={groupName}>
                 <DropdownGroupLabel>{groupName}</DropdownGroupLabel>
-                {presets.map((p) => (
+                {group.map((p) => (
                   <DropdownOption
                     key={p.id}
                     selected={value === p.src}
@@ -275,7 +302,7 @@ export function BackgroundImagePicker({
           <input
             ref={fileInputRef}
             type="file"
-            accept={BACKGROUND_FILE_ACCEPT}
+            accept={fileAccept(policy)}
             className="hidden"
             onChange={async (e) => {
               const file = e.target.files?.[0];
@@ -283,7 +310,7 @@ export function BackgroundImagePicker({
               if (!file) return;
               setUrlDraft(undefined);
               setUrlEditorOpen(false);
-              const result = await normalizeBackgroundImageFile(file);
+              const result = await normalizeImageFile(file, policy);
               if (!result.ok) {
                 onError(result.error);
                 return;

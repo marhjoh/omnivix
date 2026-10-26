@@ -1,5 +1,5 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { MAX_BACKGROUND_UPLOAD_BYTES } from "@/src/lib/backgroundImageUpload";
+import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { SITE_LICENSE } from "@/src/lib/site";
@@ -77,7 +77,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "Can I use my own background image?",
-    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own PNG, JPEG, WebP, AVIF or HEIC image (up to ${MAX_BACKGROUND_UPLOAD_BYTES / (1024 * 1024)} MB). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own PNG, JPEG, WebP, AVIF or HEIC image (up to ${MAX_IMAGE_FILE_BYTES / (1024 * 1024)} MB). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
   },
   {
     topic: "Your GitHub data",

@@ -6,7 +6,7 @@ import { EXPORT_PIXEL_RATIO, type ExportPixelRatio } from "@/src/export/viewport
 import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
-import { EXPORT_BACKGROUND_PATH, type ExportBackground } from "@/src/export/background";
+import type { ExportImage } from "@/src/export/images";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import {
   GITHUB_LIMIT_ATTRIBUTE,
@@ -61,14 +61,14 @@ export async function captureBanner({
   size,
   pixelRatio = EXPORT_PIXEL_RATIO,
   format,
-  background,
+  images = [],
 }: {
   url: string;
   size: BannerSize;
   pixelRatio?: ExportPixelRatio;
   format: ExportFormat;
-  /** Uploaded or linked background, served at `EXPORT_BACKGROUND_PATH`. */
-  background?: ExportBackground;
+  /** Uploaded or linked images, each served at its `path`. */
+  images?: ExportImage[];
 }) {
   const isVercel = Boolean(process.env.VERCEL);
   const browser = isVercel
@@ -88,7 +88,7 @@ export async function captureBanner({
     page.setDefaultTimeout(RENDER_TIMEOUT_MS);
     // Only the app and allowed hosts are reachable; links are downloaded and checked beforehand.
     // The main page may still navigate (a Vercel login redirect is reported below), frames may not.
-    // Routes added later take precedence, so the background route below runs first.
+    // Routes added later take precedence, so the image routes below run first.
     const { origin } = new URL(url);
     // Sent to the app only, never to the other allowed hosts.
     const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
@@ -107,9 +107,9 @@ export async function captureBanner({
         (request.isNavigationRequest() && request.frame() === page.mainFrame());
       return allowed ? route.fallback() : route.abort("blockedbyclient");
     });
-    if (background) {
-      await page.route(`**${EXPORT_BACKGROUND_PATH}`, (route) =>
-        route.fulfill({ status: 200, contentType: background.contentType, body: background.body }),
+    for (const image of images) {
+      await page.route(`**${image.path}`, (route) =>
+        route.fulfill({ status: 200, contentType: image.contentType, body: image.body }),
       );
     }
     const response = await page.goto(url, { waitUntil: "load" });

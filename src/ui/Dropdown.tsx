@@ -104,7 +104,7 @@ export function DropdownTrigger({
 }: PropsWithChildren<{
   dropdown: Dropdown;
   disabled?: boolean;
-  /** Something is attached under the trigger (see BackgroundImagePicker), so its bottom is square. */
+  /** Something is attached under the trigger (see ImagePicker), so its bottom is square. */
   joinedBelow?: boolean;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;

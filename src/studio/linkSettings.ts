@@ -1,7 +1,12 @@
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { isSavableBackground, POSITION_KEYS } from "@/src/studio/savedSettings";
+import {
+  IMAGE_SETTINGS,
+  isSavableImage,
+  POSITION_KEYS,
+  removeImage,
+} from "@/src/studio/savedSettings";
 import { parsePositionText } from "@/src/banner/position";
 
 /** Settings from a studio link, with the username apart (it's saved for every template). */
@@ -35,8 +40,8 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
       if (value === "true" || value === "false") candidate[key] = value === "true";
     } else if (type === "range") {
       if (value.trim() !== "" && Number.isFinite(Number(value))) candidate[key] = Number(value);
-    } else if (type === "backgroundPicker") {
-      if (isSavableBackground(value)) candidate[key] = value;
+    } else if (key in IMAGE_SETTINGS) {
+      if (isSavableImage(key, value)) candidate[key] = value;
     } else if (type === "position") {
       const position = parsePositionText(value);
       if (position) candidate[key] = position;
@@ -57,8 +62,8 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
 }
 
 /**
- * Saved settings with a link's applied over them. A linked background replaces the saved one's
- * position and zoom, which belong to that image.
+ * Saved settings with a link's applied over them. A linked image replaces the saved settings that
+ * belong to the saved image, such as a background's position and zoom.
  */
 export function withLink(
   saved: { settings: Record<string, unknown> | null; username: string | null },
@@ -66,9 +71,8 @@ export function withLink(
 ): { settings: Record<string, unknown> | null; username: string | null } {
   if (!link) return saved;
   const settings = { ...saved.settings };
-  if ("backgroundImage" in link.settings) {
-    delete settings.backgroundPosition;
-    delete settings.backgroundZoom;
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (key in link.settings) removeImage(settings, key);
   }
   return { settings: { ...settings, ...link.settings }, username: link.username ?? saved.username };
 }
