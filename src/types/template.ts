@@ -21,6 +21,7 @@ type EditorFieldType =
   | "toggle"
   | "select"
   | "backgroundPicker"
+  | "logoPicker"
   | "sizeSelect"
   | "range"
   | "repoMultiSelect";

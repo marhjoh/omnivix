@@ -16,6 +16,12 @@ describe("isSavableImage", () => {
   ])("leaves out %s", (value) => {
     expect(isSavableImage("backgroundImage", value)).toBe(false);
   });
+
+  it("keeps https logos, not built-in backgrounds or uploads", () => {
+    expect(isSavableImage("logoImage", "https://example.com/logo.svg")).toBe(true);
+    expect(isSavableImage("logoImage", "/backgrounds/seoul.avif")).toBe(false);
+    expect(isSavableImage("logoImage", "data:image/png;base64,AAAA")).toBe(false);
+  });
 });
 
 describe("applySavedSettings backgrounds", () => {
@@ -74,5 +80,29 @@ describe("applySavedSettings positions", () => {
     );
     expect(result).not.toHaveProperty("contentPosition");
     expect(result).not.toHaveProperty("backgroundPosition");
+  });
+});
+
+describe("applySavedSettings logos", () => {
+  const defaults = { ...templateRegistry["quote-banner"].initialState };
+
+  it("keeps a linked logo with its size and position", () => {
+    const saved = {
+      logoImage: "https://example.com/logo.svg",
+      logoSize: "xl",
+      logoPosition: { x: 0, y: 100 },
+    };
+    expect(applySavedSettings(defaults, "quote-banner", saved, null)).toMatchObject(saved);
+  });
+
+  it("drops an uploaded logo but keeps its place and size for the next one", () => {
+    const result = applySavedSettings(
+      defaults,
+      "quote-banner",
+      { logoImage: "data:image/png;base64,AAAA", logoSize: "s", logoPosition: { x: 0, y: 0 } },
+      null,
+    );
+    expect(result).not.toHaveProperty("logoImage");
+    expect(result).toMatchObject({ logoSize: "s", logoPosition: { x: 0, y: 0 } });
   });
 });

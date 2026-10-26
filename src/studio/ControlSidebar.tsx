@@ -12,7 +12,8 @@ import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
 import { EditorFieldSchema } from "@/src/types/template";
 import { ImagePicker } from "@/src/studio/ImagePicker";
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { BACKGROUND_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import {
@@ -383,6 +384,49 @@ export function ControlSidebar({
             className="w-full accent-accent"
           />
         </FieldWrapper>
+      );
+    }
+
+    // Shown inside the logo's picker, once there's a logo.
+    if (field.key === "logoSize") return null;
+
+    if (field.type === "logoPicker") {
+      const logo = typeof state[field.key] === "string" ? (state[field.key] as string) : undefined;
+      const sizeField = schema.find((f) => f.key === "logoSize");
+      return (
+        <ImagePicker
+          key={field.key}
+          id={field.key}
+          label={fieldLabel(field)}
+          menuLabel="Logo options"
+          policy={LOGO_UPLOAD}
+          value={logo}
+          onChange={(next) => onChange(field.key, next)}
+          onError={onError}
+          onErrorResolved={onErrorResolved}
+          labelAction={
+            // Only once the logo has been moved in the preview.
+            logo && !isDefaultLogoPosition(state) ? (
+              <button
+                type="button"
+                aria-label="Reset logo position"
+                onClick={() => onChange("logoPosition", undefined)}
+                className={`text-[13px] font-medium ${textLinkClass}`}
+              >
+                Reset
+              </button>
+            ) : null
+          }
+        >
+          {logo && sizeField ? (
+            <Select
+              label={fieldLabel(sizeField)}
+              value={String(state.logoSize ?? DEFAULT_LOGO_SIZE)}
+              options={sizeField.options ?? []}
+              onChange={(value) => onChange("logoSize", value)}
+            />
+          ) : null}
+        </ImagePicker>
       );
     }
 

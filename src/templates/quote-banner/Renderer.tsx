@@ -1,4 +1,5 @@
 import { Frame } from "@/src/banner/Frame";
+import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
 import { alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
@@ -52,7 +53,7 @@ export function QuoteBannerRenderer({
     : quoteScale.quote;
 
   return (
-    <Frame uiTheme={uiTheme} background={background}>
+    <Frame uiTheme={uiTheme} background={background} logo={logoFromState(state)}>
       {/* The padded box the quote moves in, like the other banners' content. */}
       <div style={{ position: "absolute", inset, overflow: "hidden" }}>
         {/* As wide as its longest line, at most the box, so a short quote can move sideways.

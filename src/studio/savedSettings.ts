@@ -9,10 +9,11 @@ import { clampPosition, isPosition } from "@/src/banner/position";
 
 /**
  * The banner's image settings, each with the settings that belong to that one image: a background's
- * position and zoom go with it.
+ * position and zoom go with it. The logo's place and size stay for the next logo.
  */
 export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
   backgroundImage: ["backgroundPosition", "backgroundZoom"],
+  logoImage: [],
 };
 
 /**
@@ -31,7 +32,7 @@ export function removeImage(state: Record<string, unknown>, key: string): void {
 }
 
 /** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
-export const POSITION_KEYS = ["contentPosition", "backgroundPosition"] as const;
+export const POSITION_KEYS = ["contentPosition", "backgroundPosition", "logoPosition"] as const;
 
 /**
  * The template's defaults with saved settings applied. Saved values come from the browser, so

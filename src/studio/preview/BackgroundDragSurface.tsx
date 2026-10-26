@@ -11,7 +11,7 @@ const round = (value: number) => Math.round(value * 10) / 10;
 /**
  * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
  * arrow keys. No mode to turn on or off. Drags are measured from where they started, so the image
- * follows the pointer exactly. The content has its own surface on top
+ * follows the pointer exactly. The content and the logo have their own surfaces on top
  * (`PlacementDragSurface`).
  */
 export function BackgroundDragSurface({

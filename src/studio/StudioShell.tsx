@@ -21,6 +21,8 @@ import { readApiError } from "@/src/lib/apiError";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
+import { logoPositionFromState } from "@/src/banner/logo";
+import type { Position } from "@/src/banner/position";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
@@ -627,6 +629,11 @@ export function StudioShell({
   const backgroundUnusable = backgroundImage.unusable;
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
   const adjustableBackground = backgroundUnusable ? undefined : background;
+  const logoImage = useBannerImage(state.logoImage, "logo", showError);
+  const moveLogo = useCallback(
+    (position: Position) => updateState("logoPosition", position),
+    [updateState],
+  );
 
   const backgroundFields = useMemo(
     () => ({
@@ -639,9 +646,10 @@ export function StudioShell({
   // A new background replaces the old one once it has loaded, instead of leaving the banner
   // without one in between.
   const shownBackground = useKeepWhile(backgroundFields, backgroundImage.status === "loading");
+  const logoUnusable = logoImage.unusable;
   const previewBannerState = useMemo(
-    () => ({ ...state, ...shownBackground }),
-    [state, shownBackground],
+    () => ({ ...state, ...shownBackground, ...(logoUnusable && { logoImage: undefined }) }),
+    [state, shownBackground, logoUnusable],
   );
   // What the preview and the Download button show. A quick load keeps the previous preview
   // instead of flashing the loading screen (see useHoldDuringLoad); both always change together.
@@ -662,11 +670,12 @@ export function StudioShell({
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
     stateValid,
-    imageUnusable: backgroundUnusable,
+    imageUnusable: backgroundUnusable || logoUnusable,
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||
-      shownBackground !== backgroundFields,
+      shownBackground !== backgroundFields ||
+      logoImage.status === "loading",
   });
 
   const bannerExport = useBannerExport({
@@ -769,6 +778,11 @@ export function StudioShell({
             }
             contentAdjust={
               fill ? undefined : { position: contentPositionFromState(state), onMove: moveContent }
+            }
+            logoAdjust={
+              state.logoImage && !logoUnusable
+                ? { position: logoPositionFromState(state), onMove: moveLogo }
+                : undefined
             }
           />
         </main>

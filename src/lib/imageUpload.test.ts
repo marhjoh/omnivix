@@ -3,6 +3,7 @@ import {
   BACKGROUND_UPLOAD,
   dataUrlByteLength,
   isGifMagicBytes,
+  LOGO_UPLOAD,
   MAX_IMAGE_FILE_BYTES,
   readFileHead,
   shouldDecodeHeicWithHeic2any,
@@ -80,6 +81,23 @@ describe("validateImageUploadMeta for backgrounds", () => {
   it("allows application/octet-stream when name is .heic", () => {
     const f = new File([], "photo.heic", { type: "application/octet-stream" });
     expect(validateBackgroundUploadMeta(f)).toBeNull();
+  });
+});
+
+describe("validateImageUploadMeta for logos", () => {
+  it.each([
+    ["by mime", new File([], "logo.svg", { type: "image/svg+xml" })],
+    ["by extension", new File([], "logo.svg", { type: "" })],
+  ])("accepts SVG %s", (_, file) => {
+    expect(validateImageUploadMeta(file, LOGO_UPLOAD)).toBeNull();
+  });
+
+  it("rejects SVG for backgrounds, naming the formats", () => {
+    const f = new File([], "logo.svg", { type: "image/svg+xml" });
+    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
+    expect(validateImageUploadMeta(new File([], "x.gif", { type: "image/gif" }), LOGO_UPLOAD)).toBe(
+      "Only PNG, JPEG, WebP, AVIF, HEIC and SVG are supported.",
+    );
   });
 });
 

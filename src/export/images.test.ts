@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ExportRequest } from "@/src/types/template";
 import { resolveExportImages } from "./images";
-import { BACKGROUND_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 
 const MAX_UPLOADED_BACKGROUND_BYTES = BACKGROUND_UPLOAD.maxBytes;
 
@@ -68,6 +68,49 @@ describe("resolveExportImages with a background", () => {
     expect(await resolveExportImages(payload(value))).toEqual({
       ok: false,
       error: "That image link isn't allowed. Use a public https:// image.",
+    });
+  });
+});
+
+describe("resolveExportImages with a logo", () => {
+  const withLogo = (logoImage: unknown, backgroundImage?: unknown): ExportRequest => ({
+    ...payload(backgroundImage),
+    state: { ...payload(backgroundImage).state, logoImage },
+  });
+
+  it("serves an uploaded logo next to an uploaded background", async () => {
+    const logo = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    const photo = Buffer.from([0xff, 0xd8, 0xff]);
+    const result = await resolveExportImages(
+      withLogo(dataUrl("image/png", logo), dataUrl("image/webp", photo)),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.payload.state).toMatchObject({
+      backgroundImage: "/__export/background",
+      logoImage: "/__export/logo",
+    });
+    expect(result.images.map((image) => image.path)).toEqual([
+      "/__export/background",
+      "/__export/logo",
+    ]);
+  });
+
+  it.each([
+    ["a background preset", "/backgrounds/london.avif"],
+    [
+      `an upload over ${LOGO_UPLOAD.maxBytes / 1024} KB`,
+      dataUrl("image/png", Buffer.alloc(LOGO_UPLOAD.maxBytes + 1)),
+    ],
+    ["an SVG upload", dataUrl("image/svg+xml", Buffer.from("<svg/>"))],
+  ])("rejects %s", async (_, value) => {
+    expect((await resolveExportImages(withLogo(value))).ok).toBe(false);
+  });
+
+  it("names the logo in its problems", async () => {
+    expect(await resolveExportImages(withLogo(42))).toEqual({
+      ok: false,
+      error: "Unsupported logo image.",
     });
   });
 });

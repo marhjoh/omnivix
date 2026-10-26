@@ -1,5 +1,6 @@
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { Frame } from "@/src/banner/Frame";
+import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSizeOrFill } from "@/src/banner/contentSize";
@@ -29,7 +30,7 @@ export function ContributionBannerRenderer({
   const cellShape = contributionCellShapeFromState(state.cellShape);
 
   return (
-    <Frame uiTheme={uiTheme} background={backgroundFromState(state)}>
+    <Frame uiTheme={uiTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
       {data.contributions &&
         (contentSize === "fill" ? (
           <ContributionGrid

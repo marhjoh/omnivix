@@ -1,5 +1,6 @@
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { Frame } from "@/src/banner/Frame";
+import { logoFromState } from "@/src/banner/logo";
 import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
@@ -25,7 +26,7 @@ export function GithubBannerRenderer({
   const chrome = bannerUiChrome(uiTheme);
 
   return (
-    <Frame uiTheme={uiTheme} background={backgroundFromState(state)}>
+    <Frame uiTheme={uiTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
       <FitContent
         size={normalizeContentSize(state.contentSize)}
         position={contentPositionFromState(state)}

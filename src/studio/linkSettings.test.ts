@@ -66,6 +66,21 @@ describe("parseLinkSettings", () => {
     ).toBeNull();
   });
 
+  it("reads a logo link with its size and position", () => {
+    expect(
+      parseLinkSettings("quote-banner", {
+        logoImage: "https://example.com/logo.svg",
+        logoSize: "l",
+        logoPosition: "0,0",
+      })?.settings,
+    ).toEqual({
+      logoImage: "https://example.com/logo.svg",
+      logoSize: "l",
+      logoPosition: { x: 0, y: 0 },
+    });
+    expect(parseLinkSettings("quote-banner", { logoImage: "/backgrounds/seoul.avif" })).toBeNull();
+  });
+
   it("uses the first of repeated values", () => {
     expect(parseLinkSettings("quote-banner", { quote: ["Hi", "Bye"] })?.settings).toEqual({
       quote: "Hi",

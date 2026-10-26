@@ -13,6 +13,7 @@ describe("groupFields", () => {
       ["Format", ["size"]],
       ["Style", ["themeId", "cellShape", "backgroundImage"]],
       ["Layout", ["alignment", "profilePosition", "contentSize"]],
+      ["Logo", ["logoImage", "logoSize"]],
       [
         "Content",
         ["year", "showAvatar", "showDisplayName", "showMonthLabels", "showDayLabels", "showTotal"],
@@ -25,6 +26,7 @@ describe("groupFields", () => {
       "Format",
       "Style",
       "Layout",
+      "Logo",
       "Repositories",
       "Content",
     ]);

@@ -18,6 +18,7 @@ import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
+import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -56,7 +57,25 @@ const baseState = z.object({
   backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
   /** Set by dragging the content in the preview; see `src/banner/contentPosition.ts`. */
   contentPosition: z.object({ x: percent, y: percent }).optional(),
+  logoImage: z.string().optional(),
+  logoSize: z.enum(CONTENT_SIZES).default(DEFAULT_LOGO_SIZE),
+  /** Set by dragging the logo in the preview; see `src/banner/logo.ts`. */
+  logoPosition: z.object({ x: percent, y: percent }).optional(),
 });
+
+/** Every banner can have a logo; see `src/banner/logo.ts`. */
+const logoFields: EditorFieldSchema[] = [
+  { key: "logoImage", label: "Logo", type: "logoPicker" },
+  { key: "logoSize", label: "Logo size", type: "select", options: CONTENT_SIZE_OPTIONS },
+];
+
+/** The logo settings every template's state has. */
+type LogoState = {
+  logoImage?: string;
+  logoSize: ContentSize;
+};
+
+const logoInitialState: LogoState = { logoSize: DEFAULT_LOGO_SIZE };
 
 /** GitHub username, for the banners that load GitHub data. */
 const usernameState = z.string().min(1, "Required");
@@ -108,22 +127,24 @@ const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
 
 const yearState = z.string().default(String(new Date().getFullYear()));
 
-export const githubBannerDefinition: TemplateDefinition<{
-  username: string;
-  year: string;
-  showMonthLabels: boolean;
-  showDayLabels: boolean;
-  showTotal: boolean;
-  showAvatar: boolean;
-  showDisplayName: boolean;
-  profilePosition: "left" | "right";
-  alignment: ContentAlign;
-  contentSize: ContentSize;
-  cellShape: ContributionCellShape;
-  size: BannerSize;
-  themeId: string;
-  backgroundImage?: string;
-}> = {
+export const githubBannerDefinition: TemplateDefinition<
+  {
+    username: string;
+    year: string;
+    showMonthLabels: boolean;
+    showDayLabels: boolean;
+    showTotal: boolean;
+    showAvatar: boolean;
+    showDisplayName: boolean;
+    profilePosition: "left" | "right";
+    alignment: ContentAlign;
+    contentSize: ContentSize;
+    cellShape: ContributionCellShape;
+    size: BannerSize;
+    themeId: string;
+    backgroundImage?: string;
+  } & LogoState
+> = {
   meta: {
     id: "github-banner",
     title: "GitHub Banner",
@@ -146,6 +167,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     { key: "showMonthLabels", label: "Months", type: "toggle" },
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
+    ...logoFields,
   ],
   stateSchema: baseState.extend({
     username: usernameState,
@@ -161,6 +183,7 @@ export const githubBannerDefinition: TemplateDefinition<{
     cellShape: cellShapeState,
   }),
   initialState: {
+    ...logoInitialState,
     username: "",
     themeId: "default",
     size: "wide",
@@ -177,24 +200,26 @@ export const githubBannerDefinition: TemplateDefinition<{
   },
 };
 
-export const reposBannerDefinition: TemplateDefinition<{
-  username: string;
-  showAvatar: boolean;
-  showDisplayName: boolean;
-  profilePosition: "left" | "right";
-  alignment: ContentAlign;
-  mode: "pinned" | "selected";
-  selectedRepos: string;
-  maxRepos: number;
-  showDescription: boolean;
-  showLanguage: boolean;
-  showStars: boolean;
-  showForks: boolean;
-  contentSize: ContentSize;
-  size: BannerSize;
-  themeId: string;
-  backgroundImage?: string;
-}> = {
+export const reposBannerDefinition: TemplateDefinition<
+  {
+    username: string;
+    showAvatar: boolean;
+    showDisplayName: boolean;
+    profilePosition: "left" | "right";
+    alignment: ContentAlign;
+    mode: "pinned" | "selected";
+    selectedRepos: string;
+    maxRepos: number;
+    showDescription: boolean;
+    showLanguage: boolean;
+    showStars: boolean;
+    showForks: boolean;
+    contentSize: ContentSize;
+    size: BannerSize;
+    themeId: string;
+    backgroundImage?: string;
+  } & LogoState
+> = {
   meta: {
     id: "repos-banner",
     title: "Repos Banner",
@@ -226,6 +251,7 @@ export const reposBannerDefinition: TemplateDefinition<{
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
     { key: "showForks", label: "Forks", type: "toggle" },
+    ...logoFields,
   ],
   stateSchema: baseState.extend({
     username: usernameState,
@@ -243,6 +269,7 @@ export const reposBannerDefinition: TemplateDefinition<{
     contentSize: contentSizeState,
   }),
   initialState: {
+    ...logoInitialState,
     username: "",
     showAvatar: true,
     showDisplayName: false,
@@ -261,16 +288,18 @@ export const reposBannerDefinition: TemplateDefinition<{
   },
 };
 
-export const contributionBannerDefinition: TemplateDefinition<{
-  username: string;
-  year: string;
-  alignment: ContentAlign;
-  contentSize: ContentSizeOrFill;
-  cellShape: ContributionCellShape;
-  size: BannerSize;
-  themeId: string;
-  backgroundImage?: string;
-}> = {
+export const contributionBannerDefinition: TemplateDefinition<
+  {
+    username: string;
+    year: string;
+    alignment: ContentAlign;
+    contentSize: ContentSizeOrFill;
+    cellShape: ContributionCellShape;
+    size: BannerSize;
+    themeId: string;
+    backgroundImage?: string;
+  } & LogoState
+> = {
   meta: {
     id: "contribution-banner",
     title: "Contribution Banner",
@@ -287,6 +316,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     alignmentField,
     { ...contentSizeField, options: [...CONTENT_SIZE_OPTIONS, { label: "Fill", value: "fill" }] },
     cellShapeField,
+    ...logoFields,
   ],
   stateSchema: baseState.extend({
     username: usernameState,
@@ -296,6 +326,7 @@ export const contributionBannerDefinition: TemplateDefinition<{
     cellShape: cellShapeState,
   }),
   initialState: {
+    ...logoInitialState,
     username: "",
     alignment: "center",
     contentSize: DEFAULT_CONTENT_SIZE,
@@ -306,15 +337,17 @@ export const contributionBannerDefinition: TemplateDefinition<{
   },
 };
 
-export const quoteBannerDefinition: TemplateDefinition<{
-  quote: string;
-  author: string;
-  alignment: ContentAlign;
-  contentSize: ContentSize;
-  size: BannerSize;
-  themeId: string;
-  backgroundImage?: string;
-}> = {
+export const quoteBannerDefinition: TemplateDefinition<
+  {
+    quote: string;
+    author: string;
+    alignment: ContentAlign;
+    contentSize: ContentSize;
+    size: BannerSize;
+    themeId: string;
+    backgroundImage?: string;
+  } & LogoState
+> = {
   meta: {
     id: "quote-banner",
     title: "Quote Banner",
@@ -336,6 +369,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
       maxLength: QUOTE_MAX_LENGTH,
     },
     { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
+    ...logoFields,
   ],
   stateSchema: baseState.extend({
     quote: z.string().min(1, "Required").max(QUOTE_MAX_LENGTH),
@@ -344,6 +378,7 @@ export const quoteBannerDefinition: TemplateDefinition<{
     contentSize: contentSizeState,
   }),
   initialState: {
+    ...logoInitialState,
     quote: "Build once, ship everywhere.",
     author: "Omnivix",
     alignment: "center",

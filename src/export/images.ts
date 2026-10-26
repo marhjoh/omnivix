@@ -5,7 +5,7 @@ import {
   type ImageBytes,
   type LinkImageType,
 } from "@/src/export/imageLink";
-import { BACKGROUND_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 
 const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as const;
 
@@ -33,6 +33,14 @@ const EXPORT_IMAGES: ReadonlyArray<{
     linkTypes: RASTER_TYPES,
     // Built-in presets (src/backgrounds/presets.ts).
     presets: /^\/backgrounds\/[a-z0-9-]+\.(?:avif|svg)$/,
+  },
+  {
+    key: "logoImage",
+    name: "logo",
+    path: "/__export/logo",
+    maxUploadBytes: LOGO_UPLOAD.maxBytes,
+    // Most logos are SVG. The render page shows it as an image, which can't run scripts.
+    linkTypes: [...RASTER_TYPES, "image/svg+xml"],
   },
 ];
 

@@ -1,7 +1,8 @@
 import { isOneOf } from "@/src/lib/isOneOf";
 
 /**
- * Client-side image uploads: static images only (no GIF / animation). HEIC/HEIF is converted in-browser (see `heic2any`) before `createImageBitmap`; SVG
+ * Client-side image uploads (the background and the logo): static images only (no GIF /
+ * animation). HEIC/HEIF is converted in-browser (see `heic2any`) before `createImageBitmap`; SVG
  * is drawn onto a canvas, so no SVG code is kept. `accept` on file inputs is a hint only — always
  * validate here.
  */
@@ -27,7 +28,7 @@ export interface ImageUploadPolicy {
    * fit `maxBytes`.
    */
   dimensions: readonly number[];
-  /** Decoded size limit for a processed upload; the export rejects larger ones (Vercel body limit). */
+  /** Decoded size limit for a processed upload; the export rejects larger ones. */
   maxBytes: number;
   quality: number;
   /** Keeps transparency: WebP, else PNG. Without it, WebP, else the smaller JPEG. */
@@ -36,6 +37,9 @@ export interface ImageUploadPolicy {
   svg: boolean;
 }
 
+// An export request carries both uploads, and Vercel limits a request body to 4.5 MB. As base64,
+// the background's 3 MB is 4 MB and the logo's 200 KB about 270 KB.
+
 /** Exports are up to 4752px wide. Shown at 28% opacity, where compression artifacts don't show. */
 export const BACKGROUND_UPLOAD: ImageUploadPolicy = {
   dimensions: [4800, 3600, 2400],
@@ -43,6 +47,15 @@ export const BACKGROUND_UPLOAD: ImageUploadPolicy = {
   quality: 0.82,
   transparent: false,
   svg: false,
+};
+
+/** An XL logo is at most about 2100px wide in a 3× export, and usually far smaller. */
+export const LOGO_UPLOAD: ImageUploadPolicy = {
+  dimensions: [1600, 1200, 800, 600],
+  maxBytes: 200 * 1024,
+  quality: 0.9,
+  transparent: true,
+  svg: true,
 };
 
 /** User-facing line when a file type isn't allowed (including GIFs, which are animated). */

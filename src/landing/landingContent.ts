@@ -80,6 +80,12 @@ export const FAQ = [
     answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own PNG, JPEG, WebP, AVIF or HEIC image (up to ${MAX_IMAGE_FILE_BYTES / (1024 * 1024)} MB). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
   },
   {
+    topic: "Banners",
+    question: "Can I add my company's logo?",
+    answer:
+      "Yes, on every banner. Link to an https image or upload one, including SVG, then drag it into place and pick its size. Like backgrounds, uploads stay in your browser until you export.",
+  },
+  {
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:

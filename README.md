@@ -24,7 +24,8 @@
   - **Quote Banner:** quote and author
 - **Three formats:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi) and 5:2 (Twitch, Patreon, Discord)
 - **Backgrounds:** 14 city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
-- **Customization:** color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
+- **Logo:** add your company's logo from an https link or an upload (SVG too), and drag it into place
+- **Customization:** drag the content into place, color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
 - **Export:** PNG or JPEG at up to 3× resolution, or copy the banner to the clipboard
 - **Studio:** light and dark mode, on phones and desktop
 

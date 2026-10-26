@@ -19,6 +19,8 @@ import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
 import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/fit";
+import { BANNER_LOGO_ATTRIBUTE } from "@/src/banner/logo";
+import type { Position } from "@/src/banner/position";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
 import type { ContentPosition } from "@/src/banner/contentPosition";
@@ -36,6 +38,7 @@ export function PreviewArtboard({
   onEditSetting,
   backgroundAdjust,
   contentAdjust,
+  logoAdjust,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -58,6 +61,11 @@ export function PreviewArtboard({
   contentAdjust?: {
     position: ContentPosition;
     onMove: (position: ContentPosition) => void;
+  };
+  /** Set when the banner has a logo that shows. */
+  logoAdjust?: {
+    position: Position;
+    onMove: (position: Position) => void;
   };
 }) {
   const dims = BANNER_SIZES[size];
@@ -103,6 +111,16 @@ export function PreviewArtboard({
             {...contentAdjust}
             target={BANNER_CONTENT_ATTRIBUTE}
             name="content"
+            frame={dims}
+            scale={scale}
+          />
+        ) : null}
+        {/* After the content's, so it's on top where they meet, as the logo is in the banner. */}
+        {previewState === "ready" && scale !== null && logoAdjust ? (
+          <PlacementDragSurface
+            {...logoAdjust}
+            target={BANNER_LOGO_ATTRIBUTE}
+            name="logo"
             frame={dims}
             scale={scale}
           />

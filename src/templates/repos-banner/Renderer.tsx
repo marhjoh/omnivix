@@ -1,4 +1,5 @@
 import { Frame } from "@/src/banner/Frame";
+import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
@@ -48,7 +49,7 @@ export function ReposBannerRenderer({
   const showForks = state.showForks !== false;
 
   return (
-    <Frame uiTheme={uiTheme} background={background}>
+    <Frame uiTheme={uiTheme} background={background} logo={logoFromState(state)}>
       <FitContent size={contentSize} position={contentPositionFromState(state)}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
