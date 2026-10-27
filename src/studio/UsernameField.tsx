@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { User } from "lucide-react";
 import { FieldLabel } from "@/src/ui/FieldLabel";
 
@@ -9,21 +10,29 @@ export function UsernameField({
   username: string;
   onChangeUsername: () => void;
 }) {
+  const labelId = useId();
+  const valueId = useId();
   return (
     <div className="space-y-1.5">
-      <FieldLabel>GitHub username</FieldLabel>
+      <FieldLabel id={labelId}>GitHub username</FieldLabel>
+      {/* Named "GitHub username @octocat", so the name contains the visible text. */}
       <button
         type="button"
         onClick={onChangeUsername}
-        aria-label={username ? `Change GitHub username (@${username})` : "Choose GitHub username"}
+        aria-labelledby={`${labelId} ${valueId}`}
+        aria-haspopup="dialog"
         className="field-select flex items-center gap-2 text-left"
       >
         <User className="h-4 w-4 shrink-0 text-muted" aria-hidden />
         {username ? (
-          <span className="min-w-0 flex-1 truncate">@{username}</span>
+          <span id={valueId} className="min-w-0 flex-1 truncate">
+            @{username}
+          </span>
         ) : (
           // Accent color: choosing a username is the next step.
-          <span className="min-w-0 flex-1 truncate font-medium text-accent">Choose username</span>
+          <span id={valueId} className="min-w-0 flex-1 truncate font-medium text-accent">
+            Choose username
+          </span>
         )}
       </button>
     </div>

@@ -1,6 +1,7 @@
 import {
   useEffect,
   useRef,
+  useState,
   type KeyboardEvent,
   type PointerEvent,
   type PropsWithChildren,
@@ -18,6 +19,36 @@ import type { Position } from "@/src/banner/position";
  */
 export const DRAG_FRAME_CLASS =
   "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
+
+const ACROSS: Record<number, string> = { 0: "left", 50: "center", 100: "right" };
+const DOWN: Record<number, string> = { 0: "top", 50: "middle", 100: "bottom" };
+
+/** Where something is, in words: "left, top", or "37% from the left, 20% from the top". */
+export function describePosition({ x, y }: Position): string {
+  const across = ACROSS[x] ?? `${Math.round(x)}% from the left`;
+  const down = DOWN[y] ?? `${Math.round(y)}% from the top`;
+  return `${across}, ${down}`;
+}
+
+/** Tells screen readers where `name` is once it has moved; during a drag (`quiet`), at its end. */
+export function PositionStatus({
+  name,
+  position,
+  quiet,
+}: {
+  name: string;
+  position: Position;
+  quiet: boolean;
+}) {
+  const [initial] = useState(position);
+  const [moved, setMoved] = useState(false);
+  if (!moved && (position.x !== initial.x || position.y !== initial.y)) setMoved(true);
+  return (
+    <span className="sr-only" aria-live="polite">
+      {moved && !quiet ? `${name}: ${describePosition(position)}` : ""}
+    </span>
+  );
+}
 
 /** Says what dragging moves, in the frame's top left corner. */
 export function DragBadge({ children }: PropsWithChildren) {
@@ -64,7 +95,7 @@ export function useMoveOncePerFrame(onMove: (position: Position) => void) {
 /**
  * Pointer handlers for a drag measured from where it started, so what's dragged follows the
  * pointer exactly. `begin` returns what the drag needs, or null to ignore the press; `move` gets
- * it with how far the pointer has moved, in banner pixels.
+ * it with how far the pointer has moved, in banner pixels. `dragging` is true until it ends.
  */
 export function usePointerDrag<T>({
   scale,
@@ -79,28 +110,34 @@ export function usePointerDrag<T>({
   end?: () => void;
 }) {
   const drag = useRef<{ x: number; y: number; start: T } | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const stop = () => {
     drag.current = null;
+    setDragging(false);
     end?.();
   };
 
   return {
-    onPointerDown(event: PointerEvent<HTMLElement>) {
-      const start = begin();
-      if (start === null) return;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      drag.current = { x: event.clientX, y: event.clientY, start };
+    dragging,
+    handlers: {
+      onPointerDown(event: PointerEvent<HTMLElement>) {
+        const start = begin();
+        if (start === null) return;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        drag.current = { x: event.clientX, y: event.clientY, start };
+        setDragging(true);
+      },
+      onPointerMove(event: PointerEvent<HTMLElement>) {
+        const current = drag.current;
+        if (!current) return;
+        move(current.start, {
+          x: (event.clientX - current.x) / scale,
+          y: (event.clientY - current.y) / scale,
+        });
+      },
+      onPointerUp: stop,
+      onPointerCancel: stop,
     },
-    onPointerMove(event: PointerEvent<HTMLElement>) {
-      const current = drag.current;
-      if (!current) return;
-      move(current.start, {
-        x: (event.clientX - current.x) / scale,
-        y: (event.clientY - current.y) / scale,
-      });
-    },
-    onPointerUp: stop,
-    onPointerCancel: stop,
   };
 }

@@ -211,10 +211,13 @@ function SizePicker({
               type="button"
               onClick={() => onChange(key)}
               aria-pressed={value === key}
-              aria-label={`${format.label}: ${platforms}`}
               className={controls.tile}
             >
-              <span className="font-semibold">{format.label}</span>
+              {/* The platform icons, for screen readers: "4:1: LinkedIn, …". */}
+              <span className="font-semibold">
+                {format.label}
+                <span className="sr-only">: {platforms}</span>
+              </span>
               <span className="flex flex-wrap justify-center gap-1 text-muted">
                 {/* Muted, like the platform icons on the landing page. */}
                 {format.platforms.map((platform) => (

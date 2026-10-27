@@ -700,7 +700,8 @@ export function StudioShell({
         onCancel={closeUsernameModal}
       />
 
-      <header className={styles.topbar}>
+      {/* Unreachable while the username dialog is open. */}
+      <header className={styles.topbar} inert={showUsernameModal}>
         <TopBar
           templateId={templateId}
           sidebarExpanded={sidebarExpanded}
@@ -724,6 +725,7 @@ export function StudioShell({
         data-sidebar-collapsed={sidebarCollapsed}
         data-sidebar-open={drawerOpen}
         data-sidebar-animating={sidebarAnimating}
+        inert={showUsernameModal}
       >
         <aside id="studio-sidebar" className={styles.sidebar} aria-label="Banner settings">
           <div className={styles.sidebarInner}>
@@ -754,7 +756,8 @@ export function StudioShell({
           aria-label="Close settings"
           tabIndex={-1}
         />
-        <main className={styles.preview}>
+        {/* Covered by the phone drawer. */}
+        <main className={styles.preview} inert={isPhone && drawerOpen}>
           <PreviewArtboard
             templateId={templateId}
             size={size}

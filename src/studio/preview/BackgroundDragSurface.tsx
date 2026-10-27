@@ -9,6 +9,7 @@ import {
   arrowStep,
   DRAG_FRAME_CLASS,
   DragBadge,
+  PositionStatus,
   useMoveOncePerFrame,
   usePointerDrag,
 } from "@/src/studio/preview/dragSurface";
@@ -74,11 +75,12 @@ export function BackgroundDragSurface({
       tabIndex={0}
       role="application"
       aria-label="Background position. Drag or use the arrow keys to move it."
-      {...pointer}
+      {...pointer.handlers}
       onKeyDown={onKeyDown}
       className={`${DRAG_FRAME_CLASS} inset-0 z-10 rounded-[inherit]`}
     >
       <DragBadge>Drag to move background</DragBadge>
+      <PositionStatus name="background" position={position} quiet={pointer.dragging} />
     </div>
   );
 }

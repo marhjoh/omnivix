@@ -89,8 +89,11 @@ export function PreviewArtboard({
     <div ref={stageRef} className={previewStyles.stage}>
       <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
         {previewState === "ready" ? (
+          // One image to screen readers, like the exported file.
           <div
             className={previewStyles.scaled}
+            role="img"
+            aria-label={`${meta.title} preview, ${dims.label}`}
             style={{
               width: dims.width,
               height: dims.height,

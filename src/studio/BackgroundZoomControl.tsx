@@ -18,11 +18,12 @@ export function BackgroundZoomControl({
   onZoomChange: (zoom: number) => void;
 }) {
   const zoomId = `${id}-zoom`;
+  const percent = `${Math.round(zoom * 100)}%`;
   return (
     <div className="space-y-1.5">
       <FieldLabel
         htmlFor={zoomId}
-        end={<span className="field-label tabular-nums">{Math.round(zoom * 100)}%</span>}
+        end={<span className="field-label tabular-nums">{percent}</span>}
       >
         Zoom
       </FieldLabel>
@@ -33,6 +34,7 @@ export function BackgroundZoomControl({
         max={MAX_BACKGROUND_ZOOM}
         step={ZOOM_STEP}
         value={zoom}
+        aria-valuetext={percent}
         onChange={(e) => onZoomChange(Number(e.target.value))}
         className="w-full accent-accent"
       />

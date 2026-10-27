@@ -5,6 +5,7 @@ import {
   arrowStep,
   DRAG_FRAME_CLASS,
   DragBadge,
+  PositionStatus,
   useMoveOncePerFrame,
   usePointerDrag,
 } from "@/src/studio/preview/dragSurface";
@@ -119,7 +120,7 @@ export function PlacementDragSurface({
         tabIndex={0}
         role="application"
         aria-label={`${name[0].toUpperCase()}${name.slice(1)} position. Drag or use the arrow keys to move it.`}
-        {...pointer}
+        {...pointer.handlers}
         onKeyDown={onKeyDown}
         style={
           rect
@@ -134,6 +135,7 @@ export function PlacementDragSurface({
         className={`${DRAG_FRAME_CLASS} z-20 rounded-md`}
       >
         <DragBadge>Drag to move {name}</DragBadge>
+        <PositionStatus name={name} position={position} quiet={pointer.dragging} />
       </div>
       {snapped.x === undefined ? null : (
         <div
