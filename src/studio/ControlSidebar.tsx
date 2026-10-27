@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, RotateCcw, Sun } from "lucide-react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
@@ -26,7 +26,6 @@ import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
 import controls from "@/src/studio/controls.module.css";
-import { textLinkClass } from "@/src/ui/textLinkClass";
 import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { Theme } from "@/src/theme/theme";
@@ -96,12 +95,8 @@ function DebouncedInput({
 /** A setting's Reset, at the end of its label row, for what was changed in the preview. */
 function ResetButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={`text-[0.8125rem] font-medium ${textLinkClass}`}
-    >
+    <button type="button" aria-label={label} onClick={onClick} className={controls.reset}>
+      <RotateCcw className="h-3 w-3" aria-hidden />
       Reset
     </button>
   );

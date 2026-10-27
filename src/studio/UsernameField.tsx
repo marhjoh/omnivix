@@ -29,8 +29,8 @@ export function UsernameField({
             @{username}
           </span>
         ) : (
-          // Accent color: choosing a username is the next step.
-          <span id={valueId} className="min-w-0 flex-1 truncate font-medium text-accent">
+          // Muted, like an empty field's placeholder.
+          <span id={valueId} className="min-w-0 flex-1 truncate text-muted">
             Choose username
           </span>
         )}
