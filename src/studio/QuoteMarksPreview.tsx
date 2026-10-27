@@ -20,34 +20,31 @@ function LargeMark({ size, style }: { size: number; style?: CSSProperties }) {
 
 /**
  * A small sample of a quote marks style around "Aa", in the quote's font (`style`), for the
- * Quote marks menu. The menu names the style, so screen readers skip the sample.
+ * Quote marks menu. It fits the menu's preview slot and the field's line height.
  */
 export function QuoteMarksPreview({ marks, style }: { marks: QuoteMarks; style: CSSProperties }) {
   const text = textMarksOf(marks);
   return (
-    <span
-      aria-hidden
-      className="relative -my-0.5 inline-flex h-6 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-(--control-border) bg-surface text-[0.8125rem] leading-none text-text"
-    >
+    <span className="relative inline-flex h-5 items-center text-xs leading-none text-text">
       {marks === "large-above" && (
-        <span className="flex flex-col items-start">
-          <LargeMark size={1.25} style={{ height: "0.55rem" }} />
+        <span className="flex flex-col items-center">
+          <LargeMark size={1.125} style={{ height: "0.45rem" }} />
           <span style={style}>Aa</span>
         </span>
       )}
       {marks === "large-beside" && (
         <span className="flex items-start gap-0.5">
-          <LargeMark size={1.25} style={{ height: "0.8rem" }} />
+          <LargeMark size={1.125} style={{ height: "0.7rem" }} />
           <span style={style}>Aa</span>
         </span>
       )}
       {marks === "large-behind" && (
         <>
           <LargeMark
-            size={2.25}
-            style={{ position: "absolute", top: "0.1rem", left: "0.5rem", opacity: 0.25 }}
+            size={1.75}
+            style={{ position: "absolute", top: "0.1rem", left: 0, opacity: 0.35 }}
           />
-          <span style={style} className="relative">
+          <span style={style} className="relative pt-1.5 pl-2">
             Aa
           </span>
         </>

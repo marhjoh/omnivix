@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { colorValue, isCustomColor } from "@/src/banner/quoteStyle";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
-import { DropdownChevron } from "@/src/ui/Dropdown";
+import { DropdownChevron, OptionLabel } from "@/src/ui/Dropdown";
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import controls from "@/src/studio/controls.module.css";
@@ -79,17 +79,19 @@ export function ColorSelect({
           onClick={() => setOpen(!open)}
           className="field-select flex items-center justify-between gap-2 text-left"
         >
-          <span className="flex min-w-0 flex-1 items-center gap-2.5">
-            <span aria-hidden className={controls.colorDot} style={swatchStyle(shown)} />
-            <span className="truncate">
-              {custom ? (
-                <>
-                  Custom <span className="text-muted">{custom}</span>
-                </>
-              ) : (
-                (named?.label ?? options[0]?.label)
-              )}
-            </span>
+          <span className="min-w-0 flex-1">
+            <OptionLabel
+              preview={<span className={controls.colorDot} style={swatchStyle(shown)} />}
+              label={
+                custom ? (
+                  <>
+                    Custom <span className="text-muted">{custom}</span>
+                  </>
+                ) : (
+                  (named?.label ?? options[0]?.label)
+                )
+              }
+            />
           </span>
           <DropdownChevron open={open} className="self-center text-muted" />
         </button>

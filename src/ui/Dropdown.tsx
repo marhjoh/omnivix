@@ -198,18 +198,26 @@ export function DropdownGroupLabel({ children }: PropsWithChildren) {
   return <div className="px-2.5 pt-2 pb-1 text-sm font-semibold text-text">{children}</div>;
 }
 
-function OptionLabel({
+/**
+ * An option's name, after its `preview` if it has one. Previews (a color, a quote mark) share one
+ * width, so the names after them line up from field to field.
+ */
+export function OptionLabel({
   label,
   style,
   preview,
 }: {
-  label: string;
+  label: ReactNode;
   style?: CSSProperties;
   preview?: ReactNode;
 }) {
   return (
-    <span className="flex min-w-0 items-center gap-2.5">
-      {preview}
+    <span className="flex min-w-0 items-center gap-2">
+      {preview === undefined ? null : (
+        <span aria-hidden className="flex w-8 shrink-0 items-center">
+          {preview}
+        </span>
+      )}
       <span style={style} className="truncate">
         {label}
       </span>
@@ -234,7 +242,7 @@ export function Select({
   value: string;
   /**
    * `style` shows an option in its own look, such as a font in its typeface; `preview` is a small
-   * sample before its name.
+   * sample before its name; an empty one keeps the names lined up.
    */
   options: ReadonlyArray<{
     label: string;

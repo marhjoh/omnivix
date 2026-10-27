@@ -20,6 +20,7 @@ import {
   fontStyleShown,
   QUOTE_FONT_OPTIONS,
   QUOTE_MARKS_OPTIONS,
+  AUTHOR_PREFIX_OPTIONS,
 } from "@/src/banner/quoteStyle";
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
@@ -495,6 +496,22 @@ export function ControlSidebar({
           options={QUOTE_MARKS_OPTIONS.map((option) => ({
             ...option,
             preview: <QuoteMarksPreview marks={option.value} style={sample} />,
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Each prefix by its symbol.
+    if (field.key === "authorPrefix") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={AUTHOR_PREFIX_OPTIONS.map(({ symbol, ...option }) => ({
+            ...option,
+            preview: <span className="text-base leading-none">{symbol}</span>,
           }))}
           onChange={(value) => onChange(field.key, value)}
         />

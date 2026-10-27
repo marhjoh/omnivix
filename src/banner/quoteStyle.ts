@@ -223,9 +223,9 @@ const MARKS_LABEL: Record<QuoteMarks, string> = {
 
 /** What comes before the author's name. */
 const AUTHOR_PREFIX: Record<AuthorPrefix, { label: string; text: string }> = {
-  "em-dash": { label: "Em dash —", text: "— " },
-  "en-dash": { label: "En dash –", text: "– " },
-  tilde: { label: "Tilde ~", text: "~ " },
+  "em-dash": { label: "Em dash", text: "— " },
+  "en-dash": { label: "En dash", text: "– " },
+  tilde: { label: "Tilde", text: "~ " },
   none: { label: "None", text: "" },
 };
 
@@ -278,6 +278,7 @@ export const QUOTE_MARKS_OPTIONS = QUOTE_MARKS.map((value) => ({
 export const AUTHOR_PREFIX_OPTIONS = AUTHOR_PREFIXES.map((value) => ({
   label: AUTHOR_PREFIX[value].label,
   value,
+  symbol: AUTHOR_PREFIX[value].text.trim(),
 }));
 export const QUOTE_COLOR_OPTIONS = QUOTE_COLORS.map((value) => ({
   label: value === "default" ? "Default" : PALETTE[value].label,
