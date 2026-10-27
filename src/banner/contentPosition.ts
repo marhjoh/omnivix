@@ -36,7 +36,7 @@ export function alignmentShown({ x, y }: ContentPosition): ContentAlign | undefi
   return y === MIDDLE ? alignmentAt(x) : undefined;
 }
 
-/** True when the content is at its alignment and centered vertically, so there's nothing to reset. */
+/** True at its alignment and centered vertically, so there's nothing to reset. */
 export function isDefaultContentPosition(state: Record<string, unknown>): boolean {
   const { x, y } = contentPositionFromState(state);
   return x === ALIGN_X[normalizeContentAlign(state.alignment)] && y === MIDDLE;

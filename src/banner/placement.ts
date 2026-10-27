@@ -39,8 +39,9 @@ export function placementRoom(banner: Size, item: Size): Size {
 }
 
 /**
- * The position after dragging an item by `delta` banner pixels: it follows the pointer. Within `snapDistance` banner pixels of an edge or the middle it snaps there, and
- * `snapped` names those points, for the guide lines. Axes without room to move are left as they are.
+ * The position after dragging an item by `delta` banner pixels, so it follows the pointer. Within
+ * `snapDistance` of an edge or the middle it snaps there; `snapped` names those points, for the
+ * guide lines. Axes without room stay as they are.
  */
 export function dragPlacement(
   from: Position,

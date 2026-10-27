@@ -440,7 +440,7 @@ export function ControlSidebar({
       );
     }
 
-    // Dragged anywhere but the three spots, the content is at none of them.
+    // Off the three spots, Alignment shows Custom.
     if (field.key === "alignment") {
       const disabled = disabledFields.has(field.key);
       const at = alignmentShown(contentPositionFromState(state));

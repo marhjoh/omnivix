@@ -54,10 +54,10 @@ export function QuoteBannerRenderer({
 
   return (
     <Frame uiTheme={uiTheme} background={background} logo={logoFromState(state)}>
-      {/* The padded box the quote moves in, like the other banners' content. */}
+      {/* The padded box the quote moves in. */}
       <div style={{ position: "absolute", inset, overflow: "hidden" }}>
-        {/* As wide as its longest line, at most the box, so a short quote can move sideways.
-            Placed with CSS alone, so it's in place from the server render on. */}
+        {/* As wide as its longest line, so a short quote can move sideways. Placed with CSS, so
+            it's right from the server render. */}
         <div
           {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
           style={{

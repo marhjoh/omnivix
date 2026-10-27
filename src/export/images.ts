@@ -44,7 +44,7 @@ const EXPORT_IMAGES: ReadonlyArray<{
   },
 ];
 
-/** Uploads are WebP, PNG or JPEG after processing (src/lib/imageUpload.ts); AVIF is accepted too. */
+/** Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); AVIF is accepted too. */
 const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|webp|avif));base64,([A-Za-z0-9+/]+={0,2})$/;
 
 /** An uploaded or linked image, and where the render page loads it from. */

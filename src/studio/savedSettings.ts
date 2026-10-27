@@ -16,10 +16,7 @@ export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
   logoImage: [],
 };
 
-/**
- * An image that can be saved and linked: an https link, or a built-in background. Not an upload,
- * which is too large.
- */
+/** An image that can be saved and linked: an https link or a built-in background, not an upload. */
 export function isSavableImage(key: string, value: unknown): value is string {
   if (typeof value !== "string") return false;
   return /^https:\/\//i.test(value) || (key === "backgroundImage" && !!presetBySrc(value));
@@ -63,8 +60,7 @@ export function applySavedSettings(
     if (isPosition(position)) merged[key] = clampPosition(position);
     else delete merged[key];
   }
-  // Content at the left, the center or the right has that alignment, as after a drag. A link can
-  // set both apart, which in the quote banner would align the text differently from the sidebar.
+  // A link can set the position and the alignment apart; the position wins, as after a drag.
   if (isPosition(merged.contentPosition) && "alignment" in prev) {
     merged.alignment = alignmentAt(merged.contentPosition.x) ?? merged.alignment;
   }

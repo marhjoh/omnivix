@@ -27,10 +27,9 @@ const sameRect = (a: Rect, b: Rect) =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 
 /**
- * Sits over an item the banner places (the content, the logo), above the background's surface:
- * drag the item to move it, or focus it and use the arrow keys. It stops at the banner's padding
- * and snaps to the edges and the middle, with a guide line while it's snapped. A later surface sits
- * above an earlier one, as the banner draws its items.
+ * Over an item the banner places (the content, the logo): drag it, or focus it and use the arrow
+ * keys. It stops at the padding and snaps to the edges and the middle, with guide lines. A later
+ * surface sits on top, like its item in the banner.
  */
 export function PlacementDragSurface({
   target,
@@ -56,9 +55,9 @@ export function PlacementDragSurface({
   const [snapped, setSnapped] = useState<Partial<Position>>({});
   const scheduleMove = useMoveOncePerFrame(onMove);
 
-  // Measured after every render, as the banner places its items in the same commit, and when the
-  // item or its box changes size later: a web font or an image loads, or the format changes. The
-  // banner re-fits on those itself, so the measure waits a frame for it.
+  // Measured after every render (the banner places its items in the same commit), and a frame
+  // after the item or its box resizes, once the banner has re-fitted: a font or image loads, or
+  // the format changes.
   useLayoutEffect(() => {
     const preview = ref.current?.parentElement;
     const item = preview?.querySelector<HTMLElement>(`[${target}]`);

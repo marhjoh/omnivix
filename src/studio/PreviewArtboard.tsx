@@ -114,7 +114,7 @@ export function PreviewArtboard({
             scale={scale}
           />
         ) : null}
-        {/* After the content's, so it's on top where they meet, as the logo is in the banner. */}
+        {/* After the content's: the logo is on top where they meet. */}
         {previewState === "ready" && scale !== null && logoAdjust ? (
           <PlacementDragSurface
             {...logoAdjust}

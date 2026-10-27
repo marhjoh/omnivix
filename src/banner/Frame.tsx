@@ -65,8 +65,7 @@ export function Frame({
         {children}
       </div>
       {logo ? (
-        // The padded box the logo moves in, like the content. Placed with CSS alone, so it's in
-        // place from the server render on.
+        // The padded box the logo moves in. Placed with CSS, so it's right from the server render.
         <div style={{ position: "absolute", inset: logo.inset, zIndex: 2 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

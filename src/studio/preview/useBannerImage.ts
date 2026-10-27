@@ -6,10 +6,9 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 
 /**
  * An image setting (the background, the logo) as the preview loads it. One that can't be used (it
- * failed to load, or is an http link from an older saved setting) is left out of the preview, so
- * the banner never shows a broken-image icon and the export is blocked; the sidebar keeps the
- * choice. Links report their own problems (ImagePicker); a preset or upload that fails to load is
- * reported here, once per image.
+ * failed, or is an http link from an older saved setting) is left out of the preview and blocks
+ * the export; the sidebar keeps it. A failed preset or upload is reported here, once; links report
+ * their own problems (ImagePicker).
  */
 export function useBannerImage(
   value: unknown,

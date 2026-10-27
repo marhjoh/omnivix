@@ -586,8 +586,7 @@ export function StudioShell({
     (key: string, value: unknown) => {
       setState((prev) => {
         const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
-        // A new image starts without the old one's settings: a background at its own default
-        // position.
+        // A new image drops the old one's settings, such as a background's position.
         for (const related of IMAGE_SETTINGS[key] ?? []) delete next[related];
         // Picking an alignment puts the content at that spot, centered vertically.
         if (key === "alignment") delete next.contentPosition;
@@ -615,8 +614,7 @@ export function StudioShell({
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
     [updateState],
   );
-  // Content moved to the left, the center or the right shows that alignment again (and in the
-  // quote banner aligns the text that way); in between, the alignment is kept for the text.
+  // On the left, center or right line, the alignment follows (and the quote's text with it).
   const moveContent = useCallback((position: ContentPosition) => {
     setState((prev) => ({
       ...prev,
