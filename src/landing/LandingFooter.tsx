@@ -65,7 +65,7 @@ export function LandingFooter() {
               target="_blank"
               rel="noopener noreferrer"
               className={`${footerLinkClass} tabular-nums`}
-              aria-label={`Release notes for version ${APP_VERSION}`}
+              aria-label={`Release notes for v${APP_VERSION}`}
             >
               v{APP_VERSION}
             </a>

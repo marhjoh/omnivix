@@ -130,7 +130,7 @@ export function UsernameModal({
                 </div>
 
                 <div className="mb-6 text-xs">
-                  <p className="text-center text-muted/80">
+                  <p className="text-center text-muted">
                     <strong className="font-semibold text-text">Tip:</strong> turn on private
                     contributions to get a more complete banner.
                   </p>

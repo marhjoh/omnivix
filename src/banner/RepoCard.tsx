@@ -71,7 +71,8 @@ export function RepoCard({
         boxShadow: cardChrome.shadow,
       }}
     >
-      <h4
+      {/* Not a heading: the preview is one image to screen readers. */}
+      <p
         style={{
           fontSize: CARD.title,
           margin: 0,
@@ -87,7 +88,7 @@ export function RepoCard({
         }}
       >
         {repo.name}
-      </h4>
+      </p>
 
       {showDescription && (
         <p

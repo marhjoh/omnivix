@@ -1,7 +1,14 @@
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { isSavableBackground } from "@/src/studio/savedSettings";
+import {
+  IMAGE_SETTINGS,
+  isSavableImage,
+  POSITION_KEYS,
+  removeImage,
+} from "@/src/studio/savedSettings";
+import { parsePositionText } from "@/src/banner/position";
+import { parseAuthorPositionText } from "@/src/banner/authorPosition";
 
 /** Settings from a studio link, with the username apart (it's saved for every template). */
 export interface LinkSettings {
@@ -13,13 +20,15 @@ type Query = Record<string, string | string[] | undefined>;
 
 /**
  * Reads a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the export
- * API's `size` and `state` keys, as text. Values that aren't valid are left out, so the studio
- * uses the saved setting or the default instead.
+ * API's `size` and `state` keys, as text, with positions as `x,y` (`contentPosition=100,0`).
+ * Values that aren't valid are left out, so the studio uses the saved setting or the default
+ * instead.
  */
 export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSettings | null {
   const { schema, stateSchema, initialState, meta } = templateRegistry[templateId];
-  const fieldTypes = new Map(schema.map((field) => [field.key, field.type]));
+  const fieldTypes = new Map<string, string>(schema.map((field) => [field.key, field.type]));
   if (meta.needsUsername) fieldTypes.set("username", "text");
+  for (const key of POSITION_KEYS) fieldTypes.set(key, "position");
 
   const candidate: Record<string, unknown> = {};
   for (const [key, raw] of Object.entries(query)) {
@@ -32,8 +41,14 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
       if (value === "true" || value === "false") candidate[key] = value === "true";
     } else if (type === "range") {
       if (value.trim() !== "" && Number.isFinite(Number(value))) candidate[key] = Number(value);
-    } else if (type === "backgroundPicker") {
-      if (isSavableBackground(value)) candidate[key] = value;
+    } else if (key in IMAGE_SETTINGS) {
+      if (isSavableImage(key, value)) candidate[key] = value;
+    } else if (type === "position") {
+      const position = parsePositionText(value);
+      if (position) candidate[key] = position;
+    } else if (type === "authorPosition") {
+      const position = parseAuthorPositionText(value);
+      if (position) candidate[key] = position;
     } else {
       candidate[key] = value;
     }
@@ -51,8 +66,8 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
 }
 
 /**
- * Saved settings with a link's applied over them. A linked background replaces the saved one's
- * position and zoom, which belong to that image.
+ * Saved settings with a link's applied over them. A linked image replaces the saved settings that
+ * belong to the saved image, such as a background's position and zoom.
  */
 export function withLink(
   saved: { settings: Record<string, unknown> | null; username: string | null },
@@ -60,9 +75,8 @@ export function withLink(
 ): { settings: Record<string, unknown> | null; username: string | null } {
   if (!link) return saved;
   const settings = { ...saved.settings };
-  if ("backgroundImage" in link.settings) {
-    delete settings.backgroundPosition;
-    delete settings.backgroundZoom;
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (key in link.settings) removeImage(settings, key);
   }
   return { settings: { ...settings, ...link.settings }, username: link.username ?? saved.username };
 }

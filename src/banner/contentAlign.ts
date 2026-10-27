@@ -9,13 +9,6 @@ export const CONTENT_ALIGN_OPTIONS = CONTENT_ALIGNS.map((value) => ({
   value,
 }));
 
-/** Flexbox alignment for each setting. */
-export const FLEX_ALIGN: Record<ContentAlign, "flex-start" | "center" | "flex-end"> = {
-  left: "flex-start",
-  center: "center",
-  right: "flex-end",
-};
-
 /** Centered unless the setting is a valid alignment. */
 export function normalizeContentAlign(raw: unknown): ContentAlign {
   return isOneOf(CONTENT_ALIGNS, raw) ? raw : "center";

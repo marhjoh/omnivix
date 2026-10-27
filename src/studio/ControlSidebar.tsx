@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, RotateCcw, Sun } from "lucide-react";
 import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
 import { Select } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
@@ -10,18 +10,37 @@ import { CheckList, CheckRow } from "@/src/studio/CheckList";
 import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
 import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
 import { EditorFieldSchema } from "@/src/types/template";
-import { BackgroundImagePicker } from "@/src/studio/BackgroundImagePicker";
+import { ImagePicker } from "@/src/studio/ImagePicker";
+import { ColorSelect } from "@/src/studio/ColorSelect";
+import { QuoteMarksPreview } from "@/src/studio/QuoteMarksPreview";
+import {
+  fontFamily,
+  fontStyleCss,
+  fontStyleOptions,
+  fontStyleShown,
+  QUOTE_FONT_OPTIONS,
+  QUOTE_MARKS_OPTIONS,
+  AUTHOR_PREFIX_OPTIONS,
+} from "@/src/banner/quoteStyle";
+import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
+import { authorPositionFromState } from "@/src/banner/authorPosition";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
+import {
+  alignmentShown,
+  contentPositionFromState,
+  isDefaultContentPosition,
+} from "@/src/banner/contentPosition";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
 import controls from "@/src/studio/controls.module.css";
-import { textLinkClass } from "@/src/ui/textLinkClass";
 import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import type { Theme } from "@/src/theme/theme";
+import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 
 const currentYear = new Date().getFullYear();
 
@@ -82,6 +101,16 @@ function DebouncedInput({
       onChange={handleChange}
       onBlur={flush}
     />
+  );
+}
+
+/** A setting's Reset, at the end of its label row, for what was changed in the preview. */
+function ResetButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button type="button" aria-label={label} onClick={onClick} className={controls.reset}>
+      <RotateCcw className="h-3 w-3" aria-hidden />
+      Reset
+    </button>
   );
 }
 
@@ -189,11 +218,15 @@ function SizePicker({
               type="button"
               onClick={() => onChange(key)}
               aria-pressed={value === key}
-              aria-label={`${format.label}: ${platforms}`}
               className={controls.tile}
             >
-              <span className="font-semibold">{format.label}</span>
-              <span className="flex flex-wrap justify-center gap-1 text-muted">
+              {/* The platform icons, for screen readers: "4:1: LinkedIn, …". */}
+              <span className="font-semibold">
+                {format.label}
+                <span className="sr-only">: {platforms}</span>
+              </span>
+              {/* One row at any font size, so the tiles line up. */}
+              <span className="flex justify-center gap-[3px] text-muted">
                 {/* Muted, like the platform icons on the landing page. */}
                 {format.platforms.map((platform) => (
                   <PlatformIcon key={platform.name} icon={platform.icon} />
@@ -292,6 +325,7 @@ export function ControlSidebar({
   profile?: { username: string; onChangeUsername: () => void };
 }) {
   const mode = state.mode as string | undefined;
+  const { theme: uiTheme } = useTheme();
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -379,6 +413,167 @@ export function ControlSidebar({
       );
     }
 
+    // Shown inside the logo's picker, once there's a logo.
+    if (field.key === "logoSize") return null;
+
+    if (field.type === "logoPicker") {
+      const raw = state[field.key];
+      const logo = typeof raw === "string" ? raw : undefined;
+      const sizeField = schema.find((f) => f.key === "logoSize");
+      return (
+        <ImagePicker
+          key={field.key}
+          id={field.key}
+          label={fieldLabel(field)}
+          menuLabel="Logo options"
+          policy={LOGO_UPLOAD}
+          value={logo}
+          onChange={(next) => onChange(field.key, next)}
+          onError={onError}
+          onErrorResolved={onErrorResolved}
+          labelAction={
+            // Only once the logo has been moved in the preview.
+            logo && !isDefaultLogoPosition(state) ? (
+              <ResetButton
+                label="Reset logo position"
+                onClick={() => onChange("logoPosition", undefined)}
+              />
+            ) : null
+          }
+        >
+          {logo && sizeField ? (
+            <Select
+              label={fieldLabel(sizeField)}
+              value={String(state.logoSize ?? DEFAULT_LOGO_SIZE)}
+              options={sizeField.options ?? []}
+              onChange={(value) => onChange("logoSize", value)}
+            />
+          ) : null}
+        </ImagePicker>
+      );
+    }
+
+    // Each font in its own typeface.
+    if (field.key === "font") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={QUOTE_FONT_OPTIONS.map((option) => ({
+            ...option,
+            style: { fontFamily: fontFamily(option.value) },
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Only the styles the font has (some have no italics), each in its own weight and slant.
+    if (field.key === "fontStyle") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={fontStyleShown(state.font, state.fontStyle)}
+          options={fontStyleOptions(state.font).map((option) => ({
+            ...option,
+            style: fontStyleCss(state.font, option.value),
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Each style shown on a sample in the quote's font.
+    if (field.key === "quoteMarks") {
+      const sample = fontStyleCss(state.font, fontStyleShown(state.font, state.fontStyle));
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={QUOTE_MARKS_OPTIONS.map((option) => ({
+            ...option,
+            preview: <QuoteMarksPreview marks={option.value} style={sample} />,
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Each prefix by its symbol.
+    if (field.key === "authorPrefix") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={AUTHOR_PREFIX_OPTIONS.map(({ symbol, ...option }) => ({
+            ...option,
+            preview: <span className="text-base leading-none">{symbol}</span>,
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    if (field.type === "colorPicker") {
+      return (
+        <ColorSelect
+          key={field.key}
+          label={fieldLabel(field)}
+          value={state[field.key]}
+          options={field.options ?? []}
+          onChange={(value) => onChange(field.key, value)}
+          disabled={disabledFields.has(field.key)}
+          uiTheme={uiTheme}
+          // The author is muted by default.
+          defaultColor={field.key === "authorColor" ? bannerUiChrome(uiTheme).textMuted : undefined}
+        />
+      );
+    }
+
+    // Like Alignment: Custom once the author is dragged from under the quote.
+    if (field.type === "authorPosition") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={authorPositionFromState(state) ? "" : "under"}
+          options={[{ label: "Under the quote", value: "under" }]}
+          onChange={() => onChange(field.key, undefined)}
+          placeholder="Custom"
+        />
+      );
+    }
+
+    // Off the three spots, Alignment shows Custom.
+    if (field.key === "alignment") {
+      const disabled = disabledFields.has(field.key);
+      const at = alignmentShown(contentPositionFromState(state));
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={at ?? ""}
+          options={field.options ?? []}
+          onChange={(value) => onChange(field.key, value)}
+          disabled={disabled}
+          placeholder="Custom"
+          labelAction={
+            // Only once the content has been moved in the preview.
+            disabled || isDefaultContentPosition(state) ? null : (
+              <ResetButton
+                label="Reset content position"
+                onClick={() => onChange("contentPosition", undefined)}
+              />
+            )
+          }
+        />
+      );
+    }
+
     if (field.type === "select") {
       return (
         <Select
@@ -409,10 +604,13 @@ export function ControlSidebar({
 
     if (field.type === "backgroundPicker") {
       return (
-        <BackgroundImagePicker
+        <ImagePicker
           key={field.key}
           id={field.key}
           label={fieldLabel(field)}
+          menuLabel="Background options"
+          presets={BACKGROUND_PRESETS}
+          policy={BACKGROUND_UPLOAD}
           value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
           onChange={(next) => onChange(field.key, next)}
           onError={onError}
@@ -420,17 +618,13 @@ export function ControlSidebar({
           labelAction={
             // Only once the image has been moved or zoomed in the preview.
             background && !isDefaultBackgroundFraming(background) ? (
-              <button
-                type="button"
-                aria-label="Reset position and zoom"
+              <ResetButton
+                label="Reset position and zoom"
                 onClick={() => {
                   onChange("backgroundPosition", undefined);
                   onChange("backgroundZoom", undefined);
                 }}
-                className={`text-[13px] font-medium ${textLinkClass}`}
-              >
-                Reset
-              </button>
+              />
             ) : null
           }
         >
@@ -441,7 +635,7 @@ export function ControlSidebar({
               onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
             />
           ) : null}
-        </BackgroundImagePicker>
+        </ImagePicker>
       );
     }
 

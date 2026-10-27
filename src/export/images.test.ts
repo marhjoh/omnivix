@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ExportRequest } from "@/src/types/template";
-import { EXPORT_BACKGROUND_PATH, resolveExportBackground } from "./background";
-import { MAX_UPLOADED_BACKGROUND_BYTES } from "@/src/lib/backgroundImageUpload";
+import { resolveExportImages } from "./images";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+
+const MAX_UPLOADED_BACKGROUND_BYTES = BACKGROUND_UPLOAD.maxBytes;
 
 const payload = (backgroundImage?: unknown): ExportRequest => ({
   templateId: "quote-banner",
@@ -11,7 +13,7 @@ const payload = (backgroundImage?: unknown): ExportRequest => ({
 
 const dataUrl = (type: string, bytes: Buffer) => `data:${type};base64,${bytes.toString("base64")}`;
 
-describe("resolveExportBackground", () => {
+describe("resolveExportImages with a background", () => {
   it.each([
     ["no background", undefined],
     ["an empty background", ""],
@@ -19,21 +21,23 @@ describe("resolveExportBackground", () => {
     ["an abstract preset", "/backgrounds/aurora.svg"],
   ])("leaves %s unchanged", async (_, value) => {
     const input = payload(value);
-    expect(await resolveExportBackground(input)).toEqual({ ok: true, payload: input });
+    expect(await resolveExportImages(input)).toEqual({ ok: true, payload: input, images: [] });
   });
 
   it("moves an uploaded image out of the payload", async () => {
     const bytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
     const input = payload(dataUrl("image/jpeg", bytes));
-    const result = await resolveExportBackground(input);
+    const result = await resolveExportImages(input);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.payload.state).toEqual({
       quote: "hello",
-      backgroundImage: EXPORT_BACKGROUND_PATH,
+      backgroundImage: "/__export/background",
     });
-    expect(result.background).toEqual({ contentType: "image/jpeg", body: bytes });
+    expect(result.images).toEqual([
+      { path: "/__export/background", contentType: "image/jpeg", body: bytes },
+    ]);
     expect(input.state.backgroundImage).toMatch(/^data:/);
   });
 
@@ -52,7 +56,7 @@ describe("resolveExportBackground", () => {
     ["a path escaping the presets", "/backgrounds/../api/github/repos"],
     ["a non-string value", 42],
   ])("rejects %s", async (_, value) => {
-    expect((await resolveExportBackground(payload(value))).ok).toBe(false);
+    expect((await resolveExportImages(payload(value))).ok).toBe(false);
   });
 
   it.each([
@@ -61,9 +65,52 @@ describe("resolveExportBackground", () => {
     ["an IPv6 loopback link", "https://[::1]/a.jpg"],
     ["a cloud metadata link", "https://169.254.169.254/latest/meta-data"],
   ])("blocks %s before connecting", async (_, value) => {
-    expect(await resolveExportBackground(payload(value))).toEqual({
+    expect(await resolveExportImages(payload(value))).toEqual({
       ok: false,
       error: "That image link isn't allowed. Use a public https:// image.",
+    });
+  });
+});
+
+describe("resolveExportImages with a logo", () => {
+  const withLogo = (logoImage: unknown, backgroundImage?: unknown): ExportRequest => ({
+    ...payload(backgroundImage),
+    state: { ...payload(backgroundImage).state, logoImage },
+  });
+
+  it("serves an uploaded logo next to an uploaded background", async () => {
+    const logo = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    const photo = Buffer.from([0xff, 0xd8, 0xff]);
+    const result = await resolveExportImages(
+      withLogo(dataUrl("image/png", logo), dataUrl("image/webp", photo)),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.payload.state).toMatchObject({
+      backgroundImage: "/__export/background",
+      logoImage: "/__export/logo",
+    });
+    expect(result.images.map((image) => image.path)).toEqual([
+      "/__export/background",
+      "/__export/logo",
+    ]);
+  });
+
+  it.each([
+    ["a background preset", "/backgrounds/london.avif"],
+    [
+      `an upload over ${LOGO_UPLOAD.maxBytes / 1024} KB`,
+      dataUrl("image/png", Buffer.alloc(LOGO_UPLOAD.maxBytes + 1)),
+    ],
+    ["an SVG upload", dataUrl("image/svg+xml", Buffer.from("<svg/>"))],
+  ])("rejects %s", async (_, value) => {
+    expect((await resolveExportImages(withLogo(value))).ok).toBe(false);
+  });
+
+  it("names the logo in its problems", async () => {
+    expect(await resolveExportImages(withLogo(42))).toEqual({
+      ok: false,
+      error: "Unsupported logo image.",
     });
   });
 });

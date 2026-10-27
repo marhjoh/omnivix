@@ -4,8 +4,9 @@ import type { EditorFieldSchema } from "@/src/types/template";
 const LABELS: Record<string, string> = {
   size: "Aspect ratio",
   themeId: "Grid colors",
-  contentSize: "Content size",
   maxRepos: "Number of repos",
+  logoImage: "Image",
+  logoSize: "Size",
 };
 
 /** The sidebar's name for a setting. */
@@ -19,7 +20,25 @@ export const STYLE_GROUP = "Style";
 const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   { title: "Format", keys: ["size"] },
   { title: STYLE_GROUP, keys: ["themeId", "cellShape", "backgroundImage"] },
-  { title: "Layout", keys: ["alignment", "profilePosition", "contentSize"] },
+  {
+    title: "Layout",
+    keys: ["alignment", "profilePosition", "contentSize", "authorPosition", "authorSize"],
+  },
+  // Only the quote banner has these.
+  {
+    title: "Typography",
+    keys: [
+      "font",
+      "fontStyle",
+      "quoteColor",
+      "quoteMarks",
+      "markColor",
+      "authorPrefix",
+      "authorColor",
+    ],
+  },
+  // The logo's size shows inside its picker (ControlSidebar).
+  { title: "Logo", keys: ["logoImage", "logoSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Everything else, in schema order: a new setting shows up here until it gets a place.
   { title: "Content", keys: null },

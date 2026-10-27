@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
+  BACKGROUND_UPLOAD,
   dataUrlByteLength,
   isGifMagicBytes,
-  MAX_BACKGROUND_UPLOAD_BYTES,
+  LOGO_UPLOAD,
+  MAX_IMAGE_FILE_BYTES,
   readFileHead,
   shouldDecodeHeicWithHeic2any,
-  SUPPORTED_BACKGROUND_FORMATS_MESSAGE,
+  supportedFormatsMessage,
   truncateMiddle,
-  validateBackgroundUploadMeta,
-} from "./backgroundImageUpload";
+  validateImageUploadMeta,
+} from "./imageUpload";
 
-describe("validateBackgroundUploadMeta", () => {
+const SUPPORTED_BACKGROUND_FORMATS_MESSAGE = supportedFormatsMessage(BACKGROUND_UPLOAD);
+const validateBackgroundUploadMeta = (file: File) =>
+  validateImageUploadMeta(file, BACKGROUND_UPLOAD);
+
+describe("validateImageUploadMeta for backgrounds", () => {
   it("accepts png under size limit", () => {
     const f = new File([], "photo.png", { type: "image/png" });
     expect(validateBackgroundUploadMeta(f)).toBeNull();
@@ -18,7 +24,7 @@ describe("validateBackgroundUploadMeta", () => {
 
   it("rejects oversize files", () => {
     const f = new File([], "big.png", { type: "image/png" });
-    Object.defineProperty(f, "size", { value: MAX_BACKGROUND_UPLOAD_BYTES + 1 });
+    Object.defineProperty(f, "size", { value: MAX_IMAGE_FILE_BYTES + 1 });
     expect(validateBackgroundUploadMeta(f)).toMatch(/MB or smaller/);
   });
 
@@ -75,6 +81,23 @@ describe("validateBackgroundUploadMeta", () => {
   it("allows application/octet-stream when name is .heic", () => {
     const f = new File([], "photo.heic", { type: "application/octet-stream" });
     expect(validateBackgroundUploadMeta(f)).toBeNull();
+  });
+});
+
+describe("validateImageUploadMeta for logos", () => {
+  it.each([
+    ["by mime", new File([], "logo.svg", { type: "image/svg+xml" })],
+    ["by extension", new File([], "logo.svg", { type: "" })],
+  ])("accepts SVG %s", (_, file) => {
+    expect(validateImageUploadMeta(file, LOGO_UPLOAD)).toBeNull();
+  });
+
+  it("rejects SVG for backgrounds, naming the formats", () => {
+    const f = new File([], "logo.svg", { type: "image/svg+xml" });
+    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
+    expect(validateImageUploadMeta(new File([], "x.gif", { type: "image/gif" }), LOGO_UPLOAD)).toBe(
+      "Only PNG, JPEG, WebP, AVIF, HEIC and SVG are supported.",
+    );
   });
 });
 

@@ -4,11 +4,34 @@ import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSize, TemplateId } from "@/src/types/template";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { presetBySrc } from "@/src/backgrounds/presets";
+import { alignmentAt } from "@/src/banner/contentPosition";
+import { isQuoteColor } from "@/src/banner/quoteStyle";
+import { isAuthorPosition } from "@/src/banner/authorPosition";
+import { clampPosition, isPosition } from "@/src/banner/position";
 
-/** A background that can be saved and linked: a preset or an https link, not an upload. */
-export function isSavableBackground(value: unknown): value is string {
-  return typeof value === "string" && (!!presetBySrc(value) || /^https:\/\//i.test(value));
+/**
+ * The banner's image settings, each with the settings that belong to that one image: a background's
+ * position and zoom go with it. The logo's place and size stay for the next logo.
+ */
+export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
+  backgroundImage: ["backgroundPosition", "backgroundZoom"],
+  logoImage: [],
+};
+
+/** An image that can be saved and linked: an https link or a built-in background, not an upload. */
+export function isSavableImage(key: string, value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  return /^https:\/\//i.test(value) || (key === "backgroundImage" && !!presetBySrc(value));
 }
+
+/** Removes an image setting and the settings that belong to it, in place. */
+export function removeImage(state: Record<string, unknown>, key: string): void {
+  delete state[key];
+  for (const related of IMAGE_SETTINGS[key] ?? []) delete state[related];
+}
+
+/** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
+export const POSITION_KEYS = ["contentPosition", "backgroundPosition", "logoPosition"] as const;
 
 /**
  * The template's defaults with saved settings applied. Saved values come from the browser, so
@@ -24,17 +47,29 @@ export function applySavedSettings(
   const merged = { ...prev, ...saved };
   merged.size = normalizeBannerSize(merged.size, prev.size as BannerSize);
   for (const field of templateRegistry[templateId].schema) {
-    if (field.options && !field.options.some((option) => option.value === merged[field.key])) {
-      merged[field.key] = prev[field.key];
-    }
+    const value = merged[field.key];
+    const valid =
+      field.type === "colorPicker"
+        ? isQuoteColor(value)
+        : field.type === "authorPosition"
+          ? value === undefined || isAuthorPosition(value)
+          : !field.options || field.options.some((option) => option.value === value);
+    if (!valid) merged[field.key] = prev[field.key];
   }
   if (templateRegistry[templateId].meta.needsUsername) {
     merged.username = username ?? "";
   }
-  if (merged.backgroundImage !== undefined && !isSavableBackground(merged.backgroundImage)) {
-    delete merged.backgroundImage;
-    delete merged.backgroundPosition;
-    delete merged.backgroundZoom;
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (merged[key] !== undefined && !isSavableImage(key, merged[key])) removeImage(merged, key);
+  }
+  for (const key of POSITION_KEYS) {
+    const position = merged[key];
+    if (isPosition(position)) merged[key] = clampPosition(position);
+    else delete merged[key];
+  }
+  // A link can set the position and the alignment apart; the position wins, as after a drag.
+  if (isPosition(merged.contentPosition) && "alignment" in prev) {
+    merged.alignment = alignmentAt(merged.contentPosition.x) ?? merged.alignment;
   }
   const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
   if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {

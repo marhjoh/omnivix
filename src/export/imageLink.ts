@@ -1,17 +1,37 @@
 import { lookup as dnsLookup } from "node:dns";
 import { request } from "node:https";
 import { isIP, type LookupFunction } from "node:net";
-import type { ExportBackground } from "@/src/export/background";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
-const MAX_LINKED_BACKGROUND_BYTES = 10 * 1024 * 1024;
+const MAX_LINKED_IMAGE_BYTES = 10 * 1024 * 1024;
 const TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
-/** Same formats as uploads; GIFs would animate in the preview but export as one frame. */
-const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"];
+
+/** Image formats a link can be, by content type. No GIF: it would animate only in the preview. */
+const LINK_IMAGE_FORMATS = {
+  "image/png": "PNG",
+  "image/jpeg": "JPEG",
+  "image/webp": "WebP",
+  "image/avif": "AVIF",
+  "image/svg+xml": "SVG",
+} as const;
+
+export type LinkImageType = keyof typeof LINK_IMAGE_FORMATS;
+
+/** A downloaded image, served to the render page in place of its link. */
+export interface ImageBytes {
+  contentType: string;
+  body: Buffer;
+}
 
 /** A link the export won't use; `message` is shown to the user. */
-export class BackgroundLinkError extends Error {}
+export class ImageLinkError extends Error {}
+
+/** "PNG, JPEG or WebP" */
+function formatNames(types: readonly LinkImageType[]): string {
+  const names = types.map((type) => LINK_IMAGE_FORMATS[type]);
+  return names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names.at(-1)}` : names[0];
+}
 
 const NOT_ALLOWED = "That image link isn't allowed. Use a public https:// image.";
 
@@ -31,78 +51,77 @@ const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
   });
 };
 
-function toLinkError(error: NodeJS.ErrnoException): BackgroundLinkError {
-  if (error.code === "ENOTPUBLIC") return new BackgroundLinkError(NOT_ALLOWED);
+function toLinkError(error: NodeJS.ErrnoException): ImageLinkError {
+  if (error.code === "ENOTPUBLIC") return new ImageLinkError(NOT_ALLOWED);
   if (error.name === "AbortError" || error.name === "TimeoutError") {
-    return new BackgroundLinkError("The image link took too long to load.");
+    return new ImageLinkError("The image link took too long to load.");
   }
-  if (error.code === "ENOTFOUND") return new BackgroundLinkError("Couldn't find that image link.");
-  return new BackgroundLinkError("Couldn't load the image link.");
+  if (error.code === "ENOTFOUND") return new ImageLinkError("Couldn't find that image link.");
+  return new ImageLinkError("Couldn't load the image link.");
 }
 
 /**
- * Downloads a background image link for export: https only, public addresses only, an image
- * content type, at most `MAX_LINKED_BACKGROUND_BYTES`, within `TIMEOUT_MS` including redirects.
- * Throws `BackgroundLinkError` when the link can't be used.
+ * Downloads an image link for export: https only, public addresses only, one of `types`, at most
+ * `MAX_LINKED_IMAGE_BYTES`, within `TIMEOUT_MS` including redirects. Throws `ImageLinkError` when
+ * the link can't be used.
  */
-export async function fetchBackgroundLink(
+export async function fetchImageLink(
   link: string,
+  types: readonly LinkImageType[],
   redirectsLeft = MAX_REDIRECTS,
   signal = AbortSignal.timeout(TIMEOUT_MS),
-): Promise<ExportBackground> {
+): Promise<ImageBytes> {
   let url: URL;
   try {
     url = new URL(link);
   } catch {
-    throw new BackgroundLinkError("That image link isn't a valid URL.");
+    throw new ImageLinkError("That image link isn't a valid URL.");
   }
   if (url.protocol !== "https:") {
-    throw new BackgroundLinkError("Image links must start with https://.");
+    throw new ImageLinkError("Image links must start with https://.");
   }
   // IP literals connect without a lookup, so check them here.
   const host = url.hostname.replace(/^\[|\]$/g, "");
-  if (isIP(host) && !isPublicAddress(host)) throw new BackgroundLinkError(NOT_ALLOWED);
+  if (isIP(host) && !isPublicAddress(host)) throw new ImageLinkError(NOT_ALLOWED);
 
   return new Promise((resolve, reject) => {
     const fail = (error: NodeJS.ErrnoException) => reject(toLinkError(error));
     const req = request(
       url,
-      { lookup: publicOnlyLookup, signal, headers: { accept: IMAGE_TYPES.join(",") } },
+      { lookup: publicOnlyLookup, signal, headers: { accept: types.join(",") } },
       (res) => {
         const status = res.statusCode ?? 0;
         if (status >= 300 && status < 400 && res.headers.location) {
           res.resume();
           if (redirectsLeft === 0) {
-            reject(new BackgroundLinkError("The image link redirects too many times."));
+            reject(new ImageLinkError("The image link redirects too many times."));
             return;
           }
           const next = new URL(res.headers.location, url);
           if (next.protocol !== "https:") {
-            reject(new BackgroundLinkError("That image link redirects to an insecure address."));
+            reject(new ImageLinkError("That image link redirects to an insecure address."));
             return;
           }
-          fetchBackgroundLink(next.href, redirectsLeft - 1, signal).then(resolve, reject);
+          fetchImageLink(next.href, types, redirectsLeft - 1, signal).then(resolve, reject);
           return;
         }
         if (status !== 200) {
           res.resume();
           reject(
-            new BackgroundLinkError(
-              "Couldn't load that image link. It may have moved or be private.",
-            ),
+            new ImageLinkError("Couldn't load that image link. It may have moved or be private."),
           );
           return;
         }
         const contentType = (res.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
-        if (!IMAGE_TYPES.includes(contentType)) {
+        if (!types.some((type) => type === contentType)) {
           res.destroy();
-          reject(new BackgroundLinkError("That link isn't a PNG, JPEG, WebP or AVIF image."));
+          reject(new ImageLinkError(`That link isn't a ${formatNames(types)} image.`));
           return;
         }
-        const tooLarge = new BackgroundLinkError(
-          `The linked image is larger than ${MAX_LINKED_BACKGROUND_BYTES / (1024 * 1024)} MB.`,
+        const tooLarge = new ImageLinkError(
+          `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1024 * 1024)} MB.`,
         );
-        if (Number(res.headers["content-length"]) > MAX_LINKED_BACKGROUND_BYTES) {
+        if (Number(res.headers["content-length"]) > MAX_LINKED_IMAGE_BYTES) {
           res.destroy();
           reject(tooLarge);
           return;
@@ -111,7 +130,7 @@ export async function fetchBackgroundLink(
         let size = 0;
         res.on("data", (chunk: Buffer) => {
           size += chunk.length;
-          if (size > MAX_LINKED_BACKGROUND_BYTES) {
+          if (size > MAX_LINKED_IMAGE_BYTES) {
             res.destroy();
             reject(tooLarge);
             return;

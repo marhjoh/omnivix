@@ -1,6 +1,14 @@
 "use client";
 
-import { KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useId, useState } from "react";
+import {
+  type CSSProperties,
+  KeyboardEvent,
+  PropsWithChildren,
+  ReactNode,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { useDismiss } from "@/src/ui/useDismiss";
@@ -104,7 +112,7 @@ export function DropdownTrigger({
 }: PropsWithChildren<{
   dropdown: Dropdown;
   disabled?: boolean;
-  /** Something is attached under the trigger (see BackgroundImagePicker), so its bottom is square. */
+  /** Something is attached under the trigger (see ImagePicker), so its bottom is square. */
   joinedBelow?: boolean;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
@@ -191,6 +199,33 @@ export function DropdownGroupLabel({ children }: PropsWithChildren) {
 }
 
 /**
+ * An option's name, after its `preview` if it has one. Previews (a color, a quote mark) share one
+ * width, so the names after them line up from field to field.
+ */
+export function OptionLabel({
+  label,
+  style,
+  preview,
+}: {
+  label: ReactNode;
+  style?: CSSProperties;
+  preview?: ReactNode;
+}) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      {preview === undefined ? null : (
+        <span aria-hidden className="flex w-8 shrink-0 items-center">
+          {preview}
+        </span>
+      )}
+      <span style={style} className="truncate">
+        {label}
+      </span>
+    </span>
+  );
+}
+
+/**
  * A setting's dropdown with its label: the same list as the Background picker, so every dropdown
  * looks and opens the same on every browser and phone.
  */
@@ -200,27 +235,45 @@ export function Select({
   options,
   onChange,
   disabled,
+  placeholder,
+  labelAction,
 }: {
   label: string;
   value: string;
-  options: ReadonlyArray<{ label: string; value: string }>;
+  /**
+   * `style` shows an option in its own look, such as a font in its typeface; `preview` is a small
+   * sample before its name; an empty one keeps the names lined up.
+   */
+  options: ReadonlyArray<{
+    label: string;
+    value: string;
+    style?: CSSProperties;
+    preview?: ReactNode;
+  }>;
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** Shown when the value is none of the options, with none of them selected. */
+  placeholder?: string;
+  /** A small action at the end of the label row, such as Reset. */
+  labelAction?: ReactNode;
 }) {
   const id = useId();
   const dropdown = useDropdown(id);
-  // A value that isn't among the options (a saved year older than the list) is shown as is, and
-  // listed first so it stays selected.
-  const shown = options.some((option) => option.value === value)
-    ? options
-    : [{ label: value, value }, ...options];
+  // Without a placeholder, a value that isn't among the options (a saved year older than the
+  // list) is shown as is, and listed first so it stays selected.
+  const shown =
+    placeholder !== undefined || options.some((option) => option.value === value)
+      ? options
+      : [{ label: value, value }, ...options];
   const current = shown.find((option) => option.value === value);
   return (
     <div className="space-y-1.5">
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id} end={labelAction}>
+        {label}
+      </FieldLabel>
       <DropdownRoot dropdown={dropdown} className="relative">
         <DropdownTrigger dropdown={dropdown} disabled={disabled}>
-          {current?.label}
+          {current ? <OptionLabel {...current} /> : placeholder}
         </DropdownTrigger>
         <DropdownList dropdown={dropdown} label={`${label} options`}>
           {shown.map((option) => (
@@ -232,7 +285,7 @@ export function Select({
                 dropdown.close();
               }}
             >
-              {option.label}
+              <OptionLabel {...option} />
             </DropdownOption>
           ))}
         </DropdownList>

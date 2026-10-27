@@ -4,6 +4,7 @@ import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { MAX_AUTHOR_SPACE } from "@/src/banner/authorPosition";
 import { BANNER_SIZES, BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
@@ -51,6 +52,12 @@ function accepts(field: EditorFieldSchema): string {
       return `a number from ${field.min} to ${field.max}`;
     case "backgroundPicker":
       return "the path of a built-in background (see below), e.g. `/backgrounds/seoul.avif`, or a public `https://` image URL; leave out for none";
+    case "authorPosition":
+      return `\`{ "x": 0–100, "y": 0–${MAX_AUTHOR_SPACE} }\`: \`x\` is where across the quote's width (0 left, 100 right), \`y\` extra space above the author in pixels (\`x,y\` in a studio link); leave out to line it up like the quote`;
+    case "colorPicker":
+      return `${oneOf(field.options?.map((option) => option.value) ?? [])}, or a hex color such as \`#ff6600\` (\`%23ff6600\` in a studio link)`;
+    case "logoPicker":
+      return "a public `https://` PNG, JPEG, WebP, AVIF or SVG image URL; leave out for none";
     case "repoMultiSelect":
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     default:
@@ -107,11 +114,13 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${new URL(`/studio/${EXAMPLE_LINK.templateId}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
     "",
-    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link; uploaded images can't be linked. The studio leaves out values that aren't valid and keeps the rest.",
+    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",
     "## Template settings",
     "",
     "For the export API's `state`, and studio links.",
+    "",
+    'Every template also takes `contentPosition`, `logoPosition` and `backgroundPosition`, which the studio sets when the preview is dragged: `{ "x": 0–100, "y": 0–100 }`, where 0 is the left or top and 100 the right or bottom. `contentPosition` and `logoPosition` place the content and the logo in the room left around them inside the banner\'s padding. By default the content follows `alignment` and is centered vertically, and the logo is at the top right. `backgroundPosition` places the background image; by default it\'s centered, or at a built-in background\'s focus.',
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
       const defaults = initialState as Record<string, unknown>;

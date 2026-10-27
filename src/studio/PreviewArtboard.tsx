@@ -17,8 +17,14 @@ import previewStyles from "@/src/studio/preview/preview.module.css";
 import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
+import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
+import { AuthorDragSurface } from "@/src/studio/preview/AuthorDragSurface";
+import { BANNER_CONTENT_ATTRIBUTE, BANNER_LOGO_ATTRIBUTE } from "@/src/banner/placement";
+import type { AuthorPosition } from "@/src/banner/authorPosition";
+import type { Position } from "@/src/banner/position";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
+import type { ContentPosition } from "@/src/banner/contentPosition";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
 
 export function PreviewArtboard({
@@ -32,6 +38,9 @@ export function PreviewArtboard({
   onChangeUsername,
   onEditSetting,
   backgroundAdjust,
+  contentAdjust,
+  logoAdjust,
+  authorAdjust,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -49,6 +58,23 @@ export function PreviewArtboard({
     position: BackgroundPosition;
     zoom: number;
     onMove: (position: BackgroundPosition) => void;
+  };
+  /** Set when the banner's content can be moved (not when it fills the banner). */
+  contentAdjust?: {
+    position: ContentPosition;
+    onMove: (position: ContentPosition) => void;
+  };
+  /** Set when the banner has a logo that shows. */
+  logoAdjust?: {
+    position: Position;
+    onMove: (position: Position) => void;
+  };
+  /** Set when the quote banner shows an author; no `position` while it's lined up like the quote. */
+  authorAdjust?: {
+    position: AuthorPosition | undefined;
+    /** The quote's place down the banner, 0 to 100. */
+    quoteY: number;
+    onMove: (position: AuthorPosition) => void;
   };
 }) {
   const dims = BANNER_SIZES[size];
@@ -73,8 +99,11 @@ export function PreviewArtboard({
     <div ref={stageRef} className={previewStyles.stage}>
       <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
         {previewState === "ready" ? (
+          // One image to screen readers, like the exported file.
           <div
             className={previewStyles.scaled}
+            role="img"
+            aria-label={`${meta.title} preview, ${dims.label}`}
             style={{
               width: dims.width,
               height: dims.height,
@@ -88,6 +117,28 @@ export function PreviewArtboard({
         ) : null}
         {previewState === "ready" && scale !== null && backgroundAdjust ? (
           <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
+        ) : null}
+        {previewState === "ready" && scale !== null && contentAdjust ? (
+          <PlacementDragSurface
+            {...contentAdjust}
+            target={BANNER_CONTENT_ATTRIBUTE}
+            name="content"
+            frame={dims}
+            scale={scale}
+          />
+        ) : null}
+        {previewState === "ready" && scale !== null && authorAdjust ? (
+          <AuthorDragSurface {...authorAdjust} frame={dims} scale={scale} />
+        ) : null}
+        {/* After the content's: the logo is on top where they meet. */}
+        {previewState === "ready" && scale !== null && logoAdjust ? (
+          <PlacementDragSurface
+            {...logoAdjust}
+            target={BANNER_LOGO_ATTRIBUTE}
+            name="logo"
+            frame={dims}
+            scale={scale}
+          />
         ) : null}
         {previewState === "ready" ? null : (
           <PreviewFrame>

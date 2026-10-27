@@ -1,14 +1,12 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
+import { clampPercent, positionOr, type Position } from "@/src/banner/position";
 
 export const MIN_BACKGROUND_ZOOM = 1;
 export const MAX_BACKGROUND_ZOOM = 1.5;
 
-/** A point in percent, as in CSS `object-position`: 0 is the left/top edge, 100 the right/bottom. */
-export interface BackgroundPosition {
-  x: number;
-  y: number;
-}
+/** As in CSS `object-position`: 0 is the left/top edge, 100 the right/bottom. */
+export type BackgroundPosition = Position;
 
 export interface BannerBackground {
   src: string;
@@ -20,15 +18,6 @@ const CENTER: BackgroundPosition = { x: 50, y: 50 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-function isPosition(raw: unknown): raw is BackgroundPosition {
-  return (
-    typeof raw === "object" &&
-    raw !== null &&
-    Number.isFinite((raw as BackgroundPosition).x) &&
-    Number.isFinite((raw as BackgroundPosition).y)
-  );
-}
-
 /** Where a background sits by default: its preset's focus, or the center. */
 function defaultBackgroundPosition(src: string): BackgroundPosition {
   return presetBySrc(src)?.focus ?? CENTER;
@@ -38,10 +27,7 @@ function defaultBackgroundPosition(src: string): BackgroundPosition {
 export function backgroundFromState(state: Record<string, unknown>): BannerBackground | undefined {
   const src = state.backgroundImage;
   if (typeof src !== "string" || !src) return undefined;
-  const raw = state.backgroundPosition;
-  const position = isPosition(raw)
-    ? { x: clamp(raw.x, 0, 100), y: clamp(raw.y, 0, 100) }
-    : defaultBackgroundPosition(src);
+  const position = positionOr(state.backgroundPosition, defaultBackgroundPosition(src));
   const zoom =
     typeof state.backgroundZoom === "number" && Number.isFinite(state.backgroundZoom)
       ? clamp(state.backgroundZoom, MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)
@@ -91,6 +77,6 @@ export function dragBackgroundPosition(
   range: Size,
 ): BackgroundPosition {
   const move = (value: number, by: number, room: number) =>
-    room < 1 ? value : clamp(value - (by / room) * 100, 0, 100);
+    room < 1 ? value : clampPercent(value - (by / room) * 100);
   return { x: move(position.x, delta.x, range.width), y: move(position.y, delta.y, range.height) };
 }

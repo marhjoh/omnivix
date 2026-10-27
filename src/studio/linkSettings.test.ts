@@ -54,6 +54,33 @@ describe("parseLinkSettings", () => {
     ).toBeNull();
   });
 
+  it("reads positions as x,y", () => {
+    expect(
+      parseLinkSettings("github-banner", {
+        contentPosition: "100,0",
+        backgroundPosition: "25.5,80",
+      })?.settings,
+    ).toEqual({ contentPosition: { x: 100, y: 0 }, backgroundPosition: { x: 25.5, y: 80 } });
+    expect(
+      parseLinkSettings("quote-banner", { contentPosition: "120,0", backgroundPosition: "50" }),
+    ).toBeNull();
+  });
+
+  it("reads a logo link with its size and position", () => {
+    expect(
+      parseLinkSettings("quote-banner", {
+        logoImage: "https://example.com/logo.svg",
+        logoSize: "l",
+        logoPosition: "0,0",
+      })?.settings,
+    ).toEqual({
+      logoImage: "https://example.com/logo.svg",
+      logoSize: "l",
+      logoPosition: { x: 0, y: 0 },
+    });
+    expect(parseLinkSettings("quote-banner", { logoImage: "/backgrounds/seoul.avif" })).toBeNull();
+  });
+
   it("uses the first of repeated values", () => {
     expect(parseLinkSettings("quote-banner", { quote: ["Hi", "Bye"] })?.settings).toEqual({
       quote: "Hi",
@@ -89,6 +116,18 @@ describe("withLink", () => {
       backgroundImage: "/backgrounds/sydney.avif",
     });
     expect(result.username).toBe("saved-user");
+  });
+
+  it("moves a linked background to the link's position", () => {
+    const result = withLink(saved, {
+      settings: { backgroundImage: "/backgrounds/sydney.avif", backgroundPosition: { x: 0, y: 0 } },
+      username: null,
+    });
+    expect(result.settings).toEqual({
+      alignment: "right",
+      backgroundImage: "/backgrounds/sydney.avif",
+      backgroundPosition: { x: 0, y: 0 },
+    });
   });
 
   it("keeps the saved settings without a link", () => {

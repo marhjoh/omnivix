@@ -1,10 +1,11 @@
 import { ContributionGrid } from "@/src/banner/ContributionGrid";
 import { Frame } from "@/src/banner/Frame";
+import { logoFromState } from "@/src/banner/logo";
 import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSize } from "@/src/banner/contentSize";
-import { normalizeContentAlign } from "@/src/banner/contentAlign";
+import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { themePresetById } from "@/src/types/theme";
@@ -25,10 +26,10 @@ export function GithubBannerRenderer({
   const chrome = bannerUiChrome(uiTheme);
 
   return (
-    <Frame uiTheme={uiTheme} background={backgroundFromState(state)}>
+    <Frame uiTheme={uiTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
       <FitContent
         size={normalizeContentSize(state.contentSize)}
-        align={normalizeContentAlign(state.alignment)}
+        position={contentPositionFromState(state)}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
