@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.18.0](https://github.com/marhjoh/omnivix/compare/v1.17.1...v1.18.0) (2026-10-27)
+
+
+### Features
+
+* **quote:** add fonts, styles, quote marks, colors and a movable author ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **studio:** add a company logo to every banner, placed by dragging ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **studio:** keep the content and background positions in saved settings and studio links ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **studio:** move the banner content by dragging the preview or with the arrow keys ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **studio:** mute the empty username and make Reset a button ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+
+
+### Bug Fixes
+
+* **a11y:** keep selection, focus, buttons and the preview visible in forced colors ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **a11y:** meet AA contrast and follow the browser's font size ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **a11y:** name controls by their visible text, announce moves and keep focus out of covered content ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+* **landing:** morph the header with transforms, a fading glass layer and corrected corners ([57d8882](https://github.com/marhjoh/omnivix/commit/57d8882db968dd5c054612aba8b5d48da79af35a))
+
 ## [1.17.1](https://github.com/marhjoh/omnivix/compare/v1.17.0...v1.17.1) (2026-10-26)
 
 
