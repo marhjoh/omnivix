@@ -10,6 +10,7 @@ import { clampPercent, roundPercent, type Position } from "@/src/banner/position
 /** Mark the items the banner places, so the studio preview can find them to drag. */
 export const BANNER_CONTENT_ATTRIBUTE = "data-banner-content";
 export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
+export const BANNER_AUTHOR_ATTRIBUTE = "data-banner-author";
 
 /** Where an item snaps while dragged: an edge or the middle of the box, on each axis. */
 const SNAP_POINTS = [0, 50, 100];

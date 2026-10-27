@@ -18,7 +18,9 @@ import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
+import { AuthorDragSurface } from "@/src/studio/preview/AuthorDragSurface";
 import { BANNER_CONTENT_ATTRIBUTE, BANNER_LOGO_ATTRIBUTE } from "@/src/banner/placement";
+import type { AuthorPosition } from "@/src/banner/authorPosition";
 import type { Position } from "@/src/banner/position";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
@@ -38,6 +40,7 @@ export function PreviewArtboard({
   backgroundAdjust,
   contentAdjust,
   logoAdjust,
+  authorAdjust,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -65,6 +68,13 @@ export function PreviewArtboard({
   logoAdjust?: {
     position: Position;
     onMove: (position: Position) => void;
+  };
+  /** Set when the quote banner shows an author; no `position` while it's lined up like the quote. */
+  authorAdjust?: {
+    position: AuthorPosition | undefined;
+    /** The quote's place down the banner, 0 to 100. */
+    quoteY: number;
+    onMove: (position: AuthorPosition) => void;
   };
 }) {
   const dims = BANNER_SIZES[size];
@@ -116,6 +126,9 @@ export function PreviewArtboard({
             frame={dims}
             scale={scale}
           />
+        ) : null}
+        {previewState === "ready" && scale !== null && authorAdjust ? (
+          <AuthorDragSurface {...authorAdjust} frame={dims} scale={scale} />
         ) : null}
         {/* After the content's: the logo is on top where they meet. */}
         {previewState === "ready" && scale !== null && logoAdjust ? (

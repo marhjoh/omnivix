@@ -19,6 +19,24 @@ import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/t
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
+import { MAX_AUTHOR_SPACE } from "@/src/banner/authorPosition";
+import {
+  DEFAULT_QUOTE_STYLE,
+  QUOTE_COLOR_OPTIONS,
+  AUTHOR_PREFIX_OPTIONS,
+  AUTHOR_PREFIXES,
+  type AuthorPrefix,
+  isQuoteColor,
+  QUOTE_FONT_OPTIONS,
+  QUOTE_FONT_STYLE_OPTIONS,
+  QUOTE_FONT_STYLES,
+  QUOTE_FONTS,
+  QUOTE_MARKS,
+  QUOTE_MARKS_OPTIONS,
+  type QuoteFont,
+  type QuoteFontStyle,
+  type QuoteMarks,
+} from "@/src/banner/quoteStyle";
 
 /** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
 const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
@@ -109,12 +127,15 @@ const profilePositionState = z.enum(["left", "right"]).default("left");
 /** See `src/banner/contentSize.ts`. */
 const contentSizeField: EditorFieldSchema = {
   key: "contentSize",
-  label: "Size",
+  label: "Content size",
   type: "select",
   options: CONTENT_SIZE_OPTIONS,
 };
 
 const contentSizeState = z.enum(CONTENT_SIZES);
+
+/** The quote banner's colors: a named one or a hex code (src/banner/quoteStyle.ts). */
+const quoteColorState = z.string().refine(isQuoteColor, "Unknown color");
 
 /** GitHub and contribution banners: the contribution grid's cells. */
 const cellShapeField: EditorFieldSchema = {
@@ -343,6 +364,15 @@ export const quoteBannerDefinition: TemplateDefinition<
     author: string;
     alignment: ContentAlign;
     contentSize: ContentSize;
+    font: QuoteFont;
+    fontStyle: QuoteFontStyle;
+    quoteMarks: QuoteMarks;
+    /** A named color or a hex code. */
+    quoteColor: string;
+    markColor: string;
+    authorColor: string;
+    authorPrefix: AuthorPrefix;
+    authorSize: ContentSize;
     size: BannerSize;
     themeId: string;
     backgroundImage?: string;
@@ -360,7 +390,18 @@ export const quoteBannerDefinition: TemplateDefinition<
     { key: "size", label: "Type", type: "sizeSelect" },
     { key: "backgroundImage", label: "Background", type: "backgroundPicker" },
     alignmentField,
-    contentSizeField,
+    { ...contentSizeField, label: "Quote size" },
+    { key: "font", label: "Font", type: "select", options: QUOTE_FONT_OPTIONS },
+    { key: "fontStyle", label: "Font style", type: "select", options: QUOTE_FONT_STYLE_OPTIONS },
+    { key: "quoteMarks", label: "Quote marks", type: "select", options: QUOTE_MARKS_OPTIONS },
+    { key: "quoteColor", label: "Quote color", type: "colorPicker", options: QUOTE_COLOR_OPTIONS },
+    { key: "markColor", label: "Mark color", type: "colorPicker", options: QUOTE_COLOR_OPTIONS },
+    {
+      key: "authorColor",
+      label: "Author color",
+      type: "colorPicker",
+      options: QUOTE_COLOR_OPTIONS,
+    },
     {
       key: "quote",
       label: "Quote text",
@@ -369,6 +410,9 @@ export const quoteBannerDefinition: TemplateDefinition<
       maxLength: QUOTE_MAX_LENGTH,
     },
     { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
+    { key: "authorPrefix", label: "Author prefix", type: "select", options: AUTHOR_PREFIX_OPTIONS },
+    { key: "authorPosition", label: "Author position", type: "authorPosition" },
+    { key: "authorSize", label: "Author size", type: "select", options: CONTENT_SIZE_OPTIONS },
     ...logoFields,
   ],
   stateSchema: baseState.extend({
@@ -376,9 +420,21 @@ export const quoteBannerDefinition: TemplateDefinition<
     author: z.string().max(AUTHOR_MAX_LENGTH).default(""),
     alignment: alignmentState,
     contentSize: contentSizeState,
+    font: z.enum(QUOTE_FONTS).default(DEFAULT_QUOTE_STYLE.font),
+    fontStyle: z.enum(QUOTE_FONT_STYLES).default(DEFAULT_QUOTE_STYLE.fontStyle),
+    quoteMarks: z.enum(QUOTE_MARKS).default(DEFAULT_QUOTE_STYLE.quoteMarks),
+    quoteColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.quoteColor),
+    markColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.markColor),
+    authorColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.authorColor),
+    authorPrefix: z.enum(AUTHOR_PREFIXES).default(DEFAULT_QUOTE_STYLE.authorPrefix),
+    authorSize: contentSizeState.default("m"),
+    /** Set once the author is dragged; until then it's lined up like the quote. */
+    authorPosition: z.object({ x: percent, y: z.number().min(0).max(MAX_AUTHOR_SPACE) }).optional(),
   }),
   initialState: {
     ...logoInitialState,
+    ...DEFAULT_QUOTE_STYLE,
+    authorSize: "m",
     quote: "Build once, ship everywhere.",
     author: "Omnivix",
     alignment: "center",

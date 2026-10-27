@@ -11,9 +11,20 @@ import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
 import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
 import { EditorFieldSchema } from "@/src/types/template";
 import { ImagePicker } from "@/src/studio/ImagePicker";
+import { ColorSelect } from "@/src/studio/ColorSelect";
+import { QuoteMarksPreview } from "@/src/studio/QuoteMarksPreview";
+import {
+  fontFamily,
+  fontStyleCss,
+  fontStyleOptions,
+  fontStyleShown,
+  QUOTE_FONT_OPTIONS,
+  QUOTE_MARKS_OPTIONS,
+} from "@/src/banner/quoteStyle";
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
+import { authorPositionFromState } from "@/src/banner/authorPosition";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import {
@@ -28,7 +39,7 @@ import { UsernameField } from "@/src/studio/UsernameField";
 import controls from "@/src/studio/controls.module.css";
 import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import type { Theme } from "@/src/theme/theme";
+import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 
 const currentYear = new Date().getFullYear();
 
@@ -213,7 +224,8 @@ function SizePicker({
                 {format.label}
                 <span className="sr-only">: {platforms}</span>
               </span>
-              <span className="flex flex-wrap justify-center gap-1 text-muted">
+              {/* One row at any font size, so the tiles line up. */}
+              <span className="flex justify-center gap-[3px] text-muted">
                 {/* Muted, like the platform icons on the landing page. */}
                 {format.platforms.map((platform) => (
                   <PlatformIcon key={platform.name} icon={platform.icon} />
@@ -312,6 +324,7 @@ export function ControlSidebar({
   profile?: { username: string; onChangeUsername: () => void };
 }) {
   const mode = state.mode as string | undefined;
+  const { theme: uiTheme } = useTheme();
 
   const startYear = accountCreatedYear ?? currentYear - 9;
   const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
@@ -403,7 +416,8 @@ export function ControlSidebar({
     if (field.key === "logoSize") return null;
 
     if (field.type === "logoPicker") {
-      const logo = typeof state[field.key] === "string" ? (state[field.key] as string) : undefined;
+      const raw = state[field.key];
+      const logo = typeof raw === "string" ? raw : undefined;
       const sizeField = schema.find((f) => f.key === "logoSize");
       return (
         <ImagePicker
@@ -435,6 +449,85 @@ export function ControlSidebar({
             />
           ) : null}
         </ImagePicker>
+      );
+    }
+
+    // Each font in its own typeface.
+    if (field.key === "font") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={QUOTE_FONT_OPTIONS.map((option) => ({
+            ...option,
+            style: { fontFamily: fontFamily(option.value) },
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Only the styles the font has (some have no italics), each in its own weight and slant.
+    if (field.key === "fontStyle") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={fontStyleShown(state.font, state.fontStyle)}
+          options={fontStyleOptions(state.font).map((option) => ({
+            ...option,
+            style: fontStyleCss(state.font, option.value),
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    // Each style shown on a sample in the quote's font.
+    if (field.key === "quoteMarks") {
+      const sample = fontStyleCss(state.font, fontStyleShown(state.font, state.fontStyle));
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={String(state[field.key] ?? "")}
+          options={QUOTE_MARKS_OPTIONS.map((option) => ({
+            ...option,
+            preview: <QuoteMarksPreview marks={option.value} style={sample} />,
+          }))}
+          onChange={(value) => onChange(field.key, value)}
+        />
+      );
+    }
+
+    if (field.type === "colorPicker") {
+      return (
+        <ColorSelect
+          key={field.key}
+          label={fieldLabel(field)}
+          value={state[field.key]}
+          options={field.options ?? []}
+          onChange={(value) => onChange(field.key, value)}
+          disabled={disabledFields.has(field.key)}
+          uiTheme={uiTheme}
+          // The author is muted by default.
+          defaultColor={field.key === "authorColor" ? bannerUiChrome(uiTheme).textMuted : undefined}
+        />
+      );
+    }
+
+    // Like Alignment: Custom once the author is dragged from under the quote.
+    if (field.type === "authorPosition") {
+      return (
+        <Select
+          key={field.key}
+          label={fieldLabel(field)}
+          value={authorPositionFromState(state) ? "" : "under"}
+          options={[{ label: "Under the quote", value: "under" }]}
+          onChange={() => onChange(field.key, undefined)}
+          placeholder="Custom"
+        />
       );
     }
 

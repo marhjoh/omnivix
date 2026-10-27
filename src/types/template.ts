@@ -22,6 +22,8 @@ type EditorFieldType =
   | "select"
   | "backgroundPicker"
   | "logoPicker"
+  | "colorPicker"
+  | "authorPosition"
   | "sizeSelect"
   | "range"
   | "repoMultiSelect";

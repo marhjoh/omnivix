@@ -8,6 +8,7 @@ import {
   removeImage,
 } from "@/src/studio/savedSettings";
 import { parsePositionText } from "@/src/banner/position";
+import { parseAuthorPositionText } from "@/src/banner/authorPosition";
 
 /** Settings from a studio link, with the username apart (it's saved for every template). */
 export interface LinkSettings {
@@ -44,6 +45,9 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
       if (isSavableImage(key, value)) candidate[key] = value;
     } else if (type === "position") {
       const position = parsePositionText(value);
+      if (position) candidate[key] = position;
+    } else if (type === "authorPosition") {
+      const position = parseAuthorPositionText(value);
       if (position) candidate[key] = position;
     } else {
       candidate[key] = value;

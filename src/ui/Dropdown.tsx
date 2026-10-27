@@ -1,6 +1,14 @@
 "use client";
 
-import { KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useId, useState } from "react";
+import {
+  type CSSProperties,
+  KeyboardEvent,
+  PropsWithChildren,
+  ReactNode,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { useDismiss } from "@/src/ui/useDismiss";
@@ -190,6 +198,25 @@ export function DropdownGroupLabel({ children }: PropsWithChildren) {
   return <div className="px-2.5 pt-2 pb-1 text-sm font-semibold text-text">{children}</div>;
 }
 
+function OptionLabel({
+  label,
+  style,
+  preview,
+}: {
+  label: string;
+  style?: CSSProperties;
+  preview?: ReactNode;
+}) {
+  return (
+    <span className="flex min-w-0 items-center gap-2.5">
+      {preview}
+      <span style={style} className="truncate">
+        {label}
+      </span>
+    </span>
+  );
+}
+
 /**
  * A setting's dropdown with its label: the same list as the Background picker, so every dropdown
  * looks and opens the same on every browser and phone.
@@ -205,7 +232,16 @@ export function Select({
 }: {
   label: string;
   value: string;
-  options: ReadonlyArray<{ label: string; value: string }>;
+  /**
+   * `style` shows an option in its own look, such as a font in its typeface; `preview` is a small
+   * sample before its name.
+   */
+  options: ReadonlyArray<{
+    label: string;
+    value: string;
+    style?: CSSProperties;
+    preview?: ReactNode;
+  }>;
   onChange: (value: string) => void;
   disabled?: boolean;
   /** Shown when the value is none of the options, with none of them selected. */
@@ -229,7 +265,7 @@ export function Select({
       </FieldLabel>
       <DropdownRoot dropdown={dropdown} className="relative">
         <DropdownTrigger dropdown={dropdown} disabled={disabled}>
-          {current?.label ?? placeholder}
+          {current ? <OptionLabel {...current} /> : placeholder}
         </DropdownTrigger>
         <DropdownList dropdown={dropdown} label={`${label} options`}>
           {shown.map((option) => (
@@ -241,7 +277,7 @@ export function Select({
                 dropdown.close();
               }}
             >
-              {option.label}
+              <OptionLabel {...option} />
             </DropdownOption>
           ))}
         </DropdownList>

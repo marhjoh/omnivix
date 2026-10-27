@@ -23,6 +23,7 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { logoPositionFromState } from "@/src/banner/logo";
 import type { Position } from "@/src/banner/position";
+import { authorPositionFromState, type AuthorPosition } from "@/src/banner/authorPosition";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
@@ -487,13 +488,16 @@ export function StudioShell({
   const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
   const fill = state.contentSize === "fill";
-  // A profile photo that failed to load can't be shown, and Fill covers the whole banner.
+  // A profile photo that failed to load can't be shown, Fill covers the whole banner, and without
+  // quote marks there's nothing to color.
+  const noMarks = state.quoteMarks === "none";
   const disabledFields = useMemo(() => {
     const keys = new Set<string>();
     if (avatarFailed) keys.add("showAvatar");
     if (fill) keys.add("alignment");
+    if (noMarks) keys.add("markColor");
     return keys;
-  }, [avatarFailed, fill]);
+  }, [avatarFailed, fill, noMarks]);
   // A photo that failed to load is left out, so the banner never shows a broken-image icon.
   const renderData = useMemo<RenderData>(
     () => (avatarFailed && data.user ? { ...data, user: { ...data.user, avatarUrl: "" } } : data),
@@ -632,6 +636,11 @@ export function StudioShell({
     (position: Position) => updateState("logoPosition", position),
     [updateState],
   );
+  const moveAuthor = useCallback(
+    (position: AuthorPosition) => updateState("authorPosition", position),
+    [updateState],
+  );
+  const hasAuthor = templateId === "quote-banner" && Boolean(String(state.author ?? "").trim());
 
   const backgroundFields = useMemo(
     () => ({
@@ -783,6 +792,15 @@ export function StudioShell({
             logoAdjust={
               state.logoImage && !logoUnusable
                 ? { position: logoPositionFromState(state), onMove: moveLogo }
+                : undefined
+            }
+            authorAdjust={
+              hasAuthor
+                ? {
+                    position: authorPositionFromState(state),
+                    quoteY: contentPositionFromState(state).y,
+                    onMove: moveAuthor,
+                  }
                 : undefined
             }
           />
