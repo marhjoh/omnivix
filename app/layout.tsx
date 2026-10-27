@@ -3,7 +3,7 @@ import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_OPEN_GRAPH } from "@/src/
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { DEFAULT_THEME } from "@/src/theme/theme";
 import { ThemeScript } from "@/src/theme/ThemeScript";
-import { inter } from "./fonts";
+import { inter, quoteFontVariables } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     // suppressHydrationWarning: THEME_INIT_SCRIPT adds data-theme before React hydrates.
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${quoteFontVariables}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>
