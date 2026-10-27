@@ -40,6 +40,8 @@ export function Frame({
         position: "relative",
         background: chrome.baseBg,
         color: chrome.text,
+        // Keeps the export's colors in forced colors (Windows High Contrast).
+        forcedColorAdjust: "none",
       }}
     >
       {background ? (

@@ -14,10 +14,10 @@ import type { Position } from "@/src/banner/position";
 
 /**
  * The dashed frame of a drag surface. It and the badge show on hover, focus and while dragging, so
- * the banner reads clean otherwise.
+ * the banner reads clean otherwise. Forced colors would show the transparent frame all the time.
  */
 export const DRAG_FRAME_CLASS =
-  "group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
+  "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
 
 /** Says what dragging moves, in the frame's top left corner. */
 export function DragBadge({ children }: PropsWithChildren) {

@@ -206,6 +206,14 @@ body {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
   }
 
+  /* Forced colors drop the blue border and shadow: focus needs an outline. */
+  @media (forced-colors: active) {
+    .field-input:focus-within,
+    .field-select:focus-visible {
+      outline: 2px solid Highlight;
+    }
+  }
+
   .field-select {
     cursor: pointer;
   }

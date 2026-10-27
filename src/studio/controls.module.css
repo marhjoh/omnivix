@@ -61,6 +61,18 @@
   cursor: default;
 }
 
+/* Forced colors (Windows High Contrast) drop the tint: a thicker frame in the selection color,
+   as a border so the focus outline still shows. */
+@media (forced-colors: active) {
+  .tile[aria-pressed="true"]:not(.appearanceTile),
+  :global(html[data-theme="light"]) .appearanceTile[data-appearance="light"],
+  :global(html[data-theme="dark"]) .appearanceTile[data-appearance="dark"] {
+    border: 2px solid Highlight;
+    /* Grows outward by the extra pixel, so the content stays put. */
+    margin: -1px;
+  }
+}
+
 /* A tile's second line: muted, with even digits (pixel sizes). */
 .tileHint {
   font-size: 0.6875rem;
@@ -179,6 +191,14 @@
   overflow: hidden;
   border-radius: 999px;
   color: #fff;
+}
+
+/* Forced colors drop the blue fill: an outline keeps the button's shape. */
+@media (forced-colors: active) {
+  .split {
+    outline: 1px solid ButtonText;
+    outline-offset: -1px;
+  }
 }
 
 .splitMain,

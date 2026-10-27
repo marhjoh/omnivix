@@ -138,14 +138,14 @@ export function PlacementDragSurface({
       {snapped.x === undefined ? null : (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 z-20 w-px bg-accent"
+          className="pointer-events-none absolute inset-y-0 z-20 w-px bg-accent forced-color-adjust-none"
           style={{ left: snapLine(frame, "x", snapped.x) * scale }}
         />
       )}
       {snapped.y === undefined ? null : (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 z-20 h-px bg-accent"
+          className="pointer-events-none absolute inset-x-0 z-20 h-px bg-accent forced-color-adjust-none"
           style={{ top: snapLine(frame, "y", snapped.y) * scale }}
         />
       )}
