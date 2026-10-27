@@ -1,5 +1,5 @@
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
-import { contentBox } from "@/src/banner/fit";
+import { contentBoxOf } from "@/src/banner/fit";
 import { positionOr, type Position } from "@/src/banner/position";
 import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
 
@@ -42,12 +42,11 @@ export function isDefaultLogoPosition(state: Record<string, unknown>): boolean {
 export function logoFromState(state: Record<string, unknown>): BannerLogo | undefined {
   const src = state.logoImage;
   if (typeof src !== "string" || !src) return undefined;
-  const banner = BANNER_SIZES[normalizeBannerSize(state.size)];
   const size = normalizeContentSize(state.logoSize, DEFAULT_LOGO_SIZE);
   return {
     src,
     position: logoPositionFromState(state),
-    height: Math.round(banner.height * LOGO_HEIGHT[size]),
-    inset: contentBox(banner).inset,
+    height: Math.round(BANNER_SIZES[normalizeBannerSize(state.size)].height * LOGO_HEIGHT[size]),
+    inset: contentBoxOf(state.size).inset,
   };
 }

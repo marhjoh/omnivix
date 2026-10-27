@@ -1,3 +1,5 @@
+import { BANNER_SIZES, normalizeBannerSize } from "@/src/lib/sizes";
+
 /** Fit math for `FitContent`, kept free of the DOM so it can be unit tested. */
 
 /** "pending" until `FitContent` has fitted its content with fonts loaded, then "ready". */
@@ -18,6 +20,11 @@ export function contentBox(banner: Box): Box & { inset: number } {
     width: Math.max(0, banner.width - 2 * inset),
     height: Math.max(0, banner.height - 2 * inset),
   };
+}
+
+/** The padded box of the banner format in banner state's `size`. */
+export function contentBoxOf(size: unknown): Box & { inset: number } {
+  return contentBox(BANNER_SIZES[normalizeBannerSize(size)]);
 }
 
 /** Largest scale at which content of the given natural size fits the box. */
