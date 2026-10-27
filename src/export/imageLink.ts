@@ -8,7 +8,7 @@ const TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
 
 /** Image formats a link can be, by content type. No GIF: it would animate only in the preview. */
-export const LINK_IMAGE_FORMATS = {
+const LINK_IMAGE_FORMATS = {
   "image/png": "PNG",
   "image/jpeg": "JPEG",
   "image/webp": "WebP",

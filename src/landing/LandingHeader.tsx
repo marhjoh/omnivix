@@ -62,7 +62,6 @@ export function LandingHeader() {
           animate={{ borderRadius: scrolled ? PILL_RADIUS : 0 }}
           className={styles.navBar}
         >
-          {/* The pill's frosted glass, faded in and out rather than animating its blur. */}
           <span className={styles.navGlass} aria-hidden />
           <motion.div layout className="relative shrink-0">
             <Link
@@ -70,7 +69,7 @@ export function LandingHeader() {
               className="shrink-0 transition-opacity hover:opacity-85"
               aria-label="Omnivix home"
             >
-              {/* Below 300px the wordmark would push the nav off screen; show the app icon instead. */}
+              {/* Below 300px the wordmark would push the nav off screen: the app icon instead. */}
               <span className="hidden min-[300px]:contents">
                 <ThemedLogo className="h-8 w-auto sm:h-9" />
               </span>

@@ -107,13 +107,13 @@ export function ImagePicker({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [urlEditorOpen, setUrlEditorOpen] = useState(false);
-  /** Filename for the current data URL when this picker performed the upload (parent state is only the URL). */
+  /** The upload's file name, when this picker made it (the parent only has the data URL). */
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
   );
   /** What's typed after "https://"; `undefined` shows the current link (`value`) instead. */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
-  /** The link the user has stopped typing (idle, Enter or leaving the field); only it is reported. */
+  /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
@@ -207,7 +207,7 @@ export function ImagePicker({
 
   /**
    * Enter or leaving the field: check the link now, without waiting for the pause. Leaving never
-   * closes the field (switching windows to copy a link would); only another choice in the menu does.
+   * closes the field (switching windows to copy a link would); another choice in the menu does.
    */
   const settleUrl = () => {
     if (urlDraft === undefined) return;

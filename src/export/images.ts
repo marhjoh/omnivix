@@ -17,12 +17,12 @@ const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as 
  */
 const EXPORT_IMAGES: ReadonlyArray<{
   key: string;
-  /** For messages. */
+  /** The image's name in messages. */
   name: string;
   path: string;
   maxUploadBytes: number;
   linkTypes: readonly LinkImageType[];
-  /** Built-in images, used as they are. */
+  /** Built-in images (src/backgrounds/presets.ts), used as they are. */
   presets?: RegExp;
 }> = [
   {
@@ -31,7 +31,6 @@ const EXPORT_IMAGES: ReadonlyArray<{
     path: "/__export/background",
     maxUploadBytes: BACKGROUND_UPLOAD.maxBytes,
     linkTypes: RASTER_TYPES,
-    // Built-in presets (src/backgrounds/presets.ts).
     presets: /^\/backgrounds\/[a-z0-9-]+\.(?:avif|svg)$/,
   },
   {
