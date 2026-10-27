@@ -100,7 +100,7 @@ function ResetButton({ label, onClick }: { label: string; onClick: () => void })
       type="button"
       aria-label={label}
       onClick={onClick}
-      className={`text-[13px] font-medium ${textLinkClass}`}
+      className={`text-[0.8125rem] font-medium ${textLinkClass}`}
     >
       Reset
     </button>

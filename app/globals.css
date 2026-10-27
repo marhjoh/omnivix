@@ -9,6 +9,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-fill: var(--accent-fill);
   --color-danger: var(--danger);
 }
 
@@ -22,6 +23,9 @@ html[data-theme="dark"] {
   --muted: #9da8b3;
   --accent: #2f81f7;
   --accent-hover: #58a6ff;
+  /* Blue behind white text: darker than --accent here, for 4.5:1 contrast on hover too. */
+  --accent-fill: #1f6feb;
+  --accent-fill-hover: #1158c7;
   --danger: #f85149;
   color-scheme: dark;
 }
@@ -32,9 +36,11 @@ html[data-theme="light"] {
   --surface-2: #eef1f4;
   --border: #d0d7de;
   --text: #1f2328;
-  --muted: #656d76;
+  --muted: #59636e;
   --accent: #0969da;
   --accent-hover: #0550ae;
+  --accent-fill: var(--accent);
+  --accent-fill-hover: var(--accent-hover);
   --danger: #cf222e;
   color-scheme: light;
 }
@@ -102,14 +108,14 @@ body {
   }
 
   .btn-primary {
-    background: var(--accent);
-    border: 1px solid var(--accent);
+    background: var(--accent-fill);
+    border: 1px solid var(--accent-fill);
     color: #fff;
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-    border-color: var(--accent-hover);
+    background: var(--accent-fill-hover);
+    border-color: var(--accent-fill-hover);
     box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
@@ -163,7 +169,7 @@ body {
      semibold), one size below the value in the control. */
   .field-label {
     display: block;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--text);
   }
@@ -177,8 +183,8 @@ body {
     border: 1px solid var(--control-border);
     background: var(--surface);
     padding: 9px 12px;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
     color: var(--text);
     /* Hover and focus colors fade like the buttons'. */
     transition-property: background-color, border-color, box-shadow, color;

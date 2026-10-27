@@ -22,7 +22,7 @@ export const DRAG_FRAME_CLASS =
 /** Says what dragging moves, in the frame's top left corner. */
 export function DragBadge({ children }: PropsWithChildren) {
   return (
-    <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
+    <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent-fill px-2 py-0.5 text-[0.6875rem] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
       {children}
     </span>
   );
