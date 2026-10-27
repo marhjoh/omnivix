@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   useEffect,
   useRef,
   useState,
@@ -7,10 +8,12 @@ import {
   type PropsWithChildren,
 } from "react";
 import type { Position } from "@/src/banner/position";
+import type { Rect } from "@/src/studio/preview/useItemRect";
 
 /**
- * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`): arrow
- * keys, drags measured from where they started, and the dashed frame with its badge.
+ * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`,
+ * `AuthorDragSurface`): arrow keys, drags measured from where they started, the dashed frame with
+ * its badge, and snap guides.
  */
 
 /**
@@ -19,6 +22,24 @@ import type { Position } from "@/src/banner/position";
  */
 export const DRAG_FRAME_CLASS =
   "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
+
+/** An item snaps to a guide within this many screen pixels. */
+export const SNAP_DISTANCE = 6;
+
+/** Space between an item and its dashed frame, in screen pixels. */
+const FRAME_GAP = 4;
+
+/** Places a drag surface's frame around its item; hidden until the item is measured. */
+export function frameAround(rect: Rect | null): CSSProperties {
+  return rect
+    ? {
+        left: rect.left - FRAME_GAP,
+        top: rect.top - FRAME_GAP,
+        width: rect.width + 2 * FRAME_GAP,
+        height: rect.height + 2 * FRAME_GAP,
+      }
+    : { visibility: "hidden" };
+}
 
 const ACROSS: Record<number, string> = { 0: "left", 50: "center", 100: "right" };
 const DOWN: Record<number, string> = { 0: "top", 50: "middle", 100: "bottom" };
@@ -30,23 +51,31 @@ export function describePosition({ x, y }: Position): string {
   return `${across}, ${down}`;
 }
 
-/** Tells screen readers where `name` is once it has moved; during a drag (`quiet`), at its end. */
-export function PositionStatus({
-  name,
-  position,
-  quiet,
-}: {
-  name: string;
-  position: Position;
-  quiet: boolean;
-}) {
-  const [initial] = useState(position);
+/**
+ * Tells screen readers where something is (`text`, e.g. "logo: left, top") once it has moved;
+ * during a drag (`quiet`), at its end.
+ */
+export function PositionStatus({ text, quiet }: { text: string; quiet: boolean }) {
+  const [initial] = useState(text);
   const [moved, setMoved] = useState(false);
-  if (!moved && (position.x !== initial.x || position.y !== initial.y)) setMoved(true);
+  if (!moved && text !== initial) setMoved(true);
   return (
     <span className="sr-only" aria-live="polite">
-      {moved && !quiet ? `${name}: ${describePosition(position)}` : ""}
+      {moved && !quiet ? text : ""}
     </span>
+  );
+}
+
+/** A guide line across the preview where a dragged item has snapped, at `at` screen pixels. */
+export function SnapGuide({ axis, at }: { axis: "x" | "y"; at: number }) {
+  return (
+    <div
+      aria-hidden
+      className={`pointer-events-none absolute z-20 bg-accent forced-color-adjust-none ${
+        axis === "x" ? "inset-y-0 w-px" : "inset-x-0 h-px"
+      }`}
+      style={axis === "x" ? { left: at } : { top: at }}
+    />
   );
 }
 
@@ -59,13 +88,15 @@ export function DragBadge({ children }: PropsWithChildren) {
   );
 }
 
-/** Arrow keys move this many percent; with Shift, `LARGE_STEP`. */
-const STEP = 2;
-const LARGE_STEP = 10;
+/** Arrow keys move this many percent, or more with Shift. */
+const PERCENT_STEPS = { step: 2, shiftStep: 10 };
 
 /** The arrow key's direction times its step, or null for other keys. */
-export function arrowStep(event: KeyboardEvent): { x: number; y: number } | null {
-  const step = event.shiftKey ? LARGE_STEP : STEP;
+export function arrowStep(
+  event: KeyboardEvent,
+  { step: small, shiftStep } = PERCENT_STEPS,
+): { x: number; y: number } | null {
+  const step = event.shiftKey ? shiftStep : small;
   return (
     {
       ArrowLeft: { x: -step, y: 0 },

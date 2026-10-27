@@ -9,6 +9,7 @@ import {
   arrowStep,
   DRAG_FRAME_CLASS,
   DragBadge,
+  describePosition,
   PositionStatus,
   useMoveOncePerFrame,
   usePointerDrag,
@@ -21,8 +22,8 @@ const roundPosition = ({ x, y }: BackgroundPosition) => ({
 
 /**
  * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
- * arrow keys. No mode to turn on or off. The content and the logo have their own surfaces on top
- * (`PlacementDragSurface`).
+ * arrow keys. No mode to turn on or off. The items placed on it (content, logo, author) have their
+ * own surfaces on top (`PlacementDragSurface`).
  */
 export function BackgroundDragSurface({
   position,
@@ -80,7 +81,7 @@ export function BackgroundDragSurface({
       className={`${DRAG_FRAME_CLASS} inset-0 z-10 rounded-[inherit]`}
     >
       <DragBadge>Drag to move background</DragBadge>
-      <PositionStatus name="background" position={position} quiet={pointer.dragging} />
+      <PositionStatus text={`background: ${describePosition(position)}`} quiet={pointer.dragging} />
     </div>
   );
 }
