@@ -3,12 +3,13 @@
 import { PropsWithChildren, useEffectEvent, useLayoutEffect, useRef } from "react";
 import { CONTENT_SIZE_FACTOR, type ContentSize } from "@/src/banner/contentSize";
 import { type ContentPosition } from "@/src/banner/contentPosition";
-import { contentBox, FIT_STATUS_ATTRIBUTE, fitScale } from "@/src/banner/fit";
+import { FIT_STATUS_ATTRIBUTE, fitScale } from "@/src/banner/fit";
 import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
+import type { Rect } from "@/src/lib/sizes";
 
 /**
  * Scales content laid out at its natural size to fit the banner: `xl` is the largest scale that
- * fits the padded content area, smaller sizes are fractions of it (see `contentSize.ts`).
+ * fits the padded box (`contentBox`), smaller sizes are fractions of it (see `contentSize.ts`).
  *
  * The scale is a CSS transform, so text and SVG stay sharp. It is written to the DOM after layout
  * rather than kept in state, since it depends only on measured sizes. The content is placed at
@@ -16,9 +17,10 @@ import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
  */
 export function FitContent({
   children,
+  box,
   size,
   position,
-}: PropsWithChildren<{ size: ContentSize; position: ContentPosition }>) {
+}: PropsWithChildren<{ box: Rect; size: ContentSize; position: ContentPosition }>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scalerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -29,10 +31,6 @@ export function FitContent({
     const content = contentRef.current;
     if (!container || !scaler || !content) return;
 
-    const { inset, ...box } = contentBox({
-      width: container.clientWidth,
-      height: container.clientHeight,
-    });
     if (box.width <= 0 || box.height <= 0) return;
 
     const natural = { width: content.offsetWidth, height: content.offsetHeight };
@@ -41,8 +39,8 @@ export function FitContent({
       width: box.width - natural.width * scale,
       height: box.height - natural.height * scale,
     };
-    scaler.style.left = `${inset + (room.width * position.x) / 100}px`;
-    scaler.style.top = `${inset + (room.height * position.y) / 100}px`;
+    scaler.style.left = `${box.left + (room.width * position.x) / 100}px`;
+    scaler.style.top = `${box.top + (room.height * position.y) / 100}px`;
     scaler.style.transform = `scale(${scale})`;
     scaler.style.visibility = "visible";
     if (document.fonts.status === "loaded") {
@@ -50,15 +48,14 @@ export function FitContent({
     }
   });
 
-  // Content and banner size changes are caught by the ResizeObserver below.
+  // Content size changes are caught by the ResizeObserver below.
   useLayoutEffect(() => {
     fit();
-  }, [size, position.x, position.y]);
+  }, [box.left, box.top, box.width, box.height, size, position.x, position.y]);
 
   useLayoutEffect(() => {
+    // Re-fit when the content's own size changes, e.g. when a web font loads.
     const observer = new ResizeObserver(() => fit());
-    if (containerRef.current) observer.observe(containerRef.current);
-    // Also re-fit when the content's own size changes, e.g. when a web font loads.
     if (contentRef.current) observer.observe(contentRef.current);
 
     // The fit is only marked ready once fonts are loaded.

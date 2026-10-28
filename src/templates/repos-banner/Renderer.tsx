@@ -2,6 +2,7 @@ import { Frame } from "@/src/banner/Frame";
 import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
+import { contentBoxOf } from "@/src/banner/fit";
 import { normalizeContentSize } from "@/src/banner/contentSize";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { RepoCard } from "@/src/banner/RepoCard";
@@ -50,7 +51,11 @@ export function ReposBannerRenderer({
 
   return (
     <Frame uiTheme={uiTheme} background={background} logo={logoFromState(state)}>
-      <FitContent size={contentSize} position={contentPositionFromState(state)}>
+      <FitContent
+        box={contentBoxOf(state.size)}
+        size={contentSize}
+        position={contentPositionFromState(state)}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
             user={data.user}

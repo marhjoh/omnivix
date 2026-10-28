@@ -1,5 +1,5 @@
-import { CSSProperties } from "react";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { CSSProperties, useState } from "react";
+import { BANNER_SIZES, viewRect, type BannerView } from "@/src/lib/sizes";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
@@ -26,6 +26,14 @@ import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import type { BackgroundPosition } from "@/src/banner/background";
 import type { ContentPosition } from "@/src/banner/contentPosition";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
+import { PreviewViewToggle } from "@/src/studio/preview/PreviewViewToggle";
+
+/** How the preview's label ends for each view of a format that devices crop. */
+const VIEW_LABELS: Record<BannerView, string> = {
+  phone: "as phones show it",
+  desktop: "as desktop shows it",
+  tv: "the full image TVs show",
+};
 
 export function PreviewArtboard({
   templateId,
@@ -83,98 +91,107 @@ export function PreviewArtboard({
   const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const retryReached = useTimeReached(problem?.retryAt);
-  const scale = available ? fitScale(available, dims) : null;
+  // Phones first: most viewers see that, and it's the part the content fits.
+  const [view, setView] = useState<BannerView>("phone");
+  // The part of the banner the preview shows: all of it, unless devices crop the format.
+  const shown = viewRect(dims, view);
+  const scale = available ? fitScale(available, shown) : null;
 
   // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
   // the stage as a size container, so the banner shows at its final size from the first paint.
   // tan(atan2(a, b)) is a / b as a plain number, which scale() needs.
-  const fitWidth = cssFitWidth(dims);
+  const fitWidth = cssFitWidth(shown);
   const artboardStyle: CSSProperties =
     scale === null
-      ? { width: fitWidth, aspectRatio: `${dims.width} / ${dims.height}` }
-      : { width: dims.width * scale, height: dims.height * scale };
-  const bannerScale = scale === null ? `tan(atan2(${fitWidth}, ${dims.width}px))` : String(scale);
+      ? { width: fitWidth, aspectRatio: `${shown.width} / ${shown.height}` }
+      : { width: shown.width * scale, height: shown.height * scale };
+  const bannerScale = scale === null ? `tan(atan2(${fitWidth}, ${shown.width}px))` : String(scale);
 
   return (
-    <div ref={stageRef} className={previewStyles.stage}>
-      <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
-        {previewState === "ready" ? (
-          // One image to screen readers, like the exported file.
-          <div
-            className={previewStyles.scaled}
-            role="img"
-            aria-label={`${meta.title} preview, ${dims.label}`}
-            style={{
-              width: dims.width,
-              height: dims.height,
-              transform: `scale(${bannerScale})`,
-            }}
-          >
-            <PreviewPhotosContext value>
-              <BannerRenderer templateId={templateId} state={state} data={data} />
-            </PreviewPhotosContext>
-          </div>
-        ) : null}
-        {previewState === "ready" && scale !== null && backgroundAdjust ? (
-          <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
-        ) : null}
-        {previewState === "ready" && scale !== null && contentAdjust ? (
-          <PlacementDragSurface
-            {...contentAdjust}
-            target={BANNER_CONTENT_ATTRIBUTE}
-            name="content"
-            frame={dims}
-            scale={scale}
-          />
-        ) : null}
-        {previewState === "ready" && scale !== null && authorAdjust ? (
-          <AuthorDragSurface {...authorAdjust} frame={dims} scale={scale} />
-        ) : null}
-        {/* After the content's: the logo is on top where they meet. */}
-        {previewState === "ready" && scale !== null && logoAdjust ? (
-          <PlacementDragSurface
-            {...logoAdjust}
-            target={BANNER_LOGO_ATTRIBUTE}
-            name="logo"
-            frame={dims}
-            scale={scale}
-          />
-        ) : null}
-        {previewState === "ready" ? null : (
-          <PreviewFrame>
-            <div className={previewStyles.stateCenter}>
-              {previewState === "loading" ? (
-                <PreviewLoadingState message={loadingMessage} />
-              ) : previewState === "empty" ? (
-                <PreviewMessage
-                  title={emptyCopy.title}
-                  hint={emptyCopy.description}
-                  action={{
-                    label: emptyCopy.action.label,
-                    onClick:
-                      emptyCopy.action.setting === "username"
-                        ? onChangeUsername
-                        : () => onEditSetting(emptyCopy.action.setting),
-                  }}
-                />
-              ) : problem ? (
-                <PreviewMessage
-                  alert
-                  title={problem.title}
-                  hint={problem.hint}
-                  action={
-                    problem.action === "retry"
-                      ? { label: "Try again", onClick: onRetry, disabled: !retryReached }
-                      : problem.action === "change-username"
-                        ? { label: "Change username", onClick: onChangeUsername }
-                        : undefined
-                  }
-                />
-              ) : null}
+    <>
+      <div ref={stageRef} className={previewStyles.stage}>
+        <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
+          {previewState === "ready" ? (
+            // One image to screen readers, like the exported file.
+            <div
+              className={previewStyles.scaled}
+              role="img"
+              aria-label={`${meta.title} preview, ${dims.label}${dims.views ? `, ${VIEW_LABELS[view]}` : ""}`}
+              style={{
+                width: dims.width,
+                height: dims.height,
+                transform: `scale(${bannerScale}) translate(${-shown.left}px, ${-shown.top}px)`,
+              }}
+            >
+              <PreviewPhotosContext value>
+                <BannerRenderer templateId={templateId} state={state} data={data} />
+              </PreviewPhotosContext>
             </div>
-          </PreviewFrame>
-        )}
+          ) : null}
+          {previewState === "ready" && scale !== null && backgroundAdjust ? (
+            <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
+          ) : null}
+          {previewState === "ready" && scale !== null && contentAdjust ? (
+            <PlacementDragSurface
+              {...contentAdjust}
+              target={BANNER_CONTENT_ATTRIBUTE}
+              name="content"
+              frame={dims}
+              shown={shown}
+              scale={scale}
+            />
+          ) : null}
+          {previewState === "ready" && scale !== null && authorAdjust ? (
+            <AuthorDragSurface {...authorAdjust} frame={dims} scale={scale} />
+          ) : null}
+          {/* After the content's: the logo is on top where they meet. */}
+          {previewState === "ready" && scale !== null && logoAdjust ? (
+            <PlacementDragSurface
+              {...logoAdjust}
+              target={BANNER_LOGO_ATTRIBUTE}
+              name="logo"
+              frame={dims}
+              shown={shown}
+              scale={scale}
+            />
+          ) : null}
+          {previewState === "ready" ? null : (
+            <PreviewFrame>
+              <div className={previewStyles.stateCenter}>
+                {previewState === "loading" ? (
+                  <PreviewLoadingState message={loadingMessage} />
+                ) : previewState === "empty" ? (
+                  <PreviewMessage
+                    title={emptyCopy.title}
+                    hint={emptyCopy.description}
+                    action={{
+                      label: emptyCopy.action.label,
+                      onClick:
+                        emptyCopy.action.setting === "username"
+                          ? onChangeUsername
+                          : () => onEditSetting(emptyCopy.action.setting),
+                    }}
+                  />
+                ) : problem ? (
+                  <PreviewMessage
+                    alert
+                    title={problem.title}
+                    hint={problem.hint}
+                    action={
+                      problem.action === "retry"
+                        ? { label: "Try again", onClick: onRetry, disabled: !retryReached }
+                        : problem.action === "change-username"
+                          ? { label: "Change username", onClick: onChangeUsername }
+                          : undefined
+                    }
+                  />
+                ) : null}
+              </div>
+            </PreviewFrame>
+          )}
+        </div>
       </div>
-    </div>
+      {dims.views ? <PreviewViewToggle view={view} onChange={setView} /> : null}
+    </>
   );
 }

@@ -6,9 +6,17 @@ import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BACKGROUND_PRESETS } from "./presets";
 
-/** Widest export: the widest banner at the export pixel ratio. */
+/**
+ * Widest export: the widest banner at the export pixel ratio. Not YouTube: at 2× and 3× (5120px
+ * and 7680px wide) it scales the photo up about 1.1× and 1.6×, which barely shows at the
+ * background's 28% opacity.
+ */
 const MIN_PHOTO_WIDTH =
-  Math.max(...Object.values(BANNER_SIZES).map((s) => s.width)) * EXPORT_PIXEL_RATIO;
+  Math.max(
+    ...Object.values(BANNER_SIZES)
+      .filter((s) => s !== BANNER_SIZES.youtube)
+      .map((s) => s.width),
+  ) * EXPORT_PIXEL_RATIO;
 const MAX_BYTES = 1024 * 1024;
 
 const filePath = (src: string) => join(process.cwd(), "public", src);

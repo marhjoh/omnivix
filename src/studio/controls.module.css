@@ -61,6 +61,14 @@
   cursor: default;
 }
 
+/* A one-line tile, icon beside the label: the preview's Phone, Desktop and TV. */
+.viewTile {
+  flex-direction: row;
+  gap: 0.375rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+}
+
 /* A color setting (ColorSelect): the color in its field, and the panel under it with the
    swatches, and the picker for a custom color. Colors stay in forced colors: they're the choice. */
 .colorDot {

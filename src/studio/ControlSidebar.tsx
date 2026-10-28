@@ -218,7 +218,7 @@ function SizePicker({
 }) {
   return (
     <LabeledGroup label={label}>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {BANNER_SIZE_KEYS.map((key) => {
           const format = BANNER_SIZES[key];
           const platforms = format.platforms.map((p) => p.name).join(", ");

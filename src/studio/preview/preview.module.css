@@ -166,3 +166,11 @@
     background-position: -100% 0;
   }
 }
+
+/* Under a format that devices crop (YouTube): what a phone, desktop or TV shows. */
+.views {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

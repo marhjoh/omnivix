@@ -5,6 +5,7 @@ import {
   type AuthorPosition,
 } from "@/src/banner/authorPosition";
 import { contentBox } from "@/src/banner/fit";
+import type { BannerBox } from "@/src/lib/sizes";
 import { BANNER_AUTHOR_ATTRIBUTE, BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
 import {
   arrowStep,
@@ -39,7 +40,7 @@ export function AuthorDragSurface({
   /** The quote's place down the banner, 0 to 100. */
   quoteY: number;
   /** Banner size in CSS pixels. */
-  frame: { width: number; height: number };
+  frame: BannerBox;
   /** Preview scale: screen pixels per banner pixel. */
   scale: number;
   onMove: (position: AuthorPosition) => void;

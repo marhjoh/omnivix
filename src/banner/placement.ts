@@ -1,5 +1,6 @@
 import { contentBox } from "@/src/banner/fit";
 import { clampPercent, roundPercent, type Position } from "@/src/banner/position";
+import type { BannerBox } from "@/src/lib/sizes";
 
 /**
  * Placing an item (the content, the logo) in the banner's padded box (`contentBox`). Its position
@@ -31,7 +32,7 @@ export function placementStyle({ x, y }: Position) {
 }
 
 /** How far (in banner pixels) an item of this size can move on each axis inside the padded box. */
-export function placementRoom(banner: Size, item: Size): Size {
+export function placementRoom(banner: BannerBox, item: Size): Size {
   const box = contentBox(banner);
   return {
     width: Math.max(0, box.width - item.width),
@@ -82,7 +83,7 @@ export function nudgePlacement(
  * A snap point's place in banner pixels, for its guide line: the box's left edge, middle or
  * right edge (top, middle or bottom for y), where the item's matching edge or middle sits.
  */
-export function snapLine(banner: Size, axis: "x" | "y", point: number): number {
-  const { inset, width, height } = contentBox(banner);
-  return inset + ((axis === "x" ? width : height) * point) / 100;
+export function snapLine(banner: BannerBox, axis: "x" | "y", point: number): number {
+  const { left, top, width, height } = contentBox(banner);
+  return axis === "x" ? left + (width * point) / 100 : top + (height * point) / 100;
 }

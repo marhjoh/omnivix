@@ -725,7 +725,7 @@ export function StudioShell({
             onPixelRatioChange={changePixelRatio}
             format={format}
             onFormatChange={changeFormat}
-            bannerSize={BANNER_SIZES[size]}
+            bannerFormat={BANNER_SIZES[size]}
           />
         </TopBar>
       </header>

@@ -4,6 +4,7 @@ import { logoFromState } from "@/src/banner/logo";
 import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { backgroundFromState } from "@/src/banner/background";
 import { FitContent } from "@/src/banner/FitContent";
+import { contentBoxOf } from "@/src/banner/fit";
 import { normalizeContentSize } from "@/src/banner/contentSize";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
@@ -28,6 +29,7 @@ export function GithubBannerRenderer({
   return (
     <Frame uiTheme={uiTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
       <FitContent
+        box={contentBoxOf(state.size)}
         size={normalizeContentSize(state.contentSize)}
         position={contentPositionFromState(state)}
       >

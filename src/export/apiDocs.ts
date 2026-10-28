@@ -5,7 +5,7 @@ import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { MAX_AUTHOR_SPACE } from "@/src/banner/authorPosition";
-import { BANNER_SIZES, BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { BANNER_SIZES, BANNER_SIZE_KEYS, exportPixelRatios } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
 import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
@@ -77,6 +77,14 @@ export function exportApiDocs(siteUrl: URL): string[] {
     const { label, width, height, platforms } = BANNER_SIZES[key];
     return `${code(key)} (${label}, ${width} × ${height}: ${platforms.map((p) => p.name).join(", ")})`;
   });
+  // " (`youtube` as `png`: `1` or `2` only)", for the sizes that can't take every ratio.
+  const limits = BANNER_SIZE_KEYS.flatMap((key) =>
+    EXPORT_FORMATS.filter((file) => BANNER_SIZES[key].maxPixelRatio?.[file]).map(
+      (file) =>
+        `${code(key)} as ${code(file)}: ${oneOf(exportPixelRatios(BANNER_SIZES[key], file))} only`,
+    ),
+  );
+  const ratioLimits = limits.length ? ` (${limits.join("; ")})` : "";
   return [
     "## Export API",
     "",
@@ -87,7 +95,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     `| \`templateId\` | ${oneOf(getTemplates().map(({ meta }) => meta.id))} |`,
     `| \`size\` | ${sizes.join(", ")} |`,
     "| `state` | The template's settings (below). Any you leave out use the default; unknown ones are ignored. |",
-    `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(EXPORT_PIXEL_RATIO)}: the image is the size above times this |`,
+    `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(EXPORT_PIXEL_RATIO)}${ratioLimits}: the image is the size above times this |`,
     `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(EXPORT_FORMAT)} |`,
     `| \`uiTheme\` | ${oneOf(THEMES)}, default ${code(DEFAULT_THEME)}: whether the banner's cards and text are light or dark |`,
     "",

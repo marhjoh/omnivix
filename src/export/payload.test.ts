@@ -24,6 +24,19 @@ describe("exportRequestSchema format", () => {
 });
 
 describe("parseExportRequest", () => {
+  it("rejects a pixel ratio the size can't be exported at in that file format", () => {
+    const youtube = { ...request, size: "youtube" };
+    expect(parseExportRequest({ ...youtube, pixelRatio: 3 })).toEqual({
+      ok: false,
+      issues: [
+        { path: "pixelRatio", message: 'Must be 1 or 2 for size "youtube" with format "png"' },
+      ],
+    });
+    expect(parseExportRequest({ ...youtube, pixelRatio: 3, format: "jpeg" }).ok).toBe(true);
+    expect(parseExportRequest({ ...youtube, pixelRatio: 2 }).ok).toBe(true);
+    expect(parseExportRequest(youtube).ok).toBe(true);
+  });
+
   it("fills in the template's defaults, so a caller only sends what it changes", () => {
     const result = parseExportRequest({
       templateId: "quote-banner",

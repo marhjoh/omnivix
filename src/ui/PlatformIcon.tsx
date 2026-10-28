@@ -7,6 +7,7 @@ import {
   siPatreon,
   siTwitch,
   siX,
+  siYoutube,
   type SimpleIcon,
 } from "simple-icons";
 import type { PlatformIconName } from "@/src/lib/sizes";
@@ -21,6 +22,7 @@ const ICONS: Record<Exclude<PlatformIconName, "linkedin">, SimpleIcon> = {
   twitch: siTwitch,
   patreon: siPatreon,
   discord: siDiscord,
+  youtube: siYoutube,
 };
 
 /** Monochrome brand mark in `currentColor`. */
