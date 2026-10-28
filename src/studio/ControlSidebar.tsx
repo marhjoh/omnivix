@@ -247,7 +247,7 @@ function PlatformPicker({
               <PlatformIcon icon={current.id} size={14} />
             </span>
             <span className="truncate">
-              {current.name} · {bannerFormatOf(state.size).label}
+              {current.name} ({bannerFormatOf(state.size).label})
             </span>
           </span>
         </DropdownTrigger>
