@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.1](https://github.com/marhjoh/omnivix/compare/v1.18.0...v1.18.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **a11y:** keep focus on the setting after Reset and on Download while exporting ([f09960c](https://github.com/marhjoh/omnivix/commit/f09960c6eb739f5af5c4cf7aa9f6ee493c55dbd9))
+* **a11y:** read each field's value and announce a moved item only when its place changes ([f09960c](https://github.com/marhjoh/omnivix/commit/f09960c6eb739f5af5c4cf7aa9f6ee493c55dbd9))
+
 ## [1.18.0](https://github.com/marhjoh/omnivix/compare/v1.17.1...v1.18.0) (2026-10-27)
 
 
