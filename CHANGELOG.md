@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.19.0](https://github.com/marhjoh/omnivix/compare/v1.18.1...v1.19.0) (2026-10-28)
+
+
+### Features
+
+* **export:** limit resolutions per format: YouTube's 3× is JPEG only, Reddit is 1× ([0a50e57](https://github.com/marhjoh/omnivix/commit/0a50e5723ae88c82caa595dc391bc67beb783fe1))
+* **studio:** add a Reddit profile banner format ([0a50e57](https://github.com/marhjoh/omnivix/commit/0a50e5723ae88c82caa595dc391bc67beb783fe1))
+* **studio:** add a YouTube banner format (16:9) with Phone, Desktop and TV previews ([0a50e57](https://github.com/marhjoh/omnivix/commit/0a50e5723ae88c82caa595dc391bc67beb783fe1))
+* **studio:** pick the banner by platform instead of aspect ratio ([0a50e57](https://github.com/marhjoh/omnivix/commit/0a50e5723ae88c82caa595dc391bc67beb783fe1))
+* **studio:** remember the preview's Phone, Desktop or TV view ([0a50e57](https://github.com/marhjoh/omnivix/commit/0a50e5723ae88c82caa595dc391bc67beb783fe1))
+
 ## [1.18.1](https://github.com/marhjoh/omnivix/compare/v1.18.0...v1.18.1) (2026-10-28)
 
 
