@@ -5,15 +5,16 @@ import {
   siKofi,
   siMastodon,
   siPatreon,
+  siReddit,
   siTwitch,
   siX,
   siYoutube,
   type SimpleIcon,
 } from "simple-icons";
-import type { PlatformIconName } from "@/src/lib/sizes";
+import type { PlatformId } from "@/src/lib/sizes";
 
 // LinkedIn isn't in simple-icons (removed at LinkedIn's request), so it stays a text mark.
-const ICONS: Record<Exclude<PlatformIconName, "linkedin">, SimpleIcon> = {
+const ICONS: Record<Exclude<PlatformId, "linkedin">, SimpleIcon> = {
   x: siX,
   bluesky: siBluesky,
   mastodon: siMastodon,
@@ -23,10 +24,11 @@ const ICONS: Record<Exclude<PlatformIconName, "linkedin">, SimpleIcon> = {
   patreon: siPatreon,
   discord: siDiscord,
   youtube: siYoutube,
+  reddit: siReddit,
 };
 
 /** Monochrome brand mark in `currentColor`. */
-export function PlatformIcon({ icon, size = 12 }: { icon: PlatformIconName; size?: number }) {
+export function PlatformIcon({ icon, size = 12 }: { icon: PlatformId; size?: number }) {
   if (icon === "linkedin") {
     return (
       <span

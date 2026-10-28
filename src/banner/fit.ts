@@ -1,19 +1,19 @@
-import { bannerFormatOf, viewRect, type BannerBox, type Box, type Rect } from "@/src/lib/sizes";
+import { bannerFormatOf, safeAreaOf, type BannerBox, type Box, type Rect } from "@/src/lib/sizes";
 
 /** Fit math for `FitContent`, kept free of the DOM so it can be unit tested. */
 
 /** "pending" until `FitContent` has fitted its content with fonts loaded, then "ready". */
 export const FIT_STATUS_ATTRIBUTE = "data-banner-fit";
 
-/** Margin around the content on all sides, as a share of the height every device shows. */
+/** Margin around the content on all sides, as a share of the safe area's height. */
 const CONTENT_INSET_RATIO = 0.08;
 
 /**
- * The padded box the content and the logo are placed in: the part every device shows (the whole
- * banner, or a format's phone view), less a margin.
+ * The padded box the content and the logo are placed in: the part every device shows clearly (the
+ * whole banner, or a format's safe area), less a margin.
  */
 export function contentBox(banner: BannerBox): Rect {
-  const shown = viewRect(banner, "phone");
+  const shown = safeAreaOf(banner);
   const inset = Math.round(shown.height * CONTENT_INSET_RATIO);
   return {
     left: shown.left + inset,

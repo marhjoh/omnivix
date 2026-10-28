@@ -1,17 +1,14 @@
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { contentBoxOf } from "@/src/banner/fit";
 import { positionOr, type Position } from "@/src/banner/position";
-import { bannerFormatOf, viewRect, type Rect } from "@/src/lib/sizes";
+import { bannerFormatOf, safeAreaOf, type Rect } from "@/src/lib/sizes";
 
 export const DEFAULT_LOGO_SIZE: ContentSize = "m";
 
 /** Top right: LinkedIn and X cover the lower left with the profile photo. */
 const DEFAULT_LOGO_POSITION: Position = { x: 100, y: 0 };
 
-/**
- * The logo's height as a share of the height every device shows, so it looks the same in every
- * format.
- */
+/** The logo's height as a share of the safe area's height, so it looks the same in every format. */
 const LOGO_HEIGHT: Record<ContentSize, number> = {
   xs: 0.08,
   s: 0.11,
@@ -49,7 +46,7 @@ export function logoFromState(state: Record<string, unknown>): BannerLogo | unde
   return {
     src,
     position: logoPositionFromState(state),
-    height: Math.round(viewRect(bannerFormatOf(state.size), "phone").height * LOGO_HEIGHT[size]),
+    height: Math.round(safeAreaOf(bannerFormatOf(state.size)).height * LOGO_HEIGHT[size]),
     box: contentBoxOf(state.size),
   };
 }

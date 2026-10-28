@@ -14,7 +14,7 @@ export function LandingHero() {
             For {BANNER_PLATFORMS.map((platform) => platform.name).join(", ")}
           </span>
           {BANNER_PLATFORMS.map((platform) => (
-            <PlatformIcon key={platform.name} icon={platform.icon} size={16} />
+            <PlatformIcon key={platform.name} icon={platform.id} size={16} />
           ))}
         </p>
         <div className={landingStyles.heroGlow} aria-hidden />

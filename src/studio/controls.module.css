@@ -1,7 +1,7 @@
 /* The studio's controls: tiles for choices, check lists, the section titles, and the Download
    split button with its options panel. */
 
-/* Tiles: aspect ratio and grid colors share one look. */
+/* Tiles: grid colors, the export options and the preview views share one look. */
 .tile {
   display: flex;
   min-width: 0;

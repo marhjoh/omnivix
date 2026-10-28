@@ -48,7 +48,7 @@ describe("groupFields", () => {
 
 describe("fieldLabel", () => {
   it("renames settings whose schema name is unclear in the sidebar", () => {
-    expect(fieldLabel({ key: "size", label: "Type", type: "sizeSelect" })).toBe("Aspect ratio");
+    expect(fieldLabel({ key: "size", label: "Type", type: "sizeSelect" })).toBe("Platform");
     expect(fieldLabel({ key: "year", label: "Year", type: "select" })).toBe("Year");
   });
 });

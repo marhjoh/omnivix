@@ -64,7 +64,7 @@ import {
 } from "@/src/studio/downloadCookies";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
-import { BANNER_SIZES, type BannerView } from "@/src/lib/sizes";
+import { BANNER_SIZES, sizeOfPlatform, type BannerView } from "@/src/lib/sizes";
 import { parsePreviewViewCookie, PREVIEW_VIEW_COOKIE_NAME } from "@/src/studio/previewViewCookie";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
@@ -598,7 +598,9 @@ export function StudioShell({
   const updateState = useCallback(
     (key: string, value: unknown) => {
       setState((prev) => {
-        const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
+        // A platform comes with its format.
+        const size = key === "platform" ? (sizeOfPlatform(value) ?? prev.size) : prev.size;
+        const next = clampSelectedRepos(templateId, { ...prev, size, [key]: value });
         // A new image drops the old one's settings, such as a background's position.
         for (const related of IMAGE_SETTINGS[key] ?? []) delete next[related];
         // Picking an alignment puts the content at that spot, centered vertically.

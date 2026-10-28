@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { BANNER_SIZES, viewRect, type BannerView } from "@/src/lib/sizes";
+import { BANNER_SIZES, bannerViews, shownView, viewRect, type BannerView } from "@/src/lib/sizes";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
@@ -54,7 +54,7 @@ export function PreviewArtboard({
 }: {
   templateId: TemplateId;
   size: BannerSize;
-  /** What the preview shows of a format that devices crop (YouTube); others show all of it. */
+  /** What the preview shows of a format that devices crop (YouTube, Reddit); others show all. */
   view: BannerView;
   onViewChange: (view: BannerView) => void;
   state: Record<string, unknown>;
@@ -96,8 +96,10 @@ export function PreviewArtboard({
   const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const retryReached = useTimeReached(problem?.retryAt);
+  const views = bannerViews(dims);
+  const activeView = shownView(dims, view);
   // The part of the banner the preview shows: all of it, unless devices crop the format.
-  const shown = viewRect(dims, view);
+  const shown = viewRect(dims, activeView);
   const scale = available ? fitScale(available, shown) : null;
 
   // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
@@ -119,7 +121,7 @@ export function PreviewArtboard({
             <div
               className={previewStyles.scaled}
               role="img"
-              aria-label={`${meta.title} preview, ${dims.label}${dims.views ? `, ${VIEW_LABELS[view]}` : ""}`}
+              aria-label={`${meta.title} preview, ${dims.label}${views.length ? `, ${VIEW_LABELS[activeView]}` : ""}`}
               style={{
                 width: dims.width,
                 height: dims.height,
@@ -194,7 +196,9 @@ export function PreviewArtboard({
           )}
         </div>
       </div>
-      {dims.views ? <PreviewViewToggle view={view} onChange={onViewChange} /> : null}
+      {views.length ? (
+        <PreviewViewToggle views={views} view={activeView} onChange={onViewChange} />
+      ) : null}
     </>
   );
 }

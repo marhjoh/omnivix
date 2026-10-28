@@ -1,9 +1,23 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 import { Moon, RotateCcw, Sun } from "lucide-react";
-import { BANNER_SIZE_KEYS, BANNER_SIZES } from "@/src/lib/sizes";
-import { Select } from "@/src/ui/Dropdown";
+import {
+  BANNER_SIZE_KEYS,
+  BANNER_SIZES,
+  bannerFormatOf,
+  platformOf,
+  type PlatformId,
+} from "@/src/lib/sizes";
+import {
+  DropdownGroupLabel,
+  DropdownList,
+  DropdownOption,
+  DropdownRoot,
+  DropdownTrigger,
+  Select,
+  useDropdown,
+} from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { CheckList, CheckRow } from "@/src/studio/CheckList";
@@ -207,46 +221,65 @@ function AppearancePicker() {
   );
 }
 
-function SizePicker({
-  value,
-  onChange,
+/**
+ * The platform the banner is for, grouped by the format they share: every platform in a group gets
+ * the same image.
+ */
+function PlatformPicker({
   label,
+  state,
+  onChange,
 }: {
-  value: string;
-  onChange: (size: string) => void;
   label: string;
+  state: Record<string, unknown>;
+  onChange: (platform: PlatformId) => void;
 }) {
+  const id = useId();
+  const dropdown = useDropdown(id);
+  const current = platformOf(state);
   return (
-    <LabeledGroup label={label}>
-      <div className="grid grid-cols-2 gap-2">
-        {BANNER_SIZE_KEYS.map((key) => {
-          const format = BANNER_SIZES[key];
-          const platforms = format.platforms.map((p) => p.name).join(", ");
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onChange(key)}
-              aria-pressed={value === key}
-              className={controls.tile}
-            >
-              {/* The platform icons, for screen readers: "4:1: LinkedIn, …". */}
-              <span className="font-semibold">
-                {format.label}
-                <span className="sr-only">: {platforms}</span>
-              </span>
-              {/* One row at any font size, so the tiles line up. */}
-              <span className="flex justify-center gap-[3px] text-muted">
-                {/* Muted, like the platform icons on the landing page. */}
+    <div className="space-y-1.5">
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <DropdownRoot dropdown={dropdown} className="relative">
+        <DropdownTrigger dropdown={dropdown}>
+          <span className="flex min-w-0 items-center gap-2">
+            <PlatformIcon icon={current.id} size={14} />
+            <span className="truncate">
+              {current.name} · {bannerFormatOf(state.size).label}
+            </span>
+          </span>
+        </DropdownTrigger>
+        <DropdownList dropdown={dropdown} label={label}>
+          {BANNER_SIZE_KEYS.map((key) => {
+            const format = BANNER_SIZES[key];
+            return (
+              <div key={key}>
+                <DropdownGroupLabel>
+                  {format.label} · {format.width} × {format.height}
+                </DropdownGroupLabel>
                 {format.platforms.map((platform) => (
-                  <PlatformIcon key={platform.name} icon={platform.icon} />
+                  <DropdownOption
+                    key={platform.id}
+                    selected={platform.id === current.id}
+                    icon={
+                      <span className="flex w-3.5 shrink-0 justify-center text-muted">
+                        <PlatformIcon icon={platform.id} />
+                      </span>
+                    }
+                    onSelect={() => {
+                      onChange(platform.id);
+                      dropdown.close();
+                    }}
+                  >
+                    {platform.name}
+                  </DropdownOption>
                 ))}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </LabeledGroup>
+              </div>
+            );
+          })}
+        </DropdownList>
+      </DropdownRoot>
+    </div>
   );
 }
 
@@ -369,11 +402,11 @@ export function ControlSidebar({
 
     if (field.type === "sizeSelect") {
       return (
-        <SizePicker
+        <PlatformPicker
           key={field.key}
           label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          onChange={(v) => onChange(field.key, v)}
+          state={state}
+          onChange={(platform) => onChange("platform", platform)}
         />
       );
     }

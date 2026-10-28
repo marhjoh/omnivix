@@ -22,7 +22,7 @@
   - **Repos Banner:** pinned or selected repositories with languages, stars and forks
   - **Contribution Banner:** contribution heatmap
   - **Quote Banner:** quote and author
-- **Four formats:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi), 5:2 (Twitch, Patreon, Discord) and 16:9 (YouTube)
+- **Five formats:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi), 5:2 (Twitch, Patreon, Discord), 16:9 (YouTube) and 3:1 for Reddit, with the content kept where every screen shows it
 - **Backgrounds:** 14 city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
 - **Logo:** add your company's logo from an https link or an upload (SVG too), and drag it into place
 - **Customization:** drag the content into place, color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details

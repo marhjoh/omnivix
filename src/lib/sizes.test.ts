@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   BANNER_SIZES,
+  bannerViews,
   exportPixelRatioFor,
   exportPixelRatios,
   normalizeBannerSize,
+  platformOf,
+  safeAreaOf,
+  sizeOfPlatform,
+  shownView,
   viewRect,
 } from "./sizes";
 
@@ -45,6 +50,45 @@ describe("viewRect", () => {
   });
 });
 
+describe("positioned views", () => {
+  it("keeps a view's own place on the axes it sets", () => {
+    // Reddit's desktop cuts the top tenth, so it's not centered vertically.
+    expect(viewRect(BANNER_SIZES.reddit, "desktop")).toEqual({
+      left: 0,
+      top: 100,
+      width: 3000,
+      height: 900,
+    });
+  });
+});
+
+describe("bannerViews", () => {
+  it("lists the views the format has", () => {
+    expect(bannerViews(BANNER_SIZES.wide)).toEqual([]);
+    expect(bannerViews(BANNER_SIZES.youtube)).toEqual(["phone", "desktop", "tv"]);
+    expect(bannerViews(BANNER_SIZES.reddit)).toEqual(["phone", "desktop"]);
+  });
+});
+
+describe("shownView", () => {
+  it("falls back to the phone view when the format has no such view", () => {
+    expect(shownView(BANNER_SIZES.youtube, "tv")).toBe("tv");
+    expect(shownView(BANNER_SIZES.reddit, "tv")).toBe("phone");
+  });
+});
+
+describe("safeAreaOf", () => {
+  it("is the phone view unless the format sets its own", () => {
+    expect(safeAreaOf(BANNER_SIZES.youtube)).toEqual(viewRect(BANNER_SIZES.youtube, "phone"));
+    expect(safeAreaOf(BANNER_SIZES.reddit)).toEqual({
+      left: 750,
+      top: 333,
+      width: 1500,
+      height: 417,
+    });
+  });
+});
+
 describe("exportPixelRatios", () => {
   it("lists every ratio the format takes in the file format", () => {
     expect(exportPixelRatios(BANNER_SIZES.wide, "png")).toEqual([1, 2, 3]);
@@ -63,5 +107,25 @@ describe("exportPixelRatioFor", () => {
     expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png", 3)).toBe(2);
     expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png")).toBe(2);
     expect(exportPixelRatioFor(BANNER_SIZES.wide, "png")).toBe(3);
+  });
+});
+
+describe("sizeOfPlatform", () => {
+  it("is the format the platform's banners use", () => {
+    expect(sizeOfPlatform("bluesky")).toBe("header");
+    expect(sizeOfPlatform("reddit")).toBe("reddit");
+    expect(sizeOfPlatform("myspace")).toBeUndefined();
+  });
+});
+
+describe("platformOf", () => {
+  it("keeps a platform from the banner's format", () => {
+    expect(platformOf({ size: "header", platform: "bluesky" }).name).toBe("Bluesky");
+  });
+
+  it("falls back to the format's first platform", () => {
+    expect(platformOf({ size: "header" }).id).toBe("x");
+    // A saved platform from another format, e.g. after a link set `size`.
+    expect(platformOf({ size: "wide", platform: "bluesky" }).id).toBe("linkedin");
   });
 });

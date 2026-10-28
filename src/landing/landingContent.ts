@@ -67,12 +67,12 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "Which banner sizes does Omnivix support?",
-    answer: `One format per aspect ratio: ${bannerFormatsSummary()}.`,
+    answer: `${Object.keys(BANNER_SIZES).length} formats: ${bannerFormatsSummary()}.`,
   },
   {
     topic: "Banners",
     question: "What file formats and resolutions can I download?",
-    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution. 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. On YouTube, 3× is JPEG only: a 3× PNG can go over YouTube's 6 MB limit. JPEG files are much smaller, for platforms with upload limits.`,
+    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution. 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. On YouTube, 3× is JPEG only: a 3× PNG can go over YouTube's 6 MB limit. Reddit banners are 1× only, already twice the size Reddit shows. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     topic: "Banners",
