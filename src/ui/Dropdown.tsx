@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type ComponentProps,
   type CSSProperties,
   KeyboardEvent,
   PropsWithChildren,
@@ -10,7 +11,7 @@ import {
   useState,
 } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { FieldLabel } from "@/src/ui/FieldLabel";
+import { FieldLabel, fieldLabelId } from "@/src/ui/FieldLabel";
 import { useDismiss } from "@/src/ui/useDismiss";
 
 const ROOT_ATTRIBUTE = "data-dropdown";
@@ -104,6 +105,34 @@ export function DropdownRoot({
   );
 }
 
+/**
+ * A setting's field: its value and a chevron, opening a list or panel. It's named by its
+ * FieldLabel and then its value, so screen readers read both: "Alignment, Center".
+ */
+export function FieldButton({
+  id,
+  open,
+  className = "",
+  children,
+  ...props
+}: ComponentProps<"button"> & { id: string; open: boolean }) {
+  return (
+    <button
+      type="button"
+      id={id}
+      aria-labelledby={`${fieldLabelId(id)} ${id}-value`}
+      aria-expanded={open}
+      className={`field-select flex items-center justify-between gap-2 text-left ${className}`}
+      {...props}
+    >
+      <span id={`${id}-value`} className="min-w-0 flex-1 truncate">
+        {children}
+      </span>
+      <DropdownChevron open={open} className="self-center text-muted" />
+    </button>
+  );
+}
+
 export function DropdownTrigger({
   dropdown,
   disabled,
@@ -117,21 +146,17 @@ export function DropdownTrigger({
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
   return (
-    <button
-      type="button"
+    <FieldButton
       id={triggerId}
+      open={open}
       aria-haspopup="listbox"
-      aria-expanded={open}
       aria-controls={open ? listId : undefined}
       disabled={disabled}
       onClick={() => setOpen((o) => !o)}
-      className={`field-select flex items-center justify-between gap-2 text-left ${
-        joinedBelow ? "rounded-b-none" : ""
-      }`}
+      className={joinedBelow ? "rounded-b-none" : ""}
     >
-      <span className="min-w-0 flex-1 truncate">{children}</span>
-      <DropdownChevron open={open} className="self-center text-muted" />
-    </button>
+      {children}
+    </FieldButton>
   );
 }
 

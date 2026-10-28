@@ -88,7 +88,9 @@ export function ExportControls({
             setOpen(false);
             onDownload();
           }}
-          disabled={busy || exportBlocked}
+          disabled={exportBlocked}
+          // aria-disabled, not disabled, while exporting: it keeps focus.
+          aria-disabled={busy}
           aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
           aria-busy={isDownloading}
           className={controls.splitMain}

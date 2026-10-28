@@ -349,7 +349,7 @@
   border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.splitMain:hover:not(:disabled),
+.splitMain:hover:not(:disabled, [aria-disabled="true"]),
 .splitToggle:hover:not([aria-disabled="true"]),
 .splitToggle[aria-expanded="true"] {
   background: var(--accent-fill-hover);
