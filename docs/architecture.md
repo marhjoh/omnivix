@@ -19,7 +19,7 @@ Two kinds of scaling keep the preview and the export identical:
 - **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`fitScale.ts`).
 - **The content inside it:** the GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
 
-YouTube and Reddit crop the banner differently on each device (`views` in `sizes.ts`). YouTube phones show the middle 1546 × 423, desktop the 2560 × 423 strip it's in, and TVs the whole image. Reddit's app shows the middle half of a 3:1 upload, with the name, menu and a fade over parts of it. The content and the logo fit the safe area, the part every device shows clearly (the phone view on YouTube), and the preview shows one view at a time.
+YouTube and Reddit crop the banner differently on each device (`views` in `sizes.ts`). YouTube phones show the middle 1546 × 423, desktop the 2560 × 423 strip it's in, and TVs the whole image. Reddit's app shows the middle half of a 3:1 upload, with its buttons, the avatar and a fade over parts of it. The content and the logo fit the safe area, the part every device shows clearly (the phone view on YouTube), and the preview shows one view at a time.
 
 ## Export flow
 

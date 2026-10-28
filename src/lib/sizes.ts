@@ -93,9 +93,10 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
       { id: "kofi", name: "Ko-fi" },
     ],
   },
-  // Reddit keeps the whole upload and each screen crops it (a 3000 × 1000 test upload, #111):
-  // desktop cuts the top tenth, the iPhone app shows the middle half, with the name and menu over
-  // its top third and a fade over its bottom quarter.
+  // Reddit keeps the whole upload and each screen crops it (3000 × 1000 test uploads, #111).
+  // Desktop cuts the top tenth. The iPhone app shows the middle half, x 750–2250, with its buttons
+  // down to y 381, the avatar over x 870–1164 from y 437, and a fade from y 750 that's still
+  // readable to y 850. The safe area is right of the avatar and between the buttons and the fade.
   reddit: {
     label: "3:1",
     width: 3000,
@@ -104,7 +105,7 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
       phone: { width: 1500, height: 1000 },
       desktop: { top: 100, width: 3000, height: 900 },
     },
-    safeArea: { left: 750, top: 333, width: 1500, height: 417 },
+    safeArea: { left: 1190, top: 390, width: 1040, height: 460 },
     // Already twice the width the app shows.
     maxPixelRatio: { png: 1, jpeg: 1 },
     platforms: [{ id: "reddit", name: "Reddit" }],

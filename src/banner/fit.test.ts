@@ -12,13 +12,13 @@ describe("contentBox", () => {
     });
   });
 
-  it("is inside Reddit's safe area, clear of the app's name, menu and fade", () => {
-    // 1500 × 417 at x 750, y 333, less 33px on each side.
+  it("is inside Reddit's safe area, clear of the app's buttons, avatar and fade", () => {
+    // 1040 × 460 at x 1190, y 390, less 37px on each side.
     expect(contentBox(BANNER_SIZES.reddit)).toEqual({
-      left: 783,
-      top: 366,
-      width: 1434,
-      height: 351,
+      left: 1227,
+      top: 427,
+      width: 966,
+      height: 386,
     });
   });
 

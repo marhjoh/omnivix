@@ -81,10 +81,10 @@ describe("safeAreaOf", () => {
   it("is the phone view unless the format sets its own", () => {
     expect(safeAreaOf(BANNER_SIZES.youtube)).toEqual(viewRect(BANNER_SIZES.youtube, "phone"));
     expect(safeAreaOf(BANNER_SIZES.reddit)).toEqual({
-      left: 750,
-      top: 333,
-      width: 1500,
-      height: 417,
+      left: 1190,
+      top: 390,
+      width: 1040,
+      height: 460,
     });
   });
 });
