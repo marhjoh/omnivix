@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from "react";
+import { CSSProperties } from "react";
 import { BANNER_SIZES, viewRect, type BannerView } from "@/src/lib/sizes";
 import { BannerSize, TemplateId } from "@/src/types/template";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
@@ -38,6 +38,8 @@ const VIEW_LABELS: Record<BannerView, string> = {
 export function PreviewArtboard({
   templateId,
   size,
+  view,
+  onViewChange,
   state,
   data,
   previewState,
@@ -52,6 +54,9 @@ export function PreviewArtboard({
 }: {
   templateId: TemplateId;
   size: BannerSize;
+  /** What the preview shows of a format that devices crop (YouTube); others show all of it. */
+  view: BannerView;
+  onViewChange: (view: BannerView) => void;
   state: Record<string, unknown>;
   data: RenderData;
   previewState: PreviewContentState;
@@ -91,8 +96,6 @@ export function PreviewArtboard({
   const loadingMessage = previewLoadingMessage(meta.githubData);
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const retryReached = useTimeReached(problem?.retryAt);
-  // Phones first: most viewers see that, and it's the part the content fits.
-  const [view, setView] = useState<BannerView>("phone");
   // The part of the banner the preview shows: all of it, unless devices crop the format.
   const shown = viewRect(dims, view);
   const scale = available ? fitScale(available, shown) : null;
@@ -191,7 +194,7 @@ export function PreviewArtboard({
           )}
         </div>
       </div>
-      {dims.views ? <PreviewViewToggle view={view} onChange={setView} /> : null}
+      {dims.views ? <PreviewViewToggle view={view} onChange={onViewChange} /> : null}
     </>
   );
 }
