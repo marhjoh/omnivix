@@ -2,7 +2,7 @@ import type { EditorFieldSchema } from "@/src/types/template";
 
 /** Sidebar names for settings whose schema label is unclear there. */
 const LABELS: Record<string, string> = {
-  size: "Aspect ratio",
+  size: "Platform",
   themeId: "Grid colors",
   maxRepos: "Number of repos",
   logoImage: "Image",

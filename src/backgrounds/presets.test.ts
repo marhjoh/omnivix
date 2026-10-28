@@ -2,13 +2,20 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EXPORT_PIXEL_RATIO } from "@/src/export/viewport";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { EXPORT_FORMATS } from "@/src/export/format";
+import { BANNER_SIZES, exportPixelRatios } from "@/src/lib/sizes";
 import { BACKGROUND_PRESETS } from "./presets";
 
-/** Widest export: the widest banner at the export pixel ratio. */
-const MIN_PHOTO_WIDTH =
-  Math.max(...Object.values(BANNER_SIZES).map((s) => s.width)) * EXPORT_PIXEL_RATIO;
+/**
+ * Widest export: each banner at its largest pixel ratio. Not YouTube: at 2× and 3× (5120px and
+ * 7680px wide) it scales the photo up about 1.1× and 1.6×, which barely shows at the background's
+ * 28% opacity.
+ */
+const MIN_PHOTO_WIDTH = Math.max(
+  ...Object.values(BANNER_SIZES)
+    .filter((s) => s !== BANNER_SIZES.youtube)
+    .map((s) => s.width * Math.max(...EXPORT_FORMATS.flatMap((f) => exportPixelRatios(s, f)))),
+);
 const MAX_BYTES = 1024 * 1024;
 
 const filePath = (src: string) => join(process.cwd(), "public", src);

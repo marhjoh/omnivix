@@ -1,7 +1,7 @@
 /* The studio's controls: tiles for choices, check lists, the section titles, and the Download
    split button with its options panel. */
 
-/* Tiles: aspect ratio and grid colors share one look. */
+/* Tiles: grid colors, the export options and the preview views share one look. */
 .tile {
   display: flex;
   min-width: 0;
@@ -59,6 +59,14 @@
   border-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
   background: color-mix(in oklab, var(--accent) 8%, var(--surface));
   cursor: default;
+}
+
+/* A one-line tile, icon beside the label: the preview's Phone, Desktop and TV. */
+.viewTile {
+  flex-direction: row;
+  gap: 0.375rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
 }
 
 /* A color setting (ColorSelect): the color in its field, and the panel under it with the

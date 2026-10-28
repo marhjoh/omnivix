@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
 import { EXPORT_LIMIT_MESSAGE, githubLimitMessage } from "@/src/lib/rateLimitMessage";
 import { readApiError } from "@/src/lib/apiError";
@@ -52,12 +52,18 @@ export function useBannerExport({
 }) {
   const [exporting, setExporting] = useState<ExportKind | null>(null);
 
+  /** The request as `file`, at the chosen ratio or the largest the banner format takes as `file`. */
+  function requestAs(file: ExportFormat): ExportRequest {
+    const pixelRatio = exportPixelRatioFor(BANNER_SIZES[request.size], file, request.pixelRatio);
+    return { ...request, pixelRatio, format: file };
+  }
+
   async function download() {
     if (blocked || exporting) return;
     setExporting("download");
     dismissToast();
     try {
-      const blob = await exportBanner({ ...request, format });
+      const blob = await exportBanner(requestAs(format));
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -82,7 +88,7 @@ export function useBannerExport({
     setExporting("copy");
     // Safari only allows the write during the click, so the image goes in as a promise that
     // resolves when the export is done.
-    const png = exportBanner({ ...request, format: "png" });
+    const png = exportBanner(requestAs("png"));
     try {
       await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
       showSuccess("Banner copied to the clipboard.");

@@ -2,9 +2,9 @@ import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
-import { EXPORT_PIXEL_RATIO, type ExportPixelRatio } from "@/src/export/viewport";
+import type { ExportPixelRatio } from "@/src/export/viewport";
 import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import type { ExportImage } from "@/src/export/images";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
@@ -59,7 +59,7 @@ async function waitForRasterReady(page: Page) {
 export async function captureBanner({
   url,
   size,
-  pixelRatio = EXPORT_PIXEL_RATIO,
+  pixelRatio,
   format,
   images = [],
 }: {
@@ -82,7 +82,8 @@ export async function captureBanner({
     const { width, height } = BANNER_SIZES[size];
     const context = await browser.newContext({
       viewport: { width, height },
-      deviceScaleFactor: pixelRatio,
+      // The default when unset, capped for the banner format (YouTube PNGs go up to 2×).
+      deviceScaleFactor: exportPixelRatioFor(BANNER_SIZES[size], format, pixelRatio),
     });
     const page = await context.newPage();
     page.setDefaultTimeout(RENDER_TIMEOUT_MS);

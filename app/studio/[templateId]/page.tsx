@@ -10,6 +10,7 @@ import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
+import { parsePreviewViewCookie, PREVIEW_VIEW_COOKIE_NAME } from "@/src/studio/previewViewCookie";
 import {
   FORMAT_COOKIE_NAME,
   parseFormatCookie,
@@ -86,6 +87,9 @@ export default async function StudioPage({
         )}
         initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
         initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
+        initialPreviewView={parsePreviewViewCookie(
+          cookieStore.get(PREVIEW_VIEW_COOKIE_NAME)?.value,
+        )}
         savedSettings={savedSettings}
         savedUsername={savedUsername}
         link={link}

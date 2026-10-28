@@ -12,7 +12,7 @@ describe("logoFromState", () => {
       src: "https://example.com/logo.svg",
       position: { x: 100, y: 0 },
       height: 59,
-      inset: 32,
+      box: { left: 32, top: 32, width: 1520, height: 332 },
     });
   });
 
@@ -24,7 +24,13 @@ describe("logoFromState", () => {
         logoSize: "xl",
         logoPosition: { x: 20, y: 140 },
       }),
-    ).toMatchObject({ position: { x: 20, y: 100 }, height: 130, inset: 40 });
+    ).toMatchObject({ position: { x: 20, y: 100 }, height: 130, box: { left: 40, top: 40 } });
+  });
+
+  it("is sized and placed by the part every device shows on YouTube", () => {
+    expect(
+      logoFromState({ logoImage: "https://example.com/logo.svg", size: "youtube" }),
+    ).toMatchObject({ height: 63, box: { left: 541, top: 543, width: 1478, height: 355 } });
   });
 });
 

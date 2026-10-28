@@ -2,6 +2,7 @@ import { useId } from "react";
 import { Copy, Download, Link, Loader2 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import { exportPixelRatioFor, exportPixelRatios, type BannerFormat } from "@/src/lib/sizes";
 import { LabeledGroup } from "@/src/ui/FieldLabel";
 import { DropdownChevron } from "@/src/ui/Dropdown";
 import { useDisclosure } from "@/src/ui/useDisclosure";
@@ -16,7 +17,7 @@ function ChoiceTiles<T extends string | number>({
   onChange,
 }: {
   label: string;
-  options: ReadonlyArray<{ value: T; label: string; hint: string }>;
+  options: ReadonlyArray<{ value: T; label: string; hint: string; disabled?: boolean }>;
   value: T;
   onChange: (value: T) => void;
 }) {
@@ -31,6 +32,7 @@ function ChoiceTiles<T extends string | number>({
             key={option.value}
             type="button"
             aria-pressed={option.value === value}
+            disabled={option.disabled}
             onClick={() => onChange(option.value)}
             className={`${controls.tile} ${controls.panelTile}`}
           >
@@ -57,7 +59,7 @@ export function ExportControls({
   onPixelRatioChange,
   format,
   onFormatChange,
-  bannerSize,
+  bannerFormat,
 }: {
   onDownload: () => void;
   onCopy: () => void;
@@ -65,16 +67,18 @@ export function ExportControls({
   exporting: ExportKind | null;
   /** Nothing to export yet (or a problem with it); Copy and Download are disabled. */
   exportBlocked: boolean;
+  /** The saved choice. A banner format that can't take it as `format` uses its largest instead. */
   pixelRatio: ExportPixelRatio;
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
   format: ExportFormat;
   onFormatChange: (format: ExportFormat) => void;
-  /** The chosen format's size at 1×, for the pixel sizes in the options. */
-  bannerSize: { width: number; height: number };
+  /** The chosen banner format: its size at 1×, for the pixel sizes, and the ratios it takes. */
+  bannerFormat: BannerFormat;
 }) {
   const { open, setOpen, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
   const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
+  const shownPixelRatio = exportPixelRatioFor(bannerFormat, format, pixelRatio);
   const busy = exporting !== null;
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
@@ -120,7 +124,9 @@ export function ExportControls({
           aria-disabled={busy}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
-          aria-label={isCopying ? "Copying…" : `Export options: ${pixelRatio}×, ${formatLabel}`}
+          aria-label={
+            isCopying ? "Copying…" : `Export options: ${shownPixelRatio}×, ${formatLabel}`
+          }
           aria-busy={isCopying}
           className={controls.splitToggle}
         >
@@ -149,9 +155,11 @@ export function ExportControls({
                 value: ratio,
                 label: `${ratio}×`,
                 // Thin spaces keep the largest size on one line in the narrow tile.
-                hint: `${bannerSize.width * ratio}\u2009×\u2009${bannerSize.height * ratio}`,
+                hint: `${bannerFormat.width * ratio}\u2009×\u2009${bannerFormat.height * ratio}`,
+                // YouTube's 3× is JPEG only; Reddit is 1× only.
+                disabled: !exportPixelRatios(bannerFormat, format).includes(ratio),
               }))}
-              value={pixelRatio}
+              value={shownPixelRatio}
               onChange={onPixelRatioChange}
             />
             <ChoiceTiles

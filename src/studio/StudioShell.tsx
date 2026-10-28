@@ -64,7 +64,8 @@ import {
 } from "@/src/studio/downloadCookies";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, sizeOfPlatform, type BannerView } from "@/src/lib/sizes";
+import { parsePreviewViewCookie, PREVIEW_VIEW_COOKIE_NAME } from "@/src/studio/previewViewCookie";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import {
@@ -271,6 +272,7 @@ export function StudioShell({
   initialSidebarCollapsed,
   initialPixelRatio,
   initialFormat,
+  initialPreviewView,
   savedSettings,
   savedUsername,
   link,
@@ -282,6 +284,8 @@ export function StudioShell({
   initialPixelRatio: ExportPixelRatio;
   /** Download format from its cookie (PNG when none is saved). */
   initialFormat: ExportFormat;
+  /** The preview's view of a format that devices crop, from its cookie (phone when none). */
+  initialPreviewView: BannerView;
   /** This template's settings from its cookie (null: none saved yet). */
   savedSettings: Record<string, unknown> | null;
   /** The GitHub username from its cookie (null: none saved yet). */
@@ -329,6 +333,11 @@ export function StudioShell({
     FORMAT_COOKIE_NAME,
     parseFormatCookie,
     initialFormat,
+  );
+  const [previewView, changePreviewView] = useCookieChoice(
+    PREVIEW_VIEW_COOKIE_NAME,
+    parsePreviewViewCookie,
+    initialPreviewView,
   );
 
   // Desktop collapse is remembered (cookie, read by the page); the phone drawer starts closed.
@@ -589,7 +598,9 @@ export function StudioShell({
   const updateState = useCallback(
     (key: string, value: unknown) => {
       setState((prev) => {
-        const next = clampSelectedRepos(templateId, { ...prev, [key]: value });
+        // A platform comes with its format.
+        const size = key === "platform" ? (sizeOfPlatform(value) ?? prev.size) : prev.size;
+        const next = clampSelectedRepos(templateId, { ...prev, size, [key]: value });
         // A new image drops the old one's settings, such as a background's position.
         for (const related of IMAGE_SETTINGS[key] ?? []) delete next[related];
         // Picking an alignment puts the content at that spot, centered vertically.
@@ -725,7 +736,7 @@ export function StudioShell({
             onPixelRatioChange={changePixelRatio}
             format={format}
             onFormatChange={changeFormat}
-            bannerSize={BANNER_SIZES[size]}
+            bannerFormat={BANNER_SIZES[size]}
           />
         </TopBar>
       </header>
@@ -770,6 +781,8 @@ export function StudioShell({
           <PreviewArtboard
             templateId={templateId}
             size={size}
+            view={previewView}
+            onViewChange={changePreviewView}
             state={shownPreview.bannerState}
             data={shownPreview.data}
             previewState={shownPreview.previewState}

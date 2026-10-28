@@ -87,7 +87,7 @@ export function QuoteBannerRenderer({
       <div
         style={{
           position: "absolute",
-          inset: contentBoxOf(state.size).inset,
+          ...contentBoxOf(state.size),
           fontSizeAdjust: String(style.xHeight),
         }}
       >

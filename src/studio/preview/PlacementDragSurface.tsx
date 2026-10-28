@@ -1,6 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { dragPlacement, nudgePlacement, placementRoom, snapLine } from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
+import type { BannerBox, Rect as BannerRect } from "@/src/lib/sizes";
 import {
   arrowStep,
   describePosition,
@@ -25,6 +26,7 @@ export function PlacementDragSurface({
   name,
   position,
   frame,
+  shown,
   scale,
   onMove,
 }: {
@@ -34,7 +36,9 @@ export function PlacementDragSurface({
   name: string;
   position: Position;
   /** Banner size in CSS pixels. */
-  frame: { width: number; height: number };
+  frame: BannerBox;
+  /** The part of the banner the preview shows, in CSS pixels. */
+  shown: BannerRect;
   /** Preview scale: screen pixels per banner pixel. */
   scale: number;
   onMove: (position: Position) => void;
@@ -85,10 +89,10 @@ export function PlacementDragSurface({
         <PositionStatus text={`${name}: ${describePosition(position)}`} quiet={pointer.dragging} />
       </div>
       {snapped.x === undefined ? null : (
-        <SnapGuide axis="x" at={snapLine(frame, "x", snapped.x) * scale} />
+        <SnapGuide axis="x" at={(snapLine(frame, "x", snapped.x) - shown.left) * scale} />
       )}
       {snapped.y === undefined ? null : (
-        <SnapGuide axis="y" at={snapLine(frame, "y", snapped.y) * scale} />
+        <SnapGuide axis="y" at={(snapLine(frame, "y", snapped.y) - shown.top) * scale} />
       )}
     </>
   );
