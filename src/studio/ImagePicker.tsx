@@ -247,13 +247,13 @@ export function ImagePicker({
 
   return (
     <div className="space-y-1.5">
-      <FieldLabel htmlFor={id} end={labelAction}>
+      <FieldLabel htmlFor={id} id={`${id}-label`} end={labelAction}>
         {label}
       </FieldLabel>
 
       <div>
         <DropdownRoot dropdown={dropdown} className="relative">
-          <DropdownTrigger dropdown={dropdown} joinedBelow={joined}>
+          <DropdownTrigger dropdown={dropdown} joinedBelow={joined} labelId={`${id}-label`}>
             {triggerLabel(value, uploadDisplayName, presets)}
           </DropdownTrigger>
 

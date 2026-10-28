@@ -67,19 +67,22 @@ export function ColorSelect({
 
   return (
     <div className="space-y-1.5">
-      <FieldLabel htmlFor={triggerId}>{label}</FieldLabel>
+      <FieldLabel htmlFor={triggerId} id={`${triggerId}-label`}>
+        {label}
+      </FieldLabel>
       <div ref={rootRef} onBlur={onBlur} className="relative">
         <button
           ref={toggleRef}
           id={triggerId}
           type="button"
+          aria-labelledby={`${triggerId}-label ${triggerId}-value`}
           aria-expanded={open && !disabled}
           aria-controls={open ? panelId : undefined}
           disabled={disabled}
           onClick={() => setOpen(!open)}
           className="field-select flex items-center justify-between gap-2 text-left"
         >
-          <span className="min-w-0 flex-1">
+          <span id={`${triggerId}-value`} className="min-w-0 flex-1">
             <OptionLabel
               preview={<span className={controls.colorDot} style={swatchStyle(shown)} />}
               label={

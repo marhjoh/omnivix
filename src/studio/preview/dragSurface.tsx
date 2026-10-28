@@ -53,15 +53,15 @@ export function describePosition({ x, y }: Position): string {
 
 /**
  * Tells screen readers where something is (`text`, e.g. "logo: left, top") once it has moved;
- * during a drag (`quiet`), at its end.
+ * during a drag (`quiet`), at its end. It only changes with the place, so a click doesn't repeat it.
  */
 export function PositionStatus({ text, quiet }: { text: string; quiet: boolean }) {
   const [initial] = useState(text);
-  const [moved, setMoved] = useState(false);
-  if (!moved && text !== initial) setMoved(true);
+  const [said, setSaid] = useState("");
+  if (!quiet && text !== said && (said || text !== initial)) setSaid(text);
   return (
     <span className="sr-only" aria-live="polite">
-      {moved && !quiet ? text : ""}
+      {said}
     </span>
   );
 }

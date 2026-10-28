@@ -108,12 +108,15 @@ export function DropdownTrigger({
   dropdown,
   disabled,
   joinedBelow = false,
+  labelId,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
   disabled?: boolean;
   /** Something is attached under the trigger (see ImagePicker), so its bottom is square. */
   joinedBelow?: boolean;
+  /** The setting's visible label: screen readers then read it and the value, not just one. */
+  labelId?: string;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
   return (
@@ -121,6 +124,7 @@ export function DropdownTrigger({
       type="button"
       id={triggerId}
       aria-haspopup="listbox"
+      aria-labelledby={labelId && `${labelId} ${triggerId}-value`}
       aria-expanded={open}
       aria-controls={open ? listId : undefined}
       disabled={disabled}
@@ -129,7 +133,9 @@ export function DropdownTrigger({
         joinedBelow ? "rounded-b-none" : ""
       }`}
     >
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span id={`${triggerId}-value`} className="min-w-0 flex-1 truncate">
+        {children}
+      </span>
       <DropdownChevron open={open} className="self-center text-muted" />
     </button>
   );
@@ -268,11 +274,11 @@ export function Select({
   const current = shown.find((option) => option.value === value);
   return (
     <div className="space-y-1.5">
-      <FieldLabel htmlFor={id} end={labelAction}>
+      <FieldLabel htmlFor={id} id={`${id}-label`} end={labelAction}>
         {label}
       </FieldLabel>
       <DropdownRoot dropdown={dropdown} className="relative">
-        <DropdownTrigger dropdown={dropdown} disabled={disabled}>
+        <DropdownTrigger dropdown={dropdown} disabled={disabled} labelId={`${id}-label`}>
           {current ? <OptionLabel {...current} /> : placeholder}
         </DropdownTrigger>
         <DropdownList dropdown={dropdown} label={`${label} options`}>
