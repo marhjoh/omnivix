@@ -1,5 +1,10 @@
 import { useId, type ReactNode } from "react";
 
+/** The id of the FieldLabel for the control with this id. */
+export function fieldLabelId(controlId: string): string {
+  return `${controlId}-label`;
+}
+
 /**
  * A setting's label, above its control. `end` sits at the other end of the row: a value (Zoom's
  * percentage), a count or a small action.
@@ -17,7 +22,7 @@ export function FieldLabel({
   children: ReactNode;
 }) {
   const label = htmlFor ? (
-    <label htmlFor={htmlFor} id={id} className="field-label">
+    <label htmlFor={htmlFor} id={id ?? fieldLabelId(htmlFor)} className="field-label">
       {children}
     </label>
   ) : (

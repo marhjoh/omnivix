@@ -89,7 +89,7 @@ export function ExportControls({
             onDownload();
           }}
           disabled={exportBlocked}
-          // aria-disabled while exporting, so focus stays on it instead of going to the page start.
+          // aria-disabled, not disabled, while exporting: it keeps focus.
           aria-disabled={busy}
           aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
           aria-busy={isDownloading}

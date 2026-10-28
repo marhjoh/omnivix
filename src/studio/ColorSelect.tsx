@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { colorValue, isCustomColor } from "@/src/banner/quoteStyle";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
-import { DropdownChevron, OptionLabel } from "@/src/ui/Dropdown";
+import { FieldButton, OptionLabel } from "@/src/ui/Dropdown";
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import controls from "@/src/studio/controls.module.css";
@@ -34,10 +34,8 @@ function sixDigits(hex: string): string {
 }
 
 /**
- * A color setting: a field with the color and its name, opening a panel under it with round
- * swatches, each in the shade it shows on this banner (Default is the banner's own color), and a
- * last one for any color, with a picker. The panel closes like the app's other popups
- * (useDisclosure), and when a named color is picked.
+ * A color setting: a field with the color and its name, opening a panel of swatches in the shades
+ * this banner shows them in, and a custom color with a picker. Picking a named color closes it.
  */
 export function ColorSelect({
   label,
@@ -67,37 +65,29 @@ export function ColorSelect({
 
   return (
     <div className="space-y-1.5">
-      <FieldLabel htmlFor={triggerId} id={`${triggerId}-label`}>
-        {label}
-      </FieldLabel>
+      <FieldLabel htmlFor={triggerId}>{label}</FieldLabel>
       <div ref={rootRef} onBlur={onBlur} className="relative">
-        <button
+        <FieldButton
           ref={toggleRef}
           id={triggerId}
-          type="button"
-          aria-labelledby={`${triggerId}-label ${triggerId}-value`}
-          aria-expanded={open && !disabled}
+          open={open && !disabled}
           aria-controls={open ? panelId : undefined}
           disabled={disabled}
           onClick={() => setOpen(!open)}
-          className="field-select flex items-center justify-between gap-2 text-left"
         >
-          <span id={`${triggerId}-value`} className="min-w-0 flex-1">
-            <OptionLabel
-              preview={<span className={controls.colorDot} style={swatchStyle(shown)} />}
-              label={
-                custom ? (
-                  <>
-                    Custom <span className="text-muted">{custom}</span>
-                  </>
-                ) : (
-                  (named?.label ?? options[0]?.label)
-                )
-              }
-            />
-          </span>
-          <DropdownChevron open={open} className="self-center text-muted" />
-        </button>
+          <OptionLabel
+            preview={<span className={controls.colorDot} style={swatchStyle(shown)} />}
+            label={
+              custom ? (
+                <>
+                  Custom <span className="text-muted">{custom}</span>
+                </>
+              ) : (
+                (named?.label ?? options[0]?.label)
+              )
+            }
+          />
+        </FieldButton>
         {open && !disabled ? (
           <div
             id={panelId}

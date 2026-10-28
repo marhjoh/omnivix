@@ -52,8 +52,8 @@ export function describePosition({ x, y }: Position): string {
 }
 
 /**
- * Tells screen readers where something is (`text`, e.g. "logo: left, top") once it has moved;
- * during a drag (`quiet`), at its end. It only changes with the place, so a click doesn't repeat it.
+ * Tells screen readers where something is (`text`, e.g. "logo: left, top") when it moves; during a
+ * drag (`quiet`), at its end. A click that doesn't move it says nothing.
  */
 export function PositionStatus({ text, quiet }: { text: string; quiet: boolean }) {
   const [initial] = useState(text);
