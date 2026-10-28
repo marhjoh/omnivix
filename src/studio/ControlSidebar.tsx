@@ -243,7 +243,9 @@ function PlatformPicker({
       <DropdownRoot dropdown={dropdown} className="relative">
         <DropdownTrigger dropdown={dropdown}>
           <span className="flex min-w-0 items-center gap-2">
-            <PlatformIcon icon={current.id} size={14} />
+            <span className="text-muted">
+              <PlatformIcon icon={current.id} size={14} />
+            </span>
             <span className="truncate">
               {current.name} · {bannerFormatOf(state.size).label}
             </span>
@@ -255,23 +257,27 @@ function PlatformPicker({
             return (
               <div key={key}>
                 <DropdownGroupLabel>
-                  {format.label} · {format.width} × {format.height}
+                  {format.label}{" "}
+                  <span className="font-normal text-muted">
+                    ({format.width} × {format.height})
+                  </span>
                 </DropdownGroupLabel>
                 {format.platforms.map((platform) => (
                   <DropdownOption
                     key={platform.id}
                     selected={platform.id === current.id}
-                    icon={
-                      <span className="flex w-3.5 shrink-0 justify-center text-muted">
-                        <PlatformIcon icon={platform.id} />
-                      </span>
-                    }
                     onSelect={() => {
                       onChange(platform.id);
                       dropdown.close();
                     }}
                   >
-                    {platform.name}
+                    {/* In the name, not the check's column, so the selected one keeps its icon. */}
+                    <span className="flex items-center gap-2">
+                      <span className="text-muted">
+                        <PlatformIcon icon={platform.id} />
+                      </span>
+                      {platform.name}
+                    </span>
                   </DropdownOption>
                 ))}
               </div>

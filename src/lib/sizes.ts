@@ -87,7 +87,7 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
     width: 1500,
     height: 500,
     platforms: [
-      { id: "x", name: "X / Twitter" },
+      { id: "x", name: "X (Twitter)" },
       { id: "bluesky", name: "Bluesky" },
       { id: "mastodon", name: "Mastodon" },
       { id: "kofi", name: "Ko-fi" },
