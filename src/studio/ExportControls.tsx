@@ -156,7 +156,7 @@ export function ExportControls({
                 label: `${ratio}×`,
                 // Thin spaces keep the largest size on one line in the narrow tile.
                 hint: `${bannerFormat.width * ratio}\u2009×\u2009${bannerFormat.height * ratio}`,
-                // YouTube's 3× is JPEG only; Reddit is 1× only.
+                // YouTube's 2× and 3× are JPEG only; Reddit is 1× only.
                 disabled: !exportPixelRatios(bannerFormat, format).includes(ratio),
               }))}
               value={shownPixelRatio}

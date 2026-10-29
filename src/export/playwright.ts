@@ -82,7 +82,7 @@ export async function captureBanner({
     const { width, height } = BANNER_SIZES[size];
     const context = await browser.newContext({
       viewport: { width, height },
-      // The default when unset, capped for the banner format (YouTube PNGs go up to 2×).
+      // The default when unset, capped for the banner format (YouTube PNGs are 1× only).
       deviceScaleFactor: exportPixelRatioFor(BANNER_SIZES[size], format, pixelRatio),
     });
     const page = await context.newPage();

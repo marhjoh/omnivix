@@ -74,7 +74,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     const { label, width, height, platforms } = BANNER_SIZES[key];
     return `${code(key)} (${label}, ${width} × ${height}: ${platforms.map((p) => p.name).join(", ")})`;
   });
-  // " (`youtube` as `png`: `1` or `2` only)", for the sizes that can't take every ratio.
+  // " (`youtube` as `png`: `1` only)", for the sizes that can't take every ratio.
   const limits = BANNER_SIZE_KEYS.flatMap((key) =>
     EXPORT_FORMATS.filter((file) => BANNER_SIZES[key].maxPixelRatio?.[file]).map(
       (file) =>
