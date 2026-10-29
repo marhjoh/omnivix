@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
 import { preload } from "react-dom";
 import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
-import { isHttpImageUrl, isInsecureImageLink } from "@/src/lib/imageLink";
+import { isHttpImageUrl } from "@/src/lib/imageLink";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 
 /**
- * An image setting (the background, the logo) as the preview loads it. One that can't be used (it
- * failed, or is an http link from an older saved setting) is left out of the preview and blocks
- * the export; the sidebar keeps it. A failed preset or upload is reported here, once; links report
- * their own problems (ImagePicker).
+ * An image setting (the background, the logo) as the preview loads it. One that failed is left out
+ * of the preview and blocks the export; the sidebar keeps it. A failed preset or upload is reported
+ * here, once; links report their own problems (ImagePicker).
  */
 export function useBannerImage(
   value: unknown,
@@ -36,5 +35,5 @@ export function useBannerImage(
     showError(`Couldn't load this ${name}.`);
   }, [failed, src, name, showError]);
 
-  return { status, unusable: failed || isInsecureImageLink(value) };
+  return { status, unusable: failed };
 }

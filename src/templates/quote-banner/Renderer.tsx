@@ -2,15 +2,9 @@ import type { CSSProperties } from "react";
 import { Frame } from "@/src/banner/Frame";
 import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
-import { authorPositionFromState } from "@/src/banner/authorPosition";
-import { normalizeContentAlign } from "@/src/banner/contentAlign";
-import { ALIGN_X, alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
+import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contentBoxOf } from "@/src/banner/fit";
-import {
-  BANNER_AUTHOR_ATTRIBUTE,
-  BANNER_CONTENT_ATTRIBUTE,
-  placementStyle,
-} from "@/src/banner/placement";
+import { BANNER_CONTENT_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import {
   AUTHOR_GAP,
@@ -41,8 +35,6 @@ export function QuoteBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const position = contentPositionFromState(state);
-  // Text at the left, the center or the right lines up that way, whatever `alignment` says.
-  const alignment = alignmentAt(position.x) ?? normalizeContentAlign(state.alignment);
   const style = quoteStyleFromState(state, uiTheme);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
@@ -52,8 +44,6 @@ export function QuoteBannerRenderer({
   const authorFontSize = Math.round(
     quoteSize * AUTHOR_SCALE[normalizeContentSize(state.authorSize, initialState.authorSize)],
   );
-  // Lined up like the quote until it's dragged.
-  const authorAt = authorPositionFromState(state) ?? { x: ALIGN_X[alignment], y: 0 };
 
   const longText = quote.length > LONG_QUOTE_CHARS;
   const quoteFontSize = longText
@@ -61,9 +51,6 @@ export function QuoteBannerRenderer({
     : quoteSize;
 
   const [open, close] = style.textMarks ?? ["", ""];
-  // Left-aligned, the opening mark hangs in a column of its own, like Large beside's mark, so
-  // the lines and the author start together.
-  const hanging = Boolean(open) && alignment === "left";
   const quoteType: CSSProperties = {
     fontFamily: style.fontFamily,
     fontSize: quoteFontSize,
@@ -92,18 +79,21 @@ export function QuoteBannerRenderer({
         }}
       >
         {/* As wide as its longest line, so a short quote can move sideways. Placed with CSS, so
-            it's right from the server render. */}
+            it's right from the server render. Alignment and dragging only move it: the text,
+            marks and author are always centered in it. */}
         <div
           {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
           style={{
             ...placementStyle(position),
             width: "max-content",
             maxWidth: "100%",
-            textAlign: alignment,
-            ...((hanging || style.marks === "large-beside") && {
+            textAlign: "center",
+            ...(style.marks === "large-beside" && {
               display: "flex",
               alignItems: "flex-start",
             }),
+            // Room above the text for Large behind's mark.
+            ...(style.marks === "large-behind" && { paddingTop: quoteFontSize * 0.8 }),
             ...(style.marks === "bar" && {
               borderLeft: `${Math.max(3, Math.round(quoteFontSize * 0.1))}px solid ${style.markColor ?? chrome.text}`,
               paddingLeft: quoteFontSize * 0.65,
@@ -125,18 +115,13 @@ export function QuoteBannerRenderer({
               style={{
                 ...largeMark(6),
                 position: "absolute",
-                // Within the banner's padding when the quote is at the left edge.
-                top: -quoteFontSize * 1.3,
+                // In the room above the text.
+                top: -quoteFontSize * 0.5,
                 left: -quoteFontSize * 0.5,
                 opacity: 0.14,
               }}
             >
               &ldquo;
-            </span>
-          )}
-          {hanging && (
-            <span aria-hidden style={{ ...quoteType, color: style.markColor }}>
-              {open}
             </span>
           )}
           {style.marks === "large-beside" && (
@@ -166,22 +151,15 @@ export function QuoteBannerRenderer({
                 wordBreak: "break-word",
               }}
             >
-              {!hanging && mark(open)}
+              {mark(open)}
               {quote}
               {mark(close)}
             </blockquote>
             {author && (
-              // In the quote's block, so it moves with it and stays in the padded box. Placed
-              // across the text column like the quote in its box (`placementStyle`).
+              // In the quote's block, so it moves with the quote.
               <p
-                {...{ [BANNER_AUTHOR_ATTRIBUTE]: "" }}
                 style={{
-                  position: "relative",
-                  left: `${authorAt.x}%`,
-                  transform: `translateX(-${authorAt.x}%)`,
-                  width: "fit-content",
-                  maxWidth: "100%",
-                  marginTop: AUTHOR_GAP + authorAt.y,
+                  marginTop: AUTHOR_GAP,
                   fontFamily: style.authorFontFamily,
                   fontSize: authorFontSize,
                   color: style.authorColor ?? chrome.textMuted,

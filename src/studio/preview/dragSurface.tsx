@@ -11,9 +11,9 @@ import type { Position } from "@/src/banner/position";
 import type { Rect } from "@/src/studio/preview/useItemRect";
 
 /**
- * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`,
- * `AuthorDragSurface`): arrow keys, drags measured from where they started, the dashed frame with
- * its badge, and snap guides.
+ * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`):
+ * arrow keys, drags measured from where they started, the dashed frame with its badge, and snap
+ * guides.
  */
 
 /**

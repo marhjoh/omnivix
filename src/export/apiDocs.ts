@@ -4,7 +4,6 @@ import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { MAX_AUTHOR_SPACE } from "@/src/banner/authorPosition";
 import { BANNER_SIZES, BANNER_SIZE_KEYS, exportPixelRatios } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
@@ -52,8 +51,6 @@ function accepts(field: EditorFieldSchema): string {
       return `a number from ${field.min} to ${field.max}`;
     case "backgroundPicker":
       return "the path of a built-in background (see below), e.g. `/backgrounds/seoul.avif`, or a public `https://` image URL; leave out for none";
-    case "authorPosition":
-      return `\`{ "x": 0–100, "y": 0–${MAX_AUTHOR_SPACE} }\`: \`x\` is where across the quote's width (0 left, 100 right), \`y\` extra space above the author in pixels (\`x,y\` in a studio link); leave out to line it up like the quote`;
     case "colorPicker":
       return `${oneOf(field.options?.map((option) => option.value) ?? [])}, or a hex color such as \`#ff6600\` (\`%23ff6600\` in a studio link)`;
     case "logoPicker":
