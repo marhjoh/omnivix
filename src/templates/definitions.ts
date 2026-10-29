@@ -97,10 +97,7 @@ const logoInitialState: LogoState = { logoSize: DEFAULT_LOGO_SIZE };
 /** GitHub username, for the banners that load GitHub data. */
 const usernameState = z.string().min(1, "Required");
 
-/**
- * Horizontal placement of the content (its x in `contentPosition`); in the quote banner also the
- * text alignment.
- */
+/** Horizontal placement of the content (its x in `contentPosition`). */
 const alignmentField: EditorFieldSchema = {
   key: "alignment",
   label: "Alignment",

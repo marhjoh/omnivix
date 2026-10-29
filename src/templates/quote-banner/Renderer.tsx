@@ -2,8 +2,7 @@ import type { CSSProperties } from "react";
 import { Frame } from "@/src/banner/Frame";
 import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
-import { normalizeContentAlign } from "@/src/banner/contentAlign";
-import { alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
+import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contentBoxOf } from "@/src/banner/fit";
 import { BANNER_CONTENT_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
@@ -36,8 +35,6 @@ export function QuoteBannerRenderer({
 }) {
   const chrome = bannerUiChrome(uiTheme);
   const position = contentPositionFromState(state);
-  // Text at the left, the center or the right lines up that way, whatever `alignment` says.
-  const alignment = alignmentAt(position.x) ?? normalizeContentAlign(state.alignment);
   const style = quoteStyleFromState(state, uiTheme);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
@@ -54,9 +51,6 @@ export function QuoteBannerRenderer({
     : quoteSize;
 
   const [open, close] = style.textMarks ?? ["", ""];
-  // Left-aligned, the opening mark hangs in a column of its own, like Large beside's mark, so
-  // the lines and the author start together.
-  const hanging = Boolean(open) && alignment === "left";
   const quoteType: CSSProperties = {
     fontFamily: style.fontFamily,
     fontSize: quoteFontSize,
@@ -85,15 +79,16 @@ export function QuoteBannerRenderer({
         }}
       >
         {/* As wide as its longest line, so a short quote can move sideways. Placed with CSS, so
-            it's right from the server render. */}
+            it's right from the server render. Alignment and dragging only move it: the text,
+            marks and author are always centered in it. */}
         <div
           {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
           style={{
             ...placementStyle(position),
             width: "max-content",
             maxWidth: "100%",
-            textAlign: alignment,
-            ...((hanging || style.marks === "large-beside") && {
+            textAlign: "center",
+            ...(style.marks === "large-beside" && {
               display: "flex",
               alignItems: "flex-start",
             }),
@@ -127,11 +122,6 @@ export function QuoteBannerRenderer({
               &ldquo;
             </span>
           )}
-          {hanging && (
-            <span aria-hidden style={{ ...quoteType, color: style.markColor }}>
-              {open}
-            </span>
-          )}
           {style.marks === "large-beside" && (
             <span
               aria-hidden
@@ -159,12 +149,12 @@ export function QuoteBannerRenderer({
                 wordBreak: "break-word",
               }}
             >
-              {!hanging && mark(open)}
+              {mark(open)}
               {quote}
               {mark(close)}
             </blockquote>
             {author && (
-              // In the quote's block, so it moves and lines up with the quote.
+              // In the quote's block, so it moves with the quote.
               <p
                 style={{
                   marginTop: AUTHOR_GAP,

@@ -628,7 +628,7 @@ export function StudioShell({
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
     [updateState],
   );
-  // On the left, center or right line, the alignment follows (and the quote's text with it).
+  // On the left, center or right line, the alignment follows.
   const moveContent = useCallback((position: ContentPosition) => {
     setState((prev) => ({
       ...prev,
