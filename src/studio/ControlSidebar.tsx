@@ -551,8 +551,9 @@ export function ControlSidebar({
       );
     }
 
-    // Each prefix by its symbol.
+    // Show each prefix in the author's font.
     if (field.key === "authorPrefix") {
+      const sample = fontStyleCss(state.font, "regular");
       return (
         <Select
           key={field.key}
@@ -560,7 +561,11 @@ export function ControlSidebar({
           value={String(state[field.key] ?? "")}
           options={AUTHOR_PREFIX_OPTIONS.map(({ symbol, ...option }) => ({
             ...option,
-            preview: <span className="text-base leading-none">{symbol}</span>,
+            preview: (
+              <span style={sample} className="text-base leading-none">
+                {symbol}
+              </span>
+            ),
           }))}
           onChange={(value) => onChange(field.key, value)}
         />
