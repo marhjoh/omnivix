@@ -92,6 +92,8 @@ export function QuoteBannerRenderer({
               display: "flex",
               alignItems: "flex-start",
             }),
+            // Room above the text for Large behind's mark.
+            ...(style.marks === "large-behind" && { paddingTop: quoteFontSize * 0.8 }),
             ...(style.marks === "bar" && {
               borderLeft: `${Math.max(3, Math.round(quoteFontSize * 0.1))}px solid ${style.markColor ?? chrome.text}`,
               paddingLeft: quoteFontSize * 0.65,
@@ -113,8 +115,8 @@ export function QuoteBannerRenderer({
               style={{
                 ...largeMark(6),
                 position: "absolute",
-                // Within the banner's padding when the quote is at the left edge.
-                top: -quoteFontSize * 1.3,
+                // In the room above the text.
+                top: -quoteFontSize * 0.5,
                 left: -quoteFontSize * 0.5,
                 opacity: 0.14,
               }}
