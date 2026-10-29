@@ -39,7 +39,6 @@ import {
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
-import { authorPositionFromState } from "@/src/banner/authorPosition";
 import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
 import {
@@ -584,20 +583,6 @@ export function ControlSidebar({
           uiTheme={uiTheme}
           // The author is muted by default.
           defaultColor={field.key === "authorColor" ? bannerUiChrome(uiTheme).textMuted : undefined}
-        />
-      );
-    }
-
-    // Like Alignment: Custom once the author is dragged from under the quote.
-    if (field.type === "authorPosition") {
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={authorPositionFromState(state) ? "" : "under"}
-          options={[{ label: "Under the quote", value: "under" }]}
-          onChange={() => onChange(field.key, undefined)}
-          placeholder="Custom"
         />
       );
     }

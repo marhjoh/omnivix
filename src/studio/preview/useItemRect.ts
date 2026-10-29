@@ -12,7 +12,7 @@ const sameRect = (a: Rect, b: Rect) =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 
 /** `element`'s box relative to `preview`, in screen pixels. */
-export function measureRect(preview: Element, element: Element): Rect {
+function measureRect(preview: Element, element: Element): Rect {
   const outer = preview.getBoundingClientRect();
   const inner = element.getBoundingClientRect();
   return {

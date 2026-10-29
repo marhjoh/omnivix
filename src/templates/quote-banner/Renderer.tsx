@@ -2,15 +2,10 @@ import type { CSSProperties } from "react";
 import { Frame } from "@/src/banner/Frame";
 import { logoFromState } from "@/src/banner/logo";
 import { backgroundFromState } from "@/src/banner/background";
-import { authorPositionFromState } from "@/src/banner/authorPosition";
 import { normalizeContentAlign } from "@/src/banner/contentAlign";
-import { ALIGN_X, alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
+import { alignmentAt, contentPositionFromState } from "@/src/banner/contentPosition";
 import { contentBoxOf } from "@/src/banner/fit";
-import {
-  BANNER_AUTHOR_ATTRIBUTE,
-  BANNER_CONTENT_ATTRIBUTE,
-  placementStyle,
-} from "@/src/banner/placement";
+import { BANNER_CONTENT_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import {
   AUTHOR_GAP,
@@ -52,8 +47,6 @@ export function QuoteBannerRenderer({
   const authorFontSize = Math.round(
     quoteSize * AUTHOR_SCALE[normalizeContentSize(state.authorSize, initialState.authorSize)],
   );
-  // Lined up like the quote until it's dragged.
-  const authorAt = authorPositionFromState(state) ?? { x: ALIGN_X[alignment], y: 0 };
 
   const longText = quote.length > LONG_QUOTE_CHARS;
   const quoteFontSize = longText
@@ -171,17 +164,10 @@ export function QuoteBannerRenderer({
               {mark(close)}
             </blockquote>
             {author && (
-              // In the quote's block, so it moves with it and stays in the padded box. Placed
-              // across the text column like the quote in its box (`placementStyle`).
+              // In the quote's block, so it moves and lines up with the quote.
               <p
-                {...{ [BANNER_AUTHOR_ATTRIBUTE]: "" }}
                 style={{
-                  position: "relative",
-                  left: `${authorAt.x}%`,
-                  transform: `translateX(-${authorAt.x}%)`,
-                  width: "fit-content",
-                  maxWidth: "100%",
-                  marginTop: AUTHOR_GAP + authorAt.y,
+                  marginTop: AUTHOR_GAP,
                   fontFamily: style.authorFontFamily,
                   fontSize: authorFontSize,
                   color: style.authorColor ?? chrome.textMuted,

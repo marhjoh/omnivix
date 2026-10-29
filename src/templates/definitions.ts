@@ -19,7 +19,6 @@ import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/t
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
-import { MAX_AUTHOR_SPACE } from "@/src/banner/authorPosition";
 import {
   DEFAULT_QUOTE_STYLE,
   QUOTE_COLOR_OPTIONS,
@@ -411,7 +410,6 @@ export const quoteBannerDefinition: TemplateDefinition<
     },
     { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
     { key: "authorPrefix", label: "Author prefix", type: "select", options: AUTHOR_PREFIX_OPTIONS },
-    { key: "authorPosition", label: "Author position", type: "authorPosition" },
     { key: "authorSize", label: "Author size", type: "select", options: CONTENT_SIZE_OPTIONS },
     ...logoFields,
   ],
@@ -428,8 +426,6 @@ export const quoteBannerDefinition: TemplateDefinition<
     authorColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.authorColor),
     authorPrefix: z.enum(AUTHOR_PREFIXES).default(DEFAULT_QUOTE_STYLE.authorPrefix),
     authorSize: contentSizeState.default("m"),
-    /** Set once the author is dragged; until then it's lined up like the quote. */
-    authorPosition: z.object({ x: percent, y: z.number().min(0).max(MAX_AUTHOR_SPACE) }).optional(),
   }),
   initialState: {
     ...logoInitialState,

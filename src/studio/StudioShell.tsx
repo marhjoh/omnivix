@@ -23,7 +23,6 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { logoPositionFromState } from "@/src/banner/logo";
 import type { Position } from "@/src/banner/position";
-import { authorPositionFromState, type AuthorPosition } from "@/src/banner/authorPosition";
 import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
@@ -647,11 +646,6 @@ export function StudioShell({
     (position: Position) => updateState("logoPosition", position),
     [updateState],
   );
-  const moveAuthor = useCallback(
-    (position: AuthorPosition) => updateState("authorPosition", position),
-    [updateState],
-  );
-  const hasAuthor = templateId === "quote-banner" && Boolean(String(state.author ?? "").trim());
 
   const backgroundFields = useMemo(
     () => ({
@@ -805,15 +799,6 @@ export function StudioShell({
             logoAdjust={
               state.logoImage && !logoUnusable
                 ? { position: logoPositionFromState(state), onMove: moveLogo }
-                : undefined
-            }
-            authorAdjust={
-              hasAuthor
-                ? {
-                    position: authorPositionFromState(state),
-                    quoteY: contentPositionFromState(state).y,
-                    onMove: moveAuthor,
-                  }
                 : undefined
             }
           />

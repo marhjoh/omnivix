@@ -11,7 +11,7 @@ import { positionOr, type Position } from "@/src/banner/position";
 export type ContentPosition = Position;
 
 /** Each alignment's place on the x axis. By default the content is centered vertically. */
-export const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 };
+const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 };
 
 const MIDDLE = 50;
 

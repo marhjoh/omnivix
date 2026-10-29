@@ -285,7 +285,7 @@ export const QUOTE_COLOR_OPTIONS = QUOTE_COLORS.map((value) => ({
   value,
 }));
 
-/** Space above the author when it's under the quote, in banner pixels. */
+/** Space above the author, in banner pixels. */
 export const AUTHOR_GAP = 16;
 
 /** The author's size as a share of the quote's, so the two keep in proportion. */

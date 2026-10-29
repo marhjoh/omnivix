@@ -22,7 +22,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   { title: STYLE_GROUP, keys: ["themeId", "cellShape", "backgroundImage"] },
   {
     title: "Layout",
-    keys: ["alignment", "profilePosition", "contentSize", "authorPosition", "authorSize"],
+    keys: ["alignment", "profilePosition", "contentSize", "authorSize"],
   },
   // Only the quote banner has these.
   {

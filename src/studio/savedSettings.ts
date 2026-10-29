@@ -6,7 +6,6 @@ import { THEME_PRESETS } from "@/src/types/theme";
 import { presetBySrc } from "@/src/backgrounds/presets";
 import { alignmentAt } from "@/src/banner/contentPosition";
 import { isQuoteColor } from "@/src/banner/quoteStyle";
-import { isAuthorPosition } from "@/src/banner/authorPosition";
 import { clampPosition, isPosition } from "@/src/banner/position";
 
 /**
@@ -51,9 +50,7 @@ export function applySavedSettings(
     const valid =
       field.type === "colorPicker"
         ? isQuoteColor(value)
-        : field.type === "authorPosition"
-          ? value === undefined || isAuthorPosition(value)
-          : !field.options || field.options.some((option) => option.value === value);
+        : !field.options || field.options.some((option) => option.value === value);
     if (!valid) merged[field.key] = prev[field.key];
   }
   if (templateRegistry[templateId].meta.needsUsername) {
