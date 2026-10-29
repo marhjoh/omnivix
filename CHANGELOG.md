@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.20.0](https://github.com/marhjoh/omnivix/compare/v1.19.0...v1.20.0) (2026-10-29)
+
+
+### Features
+
+* **studio:** line the quote banner's author up with the quote instead of dragging it ([69740a0](https://github.com/marhjoh/omnivix/commit/69740a0e099a6db78037828248d763ac21de36d9))
+
+
+### Bug Fixes
+
+* **studio:** keep room for the Large behind mark at the banner's top edge ([69740a0](https://github.com/marhjoh/omnivix/commit/69740a0e099a6db78037828248d763ac21de36d9))
+* **studio:** keep the quote's text, marks and author centered wherever it's placed ([69740a0](https://github.com/marhjoh/omnivix/commit/69740a0e099a6db78037828248d763ac21de36d9))
+* **studio:** show the author prefix samples in the quote's font ([69740a0](https://github.com/marhjoh/omnivix/commit/69740a0e099a6db78037828248d763ac21de36d9))
+
 ## [1.19.0](https://github.com/marhjoh/omnivix/compare/v1.18.1...v1.19.0) (2026-10-28)
 
 
