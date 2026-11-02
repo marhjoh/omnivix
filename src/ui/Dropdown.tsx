@@ -6,8 +6,8 @@ import {
   KeyboardEvent,
   PropsWithChildren,
   ReactNode,
-  useEffect,
   useId,
+  useLayoutEffect,
   useState,
 } from "react";
 import { Check, ChevronDown } from "lucide-react";
@@ -25,7 +25,8 @@ function optionsIn(listId: string): HTMLElement[] {
  * Open state, focus handling and keyboard support for a button-triggered listbox. The selected (or
  * first) option gets focus on open; choosing an option or pressing Escape closes the list and
  * returns focus to the trigger, while Tab and outside clicks close it and leave focus where it went.
- * Elements are found by id, so nothing here is a ref.
+ * The trigger's label toggles the list like the trigger. Elements are found by id, so nothing here
+ * is a ref.
  */
 export function useDropdown(triggerId: string) {
   const listId = useId();
@@ -36,18 +37,22 @@ export function useDropdown(triggerId: string) {
     document.getElementById(triggerId)?.focus();
   };
 
-  useEffect(() => {
+  // Before the first paint, so a list opens already scrolled to its selected option.
+  useLayoutEffect(() => {
     if (!open) return;
     const options = optionsIn(listId);
     const selected =
       options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
-    requestAnimationFrame(() => selected?.focus());
+    selected?.focus();
   }, [open, listId]);
 
   useDismiss({
     open,
+    // A press on the trigger's label isn't outside: the label passes its click on to the trigger,
+    // which closes the list, so closing here too would open it again.
     isInside: (target) =>
-      target.closest(`[${ROOT_ATTRIBUTE}]`)?.getAttribute(ROOT_ATTRIBUTE) === listId,
+      target.closest(`[${ROOT_ATTRIBUTE}]`)?.getAttribute(ROOT_ATTRIBUTE) === listId ||
+      target.closest("label")?.htmlFor === triggerId,
     onDismiss: (reason) => (reason === "escape" ? close() : setOpen(false)),
   });
 
