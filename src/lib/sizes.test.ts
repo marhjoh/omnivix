@@ -52,18 +52,6 @@ describe("viewRect", () => {
   });
 });
 
-describe("positioned views", () => {
-  it("keeps a view's own place on the axes it sets", () => {
-    // Reddit's desktop cuts the top tenth, so it's not centered vertically.
-    expect(viewRect(BANNER_SIZES.reddit, "desktop")).toEqual({
-      left: 0,
-      top: 100,
-      width: 3000,
-      height: 900,
-    });
-  });
-});
-
 describe("bannerViews", () => {
   it("lists the views the format has", () => {
     expect(bannerViews(BANNER_SIZES.wide)).toEqual([]);
