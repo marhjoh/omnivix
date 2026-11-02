@@ -1,3 +1,6 @@
+import { access, rename, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
@@ -14,6 +17,23 @@ import {
   GITHUB_USER_MISSING_ATTRIBUTE,
   GithubUserNotFoundError,
 } from "@/src/export/renderProblem";
+
+/**
+ * A script that starts `executable` with core dumps off. Chromium crashes as it closes on Vercel,
+ * and each crash dumps hundreds of MB into /tmp, which fills it within two exports.
+ */
+async function withoutCoreDumps(executable: string): Promise<string> {
+  const script = join(tmpdir(), "chromium-no-core-dumps");
+  try {
+    await access(script);
+  } catch {
+    // Written elsewhere first, so a concurrent export never runs a half-written script.
+    const draft = `${script}-${process.pid}-${Date.now()}`;
+    await writeFile(draft, `#!/bin/sh\nulimit -c 0\nexec "${executable}" "$@"\n`, { mode: 0o755 });
+    await rename(draft, script);
+  }
+  return script;
+}
 
 /** How long each step of a render may take: loading the page, the banner, fonts and images. */
 const RENDER_TIMEOUT_MS = 25_000;
@@ -75,7 +95,7 @@ export async function captureBanner({
   const browser = isVercel
     ? await playwrightChromium.launch({
         headless: true,
-        executablePath: await chromium.executablePath(),
+        executablePath: await withoutCoreDumps(await chromium.executablePath()),
         args: chromium.args,
       })
     : await playwrightChromium.launch({ headless: true });
