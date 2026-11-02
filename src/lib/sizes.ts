@@ -1,5 +1,5 @@
 import { isOneOf } from "@/src/lib/isOneOf";
-import type { ExportFormat } from "@/src/export/format";
+import { EXPORT_FORMAT, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import {
   EXPORT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
@@ -60,6 +60,10 @@ export interface BannerFormat extends Box {
   safeArea?: Rect;
   /** The largest pixel ratio per file format, for those that can't take every ratio. */
   maxPixelRatio?: Partial<Record<ExportFormat, ExportPixelRatio>>;
+  /** The file formats the platform takes, when it doesn't take every one. */
+  formats?: readonly ExportFormat[];
+  /** Uploads must be smaller than this many bytes; JPEG quality is lowered until the file is. */
+  uploadLimit?: number;
   platforms: BannerPlatform[];
 }
 
@@ -107,7 +111,10 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
     },
     safeArea: { left: 1190, top: 390, width: 1040, height: 460 },
     // Already twice the width the app shows.
-    maxPixelRatio: { png: 1, jpeg: 1 },
+    maxPixelRatio: { jpeg: 1 },
+    // Reddit rejects 500 KB or more, which a PNG with a photo always is (3.5 MB with London).
+    formats: ["jpeg"],
+    uploadLimit: 500_000,
     platforms: [{ id: "reddit", name: "Reddit" }],
   },
   // Twitch 1200 × 480, Patreon 2500 × 1000, Discord 600 × 240
@@ -185,6 +192,20 @@ export function viewRect(format: BannerBox, view: BannerView): Rect {
 /** The part every device shows clearly, where the content goes. */
 export function safeAreaOf(format: BannerBox): Rect {
   return format.safeArea ?? viewRect(format, "phone");
+}
+
+/** The file formats the banner format can be exported as. */
+export function exportFormats(format: BannerFormat): readonly ExportFormat[] {
+  return format.formats ?? EXPORT_FORMATS;
+}
+
+/** `file`, or the banner format's first file format if it doesn't take `file`. */
+export function exportFormatFor(
+  format: BannerFormat,
+  file: ExportFormat = EXPORT_FORMAT,
+): ExportFormat {
+  const formats = exportFormats(format);
+  return formats.includes(file) ? file : formats[0];
 }
 
 /** The pixel ratios the banner format can be exported at as `file`. */

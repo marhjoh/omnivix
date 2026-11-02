@@ -1,10 +1,10 @@
 import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
-import sharp from "sharp";
 import { BannerSize } from "@/src/types/template";
 import type { ExportPixelRatio } from "@/src/export/viewport";
-import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
+import type { ExportFormat } from "@/src/export/format";
+import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import type { ExportImage } from "@/src/export/images";
@@ -137,11 +137,7 @@ export async function captureBanner({
     await waitForRasterReady(page);
     await waitForContentFit(page);
     const png = await target.screenshot({ type: "png", animations: "disabled", scale: "device" });
-    // Chromium's own JPEG halves the color resolution (4:2:0), which blurs colored text and the
-    // contribution grid's edges. sharp keeps it whole (4:4:4) for about 20% more bytes.
-    return format === "jpeg"
-      ? await sharp(png).jpeg({ quality: JPEG_QUALITY, chromaSubsampling: "4:4:4" }).toBuffer()
-      : png;
+    return format === "jpeg" ? await toJpeg(png, BANNER_SIZES[size].uploadLimit) : png;
   } finally {
     await browser.close();
   }

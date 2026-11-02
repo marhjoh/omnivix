@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   BANNER_SIZES,
   bannerViews,
+  exportFormatFor,
+  exportFormats,
   exportPixelRatioFor,
   exportPixelRatios,
   normalizeBannerSize,
@@ -86,6 +88,25 @@ describe("safeAreaOf", () => {
       width: 1040,
       height: 460,
     });
+  });
+});
+
+describe("exportFormats", () => {
+  it("lists the file formats the platform takes", () => {
+    expect(exportFormats(BANNER_SIZES.wide)).toEqual(["png", "jpeg"]);
+    expect(exportFormats(BANNER_SIZES.reddit)).toEqual(["jpeg"]);
+  });
+});
+
+describe("exportFormatFor", () => {
+  it("keeps a file format the platform takes", () => {
+    expect(exportFormatFor(BANNER_SIZES.wide, "jpeg")).toBe("jpeg");
+    expect(exportFormatFor(BANNER_SIZES.wide)).toBe("png");
+  });
+
+  it("uses the platform's own when it doesn't take the chosen one", () => {
+    expect(exportFormatFor(BANNER_SIZES.reddit, "png")).toBe("jpeg");
+    expect(exportFormatFor(BANNER_SIZES.reddit)).toBe("jpeg");
   });
 });
 

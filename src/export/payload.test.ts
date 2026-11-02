@@ -38,6 +38,20 @@ describe("parseExportRequest", () => {
     expect(parseExportRequest(youtube).ok).toBe(true);
   });
 
+  it("rejects a file format the size can't be exported as", () => {
+    expect(parseExportRequest({ ...request, size: "reddit", format: "png" })).toEqual({
+      ok: false,
+      issues: [{ path: "format", message: 'Must be "jpeg" for size "reddit"' }],
+    });
+  });
+
+  it("uses the size's own file format when none is sent", () => {
+    const reddit = parseExportRequest({ ...request, size: "reddit" });
+    expect(reddit.ok && reddit.request.format).toBe("jpeg");
+    const wide = parseExportRequest(request);
+    expect(wide.ok && wide.request.format).toBe("png");
+  });
+
   it("fills in the template's defaults, so a caller only sends what it changes", () => {
     const result = parseExportRequest({
       templateId: "quote-banner",

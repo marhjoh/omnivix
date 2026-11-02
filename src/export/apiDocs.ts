@@ -4,7 +4,7 @@ import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { BANNER_SIZES, BANNER_SIZE_KEYS, exportPixelRatios } from "@/src/lib/sizes";
+import { BANNER_SIZES, BANNER_SIZE_KEYS, exportFormats, exportPixelRatios } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
 import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
@@ -76,12 +76,21 @@ export function exportApiDocs(siteUrl: URL): string[] {
   });
   // " (`youtube` as `png`: `1` only)", for the sizes that can't take every ratio.
   const limits = BANNER_SIZE_KEYS.flatMap((key) =>
-    EXPORT_FORMATS.filter((file) => BANNER_SIZES[key].maxPixelRatio?.[file]).map(
-      (file) =>
-        `${code(key)} as ${code(file)}: ${oneOf(exportPixelRatios(BANNER_SIZES[key], file))} only`,
-    ),
+    exportFormats(BANNER_SIZES[key])
+      .filter((file) => BANNER_SIZES[key].maxPixelRatio?.[file])
+      .map(
+        (file) =>
+          `${code(key)} as ${code(file)}: ${oneOf(exportPixelRatios(BANNER_SIZES[key], file))} only`,
+      ),
   );
   const ratioLimits = limits.length ? ` (${limits.join("; ")})` : "";
+  // " (`reddit`: `jpeg` only, under 500 KB)", for the sizes that don't take every format.
+  const formatLimits = BANNER_SIZE_KEYS.filter((key) => BANNER_SIZES[key].formats).map((key) => {
+    const { uploadLimit } = BANNER_SIZES[key];
+    const under = uploadLimit ? `, under ${uploadLimit / 1000} KB` : "";
+    return `${code(key)}: ${oneOf(exportFormats(BANNER_SIZES[key]))} only${under}`;
+  });
+  const formatNotes = formatLimits.length ? ` (${formatLimits.join("; ")})` : "";
   return [
     "## Export API",
     "",
@@ -93,7 +102,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     `| \`size\` | ${sizes.join(", ")} |`,
     "| `state` | The template's settings (below). Any you leave out use the default; unknown ones are ignored. |",
     `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(EXPORT_PIXEL_RATIO)}${ratioLimits}: the image is the size above times this |`,
-    `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(EXPORT_FORMAT)} |`,
+    `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(EXPORT_FORMAT)}${formatNotes} |`,
     `| \`uiTheme\` | ${oneOf(THEMES)}, default ${code(DEFAULT_THEME)}: whether the banner's cards and text are light or dark |`,
     "",
     "Example:",
