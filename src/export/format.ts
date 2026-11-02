@@ -5,7 +5,10 @@ export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export const EXPORT_FORMAT: ExportFormat = "png";
 
-/** A 3:1 photo banner at 3× is about 1 MB as JPEG instead of 7 MB as PNG, without visible artifacts. */
+/**
+ * A 3:1 photo banner at 3× is at most about 1.2 MB as JPEG instead of 6 MB as PNG, without visible
+ * artifacts.
+ */
 export const JPEG_QUALITY = 90;
 
 export const EXPORT_FORMAT_DETAILS: Record<

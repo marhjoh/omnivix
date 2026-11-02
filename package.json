@@ -21,6 +21,7 @@
     "doctor": "pnpm dlx react-doctor@latest --no-telemetry",
     "social-preview": "tsx scripts/social-preview.mts",
     "readme-screenshots": "tsx scripts/readme-screenshots.mts",
+    "export-quality": "tsx scripts/export-quality.mts",
     "backgrounds": "tsx scripts/backgrounds.mts"
   },
   "dependencies": {
