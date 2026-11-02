@@ -30,7 +30,10 @@ describe("parseExportRequest", () => {
       ok: false,
       issues: [{ path: "pixelRatio", message: 'Must be 1 for size "youtube" with format "png"' }],
     });
-    expect(parseExportRequest({ ...youtube, pixelRatio: 3, format: "jpeg" }).ok).toBe(true);
+    expect(parseExportRequest({ ...youtube, pixelRatio: 3, format: "jpeg" })).toEqual({
+      ok: false,
+      issues: [{ path: "pixelRatio", message: 'Must be 1 for size "youtube" with format "jpeg"' }],
+    });
     expect(parseExportRequest({ ...youtube, pixelRatio: 1 }).ok).toBe(true);
     expect(parseExportRequest(youtube).ok).toBe(true);
   });

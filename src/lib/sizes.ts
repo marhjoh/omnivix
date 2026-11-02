@@ -132,9 +132,8 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
       desktop: { width: 2560, height: 423 },
       tv: { width: 2560, height: 1440 },
     },
-    // A 2× PNG (5120 × 2880) with a photo can go over YouTube's 6 MB limit (12 MB with London); as
-    // JPEG even 3× is 4 MB at most.
-    maxPixelRatio: { png: 1 },
+    // YouTube shows at most 1×. Above it, PNGs pass its 6 MB limit and 3× runs Chromium out of memory.
+    maxPixelRatio: { png: 1, jpeg: 1 },
     platforms: [{ id: "youtube", name: "YouTube" }],
   },
 };

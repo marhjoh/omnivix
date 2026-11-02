@@ -93,18 +93,19 @@ describe("exportPixelRatios", () => {
   it("lists every ratio the format takes in the file format", () => {
     expect(exportPixelRatios(BANNER_SIZES.wide, "png")).toEqual([1, 2, 3]);
     expect(exportPixelRatios(BANNER_SIZES.youtube, "png")).toEqual([1]);
-    expect(exportPixelRatios(BANNER_SIZES.youtube, "jpeg")).toEqual([1, 2, 3]);
+    expect(exportPixelRatios(BANNER_SIZES.youtube, "jpeg")).toEqual([1]);
   });
 });
 
 describe("exportPixelRatioFor", () => {
   it("keeps a ratio the format takes", () => {
     expect(exportPixelRatioFor(BANNER_SIZES.wide, "png", 2)).toBe(2);
-    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 3)).toBe(3);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 1)).toBe(1);
   });
 
   it("lowers it to the format's largest ratio for the file format", () => {
     expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png", 3)).toBe(1);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 3)).toBe(1);
     expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png")).toBe(1);
     expect(exportPixelRatioFor(BANNER_SIZES.wide, "png")).toBe(3);
   });
