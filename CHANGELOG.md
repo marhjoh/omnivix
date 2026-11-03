@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.20.1](https://github.com/marhjoh/omnivix/compare/v1.20.0...v1.20.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **export:** encode JPEG exports at full color resolution ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **export:** export Reddit banners as JPEG under its 500 KB limit ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **export:** limit YouTube JPEGs to 1× ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **export:** limit YouTube PNGs to 1× and drop platform exceptions from the FAQ ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **export:** turn off Chromium core dumps that fill /tmp on Vercel ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **sizes:** center Reddit's desktop view to match its sidebar card ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **studio:** close dropdowns from their label and open them at the selected option ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+* **studio:** load the quote fonts before the Font list opens ([86651ec](https://github.com/marhjoh/omnivix/commit/86651ec2e4f4595719f0e8f81c7ea1ed4a260b08))
+
 ## [1.20.0](https://github.com/marhjoh/omnivix/compare/v1.19.0...v1.20.0) (2026-10-29)
 
 
