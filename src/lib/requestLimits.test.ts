@@ -1,10 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { limit, fixedWindow } = vi.hoisted(() => ({ limit: vi.fn(), fixedWindow: vi.fn() }));
+const { limit, fixedWindow, configure } = vi.hoisted(() => ({
+  limit: vi.fn(),
+  fixedWindow: vi.fn(),
+  configure: vi.fn(),
+}));
 
 vi.mock("@upstash/ratelimit", () => ({
   Ratelimit: Object.assign(
     class {
+      constructor(options: unknown) {
+        configure(options);
+      }
       limit = limit;
     },
     { slidingWindow: vi.fn(), fixedWindow },
@@ -25,16 +32,40 @@ async function load({ store = true, dailyLimit }: { store?: boolean; dailyLimit?
   return import("./requestLimits");
 }
 
-beforeEach(() => vi.stubEnv("EXPORT_DAILY_LIMIT", ""));
+beforeEach(() => {
+  vi.stubEnv("EXPORT_DAILY_LIMIT", "");
+  vi.stubEnv("VERCEL_ENV", "");
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
   limit.mockReset();
   fixedWindow.mockReset();
+  configure.mockReset();
 });
 
 describe("request limits", () => {
+  it.each([
+    ["production", "omnivix"],
+    ["preview", "omnivix:preview"],
+    ["development", "omnivix:development"],
+    ["", "omnivix:development"],
+  ])(
+    "isolate both limits for environment '%s' with namespace '%s'",
+    async (environment, namespace) => {
+      vi.stubEnv("VERCEL_ENV", environment);
+      limit.mockResolvedValue({ success: true, reset: 0 });
+      const { githubDataLimit, dailyExportLimit } = await load();
+      await githubDataLimit(request);
+      await dailyExportLimit(request);
+      expect(configure.mock.calls.map(([options]) => options.prefix)).toEqual([
+        `${namespace}:github-data`,
+        `${namespace}:daily-exports`,
+      ]);
+    },
+  );
+
   it("have no limit without a store", async () => {
     const { githubDataLimit } = await load({ store: false });
     expect(await githubDataLimit(request)).toBeNull();

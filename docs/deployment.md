@@ -4,7 +4,7 @@
 
 ## Environment variables
 
-Locally, Omnivix needs only a GitHub token. On Vercel it needs four more.
+Locally, Omnivix needs only a GitHub token. Vercel also needs export secrets and Redis credentials.
 
 ### Local
 
@@ -19,11 +19,16 @@ The export works without its two secrets, because everything runs in one process
 - `GITHUB_TOKEN`
 - `EXPORT_TOKEN_SECRET`
 - `VERCEL_AUTOMATION_BYPASS_SECRET` (set by Vercel)
-- `KV_REST_API_URL` and `KV_REST_API_TOKEN` (set by Upstash, for the [rate limit](#rate-limits))
+- `VERCEL_ENV`
+- `KV_REST_API_URL` and `KV_REST_API_TOKEN`
 
-To [export](architecture.md#export-flow) a banner, the server opens it in a headless browser and screenshots it. The banner's settings reach that browser in a short-lived token, signed with `EXPORT_TOKEN_SECRET`. The request and the screenshot can run on different servers, so both need the same secret.
+`EXPORT_TOKEN_SECRET` signs the [export](architecture.md#export-flow) settings. Use the same secret across server instances.
 
-Preview deployments are also behind a Vercel login. The headless browser isn't logged in, so it sends `VERCEL_AUTOMATION_BYPASS_SECRET` to get through.
+`VERCEL_AUTOMATION_BYPASS_SECRET` lets the export browser access protected previews.
+
+Vercel sets `VERCEL_ENV` to separate rate-limit counters by environment.
+
+Upstash provides `KV_REST_API_URL` and `KV_REST_API_TOKEN` for Redis-backed [rate limits](#rate-limits).
 
 ## Chromium
 
