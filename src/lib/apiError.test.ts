@@ -8,29 +8,33 @@ describe("readApiError", () => {
   it("reads our message", async () => {
     expect(await readApiError(json({ error: "No GitHub user named @x" }, 404))).toEqual({
       message: "No GitHub user named @x",
-      resetAt: null,
+      limit: null,
     });
   });
 
-  it("reads GitHub's reset time", async () => {
-    const resetAt = "2026-10-18T14:05:00.000Z";
-    expect(await readApiError(json({ error: "GitHub's limit is reached.", resetAt }, 429))).toEqual(
-      {
-        message: "GitHub's limit is reached.",
-        resetAt: new Date(resetAt),
-      },
-    );
-  });
+  it.each(["github", "requests"] as const)(
+    "reads the %s limit and its reset time",
+    async (limit) => {
+      const resetAt = "2026-10-18T14:05:00.000Z";
+      expect(await readApiError(json({ error: "Limited.", limit, resetAt }, 429))).toEqual({
+        message: "Limited.",
+        limit: { kind: limit, resetAt: new Date(resetAt) },
+      });
+    },
+  );
 
-  it("ignores Vercel's error object", async () => {
+  it("reads a bare 429 as the firewall's, ignoring Vercel's error object", async () => {
     const vercel = { error: { code: "429", message: "Too Many Requests", id: "arn1::x" } };
-    expect(await readApiError(json(vercel, 429))).toEqual({ message: null, resetAt: null });
+    expect(await readApiError(json(vercel, 429))).toEqual({
+      message: null,
+      limit: { kind: "firewall" },
+    });
   });
 
   it("ignores a body that isn't JSON", async () => {
     expect(await readApiError(new Response("<h1>502</h1>", { status: 502 }))).toEqual({
       message: null,
-      resetAt: null,
+      limit: null,
     });
   });
 });

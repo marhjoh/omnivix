@@ -7,7 +7,8 @@ import { buildRenderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS } from "@/src/export/format";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
-import { githubRateLimited, githubUserNotFound } from "@/src/github/route";
+import { githubUserNotFound } from "@/src/github/route";
+import { tooManyRequests } from "@/src/lib/tooManyRequests";
 import { GithubUserNotFoundError } from "@/src/export/renderProblem";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
@@ -55,7 +56,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (exportError) {
-    if (exportError instanceof GithubRateLimitError) return githubRateLimited(exportError);
+    if (exportError instanceof GithubRateLimitError) {
+      return tooManyRequests("github", exportError.resetAt);
+    }
     if (exportError instanceof GithubUserNotFoundError) {
       return githubUserNotFound(String(parsed.request.state.username ?? ""));
     }

@@ -84,7 +84,7 @@ Server-side export: validation (`payload.ts`), signed tokens (`export-token.ts`)
 
 ### `src/github/`
 
-GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
+GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimit.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
 
 ### `src/landing/`, `src/og/`
 

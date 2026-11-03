@@ -89,7 +89,7 @@ export const FAQ = [
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:
-      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is kept in server memory for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database.",
+      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is kept in server memory and Vercel's cache for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database. To stop abuse, a hashed form of your IP address is kept for 10 minutes.",
   },
   {
     topic: "Your GitHub data",

@@ -8,12 +8,24 @@ import {
 } from "@/src/github/normalize";
 import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
-import { guardRateLimit } from "@/src/github/rateLimit";
+import { guardRateLimit, warnIfQuotaLow, type GithubQuota } from "@/src/github/rateLimit";
 
-/** TTL: latest/current year data changes within the day. Historical years are stable. */
+/**
+ * TTL: latest/current year data changes within the day. Historical years are stable. The API
+ * routes also send them as `s-maxage`, so Vercel's CDN keeps responses as long as the server does.
+ */
 // The landing FAQ (src/landing/landingContent.ts) states these durations; update it if they change.
-const TTL_SHORT = 1000 * 60 * 3; // 3 min
-const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
+export const TTL_SHORT = 1000 * 60 * 3; // 3 min
+export const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
+
+/** Asked for in every query, so a quota running low is logged (see warnIfQuotaLow). Costs nothing. */
+const QUOTA_FIELDS = `
+  rateLimit {
+    limit
+    remaining
+    resetAt
+  }
+`;
 
 /** Repositories are listed 100 per page; this caps the picker at 1,000 of the most recently updated. */
 const REPO_PAGE_SIZE = 100;
@@ -28,8 +40,13 @@ function graphqlClient() {
     headers: { authorization: `token ${token}` },
   });
   // Every request goes through the rate-limit guard (see rateLimit.ts).
-  return <T>(query: string, variables?: Parameters<typeof client>[1]) =>
-    guardRateLimit(() => client<T>(query, variables));
+  return async <T>(query: string, variables?: Parameters<typeof client>[1]) => {
+    const data = await guardRateLimit(() =>
+      client<T & { rateLimit?: GithubQuota }>(query, variables),
+    );
+    if (data.rateLimit) warnIfQuotaLow(data.rateLimit);
+    return data;
+  };
 }
 
 /** GitHub logins are case-insensitive, so cache keys are too. */
@@ -40,6 +57,12 @@ function userKey(username: string) {
 /** "latest" (the last 365 days) or a four-digit year. */
 export function isContributionYear(year: string): boolean {
   return year === "latest" || /^\d{4}$/.test(year);
+}
+
+/** How long a year's contributions are cached: past years are stable, the current one isn't. */
+export function contributionsTtlMs(year: string): number {
+  const isHistorical = year !== "latest" && Number(year) < new Date().getUTCFullYear();
+  return isHistorical ? TTL_LONG : TTL_SHORT;
 }
 
 /** True when GitHub reports that the requested user doesn't exist. */
@@ -55,6 +78,7 @@ export function getUserSummary(username: string): Promise<GithubUserNormalized> 
     const { user } = await graphqlClient()<{ user: GithubUserNormalized }>(
       `
         query UserSummary($username: String!) {
+          ${QUOTA_FIELDS}
           user(login: $username) {
             login
             name
@@ -85,34 +109,31 @@ export function getContributions(username: string, year: string): Promise<Contri
   const latest = year === "latest" ? computeLatestContributionRangeUtc(new Date()) : null;
   const from = latest ? latest.fromIso : `${year}-01-01T00:00:00Z`;
   const to = latest ? latest.toIso : `${year}-12-31T23:59:59Z`;
-  const isHistorical = !latest && Number(year) < new Date().getUTCFullYear();
   const period = latest ? `latest:${latest.toYyyyMmDd}` : year;
 
-  return cached(
-    `gh:contrib:${userKey(username)}:${period}`,
-    isHistorical ? TTL_LONG : TTL_SHORT,
-    async () => {
-      const response = await graphqlClient()<{
-        user: {
-          contributionsCollection: {
-            contributionCalendar: {
-              totalContributions: number;
-              months: Array<{ firstDay: string; name: string }>;
-              weeks: Array<{
-                firstDay: string;
-                contributionDays: Array<{
-                  date: string;
-                  contributionCount: number;
-                  contributionLevel: string;
-                  weekday: number;
-                }>;
+  return cached(`gh:contrib:${userKey(username)}:${period}`, contributionsTtlMs(year), async () => {
+    const response = await graphqlClient()<{
+      user: {
+        contributionsCollection: {
+          contributionCalendar: {
+            totalContributions: number;
+            months: Array<{ firstDay: string; name: string }>;
+            weeks: Array<{
+              firstDay: string;
+              contributionDays: Array<{
+                date: string;
+                contributionCount: number;
+                contributionLevel: string;
+                weekday: number;
               }>;
-            };
+            }>;
           };
         };
-      }>(
-        `
+      };
+    }>(
+      `
           query UserContributions($username: String!, $from: DateTime, $to: DateTime) {
+            ${QUOTA_FIELDS}
             user(login: $username) {
               contributionsCollection(from: $from, to: $to) {
                 contributionCalendar {
@@ -135,26 +156,25 @@ export function getContributions(username: string, year: string): Promise<Contri
             }
           }
         `,
-        { username, from, to },
-      );
+      { username, from, to },
+    );
 
-      const calendar = response.user.contributionsCollection.contributionCalendar;
-      return {
-        total: calendar.totalContributions,
-        weeks: calendar.weeks.map((week) => ({
-          firstDay: week.firstDay,
-          days: week.contributionDays.map((day) => ({
-            date: day.date,
-            count: day.contributionCount,
-            level: LEVELS[day.contributionLevel] ?? 0,
-            weekday: day.weekday as ContributionDayNormalized["weekday"],
-          })),
+    const calendar = response.user.contributionsCollection.contributionCalendar;
+    return {
+      total: calendar.totalContributions,
+      weeks: calendar.weeks.map((week) => ({
+        firstDay: week.firstDay,
+        days: week.contributionDays.map((day) => ({
+          date: day.date,
+          count: day.contributionCount,
+          level: LEVELS[day.contributionLevel] ?? 0,
+          weekday: day.weekday as ContributionDayNormalized["weekday"],
         })),
-        months: calendar.months,
-        rangeEndYmd: to.slice(0, 10),
-      };
-    },
-  );
+      })),
+      months: calendar.months,
+      rangeEndYmd: to.slice(0, 10),
+    };
+  });
 }
 
 type RepoGqlFields = {
@@ -216,6 +236,7 @@ export function getRepoLists(username: string): Promise<RepoLists> {
     }>(
       `
         query UserRepos($username: String!, $after: String) {
+          ${QUOTA_FIELDS}
           user(login: $username) {
             pinnedItems(first: 6, types: REPOSITORY) {
               nodes {
@@ -243,6 +264,7 @@ export function getRepoLists(username: string): Promise<RepoLists> {
       const next = await client<{ user: { repositories: RepoPage } }>(
         `
           query MoreUserRepos($username: String!, $after: String) {
+            ${QUOTA_FIELDS}
             user(login: $username) {
               repositories(${OWNER_REPOS_ARGS}) {
                 nodes { ${REPO_FIELDS} }

@@ -5,7 +5,7 @@ import {
   fetchErrorProblem,
   noReposProblem,
   userNotFoundProblem,
-  githubLimitProblem,
+  limitProblem,
 } from "./computePreviewContentState";
 
 describe("computePreviewContentState", () => {
@@ -109,14 +109,30 @@ describe("previewLoadingMessage", () => {
   });
 });
 
-describe("githubLimitProblem", () => {
-  it("says when the limit resets and keeps Try again off until then", () => {
+describe("limitProblem", () => {
+  it("says when GitHub's limit resets and keeps Try again off until then", () => {
     const resetAt = new Date(2026, 9, 18, 14, 5);
-    expect(githubLimitProblem(resetAt)).toEqual({
+    expect(limitProblem({ kind: "github", resetAt })).toEqual({
       title: "GitHub's limit is reached",
       hint: `Try again at ${resetAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`,
       action: "retry",
       retryAt: resetAt,
+    });
+  });
+
+  it("names our own per-IP limit, with its reset time", () => {
+    const resetAt = new Date(2026, 9, 18, 14, 5);
+    expect(limitProblem({ kind: "requests", resetAt })).toMatchObject({
+      title: "Too many requests",
+      retryAt: resetAt,
+    });
+  });
+
+  it("has no exact time for a bare 429", () => {
+    expect(limitProblem({ kind: "firewall" })).toEqual({
+      title: "Too many requests",
+      hint: "Try again in a few minutes.",
+      action: "retry",
     });
   });
 });

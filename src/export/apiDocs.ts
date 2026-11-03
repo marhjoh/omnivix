@@ -119,7 +119,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "- `200`: the image (`image/png` or `image/jpeg`).",
     '- `400`: `{ "error": "…", "issues": [{ "path": "state.username", "message": "Required" }] }`, one issue per field that failed.',
     '- `404`: the GitHub user doesn\'t exist, with `issues: [{ "path": "state.username", … }]`.',
-    '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "resetAt": "<ISO time>" }`. Or the export limit, 30 per 10 minutes per IP address, with no `resetAt`.',
+    '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "limit": "github", "resetAt": "<ISO time>" }`. Or the export limit, 30 per 10 minutes per IP address, with no `resetAt`.',
     "- `500`: the export failed; trying again may work.",
     "",
     "## Studio links",

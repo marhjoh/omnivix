@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { BANNER_SIZES, exportFormatFor, exportFormats, exportPixelRatioFor } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
-import { EXPORT_LIMIT_MESSAGE, githubLimitMessage } from "@/src/lib/rateLimitMessage";
+import { EXPORT_LIMIT_MESSAGE, limitMessage } from "@/src/lib/rateLimitMessage";
 import { readApiError } from "@/src/lib/apiError";
 
 export type ExportKind = "download" | "copy";
@@ -20,10 +20,8 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
     throw new Error("Couldn't reach the server. Check your connection and try again.");
   }
   if (!response.ok) {
-    const { message, resetAt } = await readApiError(response);
-    if (resetAt) throw new Error(githubLimitMessage(resetAt));
-    // A 429 without GitHub's reset time is the export limit (Vercel Firewall, see docs/deployment.md).
-    if (response.status === 429) throw new Error(EXPORT_LIMIT_MESSAGE);
+    const { message, limit } = await readApiError(response);
+    if (limit) throw new Error(limitMessage(limit, EXPORT_LIMIT_MESSAGE));
     throw new Error(message ?? "Couldn't export the banner. Try again.");
   }
   return response.blob();

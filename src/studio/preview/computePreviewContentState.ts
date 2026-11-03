@@ -1,6 +1,7 @@
 import type { GithubDataKind } from "@/src/types/template";
 import type { PreviewContentState, PreviewProblem } from "./types";
-import { GITHUB_LIMIT_TITLE, tryAgainAt } from "@/src/lib/rateLimitMessage";
+import type { ApiLimit } from "@/src/lib/apiError";
+import { LIMIT_TITLES, TRY_AGAIN_SOON, tryAgainAt } from "@/src/lib/rateLimitMessage";
 
 export function computePreviewContentState(params: {
   needsUsername: boolean;
@@ -37,13 +38,19 @@ export function fetchErrorProblem(message: string): PreviewProblem {
   };
 }
 
-/** GitHub's rate limit is reached: say when it resets, and keep "Try again" off until then. */
-export function githubLimitProblem(resetAt: Date): PreviewProblem {
+/**
+ * A rate limit refused the GitHub data: say when it resets, and keep "Try again" off until then.
+ * A bare 429 from the platform has no reset time.
+ */
+export function limitProblem(limit: ApiLimit): PreviewProblem {
+  if (limit.kind === "firewall") {
+    return { title: LIMIT_TITLES.requests, hint: TRY_AGAIN_SOON, action: "retry" };
+  }
   return {
-    title: GITHUB_LIMIT_TITLE,
-    hint: tryAgainAt(resetAt),
+    title: LIMIT_TITLES[limit.kind],
+    hint: tryAgainAt(limit.resetAt),
     action: "retry",
-    retryAt: resetAt,
+    retryAt: limit.resetAt,
   };
 }
 

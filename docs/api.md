@@ -20,7 +20,7 @@ The API answers with:
 - `200`: the image, as PNG or JPEG
 - `400`: an invalid request, with an `issues` list naming each field that failed
 - `404`: a GitHub user that doesn't exist
-- `429`: a rate limit, either GitHub's (with a `resetAt` time) or the [export limit](deployment.md#export-rate-limit)
+- `429`: a rate limit, either GitHub's (`"limit": "github"`, with a `resetAt` time) or the [export limit](deployment.md#rate-limits)
 - `500`: a failed export; trying again may work
 
 ## Studio links

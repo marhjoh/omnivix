@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { githubLimitMessage, tryAgainAt } from "./rateLimitMessage";
+import { limitMessage, tryAgainAt } from "./rateLimitMessage";
 
 describe("rate limit wording", () => {
   const resetAt = new Date(2026, 9, 18, 14, 5);
@@ -9,7 +9,16 @@ describe("rate limit wording", () => {
     expect(tryAgainAt(resetAt)).toBe(`Try again at ${time}.`);
   });
 
-  it("builds the full sentence", () => {
-    expect(githubLimitMessage(resetAt)).toBe(`GitHub's limit is reached. Try again at ${time}.`);
+  it("names the limit and when it resets", () => {
+    expect(limitMessage({ kind: "github", resetAt }, "Ours.")).toBe(
+      `GitHub's limit is reached. Try again at ${time}.`,
+    );
+    expect(limitMessage({ kind: "requests", resetAt }, "Ours.")).toBe(
+      `Too many requests. Try again at ${time}.`,
+    );
+  });
+
+  it("uses the caller's sentence for a bare 429", () => {
+    expect(limitMessage({ kind: "firewall" }, "Ours.")).toBe("Ours.");
   });
 });

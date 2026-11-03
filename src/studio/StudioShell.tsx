@@ -9,15 +9,15 @@ import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import {
   computePreviewContentState,
   fetchErrorProblem,
-  githubLimitProblem,
+  limitProblem,
   noReposProblem,
   userNotFoundProblem,
   type PreviewContentState,
   type PreviewProblem,
 } from "@/src/studio/preview";
 import { isExportBlocked } from "@/src/studio/exportBlocked";
-import { githubLimitMessage } from "@/src/lib/rateLimitMessage";
-import { readApiError } from "@/src/lib/apiError";
+import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
+import { type ApiLimit, limitResetAt, readApiError } from "@/src/lib/apiError";
 import { Toast, type ToastMessage } from "@/src/ui/Toast";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
@@ -118,8 +118,7 @@ class FetchError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    /** When GitHub's rate limit resets (a 429 from our API). */
-    readonly resetAt: Date | null = null,
+    readonly limit: ApiLimit | null = null,
   ) {
     super(message);
   }
@@ -128,9 +127,9 @@ class FetchError extends Error {
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
-    const { message, resetAt } = await readApiError(res);
+    const { message, limit } = await readApiError(res);
     // Without a message of ours, the caller's fallback is used.
-    throw new FetchError(message ?? "", res.status, resetAt);
+    throw new FetchError(message ?? "", res.status, limit);
   }
   return res.json() as Promise<T>;
 }
@@ -142,8 +141,7 @@ type FetchResult<T> = {
   error: string | null;
   /** HTTP status of the failed request; 404 means the GitHub user doesn't exist. */
   status: number | null;
-  /** When GitHub's rate limit resets, if that's why it failed. */
-  resetAt: Date | null;
+  limit: ApiLimit | null;
 };
 
 /**
@@ -200,7 +198,7 @@ function useFetchJson<T>(
         if (ac.signal.aborted) return;
         if (!fresh) lastFetched.set(url, { data, at: Date.now() });
         if (keepKey) lastFetchedByKey.set(keepKey, data);
-        setResult({ url, nonce, data, error: null, status: null, resetAt: null });
+        setResult({ url, nonce, data, error: null, status: null, limit: null });
       },
       (error) => {
         if (ac.signal.aborted) return;
@@ -212,7 +210,7 @@ function useFetchJson<T>(
           nonce,
           error: message,
           status: error instanceof FetchError ? error.status : null,
-          resetAt: error instanceof FetchError ? error.resetAt : null,
+          limit: error instanceof FetchError ? error.limit : null,
         });
       },
     );
@@ -233,8 +231,7 @@ function useFetchJson<T>(
     stale: keptData !== undefined,
     error: settled ? current.error : null,
     notFound: settled && current.status === 404,
-    /** When GitHub's rate limit resets, if the request failed because of it. */
-    rateLimitedUntil: settled ? current.resetAt : null,
+    limit: settled ? current.limit : null,
     loading: url !== null && !settled,
   };
 }
@@ -477,9 +474,10 @@ export function StudioShell({
   const repoCatalog = repoLists?.owned ?? NO_REPOS;
   // Only "loading" with nothing to show; a refetch keeps the list it has.
   const repoCatalogLoading = repoListsFetch.loading && !repoListsFetch.data;
-  const repoCatalogRetryAt = repoListsFetch.rateLimitedUntil;
-  const repoCatalogError = repoCatalogRetryAt
-    ? githubLimitMessage(repoCatalogRetryAt)
+  const repoCatalogLimit = repoListsFetch.limit;
+  const repoCatalogRetryAt = limitResetAt(repoCatalogLimit);
+  const repoCatalogError = repoCatalogLimit
+    ? limitMessage(repoCatalogLimit, REQUEST_LIMIT_MESSAGE)
     : repoListsFetch.error;
 
   // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
@@ -536,26 +534,15 @@ export function StudioShell({
   // says why instead of drawing an empty banner, and export is blocked.
   const noRepos = needsRepos && dataReady && data.repos?.length === 0;
   const userNotFound = userFetch.notFound || contributionsFetch.notFound || repoListsFetch.notFound;
-  const rateLimitedUntil =
-    userFetch.rateLimitedUntil ??
-    contributionsFetch.rateLimitedUntil ??
-    repoListsFetch.rateLimitedUntil;
+  const dataLimit = userFetch.limit ?? contributionsFetch.limit ?? repoListsFetch.limit;
   const previewProblem = useMemo<PreviewProblem | null>(() => {
     if (previewDataError) {
-      if (rateLimitedUntil) return githubLimitProblem(rateLimitedUntil);
+      if (dataLimit) return limitProblem(dataLimit);
       return userNotFound ? userNotFoundProblem(username) : fetchErrorProblem(previewDataError);
     }
     if (noRepos) return noReposProblem(repoMode, selectedRepos);
     return null;
-  }, [
-    previewDataError,
-    rateLimitedUntil,
-    userNotFound,
-    username,
-    noRepos,
-    repoMode,
-    selectedRepos,
-  ]);
+  }, [previewDataError, dataLimit, userNotFound, username, noRepos, repoMode, selectedRepos]);
 
   const previewState = computePreviewContentState({
     needsUsername,
