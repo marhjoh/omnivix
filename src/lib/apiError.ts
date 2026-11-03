@@ -1,11 +1,11 @@
 /** Limits our API names in its 429 body, with the time they reset. */
-export const TIMED_LIMITS = ["github", "requests"] as const;
+export const TIMED_LIMITS = ["github", "requests", "daily-exports"] as const;
 
 export type TimedLimit = (typeof TIMED_LIMITS)[number];
 
 /**
- * Why a request was refused: a limit our API names (GitHub's, or Omnivix's own per-IP limit on
- * the GitHub data routes), or the export's Vercel Firewall rule, whose bare 429 has no reset time.
+ * Why a request was refused: a limit our API names (GitHub's, or one of Omnivix's own per-IP
+ * limits), or the export's Vercel Firewall rule, whose bare 429 has no reset time.
  */
 export type ApiLimit = { kind: TimedLimit; resetAt: Date } | { kind: "firewall" };
 

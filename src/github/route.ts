@@ -2,14 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isUserNotFound } from "@/src/github/client";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { requestLimit } from "@/src/lib/requestLimit";
-import { tooManyRequests } from "@/src/lib/tooManyRequests";
-
-/**
- * Per IP, so one visitor can't spend the token's GitHub quota for everyone. Loading a user takes
- * up to three requests and switching year one more; CDN hits don't reach the server or count.
- */
-const githubDataLimit = requestLimit("github-data", 60, "10 m");
+import { githubDataLimit, tooManyRequests } from "@/src/lib/requestLimits";
 
 /** The user doesn't exist, as a 404 naming `state.username`. Also used by the export. */
 export function githubUserNotFound(username: string) {

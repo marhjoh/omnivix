@@ -33,5 +33,5 @@ Locally, the export uses Playwright's own Chromium, and on Vercel it uses `@spar
 
 Per IP, answered with `429`:
 
-- `POST /api/export`: 30 per 10 minutes, a Vercel Firewall rule
+- `POST /api/export`: 30 per 10 minutes, a Vercel Firewall rule, and 25 per UTC day (`EXPORT_DAILY_LIMIT`), counted in Upstash Redis
 - `/api/github/*`: 60 per 10 minutes, counted in Upstash Redis

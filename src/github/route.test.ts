@@ -5,7 +5,10 @@ import { githubRoute } from "./route";
 
 const limitedUntil = vi.hoisted(() => vi.fn(async (): Promise<Date | null> => null));
 
-vi.mock("@/src/lib/requestLimit", () => ({ requestLimit: () => limitedUntil }));
+vi.mock("@/src/lib/requestLimits", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/lib/requestLimits")>()),
+  githubDataLimit: limitedUntil,
+}));
 
 const request = (username: string) =>
   new NextRequest(`http://localhost/api/github/user-summary?username=${username}`);

@@ -6,6 +6,7 @@ import type { ApiLimit, TimedLimit } from "@/src/lib/apiError";
 export const LIMIT_TITLES: Record<TimedLimit, string> = {
   github: "GitHub's limit is reached",
   requests: "Too many requests",
+  "daily-exports": "Daily export limit reached",
 };
 
 /** A bare 429 (the export's Vercel Firewall rule) doesn't say when its window ends. */

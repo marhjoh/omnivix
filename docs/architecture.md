@@ -78,13 +78,13 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 ### `src/export/`
 
-Server-side export: validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
 ### `src/github/`
 
-GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimit.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
+GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
 
 ### `src/landing/`, `src/og/`
 
