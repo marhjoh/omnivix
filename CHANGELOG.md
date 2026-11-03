@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.21.0](https://github.com/marhjoh/omnivix/compare/v1.20.1...v1.21.0) (2026-11-03)
+
+
+### Features
+
+* add a daily export quota per IP ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+* rate limit the GitHub API routes ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+
+
+### Bug Fixes
+
+* keep a chosen preset when a typed image link finishes loading later ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+* reject invalid years in export requests instead of failing the render ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+* show the problem of the GitHub request that failed in the preview ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+* simplify font warmup and remove unused helper ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+* warm italic fonts and clarify data storage ([7bd59db](https://github.com/marhjoh/omnivix/commit/7bd59db0037c88defc24673be80cd963ec6a1d77))
+
 ## [1.20.1](https://github.com/marhjoh/omnivix/compare/v1.20.0...v1.20.1) (2026-11-03)
 
 
