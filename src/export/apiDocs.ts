@@ -26,13 +26,13 @@ import { THEME_PRESETS } from "@/src/types/theme";
 export const EXAMPLE_REQUEST = {
   templateId: "github-banner",
   size: "wide",
-  state: { username: "octocat" },
+  state: { username: "marhjoh" },
 };
 
 /** The example studio link in the docs; a test checks that the studio reads all of it. */
 export const EXAMPLE_LINK: { templateId: TemplateId; query: Record<string, string> } = {
   templateId: "contribution-banner",
-  query: { username: "octocat", size: "header", themeId: "sunset" },
+  query: { username: "marhjoh", size: "header", themeId: "sunset" },
 };
 
 const code = (value: unknown) => `\`${typeof value === "string" ? value : JSON.stringify(value)}\``;

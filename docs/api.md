@@ -9,7 +9,7 @@ Want a banner without opening the studio, or a link that opens the studio with y
 ```sh
 curl -X POST https://omnivix.vercel.app/api/export \
   -H "Content-Type: application/json" \
-  -d '{"templateId":"github-banner","size":"wide","state":{"username":"octocat"}}' \
+  -d '{"templateId":"github-banner","size":"wide","state":{"username":"marhjoh"}}' \
   -o banner.png
 ```
 
@@ -29,7 +29,7 @@ The API answers with:
 The studio reads the same settings from the URL, so a link can open a banner that's still adjustable:
 
 ```
-https://omnivix.vercel.app/studio/contribution-banner?username=octocat&size=header&themeId=sunset
+https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset
 ```
 
 Values that aren't valid are ignored. Uploaded backgrounds can't be linked.
