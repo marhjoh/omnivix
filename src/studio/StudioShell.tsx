@@ -118,7 +118,7 @@ class FetchError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly limit: ApiLimit | null = null,
+    readonly limit: ApiLimit | null,
   ) {
     super(message);
   }

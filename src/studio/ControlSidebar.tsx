@@ -402,7 +402,7 @@ export function ControlSidebar({
   repoCatalog: RepoNormalized[];
   repoCatalogLoading: boolean;
   repoCatalogError: string | null;
-  /** When GitHub's rate limit resets, if that's why the repositories didn't load. */
+  /** When the rate limit resets, if that's why the repositories didn't load. */
   repoCatalogRetryAt: Date | null;
   onRetryRepoCatalog: () => void;
   /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */

@@ -1,5 +1,5 @@
 /** Limits our API names in its 429 body, with the time they reset. */
-export const TIMED_LIMITS = ["github", "requests", "daily-exports"] as const;
+const TIMED_LIMITS = ["github", "requests", "daily-exports"] as const;
 
 export type TimedLimit = (typeof TIMED_LIMITS)[number];
 

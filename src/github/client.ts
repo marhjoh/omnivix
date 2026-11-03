@@ -16,7 +16,7 @@ import { guardRateLimit, warnIfQuotaLow, type GithubQuota } from "@/src/github/r
  */
 // The landing FAQ (src/landing/landingContent.ts) states these durations; update it if they change.
 export const TTL_SHORT = 1000 * 60 * 3; // 3 min
-export const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
+const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
 
 /** Asked for in every query, so a quota running low is logged (see warnIfQuotaLow). Costs nothing. */
 const QUOTA_FIELDS = `
