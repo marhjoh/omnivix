@@ -23,8 +23,8 @@ interface QuoteFieldProps {
 
 /**
  * The quote's font, each in its own typeface. The quote fonts aren't preloaded (app/fonts.ts), so
- * their available styles start loading once the studio is idle: otherwise they'd all start when the
- * list first opens, and its options would change font one by one as they arrive.
+ * upright and italic faces start loading once the studio is idle, for both Font and Font style.
+ * This reduces font swaps when either list opens; an early opening can still beat the warmup.
  */
 export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
   useEffect(() => {
@@ -33,6 +33,8 @@ export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
       const root = getComputedStyle(document.documentElement);
       for (const { value: font } of QUOTE_FONT_OPTIONS) {
         for (const { value: style } of fontStyleOptions(font)) {
+          // Each variable face covers every offered weight; load it only once per slant.
+          if (style !== "regular" && style !== "italic") continue;
           const css = fontStyleCss(font, style);
           const family = css.fontFamily.replace(/var\((--[^)]+)\)/g, (_, variable: string) =>
             root.getPropertyValue(variable),
