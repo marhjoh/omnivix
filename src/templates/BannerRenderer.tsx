@@ -3,6 +3,9 @@
 import type { ComponentType } from "react";
 import type { Theme } from "@/src/theme/theme";
 import { useTheme } from "@/src/theme/ThemeProvider";
+import { Frame } from "@/src/banner/Frame";
+import { backgroundFromState } from "@/src/banner/background";
+import { logoFromState } from "@/src/banner/logo";
 import type { TemplateId } from "@/src/types/template";
 import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/Renderer";
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
@@ -30,6 +33,11 @@ export function BannerRenderer({
   uiTheme?: Theme;
 }) {
   const { theme } = useTheme();
+  const shownTheme = uiTheme ?? theme;
   const Renderer = RENDERERS[templateId];
-  return <Renderer state={state} data={data} uiTheme={uiTheme ?? theme} />;
+  return (
+    <Frame uiTheme={shownTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
+      <Renderer state={state} data={data} uiTheme={shownTheme} />
+    </Frame>
+  );
 }

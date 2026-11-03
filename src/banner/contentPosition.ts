@@ -3,6 +3,7 @@ import {
   normalizeContentAlign,
   type ContentAlign,
 } from "@/src/banner/contentAlign";
+import { contentBoxOf } from "@/src/banner/fit";
 import { positionOr, samePosition, type Position } from "@/src/banner/position";
 
 /**
@@ -23,6 +24,11 @@ function defaultContentPosition(state: Record<string, unknown>): ContentPosition
 /** The content's position from banner state: a moved one, or its default. */
 export function contentPositionFromState(state: Record<string, unknown>): ContentPosition {
   return positionOr(state.contentPosition, defaultContentPosition(state));
+}
+
+/** Where `FitContent` puts the content: in the format's padded box, at its position. */
+export function contentFit(state: Record<string, unknown>) {
+  return { box: contentBoxOf(state.size), position: contentPositionFromState(state) };
 }
 
 /** The alignment the content is at, or undefined between them (after a free drag). */

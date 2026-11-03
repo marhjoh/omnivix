@@ -11,7 +11,7 @@ export interface RenderData {
   repos?: RepoNormalized[];
 }
 
-/** What every template's renderer gets. */
+/** What every template's renderer gets. It draws the content; BannerRenderer adds the frame. */
 export interface RendererProps {
   state: Record<string, unknown>;
   data: RenderData;

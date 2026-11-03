@@ -1,7 +1,4 @@
 import type { CSSProperties } from "react";
-import { Frame } from "@/src/banner/Frame";
-import { logoFromState } from "@/src/banner/logo";
-import { backgroundFromState } from "@/src/banner/background";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contentBoxOf } from "@/src/banner/fit";
 import { BANNER_CONTENT_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
@@ -11,6 +8,7 @@ import {
   AUTHOR_SCALE,
   LARGE_MARK_FONT_FAMILY,
   quoteStyleFromState,
+  type QuoteMarks,
 } from "@/src/banner/quoteStyle";
 import { bannerUiChrome } from "@/src/theme/theme";
 import { quoteBannerDefinition } from "@/src/templates/definitions";
@@ -24,6 +22,43 @@ const QUOTE_LINES = { short: 3, long: 5 };
 
 /** Fixed type sizes: the quote keeps its own scale rather than fitting to the banner. */
 const QUOTE_SIZES: Record<ContentSize, number> = { xs: 28, s: 36, m: 48, l: 58, xl: 66 };
+
+/**
+ * The large marks, each a size (times the quote's font size) with the mark's own style and what it
+ * needs of the quote's block. `fontSize` is the quote's.
+ */
+const LARGE_MARKS: Partial<
+  Record<
+    QuoteMarks,
+    {
+      scale: number;
+      mark: (fontSize: number) => CSSProperties;
+      block?: (fontSize: number) => CSSProperties;
+    }
+  >
+> = {
+  // Its line box is cut to the mark's height, so it sits just above the first line.
+  "large-above": {
+    scale: 2.4,
+    mark: (fontSize) => ({ display: "block", height: fontSize * 1.15 }),
+  },
+  // In the room the block leaves above the text, behind it.
+  "large-behind": {
+    scale: 6,
+    mark: (fontSize) => ({
+      position: "absolute",
+      top: -fontSize * 0.5,
+      left: -fontSize * 0.5,
+      opacity: 0.14,
+    }),
+    block: (fontSize) => ({ paddingTop: fontSize * 0.8 }),
+  },
+  "large-beside": {
+    scale: 3.2,
+    mark: (fontSize) => ({ marginTop: -fontSize * 0.3, marginRight: fontSize * 0.45 }),
+    block: () => ({ display: "flex", alignItems: "flex-start" }),
+  },
+};
 
 export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
   const chrome = bannerUiChrome(uiTheme);
@@ -50,18 +85,12 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
     lineHeight: 1.2,
     fontWeight: style.fontWeight,
   };
-  const largeMark = (size: number): CSSProperties => ({
-    fontFamily: LARGE_MARK_FONT_FAMILY,
-    fontSize: quoteFontSize * size,
-    fontWeight: 700,
-    lineHeight: 1,
-    color: style.markColor,
-  });
+  const largeMark = LARGE_MARKS[style.marks];
   const mark = (glyph: string) =>
     glyph ? <span style={{ color: style.markColor }}>{glyph}</span> : null;
 
   return (
-    <Frame uiTheme={uiTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
+    <>
       {/* The padded box the quote moves in. It doesn't clip: large marks may reach into the
           padding, and the line limit keeps long quotes inside. */}
       <div
@@ -81,49 +110,23 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
             width: "max-content",
             maxWidth: "100%",
             textAlign: "center",
-            ...(style.marks === "large-beside" && {
-              display: "flex",
-              alignItems: "flex-start",
-            }),
-            // Room above the text for Large behind's mark.
-            ...(style.marks === "large-behind" && { paddingTop: quoteFontSize * 0.8 }),
+            ...largeMark?.block?.(quoteFontSize),
             ...(style.marks === "bar" && {
               borderLeft: `${Math.max(3, Math.round(quoteFontSize * 0.1))}px solid ${style.markColor ?? chrome.text}`,
               paddingLeft: quoteFontSize * 0.65,
             }),
           }}
         >
-          {style.marks === "large-above" && (
-            // Its line box is cut to the mark's height, so it sits just above the first line.
-            <span
-              aria-hidden
-              style={{ ...largeMark(2.4), display: "block", height: quoteFontSize * 1.15 }}
-            >
-              &ldquo;
-            </span>
-          )}
-          {style.marks === "large-behind" && (
+          {largeMark && (
             <span
               aria-hidden
               style={{
-                ...largeMark(6),
-                position: "absolute",
-                // In the room above the text.
-                top: -quoteFontSize * 0.5,
-                left: -quoteFontSize * 0.5,
-                opacity: 0.14,
-              }}
-            >
-              &ldquo;
-            </span>
-          )}
-          {style.marks === "large-beside" && (
-            <span
-              aria-hidden
-              style={{
-                ...largeMark(3.2),
-                marginTop: -quoteFontSize * 0.3,
-                marginRight: quoteFontSize * 0.45,
+                fontFamily: LARGE_MARK_FONT_FAMILY,
+                fontSize: quoteFontSize * largeMark.scale,
+                fontWeight: 700,
+                lineHeight: 1,
+                color: style.markColor,
+                ...largeMark.mark(quoteFontSize),
               }}
             >
               &ldquo;
@@ -168,6 +171,6 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
           </div>
         </div>
       </div>
-    </Frame>
+    </>
   );
 }
