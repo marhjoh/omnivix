@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 import {
   CONTENT_ALIGN_OPTIONS,
@@ -142,7 +143,10 @@ const cellShapeField: EditorFieldSchema = {
 };
 const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
 
-const yearState = z.string().default(String(new Date().getFullYear()));
+const yearState = z
+  .string()
+  .refine(isContributionYear, 'Must be a four-digit year or "latest"')
+  .default(String(new Date().getFullYear()));
 
 export const githubBannerDefinition: TemplateDefinition<
   {

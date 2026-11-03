@@ -35,7 +35,7 @@ export type ContributionDayNormalized = {
 };
 
 export interface ContributionWeekNormalized {
-  /** Sunday of this week (YYYY-MM-DD), from GitHub ContributionCalendarWeek.firstDay. */
+  /** This week's first day (YYYY-MM-DD); the first week of a range can start mid-week. */
   firstDay: string;
   days: ContributionDayNormalized[];
 }

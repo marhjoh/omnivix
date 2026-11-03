@@ -2,7 +2,7 @@ export const THEMES = ["light", "dark"] as const;
 
 export type Theme = (typeof THEMES)[number];
 
-/** Studio + PNG export: banner chrome follows app light/dark (template `themeId` is separate). */
+/** Studio and export: banner chrome follows app light/dark (template `themeId` is separate). */
 type BannerUiChrome = {
   baseBg: string;
   text: string;

@@ -7,7 +7,7 @@ import {
 } from "@/src/export/viewport";
 
 /**
- * Banner formats. Platforms rescale uploads, so one PNG fits every platform listed for a format.
+ * Banner formats. Platforms rescale uploads, so one image fits every platform listed for a format.
  * Comments note each platform's recommended upload size.
  */
 

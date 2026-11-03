@@ -3,6 +3,11 @@
  * inclusive 365 calendar days from (anchor UTC date − 364) through anchor UTC date.
  */
 
+/** "latest" (the last 365 days) or a four-digit year. */
+export function isContributionYear(year: string): boolean {
+  return year === "latest" || /^\d{4}$/.test(year);
+}
+
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }

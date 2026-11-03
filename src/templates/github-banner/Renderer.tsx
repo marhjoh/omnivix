@@ -8,22 +8,14 @@ import { contentBoxOf } from "@/src/banner/fit";
 import { normalizeContentSize } from "@/src/banner/contentSize";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
-import { bannerUiChrome, type Theme } from "@/src/theme/theme";
+import { bannerUiChrome } from "@/src/theme/theme";
 import { themePresetById } from "@/src/types/theme";
-import { RenderData } from "@/src/templates/renderers/types";
+import type { RendererProps } from "@/src/templates/renderers/types";
 
 /** Natural sizes; `FitContent` scales the whole block to the chosen size and banner format. */
 const GRID = { cell: 10, gap: 2 };
 
-export function GithubBannerRenderer({
-  state,
-  data,
-  uiTheme,
-}: {
-  state: Record<string, unknown>;
-  data: RenderData;
-  uiTheme: Theme;
-}) {
+export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const chrome = bannerUiChrome(uiTheme);
 
   return (

@@ -22,9 +22,9 @@ How the pieces fit together is described in [docs/architecture.md](docs/architec
 
 ## Adding a template
 
-1. Add its id to `TemplateId` (`src/types/template.ts`).
+1. Add its id to `TEMPLATE_IDS` (`src/types/template.ts`).
 2. Add a definition in `src/templates/definitions.ts` and an entry in `src/templates/registry.ts`.
-3. Add a renderer in `src/templates/<template-id>/Renderer.tsx` and wire it into `src/templates/BannerRenderer.tsx`, the [shared renderer](docs/architecture.md#rendering) for preview and export.
+3. Add a renderer in `src/templates/<template-id>/Renderer.tsx` and add it to `RENDERERS` in `src/templates/BannerRenderer.tsx`, the [shared renderer](docs/architecture.md#rendering) for preview and export.
 4. For the landing page, add a 2× export as `public/landing/<template-id>.webp`, and add the id to `LANDING_TEMPLATE_ORDER` in `src/landing/landingPreviewAssets.ts`.
 5. For link previews, add a JPEG copy in `src/og/banners/`.
 
@@ -61,4 +61,5 @@ CodeQL also scans each pull request for security problems; its findings show on 
 | `pnpm backgrounds`        | Regenerate the background photos from Unsplash (all, or by id)                                                             |
 | `pnpm social-preview`     | Regenerate the repository's social preview image                                                                           |
 | `pnpm readme-screenshots` | Regenerate the README screenshots from a running `pnpm dev`                                                                |
+| `pnpm export-quality`     | Compare JPEG with PNG exports and measure avatar sharpness, against a running `pnpm dev`                                   |
 | `pnpm doctor`             | Check React code for effect, state and performance problems with [React Doctor](https://github.com/millionco/react-doctor) |

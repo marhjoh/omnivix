@@ -3,7 +3,7 @@
  * `contributionCalendar.weeks` and `contributionCalendar.months`.
  *
  * Key contract:
- *   columnCount = weeks.length  (always; fillMode never adds columns)
+ *   columnCount = weeks.length
  *   row = weekday (0=Sun..6=Sat)
  *   col = week index
  *

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { contributionsTtlMs, getContributions, isContributionYear } from "@/src/github/client";
+import { contributionsTtlMs, getContributions } from "@/src/github/client";
+import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { githubRoute } from "@/src/github/route";
 
 export function GET(request: NextRequest) {

@@ -8,8 +8,7 @@ import { normalizeContentSizeOrFill } from "@/src/banner/contentSize";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { bannerFormatOf, viewRect } from "@/src/lib/sizes";
-import type { Theme } from "@/src/theme/theme";
-import { RenderData } from "@/src/templates/renderers/types";
+import type { RendererProps } from "@/src/templates/renderers/types";
 import { themePresetById } from "@/src/types/theme";
 
 /** Natural cell size; `FitContent` scales the grid to the chosen size and banner format. */
@@ -21,15 +20,7 @@ const GRID = { cell: 12, gap: 3 };
  */
 const FILL_GRID = { cell: 22, gap: 4 };
 
-export function ContributionBannerRenderer({
-  state,
-  data,
-  uiTheme,
-}: {
-  state: Record<string, unknown>;
-  data: RenderData;
-  uiTheme: Theme;
-}) {
+export function ContributionBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const theme = themePresetById(state.themeId);
   const contentSize = normalizeContentSizeOrFill(state.contentSize);
   const cellShape = contributionCellShapeFromState(state.cellShape);

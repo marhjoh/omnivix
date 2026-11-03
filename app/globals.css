@@ -13,7 +13,7 @@
   --color-danger: var(--danger);
 }
 
-/* App chrome tokens: THEME_INIT_SCRIPT (app/layout.tsx) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
+/* App chrome tokens: THEME_INIT_SCRIPT (src/theme/theme.ts) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
@@ -65,7 +65,7 @@ body {
   overflow-x: clip;
   color: var(--text);
   background: var(--bg);
-  /* Inter is loaded in app/layout.tsx (next/font); the rest are fallbacks while it loads. */
+  /* Inter is loaded in app/fonts.ts (next/font); the rest are fallbacks while it loads. */
   font-family:
     var(--font-inter),
     "Segoe UI",
@@ -152,10 +152,6 @@ body {
   }
 }
 
-/*
- * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
- * buttons, so utilities such as `hidden` still apply.
- */
 :root {
   /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
   --control-border: color-mix(in oklab, var(--border) 85%, transparent);
@@ -164,6 +160,10 @@ body {
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
 }
 
+/*
+ * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
+ * buttons, so utilities such as `hidden` still apply.
+ */
 @layer components {
   /* A setting's label, above its control: like the landing page's step titles (text color,
      semibold), one size below the value in the control. */

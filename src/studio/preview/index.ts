@@ -1,10 +1,8 @@
 export type { PreviewContentState, PreviewProblem } from "./types";
 export {
   computePreviewContentState,
-  fetchErrorProblem,
-  limitProblem,
+  fetchProblem,
   noReposProblem,
-  userNotFoundProblem,
   previewEmptyCopy,
   previewLoadingMessage,
 } from "./computePreviewContentState";

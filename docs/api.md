@@ -18,8 +18,9 @@ Every template's settings, the sizes and the built-in backgrounds are listed in 
 The API answers with:
 
 - `200`: the image, as PNG or JPEG
-- `400`: an invalid request, with an `issues` list naming each field that failed
+- `400`: an invalid request, with an `issues` list naming each field that failed, or an image that can't be used, with only an `error`
 - `404`: a GitHub user that doesn't exist
+- `413`: settings too long to export, such as a very long quote
 - `429`: a rate limit: GitHub's (`"limit": "github"`) or the daily export quota (`"limit": "daily-exports"`), both with a `resetAt` time, or the [burst limit](deployment.md#rate-limits) without one
 - `500`: a failed export; trying again may work
 

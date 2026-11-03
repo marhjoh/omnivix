@@ -1,9 +1,5 @@
-import {
-  getContributions,
-  getRepoLists,
-  getUserSummary,
-  isContributionYear,
-} from "@/src/github/client";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
+import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";

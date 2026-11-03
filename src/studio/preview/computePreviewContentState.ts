@@ -54,6 +54,23 @@ export function limitProblem(limit: ApiLimit): PreviewProblem {
   };
 }
 
+/** A failed GitHub request: the limit that refused it, a user that doesn't exist, or its error. */
+export function fetchProblem({
+  error,
+  limit,
+  notFound,
+  username,
+}: {
+  error: string;
+  limit: ApiLimit | null;
+  notFound: boolean;
+  username: string;
+}): PreviewProblem {
+  if (limit) return limitProblem(limit);
+  if (notFound) return userNotFoundProblem(username);
+  return fetchErrorProblem(error);
+}
+
 /** GitHub has no user by that name; retrying can't help, choosing another username can. */
 export function userNotFoundProblem(username: string): PreviewProblem {
   return {

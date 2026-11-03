@@ -6,7 +6,10 @@ import {
   RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
-import { computeLatestContributionRangeUtc } from "@/src/lib/utcContributionRange";
+import {
+  computeLatestContributionRangeUtc,
+  isContributionYear,
+} from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
 import { guardRateLimit, warnIfQuotaLow, type GithubQuota } from "@/src/github/rateLimit";
 
@@ -52,11 +55,6 @@ function graphqlClient() {
 /** GitHub logins are case-insensitive, so cache keys are too. */
 function userKey(username: string) {
   return username.toLowerCase();
-}
-
-/** "latest" (the last 365 days) or a four-digit year. */
-export function isContributionYear(year: string): boolean {
-  return year === "latest" || /^\d{4}$/.test(year);
 }
 
 /** How long a year's contributions are cached: past years are stable, the current one isn't. */

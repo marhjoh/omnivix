@@ -40,13 +40,13 @@ sequenceDiagram
   Render-->>Browser: banner
   Browser->>Browser: wait for fonts, images and content sizing
   Browser-->>API: screenshot of .banner-export-root
-  API-->>Studio: PNG, or JPEG at 90% quality
+  API-->>Studio: PNG, or JPEG at 90% quality (lower to fit a platform's upload limit)
 ```
 
 Two details the diagram doesn't show:
 
 - **The token is stateless,** because the API route and the render page can run on different serverless instances.
-- **Backgrounds don't go in the token.** Playwright serves an upload or link to the render page from memory (`background.ts`); links are downloaded first, from public https addresses only (`backgroundLink.ts`).
+- **Backgrounds and logos don't go in the token.** Playwright serves an upload or link to the render page from memory (`images.ts`); links are downloaded first, from public https addresses only (`imageLink.ts`).
 
 See also: request fields and responses in [api.md](api.md#export-api), and the rate limit and Chromium version in [deployment.md](deployment.md).
 

@@ -6,6 +6,7 @@ import {
   noReposProblem,
   userNotFoundProblem,
   limitProblem,
+  fetchProblem,
 } from "./computePreviewContentState";
 
 describe("computePreviewContentState", () => {
@@ -134,5 +135,28 @@ describe("limitProblem", () => {
       hint: "Try again in a few minutes.",
       action: "retry",
     });
+  });
+});
+
+describe("fetchProblem", () => {
+  const failed = {
+    error: "Couldn't load GitHub data.",
+    limit: null,
+    notFound: false,
+    username: "x",
+  };
+
+  it("reports the limit that refused the request first", () => {
+    const resetAt = new Date(2026, 9, 18, 14, 5);
+    const limit = { kind: "requests", resetAt } as const;
+    expect(fetchProblem({ ...failed, limit, notFound: true })).toEqual(limitProblem(limit));
+  });
+
+  it("offers to change a user that doesn't exist", () => {
+    expect(fetchProblem({ ...failed, notFound: true })).toEqual(userNotFoundProblem("x"));
+  });
+
+  it("shows the request's own error otherwise", () => {
+    expect(fetchProblem(failed)).toEqual(fetchErrorProblem(failed.error));
   });
 });

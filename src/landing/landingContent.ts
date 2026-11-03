@@ -1,6 +1,7 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, exportFormats, exportPixelRatios } from "@/src/lib/sizes";
+import { listText } from "@/src/lib/text";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { SITE_LICENSE } from "@/src/lib/site";
 import { SITE_LINKS } from "@/src/lib/site-links";
@@ -19,8 +20,18 @@ function bannerFormatsSummary() {
 
 /** "1×, 2× or 3×" */
 function pixelRatiosSummary() {
-  const ratios = EXPORT_PIXEL_RATIOS.map((ratio) => `${ratio}×`);
-  return `${ratios.slice(0, -1).join(", ")} or ${ratios.at(-1)}`;
+  return listText(EXPORT_PIXEL_RATIOS.map((ratio) => `${ratio}×`));
+}
+
+/** "YouTube and Reddit": platforms whose banners are only exported at 1×. */
+function oneTimesOnlyPlatforms() {
+  const formats = Object.values(BANNER_SIZES).filter((format) =>
+    exportFormats(format).every((file) => exportPixelRatios(format, file).length === 1),
+  );
+  return listText(
+    formats.flatMap((format) => format.platforms.map((platform) => platform.name)),
+    "and",
+  );
 }
 
 export const HOW_IT_WORKS = [
@@ -72,7 +83,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "What file formats and resolutions can I download?",
-    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution. 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
+    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution (${oneTimesOnlyPlatforms()}: 1×, as their banners are already large). 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     topic: "Banners",

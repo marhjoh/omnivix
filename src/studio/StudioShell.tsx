@@ -8,10 +8,8 @@ import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import {
   computePreviewContentState,
-  fetchErrorProblem,
-  limitProblem,
+  fetchProblem,
   noReposProblem,
-  userNotFoundProblem,
   type PreviewContentState,
   type PreviewProblem,
 } from "@/src/studio/preview";
@@ -81,19 +79,18 @@ const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
 
 const NO_REPOS: RepoNormalized[] = [];
 
-type FetchSlotErrors = {
-  user: string | null;
-  contributions: string | null;
-  repos: string | null;
-};
+type FailedFetch = { error: string | null; limit: ApiLimit | null; notFound: boolean };
 
 /**
- * The error the preview shows: the first failing fetch among the data the banner draws. (The
+ * The fetch the preview reports: the first failing one among the data the banner draws. (The
  * contribution banner's user fetch is only for the sidebar's year list, so it never shows.)
  */
-function previewErrorFor(githubData: readonly GithubDataKind[], e: FetchSlotErrors) {
+function failedFetchFor(
+  githubData: readonly GithubDataKind[],
+  fetches: Record<GithubDataKind, FailedFetch | null>,
+): FailedFetch | null {
   for (const kind of githubData) {
-    if (e[kind]) return e[kind];
+    if (fetches[kind]?.error) return fetches[kind];
   }
   return null;
 }
@@ -523,26 +520,31 @@ export function StudioShell({
   );
 
   // Errors from a previous retry nonce are not reported, so a retry clears them immediately.
-  const previewDataError = previewErrorFor(githubData, {
-    user: userFetch.error,
+  const failedFetch = failedFetchFor(githubData, {
+    user: userFetch,
     // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
-    contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch.error,
-    repos: repoListsFetch.error,
+    contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch,
+    repos: repoListsFetch,
   });
 
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
   const noRepos = needsRepos && dataReady && data.repos?.length === 0;
-  const userNotFound = userFetch.notFound || contributionsFetch.notFound || repoListsFetch.notFound;
-  const dataLimit = userFetch.limit ?? contributionsFetch.limit ?? repoListsFetch.limit;
+  const failedError = failedFetch?.error ?? null;
+  const failedLimit = failedFetch?.limit ?? null;
+  const failedNotFound = failedFetch?.notFound ?? false;
   const previewProblem = useMemo<PreviewProblem | null>(() => {
-    if (previewDataError) {
-      if (dataLimit) return limitProblem(dataLimit);
-      return userNotFound ? userNotFoundProblem(username) : fetchErrorProblem(previewDataError);
+    if (failedError) {
+      return fetchProblem({
+        error: failedError,
+        limit: failedLimit,
+        notFound: failedNotFound,
+        username,
+      });
     }
     if (noRepos) return noReposProblem(repoMode, selectedRepos);
     return null;
-  }, [previewDataError, dataLimit, userNotFound, username, noRepos, repoMode, selectedRepos]);
+  }, [failedError, failedLimit, failedNotFound, username, noRepos, repoMode, selectedRepos]);
 
   const previewState = computePreviewContentState({
     needsUsername,

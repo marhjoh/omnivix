@@ -1,13 +1,13 @@
 import type { PreviewContentState } from "./preview/types";
 
 /**
- * Whether the Download button is disabled. The button has no message of its own: the preview shows
+ * Whether Download and Copy are disabled. They have no message of their own: the preview shows
  * why (empty, loading or a problem), and an unusable image is reported with a toast.
  */
 export function isExportBlocked(params: {
   previewState: PreviewContentState;
   stateValid: boolean;
-  /** The background or the logo can't be used: it failed to load, or is an http link. */
+  /** The background or the logo failed to load. */
   imageUnusable: boolean;
   /**
    * The preview still shows an earlier version while the current one loads (a quick load being

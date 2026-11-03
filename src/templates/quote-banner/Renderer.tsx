@@ -12,9 +12,9 @@ import {
   LARGE_MARK_FONT_FAMILY,
   quoteStyleFromState,
 } from "@/src/banner/quoteStyle";
-import { bannerUiChrome, type Theme } from "@/src/theme/theme";
+import { bannerUiChrome } from "@/src/theme/theme";
 import { quoteBannerDefinition } from "@/src/templates/definitions";
-import { RenderData } from "@/src/templates/renderers/types";
+import type { RendererProps } from "@/src/templates/renderers/types";
 
 /** A quote longer than this is set smaller and may run to more lines. */
 const LONG_QUOTE_CHARS = 120;
@@ -25,14 +25,7 @@ const QUOTE_LINES = { short: 3, long: 5 };
 /** Fixed type sizes: the quote keeps its own scale rather than fitting to the banner. */
 const QUOTE_SIZES: Record<ContentSize, number> = { xs: 28, s: 36, m: 48, l: 58, xl: 66 };
 
-export function QuoteBannerRenderer({
-  state,
-  uiTheme,
-}: {
-  state: Record<string, unknown>;
-  data: RenderData;
-  uiTheme: Theme;
-}) {
+export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
   const chrome = bannerUiChrome(uiTheme);
   const position = contentPositionFromState(state);
   const style = quoteStyleFromState(state, uiTheme);

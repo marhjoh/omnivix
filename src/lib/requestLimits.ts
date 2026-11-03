@@ -37,7 +37,7 @@ function requestLimit(prefix: string, algorithm: RatelimitConfig["limiter"]) {
   let limiter: Ratelimit | null | undefined;
 
   return async function limitedUntil(request: Request): Promise<Date | null> {
-    limiter ??= createLimiter(prefix, algorithm);
+    if (limiter === undefined) limiter = createLimiter(prefix, algorithm);
     if (!limiter) return null;
     try {
       const { success, reset } = await limiter.limit(clientKey(request));
