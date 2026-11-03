@@ -26,7 +26,7 @@ export function RepoMultiSelect({
   catalog: RepoNormalized[];
   loading: boolean;
   error: string | null;
-  /** Until then Retry is disabled (GitHub's rate limit). */
+  /** Until then Retry is disabled (a rate limit). */
   retryAt: Date | null;
   onRetry: () => void;
   valueCsv: string;

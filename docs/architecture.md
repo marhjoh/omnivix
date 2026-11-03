@@ -1,6 +1,6 @@
 # Architecture
 
-Omnivix is a Next.js app on Vercel, without a database or user accounts. GitHub data is fetched when a banner needs it, and the visitor's choices stay in their browser's cookies.
+Omnivix is a Next.js app on Vercel that turns public GitHub data and quotes into downloadable banners. No user accounts are needed.
 
 ## Rendering
 
@@ -40,13 +40,13 @@ sequenceDiagram
   Render-->>Browser: banner
   Browser->>Browser: wait for fonts, images and content sizing
   Browser-->>API: screenshot of .banner-export-root
-  API-->>Studio: PNG, or JPEG at 90% quality
+  API-->>Studio: PNG, or JPEG at 90% quality (lower to fit a platform's upload limit)
 ```
 
 Two details the diagram doesn't show:
 
 - **The token is stateless,** because the API route and the render page can run on different serverless instances.
-- **Backgrounds don't go in the token.** Playwright serves an upload or link to the render page from memory (`background.ts`); links are downloaded first, from public https addresses only (`backgroundLink.ts`).
+- **Backgrounds and logos don't go in the token.** Playwright serves an upload or link to the render page from memory (`images.ts`); links are downloaded first, from public https addresses only (`imageLink.ts`).
 
 See also: request fields and responses in [api.md](api.md#export-api), and the rate limit and Chromium version in [deployment.md](deployment.md).
 
@@ -78,13 +78,13 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 ### `src/export/`
 
-Server-side export: validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
 ### `src/github/`
 
-GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
+GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
 
 ### `src/landing/`, `src/og/`
 

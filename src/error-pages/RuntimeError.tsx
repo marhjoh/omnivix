@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { textLinkClass } from "@/src/ui/textLinkClass";
+import { SITE_LINKS } from "@/src/lib/site";
+import { textLinkClass } from "@/src/ui/classNames";
 import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
 
-/** Shared by app/error.tsx and app/global-error.tsx. */
-export function RuntimeError({
-  error,
-  retry,
-}: {
+/** What Next passes an error boundary. */
+export interface RuntimeErrorProps {
   error: Error & { digest?: string };
   retry: () => void;
-}) {
+}
+
+/** Shared by app/error.tsx and app/global-error.tsx. */
+export function RuntimeError({ error, retry }: RuntimeErrorProps) {
   return (
     <ErrorScreen
       code="ERR"

@@ -2,7 +2,7 @@ import { useRef, useState, type FocusEvent } from "react";
 import { useDismiss } from "@/src/ui/useDismiss";
 
 /**
- * Open/close for a disclosure panel (the export options): it closes on Escape (focus goes back to
+ * Open/close for a disclosure panel, such as the export options: it closes on Escape (focus goes back to
  * the toggle), on a press outside the root, and when focus moves out of it (Tab past the last
  * option). Put `rootRef` and `onBlur` on the element holding both the toggle and the panel.
  */

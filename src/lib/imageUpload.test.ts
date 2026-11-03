@@ -8,7 +8,6 @@ import {
   readFileHead,
   shouldDecodeHeicWithHeic2any,
   supportedFormatsMessage,
-  truncateMiddle,
   validateImageUploadMeta,
 } from "./imageUpload";
 
@@ -139,19 +138,6 @@ describe("readFileHead", () => {
     const f = new File([buf], "t.bin");
     const head = await readFileHead(f, 3);
     expect(Array.from(head)).toEqual([1, 2, 3]);
-  });
-});
-
-describe("truncateMiddle", () => {
-  it("leaves short strings", () => {
-    expect(truncateMiddle("abc", 10)).toBe("abc");
-  });
-
-  it("truncates long strings", () => {
-    const s = "https://example.com/very/long/path/to/file.jpg";
-    const out = truncateMiddle(s, 20);
-    expect(out.length).toBeLessThanOrEqual(20);
-    expect(out).toContain("…");
   });
 });
 

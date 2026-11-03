@@ -24,6 +24,9 @@ interface RepoCardProps {
   uiTheme: Theme;
 }
 
+const STAR_COLOR = "#f2cc60";
+const FORK_COLOR = "#b392f0";
+
 export function RepoCard({
   repo,
   showDescription,
@@ -41,8 +44,6 @@ export function RepoCard({
           title: "#1f2328",
           body: "#656d76",
           pillBg: "rgba(31, 35, 40, 0.06)",
-          star: "#f2cc60",
-          fork: "#b392f0",
           shadow: "0 8px 24px rgba(31, 35, 40, 0.08)",
         }
       : {
@@ -51,10 +52,9 @@ export function RepoCard({
           title: "rgba(255,255,255,0.94)",
           body: "rgba(255,255,255,0.68)",
           pillBg: "rgba(255, 255, 255, 0.08)",
-          star: "#f2cc60",
-          fork: "#b392f0",
           shadow: "0 10px 26px rgba(2, 6, 23, 0.34)",
         };
+  const pill = { padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg };
 
   return (
     <article
@@ -125,12 +125,10 @@ export function RepoCard({
           {showLanguage && repo.language && (
             <span
               style={{
+                ...pill,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 5,
-                padding: "2px 7px",
-                borderRadius: 999,
-                background: cardChrome.pillBg,
               }}
             >
               {repo.languageColor && (
@@ -149,27 +147,13 @@ export function RepoCard({
             </span>
           )}
           {showStars && (
-            <span
-              style={{
-                whiteSpace: "nowrap",
-                padding: "2px 7px",
-                borderRadius: 999,
-                background: cardChrome.pillBg,
-              }}
-            >
-              <span style={{ color: cardChrome.star }}>★</span> {repo.stargazers}
+            <span style={{ ...pill, whiteSpace: "nowrap" }}>
+              <span style={{ color: STAR_COLOR }}>★</span> {repo.stargazers}
             </span>
           )}
           {showForks && (
-            <span
-              style={{
-                whiteSpace: "nowrap",
-                padding: "2px 7px",
-                borderRadius: 999,
-                background: cardChrome.pillBg,
-              }}
-            >
-              <span style={{ color: cardChrome.fork }}>⑂</span> {repo.forks}
+            <span style={{ ...pill, whiteSpace: "nowrap" }}>
+              <span style={{ color: FORK_COLOR }}>⑂</span> {repo.forks}
             </span>
           )}
         </div>

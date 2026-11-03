@@ -1,5 +1,4 @@
-import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib/site";
-import { SITE_LINKS } from "@/src/lib/site-links";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME, SITE_LINKS } from "@/src/lib/site";
 import { getTemplates } from "@/src/templates/registry";
 import { FAQ, HOW_IT_WORKS } from "@/src/landing/landingContent";
 import { exportApiDocs } from "@/src/export/apiDocs";

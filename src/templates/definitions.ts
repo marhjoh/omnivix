@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 import {
   CONTENT_ALIGN_OPTIONS,
@@ -13,8 +14,8 @@ import {
   type ContentSize,
   type ContentSizeOrFill,
 } from "@/src/banner/contentSize";
-import { isOneOf } from "@/src/lib/isOneOf";
-import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { oneOfOr } from "@/src/lib/isOneOf";
+import { BANNER_SIZE_KEYS, DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -57,7 +58,7 @@ const CONTRIBUTION_CELL_SHAPE_OPTIONS: Array<{
 }));
 
 export function contributionCellShapeFromState(raw: unknown): ContributionCellShape {
-  return isOneOf(CONTRIBUTION_CELL_SHAPES, raw) ? raw : "rounded";
+  return oneOfOr(CONTRIBUTION_CELL_SHAPES, raw, "rounded");
 }
 
 const percent = z.number().min(0).max(100);
@@ -142,7 +143,12 @@ const cellShapeField: EditorFieldSchema = {
 };
 const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
 
-const yearState = z.string().default(String(new Date().getFullYear()));
+const CURRENT_YEAR = String(new Date().getFullYear());
+
+const yearState = z
+  .string()
+  .refine(isContributionYear, 'Must be a four-digit year or "latest"')
+  .default(CURRENT_YEAR);
 
 export const githubBannerDefinition: TemplateDefinition<
   {
@@ -166,7 +172,7 @@ export const githubBannerDefinition: TemplateDefinition<
     id: "github-banner",
     title: "GitHub Banner",
     description: "Username, avatar, and contributions.",
-    defaultSize: "wide",
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["user", "contributions"],
   },
@@ -203,8 +209,8 @@ export const githubBannerDefinition: TemplateDefinition<
     ...logoInitialState,
     username: "",
     themeId: "default",
-    size: "wide",
-    year: String(new Date().getFullYear()),
+    size: DEFAULT_BANNER_SIZE,
+    year: CURRENT_YEAR,
     showMonthLabels: true,
     showDayLabels: true,
     showTotal: true,
@@ -241,7 +247,7 @@ export const reposBannerDefinition: TemplateDefinition<
     id: "repos-banner",
     title: "Repos Banner",
     description: "Languages, stars, and forks.",
-    defaultSize: "wide",
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["user", "repos"],
   },
@@ -301,7 +307,7 @@ export const reposBannerDefinition: TemplateDefinition<
     showForks: true,
     contentSize: DEFAULT_CONTENT_SIZE,
     themeId: "default",
-    size: "wide",
+    size: DEFAULT_BANNER_SIZE,
   },
 };
 
@@ -321,7 +327,7 @@ export const contributionBannerDefinition: TemplateDefinition<
     id: "contribution-banner",
     title: "Contribution Banner",
     description: "Contribution heatmap.",
-    defaultSize: "wide",
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["contributions"],
   },
@@ -349,8 +355,8 @@ export const contributionBannerDefinition: TemplateDefinition<
     contentSize: DEFAULT_CONTENT_SIZE,
     cellShape: "rounded",
     themeId: "default",
-    size: "wide",
-    year: String(new Date().getFullYear()),
+    size: DEFAULT_BANNER_SIZE,
+    year: CURRENT_YEAR,
   },
 };
 
@@ -378,7 +384,7 @@ export const quoteBannerDefinition: TemplateDefinition<
     id: "quote-banner",
     title: "Quote Banner",
     description: "Typographic quotes.",
-    defaultSize: "wide",
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: false,
     githubData: [],
   },
@@ -433,6 +439,6 @@ export const quoteBannerDefinition: TemplateDefinition<
     alignment: "center",
     contentSize: "m",
     themeId: "default",
-    size: "wide",
+    size: DEFAULT_BANNER_SIZE,
   },
 };

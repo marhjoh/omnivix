@@ -12,7 +12,7 @@ const GroupContext = createContext<GroupState | null>(null);
 
 /**
  * A row of items sharing one highlight that slides to whichever item is hovered or focused.
- * Style the items with the classes in ./highlightClasses (a plain module, so server components can use them too).
+ * Style the items with the classes in ./classNames (a plain module, so server components can use them too).
  */
 export function HoverHighlightGroup({
   layoutId,
@@ -43,13 +43,10 @@ export function HoverHighlightGroup({
 
 export function HoverHighlightItem({
   id,
-  className = "",
   shrink = false,
   children,
 }: {
   id: string;
-  /** For spacing on the wrapper (margins here keep the highlight the size of the button). */
-  className?: string;
   /** Lets the item narrow when the row is short of room (its content should truncate). */
   shrink?: boolean;
   children: ReactNode;
@@ -59,7 +56,7 @@ export function HoverHighlightItem({
   const { active, setActive, layoutId } = group;
   return (
     <div
-      className={`relative ${shrink ? "min-w-0" : "shrink-0"} ${className}`}
+      className={`relative ${shrink ? "min-w-0" : "shrink-0"}`}
       onMouseEnter={() => setActive(id)}
       onFocus={() => setActive(id)}
       onBlur={() => setActive(null)}

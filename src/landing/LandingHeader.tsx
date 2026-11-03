@@ -3,34 +3,17 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { MotionConfig, motion } from "framer-motion";
-import { Coffee } from "lucide-react";
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { GithubIcon } from "@/src/ui/GithubIcon";
+import { SITE_NAV_LINKS } from "@/src/landing/siteNavLinks";
 import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { ThemedIcon, ThemedLogo } from "@/src/theme/ThemedBrand";
 import styles from "@/src/landing/landing.module.css";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemClass } from "@/src/ui/highlightClasses";
+import { highlightItemClass } from "@/src/ui/classNames";
 
 function subscribeScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });
   return () => window.removeEventListener("scroll", onChange);
 }
-
-const NAV_LINKS = [
-  {
-    id: "coffee",
-    href: SITE_LINKS.buyMeACoffee,
-    label: "Buy me a coffee",
-    icon: <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />,
-  },
-  {
-    id: "github",
-    href: SITE_LINKS.repo,
-    label: "GitHub",
-    icon: <GithubIcon />,
-  },
-] as const;
 
 /** The morph between the bar and the pill. */
 const MORPH = { duration: 0.5, ease: [0.22, 1, 0.36, 1] } as const;
@@ -85,7 +68,7 @@ export function LandingHeader() {
               className="flex items-center gap-1.5"
               aria-label="Site"
             >
-              {NAV_LINKS.map((link) => (
+              {SITE_NAV_LINKS.map((link) => (
                 <HoverHighlightItem key={link.id} id={link.id}>
                   <a
                     href={link.href}

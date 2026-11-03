@@ -22,7 +22,7 @@ export function FieldLabel({
   children: ReactNode;
 }) {
   const label = htmlFor ? (
-    <label htmlFor={htmlFor} id={id ?? fieldLabelId(htmlFor)} className="field-label">
+    <label htmlFor={htmlFor} id={fieldLabelId(htmlFor)} className="field-label">
       {children}
     </label>
   ) : (
@@ -55,6 +55,24 @@ export function LabeledGroup({
       <FieldLabel id={labelId} end={end}>
         {label}
       </FieldLabel>
+      {children}
+    </div>
+  );
+}
+
+/** A setting with its label above it. */
+export function FieldWrapper({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
       {children}
     </div>
   );

@@ -1,0 +1,92 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const { limit, fixedWindow } = vi.hoisted(() => ({ limit: vi.fn(), fixedWindow: vi.fn() }));
+
+vi.mock("@upstash/ratelimit", () => ({
+  Ratelimit: Object.assign(
+    class {
+      limit = limit;
+    },
+    { slidingWindow: vi.fn(), fixedWindow },
+  ),
+}));
+
+const request = new Request("http://localhost/api/github/repos", {
+  headers: { "x-real-ip": "203.0.113.7" },
+});
+
+/** A fresh module, since the limits read their settings and store once. */
+async function load({ store = true, dailyLimit }: { store?: boolean; dailyLimit?: string } = {}) {
+  vi.resetModules();
+  vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+  vi.stubEnv("KV_REST_API_URL", store ? "https://example.upstash.io" : "");
+  vi.stubEnv("KV_REST_API_TOKEN", store ? "token" : "");
+  if (dailyLimit !== undefined) vi.stubEnv("EXPORT_DAILY_LIMIT", dailyLimit);
+  return import("./requestLimits");
+}
+
+beforeEach(() => vi.stubEnv("EXPORT_DAILY_LIMIT", ""));
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+  limit.mockReset();
+  fixedWindow.mockReset();
+});
+
+describe("request limits", () => {
+  it("have no limit without a store", async () => {
+    const { githubDataLimit } = await load({ store: false });
+    expect(await githubDataLimit(request)).toBeNull();
+    expect(limit).not.toHaveBeenCalled();
+  });
+
+  it("count a hash of the IP, never the IP itself", async () => {
+    limit.mockResolvedValue({ success: true, reset: 0 });
+    const { githubDataLimit } = await load();
+    await githubDataLimit(request);
+    const [key] = limit.mock.calls[0];
+    expect(key).toMatch(/^[0-9a-f]{64}$/);
+    expect(key).not.toContain("203.0.113.7");
+  });
+
+  it("say when a refused request may try again", async () => {
+    const reset = Date.UTC(2026, 9, 19);
+    limit.mockResolvedValue({ success: false, reset });
+    const { dailyExportLimit } = await load();
+    expect(await dailyExportLimit(request)).toEqual(new Date(reset));
+  });
+
+  it("let requests through when the store fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    limit.mockRejectedValue(new Error("down"));
+    const { githubDataLimit } = await load();
+    expect(await githubDataLimit(request)).toBeNull();
+    expect(console.error).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [undefined, 25],
+    ["40", 40],
+    ["0", 25],
+    ["many", 25],
+  ])("allow EXPORT_DAILY_LIMIT=%s exports a day as %i", async (dailyLimit, expected) => {
+    await load({ dailyLimit });
+    expect(fixedWindow).toHaveBeenCalledWith(expected, "1 d");
+  });
+});
+
+describe("tooManyRequests", () => {
+  it("names the limit, with its reset time and Retry-After", async () => {
+    const { tooManyRequests } = await load({ store: false });
+    const resetAt = new Date(Date.now() + 90_000);
+    const response = tooManyRequests("daily-exports", resetAt);
+    expect(response.status).toBe(429);
+    expect(Number(response.headers.get("Retry-After"))).toBeGreaterThanOrEqual(89);
+    expect(await response.json()).toEqual({
+      error: "Daily export limit reached.",
+      limit: "daily-exports",
+      resetAt: resetAt.toISOString(),
+    });
+  });
+});

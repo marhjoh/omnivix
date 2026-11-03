@@ -19,9 +19,8 @@
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  /* Hover colors fade like the buttons' (app/globals.css). */
   transition-property: background-color, border-color, box-shadow, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 /* Hover: a faint blue border, like the app's other bordered controls. It shows only where a
@@ -136,8 +135,7 @@
   background: var(--swatch);
   cursor: pointer;
   forced-color-adjust: none;
-  /* Hover rings fade like the buttons' (app/globals.css). */
-  transition: box-shadow 0.15s;
+  transition: box-shadow var(--hover-fade);
 }
 
 .swatch:where(:hover) {
@@ -176,9 +174,8 @@
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  /* Hover colors fade like the buttons' (app/globals.css). */
   transition-property: border-color, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 .reset:hover {
@@ -255,9 +252,8 @@
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  /* Hover colors fade like the buttons' (app/globals.css). */
   transition-property: background-color, border-color, box-shadow, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 .checkRow + .checkRow {
@@ -289,9 +285,8 @@
   border-radius: 0.3rem;
   border: 1px solid var(--border);
   color: transparent;
-  /* Hover colors fade like the buttons' (app/globals.css). */
   transition-property: background-color, border-color, box-shadow, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 .checkRow[aria-pressed="true"] .check {
@@ -337,9 +332,8 @@
   justify-content: center;
   background: var(--accent-fill);
   cursor: pointer;
-  /* Hover colors fade like the buttons' (app/globals.css). */
   transition-property: background-color, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 /* Icon-only on phones (a little more room on the round side), labeled from sm. */
@@ -478,7 +472,7 @@
   color: var(--text);
   cursor: pointer;
   transition-property: background-color, color;
-  transition-duration: 0.15s;
+  transition-duration: var(--hover-fade);
 }
 
 .panelAction:hover:not(:disabled) {

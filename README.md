@@ -105,4 +105,4 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, cod
 [MIT](LICENSE). This covers the code, not these third-party files, which keep their own licenses:
 
 - Background photos in `public/backgrounds/`: [Unsplash License](https://unsplash.com/license). Each photographer is credited in [`src/backgrounds/presets.ts`](src/backgrounds/presets.ts)
-- Inter font in `app/fonts/` and `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org)
+- Fonts in `app/fonts/` and `src/og/fonts/`: [SIL Open Font License 1.1](https://openfontlicense.org) or [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)

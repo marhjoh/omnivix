@@ -113,3 +113,16 @@ describe("parseExportRequest", () => {
     expect(JSON.stringify(result)).not.toContain(secret);
   });
 });
+
+describe("parseExportRequest year", () => {
+  const contributions = { templateId: "contribution-banner", size: "wide" };
+
+  it.each(["2024", "latest"])("accepts %s", (year) => {
+    expect(parseExportRequest({ ...contributions, state: { username: "x", year } }).ok).toBe(true);
+  });
+
+  it("rejects a year that isn't four digits or latest, instead of failing the render", () => {
+    const result = parseExportRequest({ ...contributions, state: { username: "x", year: "abc" } });
+    expect(result).toMatchObject({ ok: false, issues: [{ path: "state.year" }] });
+  });
+});

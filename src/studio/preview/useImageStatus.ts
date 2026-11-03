@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isDataUrl } from "@/src/lib/imageSource";
 
 type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
@@ -35,7 +36,7 @@ export function useImageStatus(
     let cancelled = false;
     const settle = (status: "loaded" | "failed") => {
       if (cancelled) return;
-      if (!src.startsWith("data:")) knownStatus.set(src, status);
+      if (!isDataUrl(src)) knownStatus.set(src, status);
       setResult({ src, status });
     };
     // Decoded before it counts as loaded, so the banner can draw it in the same frame it switches.

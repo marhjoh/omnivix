@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { Coffee } from "lucide-react";
-import { APP_RELEASE_URL, APP_VERSION } from "@/src/lib/app-version";
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { GithubIcon } from "@/src/ui/GithubIcon";
+import packageJson from "@/package.json";
+import { SITE_LINKS } from "@/src/lib/site";
+import { SITE_NAV_LINKS } from "@/src/landing/siteNavLinks";
 import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemBaseClass } from "@/src/ui/highlightClasses";
+import { highlightItemBaseClass } from "@/src/ui/classNames";
+
+/** Deployed version, bumped in package.json with each release, and its release notes. */
+const APP_VERSION = packageJson.version;
+const APP_RELEASE_URL = `${SITE_LINKS.repo}/releases/tag/v${APP_VERSION}`;
 
 /** Labeled footer links: brighter than the header's muted links, 9px side padding like it. */
 const footerLinkClass = `${highlightItemBaseClass} w-auto px-[9px] text-text/90 hover:text-text`;
@@ -37,28 +40,19 @@ export function LandingFooter() {
               </a>
             </HoverHighlightItem>
           </span>
-          <HoverHighlightItem id="coffee">
-            <a
-              href={SITE_LINKS.buyMeACoffee}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={footerLinkClass}
-            >
-              <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />
-              Buy me a coffee
-            </a>
-          </HoverHighlightItem>
-          <HoverHighlightItem id="github">
-            <a
-              href={SITE_LINKS.repo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={footerLinkClass}
-            >
-              <GithubIcon />
-              GitHub
-            </a>
-          </HoverHighlightItem>
+          {SITE_NAV_LINKS.map((link) => (
+            <HoverHighlightItem key={link.id} id={link.id}>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={footerLinkClass}
+              >
+                {link.icon}
+                {link.label}
+              </a>
+            </HoverHighlightItem>
+          ))}
           <HoverHighlightItem id="version">
             <a
               href={APP_RELEASE_URL}

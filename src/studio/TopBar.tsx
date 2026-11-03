@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemClass } from "@/src/ui/highlightClasses";
+import { highlightItemClass } from "@/src/ui/classNames";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
 import { templateRegistry } from "@/src/templates/registry";

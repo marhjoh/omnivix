@@ -1,12 +1,9 @@
-import {
-  getContributions,
-  getRepoLists,
-  getUserSummary,
-  isContributionYear,
-} from "@/src/github/client";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
+import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
+import { usernameOf } from "@/src/lib/githubUsername";
 
 /**
  * How long the studio page waits for GitHub. Usually it's in the server's cache and takes
@@ -24,7 +21,7 @@ export async function loadInitialGithubData(
   state: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const { meta } = templateRegistry[templateId];
-  const username = typeof state.username === "string" ? state.username : "";
+  const username = usernameOf(state);
   if (!meta.needsUsername || !username) return {};
   const year = contributionYear(state.year);
   const urls = githubDataUrls({

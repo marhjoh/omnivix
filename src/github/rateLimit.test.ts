@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GithubRateLimitError, guardRateLimit, rateLimitResetAt } from "./rateLimit";
+import {
+  GithubRateLimitError,
+  guardRateLimit,
+  rateLimitResetAt,
+  warnIfQuotaLow,
+} from "./rateLimit";
 
 const NOW = Date.UTC(2026, 9, 18, 12, 0, 0);
 const IN_AN_HOUR = NOW / 1000 + 3600;
@@ -74,5 +79,22 @@ describe("guardRateLimit", () => {
     vi.useFakeTimers({ now: NOW + 120_000 }); // past the reset from the test above
     const error = new Error("boom");
     await expect(guardRateLimit(() => Promise.reject(error))).rejects.toBe(error);
+  });
+});
+
+describe("warnIfQuotaLow", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("warns below 10% left, once per quota window", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    warnIfQuotaLow({ limit: 5000, remaining: 500, resetAt: "2026-10-18T13:00:00Z" });
+    expect(warn).not.toHaveBeenCalled();
+
+    warnIfQuotaLow({ limit: 5000, remaining: 499, resetAt: "2026-10-18T13:00:00Z" });
+    warnIfQuotaLow({ limit: 5000, remaining: 300, resetAt: "2026-10-18T13:00:00Z" });
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    warnIfQuotaLow({ limit: 5000, remaining: 100, resetAt: "2026-10-18T14:00:00Z" });
+    expect(warn).toHaveBeenCalledTimes(2);
   });
 });

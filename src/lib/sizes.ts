@@ -1,13 +1,15 @@
-import { isOneOf } from "@/src/lib/isOneOf";
-import { EXPORT_FORMAT, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import { oneOfOr } from "@/src/lib/isOneOf";
 import {
+  EXPORT_FORMAT,
+  EXPORT_FORMATS,
+  type ExportFormat,
   EXPORT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
-} from "@/src/export/viewport";
+} from "@/src/export/format";
 
 /**
- * Banner formats. Platforms rescale uploads, so one PNG fits every platform listed for a format.
+ * Banner formats. Platforms rescale uploads, so one image fits every platform listed for a format.
  * Comments note each platform's recommended upload size.
  */
 
@@ -70,6 +72,16 @@ export type BannerBox = Box & Pick<BannerFormat, "views" | "safeArea">;
 export const BANNER_SIZE_KEYS = ["wide", "header", "reddit", "card", "youtube"] as const;
 
 export type BannerSize = (typeof BANNER_SIZE_KEYS)[number];
+
+/** "LinkedIn, X" */
+export function platformNames(format: BannerFormat): string {
+  return format.platforms.map((platform) => platform.name).join(", ");
+}
+
+/** The CSS `aspect-ratio` of a box, e.g. "1584 / 396". */
+export function aspectRatioOf({ width, height }: Box): string {
+  return `${width} / ${height}`;
+}
 
 export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
   // LinkedIn 1584 × 396, Buy Me a Coffee 1600 × 400
@@ -147,8 +159,14 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
 /** Every platform with a format, in picker order. */
 export const BANNER_PLATFORMS = Object.values(BANNER_SIZES).flatMap((format) => format.platforms);
 
-export function normalizeBannerSize(raw: unknown, fallback: BannerSize = "wide"): BannerSize {
-  return isOneOf(BANNER_SIZE_KEYS, raw) ? raw : fallback;
+/** The size every template starts at, and what an unknown size falls back to. */
+export const DEFAULT_BANNER_SIZE: BannerSize = "wide";
+
+export function normalizeBannerSize(
+  raw: unknown,
+  fallback: BannerSize = DEFAULT_BANNER_SIZE,
+): BannerSize {
+  return oneOfOr(BANNER_SIZE_KEYS, raw, fallback);
 }
 
 /** The format a platform's banners use. */

@@ -1,12 +1,5 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
-
-/** A box on screen, relative to the preview. */
-export interface Rect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import type { Rect } from "@/src/lib/sizes";
 
 const sameRect = (a: Rect, b: Rect) =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
@@ -24,7 +17,8 @@ function measureRect(preview: Element, element: Element): Rect {
 }
 
 /**
- * The box of the banner item marked with `target`, found in the preview that holds `surface`.
+ * The box of the banner item marked with `target`, in screen pixels from the top left of the
+ * preview that holds `surface`.
  * Measured after every render (the banner places its items in the same commit), and a frame after
  * the item or its parent resizes, once the banner has re-fitted: a font or image loads, or the
  * format changes.

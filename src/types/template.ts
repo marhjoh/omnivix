@@ -1,8 +1,7 @@
 import { z } from "zod";
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
-import type { ExportPixelRatio } from "@/src/export/viewport";
-import type { ExportFormat } from "@/src/export/format";
+import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 
 export const TEMPLATE_IDS = [
   "github-banner",
@@ -15,7 +14,7 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export type { BannerSize };
 
-type EditorFieldType =
+export type EditorFieldType =
   | "text"
   | "textarea"
   | "toggle"
@@ -64,8 +63,8 @@ export interface ExportRequest {
   size: BannerSize;
   state: Record<string, unknown>;
   pixelRatio?: ExportPixelRatio;
-  /** PNG when left out. */
+  /** PNG when left out, or the size's first format if it doesn't take PNG. */
   format?: ExportFormat;
-  /** Matches editor app theme so PNG matches on-screen preview. */
+  /** Matches the studio's theme, so the export looks like the preview. */
   uiTheme?: Theme;
 }

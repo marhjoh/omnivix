@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright";
 import sharp, { type Region } from "sharp";
-import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
+import { presetSrcById } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS } from "@/src/export/format";
 import { BANNER_SIZES, exportPixelRatios, type BannerSize } from "@/src/lib/sizes";
 import { TEMPLATE_IDS, type TemplateId } from "@/src/types/template";
@@ -29,12 +29,6 @@ const AVATAR_SOURCE_PX = 460;
 /** Side of the compared blocks, in banner pixels (times the pixel ratio in the image). */
 const BLOCK = 48;
 const CROP_WIDTH = 480;
-
-function presetSrc(id: string): string {
-  const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
-  if (!preset) throw new Error(`No background preset "${id}"`);
-  return preset.src;
-}
 
 async function exportBanner(body: object): Promise<Buffer> {
   const response = await fetch(`${BASE_URL}/api/export`, {
@@ -141,7 +135,7 @@ async function measureExports(): Promise<string[]> {
             size,
             pixelRatio,
             format,
-            state: { username: USERNAME, backgroundImage: presetSrc(BACKGROUND) },
+            state: { username: USERNAME, backgroundImage: presetSrcById(BACKGROUND) },
           });
           if (format === "jpeg") jpegMs = performance.now() - started;
           await writeFile(

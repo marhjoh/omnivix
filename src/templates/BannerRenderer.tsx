@@ -1,40 +1,43 @@
 "use client";
 
+import type { ComponentType } from "react";
 import type { Theme } from "@/src/theme/theme";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import { TemplateId } from "@/src/types/template";
+import { Frame } from "@/src/banner/Frame";
+import { backgroundFromState } from "@/src/banner/background";
+import { logoFromState } from "@/src/banner/logo";
+import type { TemplateId } from "@/src/types/template";
 import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/Renderer";
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
 import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
-import { RenderData } from "@/src/templates/renderers/types";
+import type { RenderData, RendererProps } from "@/src/templates/renderers/types";
+
+const RENDERERS: Record<TemplateId, ComponentType<RendererProps>> = {
+  "github-banner": GithubBannerRenderer,
+  "repos-banner": ReposBannerRenderer,
+  "contribution-banner": ContributionBannerRenderer,
+  "quote-banner": QuoteBannerRenderer,
+};
 
 export function BannerRenderer({
   templateId,
   state,
   data,
-  uiTheme: uiThemeProp,
+  uiTheme,
 }: {
   templateId: TemplateId;
   state: Record<string, unknown>;
   data: RenderData;
-  /** When set (e.g. PNG render route), overrides client theme. */
+  /** When set (the export's render page), overrides the app's theme. */
   uiTheme?: Theme;
 }) {
-  const { theme: contextTheme } = useTheme();
-  const uiTheme = uiThemeProp ?? contextTheme;
-
-  if (templateId === "github-banner") {
-    return <GithubBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
-  }
-
-  if (templateId === "repos-banner") {
-    return <ReposBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
-  }
-
-  if (templateId === "contribution-banner") {
-    return <ContributionBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
-  }
-
-  return <QuoteBannerRenderer state={state} data={data} uiTheme={uiTheme} />;
+  const { theme } = useTheme();
+  const shownTheme = uiTheme ?? theme;
+  const Renderer = RENDERERS[templateId];
+  return (
+    <Frame uiTheme={shownTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
+      <Renderer state={state} data={data} uiTheme={shownTheme} />
+    </Frame>
+  );
 }

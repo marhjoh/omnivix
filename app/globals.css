@@ -13,7 +13,7 @@
   --color-danger: var(--danger);
 }
 
-/* App chrome tokens: THEME_INIT_SCRIPT (app/layout.tsx) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
+/* App chrome tokens: THEME_INIT_SCRIPT (src/theme/theme.ts) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
@@ -65,7 +65,7 @@ body {
   overflow-x: clip;
   color: var(--text);
   background: var(--bg);
-  /* Inter is loaded in app/layout.tsx (next/font); the rest are fallbacks while it loads. */
+  /* Inter is loaded in app/fonts.ts (next/font); the rest are fallbacks while it loads. */
   font-family:
     var(--font-inter),
     "Segoe UI",
@@ -82,9 +82,8 @@ body {
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
     cursor: pointer;
-    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
     transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
+    transition-duration: var(--hover-fade);
   }
 
   /* Disabled: neutral instead of see-through, like every disabled control (--disabled-text). */
@@ -152,18 +151,21 @@ body {
   }
 }
 
-/*
- * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
- * buttons, so utilities such as `hidden` still apply.
- */
 :root {
   /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
   --control-border: color-mix(in oklab, var(--border) 85%, transparent);
   --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
   /* Text and icons of disabled controls, which keep their frame instead of fading out. */
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
+  /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
+     Each rule's `transition-property` lists which colors. */
+  --hover-fade: 0.15s;
 }
 
+/*
+ * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
+ * buttons, so utilities such as `hidden` still apply.
+ */
 @layer components {
   /* A setting's label, above its control: like the landing page's step titles (text color,
      semibold), one size below the value in the control. */
@@ -186,9 +188,8 @@ body {
     font-size: 0.875rem;
     line-height: 1.25rem;
     color: var(--text);
-    /* Hover and focus colors fade like the buttons'. */
     transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
+    transition-duration: var(--hover-fade);
   }
 
   /* Hover: a faint blue border, like the tiles and secondary buttons. :where keeps it weaker

@@ -1,7 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { dragPlacement, nudgePlacement, placementRoom, snapLine } from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
-import type { BannerBox, Rect as BannerRect } from "@/src/lib/sizes";
+import type { BannerBox, Rect } from "@/src/lib/sizes";
 import {
   arrowStep,
   describePosition,
@@ -13,8 +13,9 @@ import {
   SnapGuide,
   useMoveOncePerFrame,
   usePointerDrag,
+  type PreviewScale,
 } from "@/src/studio/preview/dragSurface";
-import { useItemRect, type Rect } from "@/src/studio/preview/useItemRect";
+import { useItemRect } from "@/src/studio/preview/useItemRect";
 
 /**
  * Over an item the banner places (the content, the logo): drag it, or focus it and use the arrow
@@ -35,12 +36,10 @@ export function PlacementDragSurface({
   /** What the item is called, e.g. "content", for its label and badge. */
   name: string;
   position: Position;
-  /** Banner size in CSS pixels. */
   frame: BannerBox;
   /** The part of the banner the preview shows, in CSS pixels. */
-  shown: BannerRect;
-  /** Preview scale: screen pixels per banner pixel. */
-  scale: number;
+  shown: Rect;
+  scale: PreviewScale;
   onMove: (position: Position) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);

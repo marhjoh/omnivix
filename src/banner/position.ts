@@ -8,8 +8,15 @@ export interface Position {
   y: number;
 }
 
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
 /** Keeps a percentage between 0 and 100. */
-export const clampPercent = (value: number) => Math.min(100, Math.max(0, value));
+export const clampPercent = (value: number) => clamp(value, 0, 100);
+
+export function samePosition(a: Position, b: Position): boolean {
+  return a.x === b.x && a.y === b.y;
+}
 
 /** Rounds a percentage to 0.1, which is finer than a pixel at any banner size. */
 export const roundPercent = (value: number) => Math.round(value * 10) / 10;

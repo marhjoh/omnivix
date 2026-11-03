@@ -1,6 +1,9 @@
 /** Site-wide name, copy and URL used for metadata and link previews. */
 export const SITE_NAME = "Omnivix";
 
+/** The title of the page shown when something breaks (app/error.tsx, app/global-error.tsx). */
+export const ERROR_PAGE_TITLE = `Something broke · ${SITE_NAME}`;
+
 export const SITE_TAGLINE = "Create profile banners you actually want to use";
 
 /** The best-known platforms, for copy that can't list all of them. */
@@ -32,3 +35,12 @@ export function getSiteUrl(): URL {
   }
   return new URL(`http://localhost:${process.env.PORT ?? 3000}`);
 }
+
+/** Shared outbound links for attribution and support (single source of truth). */
+export const SITE_LINKS = {
+  maintainerHandle: "marhjoh",
+  maintainerProfile: "https://github.com/marhjoh",
+  repo: "https://github.com/marhjoh/omnivix",
+  newIssue: "https://github.com/marhjoh/omnivix/issues/new/choose",
+  buyMeACoffee: "https://buymeacoffee.com/marhjoh",
+} as const;

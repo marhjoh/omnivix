@@ -84,8 +84,12 @@ export async function readFileHead(file: File, byteCount: number): Promise<Uint8
   return new Uint8Array(buf);
 }
 
+function mimeOf(file: File): string {
+  return file.type.toLowerCase().trim();
+}
+
 function isSvgFile(file: File): boolean {
-  const type = file.type.toLowerCase().trim();
+  const type = mimeOf(file);
   return type === SVG_MIME_TYPE || (!type && /\.svg$/i.test(file.name));
 }
 
@@ -107,29 +111,20 @@ export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): 
     return policy.svg ? null : unsupported;
   }
 
-  // GIF isn't on the allowed list, so its MIME type is rejected below.
-  const type = file.type.toLowerCase().trim();
-
-  if (type && !isOneOf(RASTER_MIME_TYPES, type)) {
-    // HEIC sometimes ships as octet-stream or an empty type; trust the extension in those cases.
-    const heicByName = /\.(heic|heif)$/i.test(name);
-    if (!(heicByName && type === "application/octet-stream")) {
-      return unsupported;
-    }
+  // GIF isn't on the allowed list, so its MIME type is rejected here. HEIC sometimes ships as
+  // octet-stream; then its extension is trusted.
+  const type = mimeOf(file);
+  if (type) {
+    return isOneOf(RASTER_MIME_TYPES, type) || shouldDecodeHeicWithHeic2any(file)
+      ? null
+      : unsupported;
   }
-
-  if (!type) {
-    if (!/\.(png|jpe?g|webp|avif|heic|heif)$/i.test(file.name)) {
-      return unsupported;
-    }
-  }
-
-  return null;
+  return /\.(png|jpe?g|webp|avif|heic|heif)$/i.test(file.name) ? null : unsupported;
 }
 
 /** Prefer MIME when present so a PNG named `.heic` is not sent through HEIC conversion. */
 export function shouldDecodeHeicWithHeic2any(file: File): boolean {
-  const t = file.type.toLowerCase().trim();
+  const t = mimeOf(file);
   if (t === "image/heic" || t === "image/heif") return true;
   if (t && t !== "application/octet-stream") return false;
   return /\.(heic|heif)$/i.test(file.name);
@@ -244,12 +239,4 @@ export async function normalizeImageFile(
   } finally {
     image.close();
   }
-}
-
-export function truncateMiddle(str: string, maxChars: number): string {
-  if (str.length <= maxChars) return str;
-  const keep = maxChars - 3;
-  const head = Math.ceil(keep / 2);
-  const tail = Math.floor(keep / 2);
-  return `${str.slice(0, head)}…${str.slice(-tail)}`;
 }

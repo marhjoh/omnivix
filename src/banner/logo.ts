@@ -1,6 +1,6 @@
 import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
 import { contentBoxOf } from "@/src/banner/fit";
-import { positionOr, type Position } from "@/src/banner/position";
+import { positionOr, samePosition, type Position } from "@/src/banner/position";
 import { bannerFormatOf, safeAreaOf, type Rect } from "@/src/lib/sizes";
 
 export const DEFAULT_LOGO_SIZE: ContentSize = "m";
@@ -34,8 +34,7 @@ export function logoPositionFromState(state: Record<string, unknown>): Position 
 
 /** True when the logo is at its default place, so there's nothing to reset. */
 export function isDefaultLogoPosition(state: Record<string, unknown>): boolean {
-  const { x, y } = logoPositionFromState(state);
-  return x === DEFAULT_LOGO_POSITION.x && y === DEFAULT_LOGO_POSITION.y;
+  return samePosition(logoPositionFromState(state), DEFAULT_LOGO_POSITION);
 }
 
 /** Reads the logo, its place and size from banner state; tolerates missing or bad values. */

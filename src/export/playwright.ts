@@ -1,12 +1,10 @@
 import { access, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Page } from "playwright";
-import { chromium as playwrightChromium } from "playwright";
+import { type Page, chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
-import type { ExportPixelRatio } from "@/src/export/viewport";
-import type { ExportFormat } from "@/src/export/format";
+import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
@@ -77,6 +75,71 @@ async function waitForRasterReady(page: Page) {
   );
 }
 
+/** Vercel's Chromium (with core dumps off), or Playwright's own locally. */
+async function launchBrowser() {
+  if (!process.env.VERCEL) return playwrightChromium.launch({ headless: true });
+  return playwrightChromium.launch({
+    headless: true,
+    executablePath: await withoutCoreDumps(await chromium.executablePath()),
+    args: chromium.args,
+  });
+}
+
+/**
+ * Only the app and allowed hosts are reachable; links are downloaded and checked beforehand. The
+ * main page may still navigate (a Vercel login redirect is reported by `openRenderPage`), frames
+ * may not. Uploaded and linked images are answered from memory at their `path`.
+ */
+async function restrictRequests(page: Page, origin: string, images: ExportImage[]) {
+  // Sent to the app only, never to the other allowed hosts.
+  const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  await page.route("**/*", (route) => {
+    const request = route.request();
+    const target = new URL(request.url());
+    if (target.origin === origin) {
+      return route.fallback(
+        bypassSecret
+          ? { headers: { ...request.headers(), "x-vercel-protection-bypass": bypassSecret } }
+          : undefined,
+      );
+    }
+    const allowed =
+      ALLOWED_HOSTS.has(target.hostname) ||
+      (request.isNavigationRequest() && request.frame() === page.mainFrame());
+    return allowed ? route.fallback() : route.abort("blockedbyclient");
+  });
+  // Routes added later take precedence, so these run before the one above.
+  for (const image of images) {
+    await page.route(`**${image.path}`, (route) =>
+      route.fulfill({ status: 200, contentType: image.contentType, body: image.body }),
+    );
+  }
+}
+
+/** Loads the render page, failing if it didn't render: an HTTP error or a Vercel login. */
+async function openRenderPage(page: Page, url: string) {
+  const response = await page.goto(url, { waitUntil: "load" });
+  const status = response?.status() ?? 0;
+  if (status >= 400) throw new Error(`Render page returned HTTP ${status}`);
+  if (page.url().includes("vercel.com/login")) {
+    throw new Error("Render page blocked by Vercel Deployment Protection");
+  }
+}
+
+/** The render page marks GitHub problems instead of a banner; they're thrown as their errors. */
+async function throwIfRenderProblem(page: Page) {
+  const problem = await page.evaluate(
+    ([limit, missing]) => ({
+      limitUntil: document.querySelector(`[${limit}]`)?.getAttribute(limit) ?? null,
+      userMissing: document.querySelector(`[${missing}]`) !== null,
+    }),
+    [GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE] as const,
+  );
+  if (problem.limitUntil) throw new GithubRateLimitError(new Date(problem.limitUntil));
+  if (problem.userMissing) throw new GithubUserNotFoundError();
+}
+
+/** Opens the render page at the banner's size and pixel ratio and screenshots the banner. */
 export async function captureBanner({
   url,
   size,
@@ -91,73 +154,26 @@ export async function captureBanner({
   /** Uploaded or linked images, each served at its `path`. */
   images?: ExportImage[];
 }) {
-  const isVercel = Boolean(process.env.VERCEL);
-  const browser = isVercel
-    ? await playwrightChromium.launch({
-        headless: true,
-        executablePath: await withoutCoreDumps(await chromium.executablePath()),
-        args: chromium.args,
-      })
-    : await playwrightChromium.launch({ headless: true });
+  const banner = BANNER_SIZES[size];
+  const browser = await launchBrowser();
   try {
-    const { width, height } = BANNER_SIZES[size];
     const context = await browser.newContext({
-      viewport: { width, height },
+      viewport: { width: banner.width, height: banner.height },
       // The default when unset, capped for the banner format (YouTube PNGs are 1× only).
-      deviceScaleFactor: exportPixelRatioFor(BANNER_SIZES[size], format, pixelRatio),
+      deviceScaleFactor: exportPixelRatioFor(banner, format, pixelRatio),
     });
     const page = await context.newPage();
     page.setDefaultTimeout(RENDER_TIMEOUT_MS);
-    // Only the app and allowed hosts are reachable; links are downloaded and checked beforehand.
-    // The main page may still navigate (a Vercel login redirect is reported below), frames may not.
-    // Routes added later take precedence, so the image routes below run first.
-    const { origin } = new URL(url);
-    // Sent to the app only, never to the other allowed hosts.
-    const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-    await page.route("**/*", (route) => {
-      const request = route.request();
-      const target = new URL(request.url());
-      if (target.origin === origin) {
-        return route.fallback(
-          bypassSecret
-            ? { headers: { ...request.headers(), "x-vercel-protection-bypass": bypassSecret } }
-            : undefined,
-        );
-      }
-      const allowed =
-        ALLOWED_HOSTS.has(target.hostname) ||
-        (request.isNavigationRequest() && request.frame() === page.mainFrame());
-      return allowed ? route.fallback() : route.abort("blockedbyclient");
-    });
-    for (const image of images) {
-      await page.route(`**${image.path}`, (route) =>
-        route.fulfill({ status: 200, contentType: image.contentType, body: image.body }),
-      );
-    }
-    const response = await page.goto(url, { waitUntil: "load" });
-    const status = response?.status() ?? 0;
-    if (status >= 400) {
-      throw new Error(`Render page returned HTTP ${status}`);
-    }
-    const finalUrl = page.url();
-    if (finalUrl.includes("vercel.com/login")) {
-      throw new Error("Render page blocked by Vercel Deployment Protection");
-    }
-    const problem = await page.evaluate(
-      ([limit, missing]) => ({
-        limitUntil: document.querySelector(`[${limit}]`)?.getAttribute(limit) ?? null,
-        userMissing: document.querySelector(`[${missing}]`) !== null,
-      }),
-      [GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE] as const,
-    );
-    if (problem.limitUntil) throw new GithubRateLimitError(new Date(problem.limitUntil));
-    if (problem.userMissing) throw new GithubUserNotFoundError();
+    await restrictRequests(page, new URL(url).origin, images);
+    await openRenderPage(page, url);
+    await throwIfRenderProblem(page);
+
     const target = page.locator(".banner-export-root");
     await target.waitFor({ state: "visible" });
     await waitForRasterReady(page);
     await waitForContentFit(page);
     const png = await target.screenshot({ type: "png", animations: "disabled", scale: "device" });
-    return format === "jpeg" ? await toJpeg(png, BANNER_SIZES[size].uploadLimit) : png;
+    return format === "jpeg" ? await toJpeg(png, banner.uploadLimit) : png;
   } finally {
     await browser.close();
   }

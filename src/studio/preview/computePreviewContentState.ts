@@ -1,6 +1,7 @@
 import type { GithubDataKind } from "@/src/types/template";
 import type { PreviewContentState, PreviewProblem } from "./types";
-import { GITHUB_LIMIT_TITLE, tryAgainAt } from "@/src/lib/rateLimitMessage";
+import type { ApiLimit } from "@/src/lib/apiError";
+import { LIMIT_TITLES, TRY_AGAIN_SOON, tryAgainAt } from "@/src/lib/rateLimitMessage";
 
 export function computePreviewContentState(params: {
   needsUsername: boolean;
@@ -20,7 +21,7 @@ export function computePreviewContentState(params: {
     return "error";
   }
 
-  if (params.needsUsername && !params.dataReady) {
+  if (!params.dataReady) {
     return "loading";
   }
 
@@ -37,14 +38,37 @@ export function fetchErrorProblem(message: string): PreviewProblem {
   };
 }
 
-/** GitHub's rate limit is reached: say when it resets, and keep "Try again" off until then. */
-export function githubLimitProblem(resetAt: Date): PreviewProblem {
+/**
+ * A rate limit refused the GitHub data: say when it resets, and keep "Try again" off until then.
+ * A bare 429 from the platform has no reset time.
+ */
+export function limitProblem(limit: ApiLimit): PreviewProblem {
+  if (limit.kind === "firewall") {
+    return { title: LIMIT_TITLES.requests, hint: TRY_AGAIN_SOON, action: "retry" };
+  }
   return {
-    title: GITHUB_LIMIT_TITLE,
-    hint: tryAgainAt(resetAt),
+    title: LIMIT_TITLES[limit.kind],
+    hint: tryAgainAt(limit.resetAt),
     action: "retry",
-    retryAt: resetAt,
+    retryAt: limit.resetAt,
   };
+}
+
+/** A failed GitHub request: the limit that refused it, a user that doesn't exist, or its error. */
+export function fetchProblem({
+  error,
+  limit,
+  notFound,
+  username,
+}: {
+  error: string;
+  limit: ApiLimit | null;
+  notFound: boolean;
+  username: string;
+}): PreviewProblem {
+  if (limit) return limitProblem(limit);
+  if (notFound) return userNotFoundProblem(username);
+  return fetchErrorProblem(error);
 }
 
 /** GitHub has no user by that name; retrying can't help, choosing another username can. */

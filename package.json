@@ -27,6 +27,8 @@
   "dependencies": {
     "@octokit/graphql": "^9.0.5",
     "@sparticuz/chromium": "^153.0.0",
+    "@upstash/ratelimit": "2.2.0",
+    "@upstash/redis": "1.39.0",
     "framer-motion": "^14.9.0",
     "heic2any": "^0.0.4",
     "lucide-react": "^1.65.0",

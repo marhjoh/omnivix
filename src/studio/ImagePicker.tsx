@@ -1,11 +1,13 @@
 "use client";
 
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import { isHttpImageUrl } from "@/src/lib/imageLink";
-import { normalizeImageFile, truncateMiddle, type ImageUploadPolicy } from "@/src/lib/imageUpload";
+import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
+import { normalizeImageFile, type ImageUploadPolicy } from "@/src/lib/imageUpload";
+import { truncateMiddle } from "@/src/lib/text";
+import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import {
   DropdownGroupLabel,
   DropdownRoot,
@@ -32,10 +34,6 @@ interface ImagePreset {
   src: string;
 }
 
-function isDataUrl(s: string) {
-  return s.startsWith("data:");
-}
-
 const TRIGGER_LABEL_MAX = 44;
 
 /** How long the link field must be idle before a link that can't be used is reported. */
@@ -46,7 +44,7 @@ const HTTPS = "https://";
 
 /** What the link field holds after its fixed "https://": a pasted link loses its scheme. */
 function withoutScheme(link: string): string {
-  return link.trim().replace(/^https?:\/\//i, "");
+  return link.replace(/^\s*https?:\/\//i, "");
 }
 
 function triggerLabel(
@@ -59,11 +57,8 @@ function triggerLabel(
     const name = uploadedFileName?.trim();
     return name ? truncateMiddle(name, TRIGGER_LABEL_MAX) : "Uploaded image";
   }
-  const preset = presets.find((p) => p.src === value);
-  if (preset) return preset.label;
-  // The link itself shows in the field below the picker.
-  if (isHttpImageUrl(value)) return "Image from URL";
-  return "Custom";
+  // Anything else is a link (see isSavableImage); the link itself shows in the field below.
+  return presets.find((p) => p.src === value)?.label ?? "Image from URL";
 }
 
 const NO_PRESETS: readonly ImagePreset[] = [];
@@ -115,7 +110,6 @@ export function ImagePicker({
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
-  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
   const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
@@ -162,12 +156,6 @@ export function ImagePicker({
     }
   }, [urlEditorOpen]);
 
-  useEffect(() => {
-    return () => {
-      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    };
-  }, []);
-
   // uploadSession only ever holds a data URL, so a match means the image is that upload.
   const uploadDisplayName =
     uploadSession && uploadSession.dataUrl === value ? uploadSession.fileName : null;
@@ -176,22 +164,20 @@ export function ImagePicker({
    * The user has stopped typing: a link is checked, and an emptied field removes the image if that
    * was a link. A preset or upload stays when the field is opened and left empty.
    */
-  const settle = useCallback(
-    (draft: string) => {
-      const rest = withoutScheme(draft);
-      const link = rest ? HTTPS + rest : "";
-      setSettledLink(link);
-      if (!link && linkValue) onChange(undefined);
-    },
-    [onChange, linkValue],
-  );
+  const settle = (draft: string) => {
+    // Cleaned again once settled: a pasted "https:// x" or "https://https://x" still works.
+    const rest = withoutScheme(draft.trim());
+    const link = rest ? HTTPS + rest : "";
+    setSettledLink(link);
+    if (!link && linkValue) onChange(undefined);
+  };
+
+  const debouncedSettle = useDebouncedCallback(settle, LINK_SETTLE_MS);
 
   const onUrlChange = (raw: string) => {
-    // A pasted link loses its scheme, since the field already starts with https://.
-    const draft = raw.replace(/^\s*https?:\/\//i, "");
+    const draft = withoutScheme(raw);
     setUrlDraft(draft);
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    settleTimeoutRef.current = setTimeout(() => settle(draft), LINK_SETTLE_MS);
+    debouncedSettle.schedule(draft);
   };
 
   /**
@@ -199,7 +185,7 @@ export function ImagePicker({
    * Choosing something else in the menu closes it.
    */
   const removeLink = () => {
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    debouncedSettle.cancel();
     setUrlDraft("");
     setSettledLink(undefined);
     onChange(undefined);
@@ -211,17 +197,22 @@ export function ImagePicker({
    */
   const settleUrl = () => {
     if (urlDraft === undefined) return;
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    debouncedSettle.cancel();
     settle(urlDraft);
+  };
+
+  const leaveLinkEditor = () => {
+    debouncedSettle.cancel();
+    setSettledLink(undefined);
+    setUrlDraft(undefined);
+    setUrlEditorOpen(false);
   };
 
   /** A preset, or no image (`undefined`). */
   const select = (src: string | undefined) => {
-    setSettledLink(undefined);
+    leaveLinkEditor();
     setUploadSession(null);
     onChange(src);
-    setUrlDraft(undefined);
-    setUrlEditorOpen(false);
     dropdown.close();
   };
 
@@ -238,9 +229,7 @@ export function ImagePicker({
   };
 
   const selectUpload = () => {
-    setSettledLink(undefined);
-    setUrlDraft(undefined);
-    setUrlEditorOpen(false);
+    leaveLinkEditor();
     fileInputRef.current?.click();
     dropdown.close();
   };
@@ -308,8 +297,6 @@ export function ImagePicker({
               const file = e.target.files?.[0];
               e.target.value = "";
               if (!file) return;
-              setUrlDraft(undefined);
-              setUrlEditorOpen(false);
               const result = await normalizeImageFile(file, policy);
               if (!result.ok) {
                 onError(result.error);

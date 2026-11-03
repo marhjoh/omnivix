@@ -1,8 +1,10 @@
+import { COOKIE_ATTRIBUTES, setCookieClient } from "@/src/lib/cookies";
+
 export const THEMES = ["light", "dark"] as const;
 
 export type Theme = (typeof THEMES)[number];
 
-/** Studio + PNG export: banner chrome follows app light/dark (template `themeId` is separate). */
+/** Studio and export: banner chrome follows app light/dark (template `themeId` is separate). */
 type BannerUiChrome = {
   baseBg: string;
   text: string;
@@ -36,8 +38,6 @@ export const THEME_COOKIE_NAME = "omnivix-theme";
 /** Until the browser's own theme is known (the inline script sets it before first paint). */
 export const DEFAULT_THEME: Theme = "dark";
 
-const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
-
 /** Single parser: cookie raw value → Theme. Invalid/missing → default. */
 export function parseThemeCookie(value: string | undefined): Theme {
   return value === "light" || value === "dark" ? value : DEFAULT_THEME;
@@ -45,9 +45,6 @@ export function parseThemeCookie(value: string | undefined): Theme {
 
 /** Matches the theme cookie in `document.cookie`; also used, as source, by THEME_INIT_SCRIPT. */
 const THEME_COOKIE_PATTERN = `(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`;
-
-/** Cookie attributes without Secure (added on https, where it's required for SameSite cookies). */
-const COOKIE_ATTRIBUTES = `Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
 
 /**
  * Runs in <head> before first paint: applies the theme cookie, or on a first visit the OS
@@ -75,9 +72,6 @@ export function applyStoredTheme(): void {
   if (root.dataset.theme !== theme) root.dataset.theme = theme;
 }
 
-/** Client-only: persist for the next full page request / SSR. */
 export function setThemeCookieClient(theme: Theme): void {
-  if (typeof document === "undefined") return;
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${THEME_COOKIE_NAME}=${theme}; ${COOKIE_ATTRIBUTES}${secure}`;
+  setCookieClient(THEME_COOKIE_NAME, theme);
 }

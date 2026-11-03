@@ -1,8 +1,8 @@
 import { FAQ, FAQ_TOPICS } from "@/src/landing/landingContent";
 import { SectionHeading } from "@/src/landing/SectionHeading";
-import { linkText } from "@/src/lib/linkText";
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { textLinkClass } from "@/src/ui/textLinkClass";
+import { linkText } from "@/src/lib/text";
+import { SITE_LINKS } from "@/src/lib/site";
+import { textLinkClass } from "@/src/ui/classNames";
 import landingStyles from "@/src/landing/landing.module.css";
 
 // Answers stay plain strings for the JSON-LD and /llms.txt; URLs in them become links here.

@@ -8,7 +8,7 @@ import {
   type PropsWithChildren,
 } from "react";
 import type { Position } from "@/src/banner/position";
-import type { Rect } from "@/src/studio/preview/useItemRect";
+import type { Rect } from "@/src/lib/sizes";
 
 /**
  * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`):
@@ -88,15 +88,15 @@ export function DragBadge({ children }: PropsWithChildren) {
   );
 }
 
+/** The preview's scale: screen pixels per banner pixel. */
+export type PreviewScale = number;
+
 /** Arrow keys move this many percent, or more with Shift. */
 const PERCENT_STEPS = { step: 2, shiftStep: 10 };
 
 /** The arrow key's direction times its step, or null for other keys. */
-export function arrowStep(
-  event: KeyboardEvent,
-  { step: small, shiftStep } = PERCENT_STEPS,
-): { x: number; y: number } | null {
-  const step = event.shiftKey ? shiftStep : small;
+export function arrowStep(event: KeyboardEvent): { x: number; y: number } | null {
+  const step = event.shiftKey ? PERCENT_STEPS.shiftStep : PERCENT_STEPS.step;
   return (
     {
       ArrowLeft: { x: -step, y: 0 },
@@ -134,8 +134,7 @@ export function usePointerDrag<T>({
   move,
   end,
 }: {
-  /** Preview scale: screen pixels per banner pixel. */
-  scale: number;
+  scale: PreviewScale;
   begin: () => T | null;
   move: (start: T, delta: { x: number; y: number }) => void;
   end?: () => void;

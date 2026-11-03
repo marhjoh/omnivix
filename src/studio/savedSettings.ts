@@ -23,10 +23,22 @@ export function isSavableImage(key: string, value: unknown): value is string {
   return /^https:\/\//i.test(value) || (key === "backgroundImage" && !!presetBySrc(value));
 }
 
+/** Removes the settings that belong to image setting `key`, such as a background's position. */
+export function removeImageSettings(state: Record<string, unknown>, key: string): void {
+  for (const related of IMAGE_SETTINGS[key] ?? []) delete state[related];
+}
+
 /** Removes an image setting and the settings that belong to it, in place. */
 export function removeImage(state: Record<string, unknown>, key: string): void {
   delete state[key];
-  for (const related of IMAGE_SETTINGS[key] ?? []) delete state[related];
+  removeImageSettings(state, key);
+}
+
+/** Removes images that can't be saved (uploads), with their settings, in place. */
+export function removeUnsavableImages(state: Record<string, unknown>): void {
+  for (const key of Object.keys(IMAGE_SETTINGS)) {
+    if (state[key] !== undefined && !isSavableImage(key, state[key])) removeImage(state, key);
+  }
 }
 
 /** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
@@ -56,9 +68,7 @@ export function applySavedSettings(
   if (templateRegistry[templateId].meta.needsUsername) {
     merged.username = username ?? "";
   }
-  for (const key of Object.keys(IMAGE_SETTINGS)) {
-    if (merged[key] !== undefined && !isSavableImage(key, merged[key])) removeImage(merged, key);
-  }
+  removeUnsavableImages(merged);
   for (const key of POSITION_KEYS) {
     const position = merged[key];
     if (isPosition(position)) merged[key] = clampPosition(position);

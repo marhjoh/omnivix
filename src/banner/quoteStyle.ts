@@ -1,4 +1,4 @@
-import { isOneOf } from "@/src/lib/isOneOf";
+import { isOneOf, oneOfOr } from "@/src/lib/isOneOf";
 import type { Theme } from "@/src/theme/theme";
 
 /** The quote banner's typography: font, weight and italic, quote marks, and their colors. */
@@ -295,12 +295,7 @@ export const AUTHOR_SCALE = { xs: 0.3, s: 0.35, m: 0.42, l: 0.5, xl: 0.6 } as co
 export const LARGE_MARK_FONT_FAMILY = "var(--font-source-serif), serif";
 
 function fontOf(value: unknown): QuoteFont {
-  return isOneOf(QUOTE_FONTS, value) ? value : DEFAULT_QUOTE_STYLE.font;
-}
-
-/** The CSS variable with the font's upright family (app/fonts.ts). */
-export function fontVariable(font: QuoteFont): string {
-  return FONTS[font].variable;
+  return oneOfOr(QUOTE_FONTS, value, DEFAULT_QUOTE_STYLE.font);
 }
 
 /** The font's CSS font-family, upright or italic. */
@@ -333,7 +328,7 @@ export function fontStyleOptions(font: unknown) {
 
 /** The font style as the font shows it: upright when the font has no italic. */
 export function fontStyleShown(font: unknown, fontStyle: unknown): QuoteFontStyle {
-  const style = isOneOf(QUOTE_FONT_STYLES, fontStyle) ? fontStyle : DEFAULT_QUOTE_STYLE.fontStyle;
+  const style = oneOfOr(QUOTE_FONT_STYLES, fontStyle, DEFAULT_QUOTE_STYLE.fontStyle);
   return FONTS[fontOf(font)].italic === "none" ? FONT_STYLE[style].upright : style;
 }
 
@@ -370,9 +365,8 @@ export interface QuoteStyle {
 export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: Theme): QuoteStyle {
   const font = fontOf(state.font);
   const style = FONT_STYLE[fontStyleShown(font, state.fontStyle)];
-  const marks = isOneOf(QUOTE_MARKS, state.quoteMarks)
-    ? state.quoteMarks
-    : DEFAULT_QUOTE_STYLE.quoteMarks;
+  const marks = oneOfOr(QUOTE_MARKS, state.quoteMarks, DEFAULT_QUOTE_STYLE.quoteMarks);
+  const prefix = oneOfOr(AUTHOR_PREFIXES, state.authorPrefix, DEFAULT_QUOTE_STYLE.authorPrefix);
   const color = colorValue(state.quoteColor, uiTheme);
   return {
     fontFamily: fontFamily(font, style.italic),
@@ -386,11 +380,6 @@ export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: The
     color,
     markColor: colorValue(state.markColor, uiTheme) ?? color,
     authorColor: colorValue(state.authorColor, uiTheme),
-    authorPrefix:
-      AUTHOR_PREFIX[
-        isOneOf(AUTHOR_PREFIXES, state.authorPrefix)
-          ? state.authorPrefix
-          : DEFAULT_QUOTE_STYLE.authorPrefix
-      ].text,
+    authorPrefix: AUTHOR_PREFIX[prefix].text,
   };
 }

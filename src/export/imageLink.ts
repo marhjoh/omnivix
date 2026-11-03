@@ -1,6 +1,8 @@
 import { lookup as dnsLookup } from "node:dns";
+import type { IncomingMessage } from "node:http";
 import { request } from "node:https";
 import { isIP, type LookupFunction } from "node:net";
+import { listText } from "@/src/lib/text";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
 const MAX_LINKED_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -28,9 +30,8 @@ export interface ImageBytes {
 export class ImageLinkError extends Error {}
 
 /** "PNG, JPEG or WebP" */
-function formatNames(types: readonly LinkImageType[]): string {
-  const names = types.map((type) => LINK_IMAGE_FORMATS[type]);
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names.at(-1)}` : names[0];
+export function formatNames(types: readonly LinkImageType[]): string {
+  return listText(types.map((type) => LINK_IMAGE_FORMATS[type]));
 }
 
 const NOT_ALLOWED = "That image link isn't allowed. Use a public https:// image.";
@@ -60,6 +61,8 @@ function toLinkError(error: NodeJS.ErrnoException): ImageLinkError {
   return new ImageLinkError("Couldn't load the image link.");
 }
 
+const TOO_LARGE = `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1024 * 1024)} MB.`;
+
 /**
  * Downloads an image link for export: https only, public addresses only, one of `types`, at most
  * `MAX_LINKED_IMAGE_BYTES`, within `TIMEOUT_MS` including redirects. Throws `ImageLinkError` when
@@ -71,6 +74,32 @@ export async function fetchImageLink(
   redirectsLeft = MAX_REDIRECTS,
   signal = AbortSignal.timeout(TIMEOUT_MS),
 ): Promise<ImageBytes> {
+  const url = checkedUrl(link);
+  const res = await openResponse(url, types, signal);
+  const status = res.statusCode ?? 0;
+  if (status >= 300 && status < 400 && res.headers.location) {
+    res.resume();
+    const next = redirectTarget(res.headers.location, url, redirectsLeft);
+    return fetchImageLink(next, types, redirectsLeft - 1, signal);
+  }
+  if (status !== 200) {
+    res.resume();
+    throw new ImageLinkError("Couldn't load that image link. It may have moved or be private.");
+  }
+  const contentType = (res.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
+  if (!types.some((type) => type === contentType)) {
+    res.destroy();
+    throw new ImageLinkError(`That link isn't a ${formatNames(types)} image.`);
+  }
+  if (Number(res.headers["content-length"]) > MAX_LINKED_IMAGE_BYTES) {
+    res.destroy();
+    throw new ImageLinkError(TOO_LARGE);
+  }
+  return { contentType, body: await readLimitedBody(res, signal) };
+}
+
+/** The link as a URL, if it's https and not a private IP literal (those skip the DNS check). */
+function checkedUrl(link: string): URL {
   let url: URL;
   try {
     url = new URL(link);
@@ -80,68 +109,61 @@ export async function fetchImageLink(
   if (url.protocol !== "https:") {
     throw new ImageLinkError("Image links must start with https://.");
   }
-  // IP literals connect without a lookup, so check them here.
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (isIP(host) && !isPublicAddress(host)) throw new ImageLinkError(NOT_ALLOWED);
+  return url;
+}
 
+/** The response's headers, from a connection that only reaches public addresses. */
+function openResponse(
+  url: URL,
+  types: readonly LinkImageType[],
+  signal: AbortSignal,
+): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
-    const fail = (error: NodeJS.ErrnoException) => reject(toLinkError(error));
     const req = request(
       url,
       { lookup: publicOnlyLookup, signal, headers: { accept: types.join(",") } },
-      (res) => {
-        const status = res.statusCode ?? 0;
-        if (status >= 300 && status < 400 && res.headers.location) {
-          res.resume();
-          if (redirectsLeft === 0) {
-            reject(new ImageLinkError("The image link redirects too many times."));
-            return;
-          }
-          const next = new URL(res.headers.location, url);
-          if (next.protocol !== "https:") {
-            reject(new ImageLinkError("That image link redirects to an insecure address."));
-            return;
-          }
-          fetchImageLink(next.href, types, redirectsLeft - 1, signal).then(resolve, reject);
-          return;
-        }
-        if (status !== 200) {
-          res.resume();
-          reject(
-            new ImageLinkError("Couldn't load that image link. It may have moved or be private."),
-          );
-          return;
-        }
-        const contentType = (res.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
-        if (!types.some((type) => type === contentType)) {
-          res.destroy();
-          reject(new ImageLinkError(`That link isn't a ${formatNames(types)} image.`));
-          return;
-        }
-        const tooLarge = new ImageLinkError(
-          `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1024 * 1024)} MB.`,
-        );
-        if (Number(res.headers["content-length"]) > MAX_LINKED_IMAGE_BYTES) {
-          res.destroy();
-          reject(tooLarge);
-          return;
-        }
-        const chunks: Buffer[] = [];
-        let size = 0;
-        res.on("data", (chunk: Buffer) => {
-          size += chunk.length;
-          if (size > MAX_LINKED_IMAGE_BYTES) {
-            res.destroy();
-            reject(tooLarge);
-            return;
-          }
-          chunks.push(chunk);
-        });
-        res.on("end", () => resolve({ contentType, body: Buffer.concat(chunks) }));
-        res.on("error", fail);
-      },
+      resolve,
     );
-    req.on("error", fail);
+    req.on("error", (error: NodeJS.ErrnoException) => reject(toLinkError(error)));
     req.end();
+  });
+}
+
+/** Where a redirect goes, if it may be followed: https, and not past the redirect limit. */
+function redirectTarget(location: string, from: URL, redirectsLeft: number): string {
+  if (redirectsLeft === 0) throw new ImageLinkError("The image link redirects too many times.");
+  let next: URL;
+  try {
+    next = new URL(location, from);
+  } catch {
+    throw new ImageLinkError("That image link redirects to an invalid address.");
+  }
+  if (next.protocol !== "https:") {
+    throw new ImageLinkError("That image link redirects to an insecure address.");
+  }
+  return next.href;
+}
+
+/** The body, stopped as soon as it passes `MAX_LINKED_IMAGE_BYTES`. */
+function readLimitedBody(res: IncomingMessage, signal: AbortSignal): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    res.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > MAX_LINKED_IMAGE_BYTES) {
+        res.destroy();
+        reject(new ImageLinkError(TOO_LARGE));
+        return;
+      }
+      chunks.push(chunk);
+    });
+    res.on("end", () => resolve(Buffer.concat(chunks)));
+    // A timeout aborts the request, and the response then fails as a reset connection.
+    res.on("error", (error: NodeJS.ErrnoException) =>
+      reject(toLinkError(signal.aborted ? signal.reason : error)),
+    );
   });
 }

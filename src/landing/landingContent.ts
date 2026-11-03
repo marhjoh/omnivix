@@ -1,38 +1,48 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
-import { BANNER_SIZES } from "@/src/lib/sizes";
-import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
-import { SITE_LICENSE } from "@/src/lib/site";
-import { SITE_LINKS } from "@/src/lib/site-links";
+import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
+import { listText } from "@/src/lib/text";
+import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
+import { SITE_LICENSE, SITE_LINKS } from "@/src/lib/site";
 
 // Single source for the landing page's "How it works" and FAQ, the FAQPage JSON-LD and /llms.txt.
 // Keep each answer self-contained: AI answers and search snippets quote single passages.
 
 function bannerFormatsSummary() {
   return Object.values(BANNER_SIZES)
-    .map(
-      (f) =>
-        `${f.label} (${f.width} × ${f.height} px) for ${f.platforms.map((p) => p.name).join(", ")}`,
-    )
+    .map((f) => `${f.label} (${f.width} × ${f.height} px) for ${platformNames(f)}`)
     .join("; ");
 }
 
 /** "1×, 2× or 3×" */
 function pixelRatiosSummary() {
-  const ratios = EXPORT_PIXEL_RATIOS.map((ratio) => `${ratio}×`);
-  return `${ratios.slice(0, -1).join(", ")} or ${ratios.at(-1)}`;
+  return listText(EXPORT_PIXEL_RATIOS.map((ratio) => `${ratio}×`));
+}
+
+/** "YouTube and Reddit": platforms whose banners are only exported at 1×. */
+function oneTimesOnlyPlatforms() {
+  const formats = Object.values(BANNER_SIZES).filter((format) =>
+    exportFormats(format).every((file) => exportPixelRatios(format, file).length === 1),
+  );
+  return listText(
+    formats.flatMap((format) => format.platforms.map((platform) => platform.name)),
+    "and",
+  );
 }
 
 export const HOW_IT_WORKS = [
   {
+    word: "Pick.",
     title: "Pick a template",
     body: "Your GitHub profile, repositories, contribution heatmap or a quote.",
   },
   {
+    word: "Enter.",
     title: "Enter your GitHub username",
     body: "Omnivix reads your public GitHub data. No sign-in needed.",
   },
   {
+    word: "Download.",
     title: "Customize and download",
     body: "Choose a background and layout, then download a PNG or JPEG.",
   },
@@ -72,7 +82,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "What file formats and resolutions can I download?",
-    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution. 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
+    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution (${oneTimesOnlyPlatforms()}: 1×, as their banners are already large). 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     topic: "Banners",
@@ -89,7 +99,7 @@ export const FAQ = [
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:
-      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is kept in server memory for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database.",
+      "Only public data: your name, avatar, contributions and repositories with their languages, stars and forks. GitHub data is cached briefly (up to six hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address.",
   },
   {
     topic: "Your GitHub data",

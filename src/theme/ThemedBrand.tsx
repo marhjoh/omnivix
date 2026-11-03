@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 
 /*
  * Both variants are rendered; CSS on <html data-theme> shows one (see globals.css). That way the
@@ -10,46 +10,42 @@ import Image from "next/image";
 const LOGO_WIDTH = Math.round((36 * 968) / 274);
 const LOGO_HEIGHT = 36;
 
-export function ThemedLogo({ className = "h-9 w-auto" }: { className?: string }) {
+function ThemedImage({
+  name,
+  className,
+  alt,
+  ...props
+}: { name: "logo" | "icon"; className: string } & Omit<ImageProps, "src">) {
   return (
     <>
       {(["dark", "light"] as const).map((theme) => (
         <Image
           key={theme}
-          src={theme === "dark" ? "/brand/logo-light.svg" : "/brand/logo-dark.svg"}
-          alt="Omnivix"
-          width={LOGO_WIDTH}
-          height={LOGO_HEIGHT}
+          src={`/brand/${name}-${theme === "dark" ? "light" : "dark"}.svg`}
+          alt={alt}
           className={`${className} show-in-${theme}`}
-          style={{ width: "auto" }}
-          loading="eager"
           unoptimized
+          {...props}
         />
       ))}
     </>
   );
 }
 
-export function ThemedIcon({
-  className = "h-6 w-6",
-  size = 24,
-}: {
-  className?: string;
-  size?: number;
-}) {
+export function ThemedLogo({ className }: { className: string }) {
   return (
-    <>
-      {(["dark", "light"] as const).map((theme) => (
-        <Image
-          key={theme}
-          src={theme === "dark" ? "/brand/icon-light.svg" : "/brand/icon-dark.svg"}
-          alt=""
-          width={size}
-          height={size}
-          className={`${className} show-in-${theme}`}
-          unoptimized
-        />
-      ))}
-    </>
+    <ThemedImage
+      name="logo"
+      alt="Omnivix"
+      width={LOGO_WIDTH}
+      height={LOGO_HEIGHT}
+      className={className}
+      style={{ width: "auto" }}
+      loading="eager"
+    />
   );
+}
+
+export function ThemedIcon({ className, size }: { className: string; size: number }) {
+  return <ThemedImage name="icon" alt="" width={size} height={size} className={className} />;
 }

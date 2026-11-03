@@ -1,14 +1,17 @@
-/**
- * Studio settings live in cookies so the server renders them from the first paint (no defaults
- * that switch to the remembered values after loading). Values come from the browser, so they're
- * checked again where they're used.
- */
+/** The studio's cookies (see src/lib/cookies.ts). Values come from the browser, so they're checked. */
 
 import { isGithubUsername } from "@/src/lib/githubUsername";
-
-const COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365;
-/** Browsers drop cookies over 4 KB; settings that don't fit just aren't remembered. */
-const MAX_COOKIE_VALUE_LENGTH = 3800;
+import { setCookieClient } from "@/src/lib/cookies";
+import { BANNER_VIEWS, type BannerView } from "@/src/lib/sizes";
+import { oneOfOr } from "@/src/lib/isOneOf";
+import {
+  EXPORT_PIXEL_RATIO,
+  EXPORT_PIXEL_RATIOS,
+  type ExportPixelRatio,
+  EXPORT_FORMAT,
+  EXPORT_FORMATS,
+  type ExportFormat,
+} from "@/src/export/format";
 
 export const USERNAME_COOKIE = "omnivix-username";
 
@@ -39,25 +42,33 @@ export function parseSettingsCookie(value: string | undefined): Record<string, u
   }
 }
 
-/** Client-only: a cookie's raw value, or undefined. */
-export function readCookieClient(name: string): string | undefined {
-  const prefix = `${name}=`;
-  return document.cookie
-    .split("; ")
-    .find((part) => part.startsWith(prefix))
-    ?.slice(prefix.length);
+/** Desktop sidebar collapse, stored in a cookie so the server renders it correctly (no slide on load). */
+export const SIDEBAR_COOKIE_NAME = "omnivix-sidebar";
+
+export function parseSidebarCollapsedCookie(value: string | undefined): boolean {
+  return value === "collapsed";
 }
 
-/** Whether a value fits in a cookie once encoded; setCookieClient skips values that don't. */
-export function fitsInCookie(value: string): boolean {
-  return encodeURIComponent(value).length <= MAX_COOKIE_VALUE_LENGTH;
+export function setSidebarCollapsedCookieClient(collapsed: boolean): void {
+  setCookieClient(SIDEBAR_COOKIE_NAME, collapsed ? "collapsed" : "expanded");
 }
 
-/** Client-only: saves a cookie for a year, for the next page request. */
-export function setCookieClient(name: string, value: string): void {
-  if (typeof document === "undefined") return;
-  if (!fitsInCookie(value)) return;
-  const encoded = encodeURIComponent(value);
-  const secure = window.location.protocol === "https:";
-  document.cookie = `${name}=${encoded}; Path=/; Max-Age=${COOKIE_MAX_AGE_SEC}; SameSite=Lax${secure ? "; Secure" : ""}`;
+/** The preview's view (Phone, Desktop or TV), stored in a cookie so the server renders it. */
+export const PREVIEW_VIEW_COOKIE_NAME = "omnivix-preview-view";
+
+/** Phones by default: most viewers see that, and it's the part the content fits. */
+export function parsePreviewViewCookie(value: string | undefined): BannerView {
+  return oneOfOr(BANNER_VIEWS, value, "phone");
+}
+
+/** Download resolution and format, stored in cookies so the server renders the last choice. */
+export const PIXEL_RATIO_COOKIE_NAME = "omnivix-pixel-ratio";
+export const FORMAT_COOKIE_NAME = "omnivix-format";
+
+export function parsePixelRatioCookie(value: string | undefined): ExportPixelRatio {
+  return EXPORT_PIXEL_RATIOS.find((ratio) => String(ratio) === value) ?? EXPORT_PIXEL_RATIO;
+}
+
+export function parseFormatCookie(value: string | undefined): ExportFormat {
+  return oneOfOr(EXPORT_FORMATS, value, EXPORT_FORMAT);
 }

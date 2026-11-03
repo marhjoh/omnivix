@@ -63,3 +63,21 @@ export async function guardRateLimit<T>(request: () => Promise<T>): Promise<T> {
     throw rateLimited;
   }
 }
+
+/** The token's quota, as GitHub's GraphQL `rateLimit` field reports it. */
+export type GithubQuota = { limit: number; remaining: number; resetAt: string };
+
+const LOW_QUOTA_SHARE = 0.1;
+
+/** The reset time of the quota window this server instance already warned about. */
+let warnedFor = "";
+
+/**
+ * Logs a warning once per quota window when less than 10% of the token's quota is left, so
+ * heavy use shows up in the logs before the limit stops the studio and exports.
+ */
+export function warnIfQuotaLow({ limit, remaining, resetAt }: GithubQuota) {
+  if (remaining >= limit * LOW_QUOTA_SHARE || warnedFor === resetAt) return;
+  warnedFor = resetAt;
+  console.warn(`GitHub quota low: ${remaining} of ${limit} left; resets at ${resetAt}`);
+}

@@ -1,6 +1,6 @@
 import { contentBox } from "@/src/banner/fit";
 import { clampPercent, roundPercent, type Position } from "@/src/banner/position";
-import type { BannerBox } from "@/src/lib/sizes";
+import type { BannerBox, Box } from "@/src/lib/sizes";
 
 /**
  * Placing an item (the content, the logo) in the banner's padded box (`contentBox`). Its position
@@ -15,11 +15,6 @@ export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
 /** Where an item snaps while dragged: an edge or the middle of the box, on each axis. */
 const SNAP_POINTS = [0, 50, 100];
 
-interface Size {
-  width: number;
-  height: number;
-}
-
 /** CSS that places an item at `position` in the room inside its box, with no measuring. */
 export function placementStyle({ x, y }: Position) {
   return {
@@ -31,7 +26,7 @@ export function placementStyle({ x, y }: Position) {
 }
 
 /** How far (in banner pixels) an item of this size can move on each axis inside the padded box. */
-export function placementRoom(banner: BannerBox, item: Size): Size {
+export function placementRoom(banner: BannerBox, item: Box): Box {
   const box = contentBox(banner);
   return {
     width: Math.max(0, box.width - item.width),
@@ -47,7 +42,7 @@ export function placementRoom(banner: BannerBox, item: Size): Size {
 export function dragPlacement(
   from: Position,
   delta: { x: number; y: number },
-  room: Size,
+  room: Box,
   snapDistance: number,
 ): { position: Position; snapped: Partial<Position> } {
   const snapped: Partial<Position> = {};
@@ -71,7 +66,7 @@ export function dragPlacement(
 export function nudgePlacement(
   from: Position,
   step: { x: number; y: number },
-  room: Size,
+  room: Box,
 ): Position {
   const move = (value: number, by: number, space: number) =>
     space < 1 ? value : roundPercent(clampPercent(value + by));

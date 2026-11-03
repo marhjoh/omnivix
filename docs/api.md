@@ -9,7 +9,7 @@ Want a banner without opening the studio, or a link that opens the studio with y
 ```sh
 curl -X POST https://omnivix.vercel.app/api/export \
   -H "Content-Type: application/json" \
-  -d '{"templateId":"github-banner","size":"wide","state":{"username":"octocat"}}' \
+  -d '{"templateId":"github-banner","size":"wide","state":{"username":"marhjoh"}}' \
   -o banner.png
 ```
 
@@ -18,9 +18,10 @@ Every template's settings, the sizes and the built-in backgrounds are listed in 
 The API answers with:
 
 - `200`: the image, as PNG or JPEG
-- `400`: an invalid request, with an `issues` list naming each field that failed
+- `400`: an invalid request, with an `issues` list naming each field that failed, or an image that can't be used, with only an `error`
 - `404`: a GitHub user that doesn't exist
-- `429`: a rate limit, either GitHub's (with a `resetAt` time) or the [export limit](deployment.md#export-rate-limit)
+- `413`: settings too long to export, such as a very long quote
+- `429`: a rate limit: GitHub's (`"limit": "github"`) or the daily export quota (`"limit": "daily-exports"`), both with a `resetAt` time, or the [burst limit](deployment.md#rate-limits) without one
 - `500`: a failed export; trying again may work
 
 ## Studio links
@@ -28,7 +29,7 @@ The API answers with:
 The studio reads the same settings from the URL, so a link can open a banner that's still adjustable:
 
 ```
-https://omnivix.vercel.app/studio/contribution-banner?username=octocat&size=header&themeId=sunset
+https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset
 ```
 
 Values that aren't valid are ignored. Uploaded backgrounds can't be linked.

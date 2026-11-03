@@ -9,6 +9,6 @@ export interface PreviewProblem {
    * "change-username" opens the username dialog. None when only the sidebar can fix it.
    */
   action?: "retry" | "change-username";
-  /** Until then "Try again" is disabled: it couldn't succeed earlier (GitHub's rate limit). */
+  /** Until then "Try again" is disabled: it couldn't succeed earlier (a rate limit). */
   retryAt?: Date;
 }

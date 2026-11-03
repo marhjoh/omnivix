@@ -3,7 +3,7 @@
  * `contributionCalendar.weeks` and `contributionCalendar.months`.
  *
  * Key contract:
- *   columnCount = weeks.length  (always; fillMode never adds columns)
+ *   columnCount = weeks.length
  *   row = weekday (0=Sun..6=Sat)
  *   col = week index
  *
@@ -23,9 +23,7 @@ import type {
 
 type PlacedCalendarDay = {
   date: string;
-  count: number;
   level: 0 | 1 | 2 | 3 | 4;
-  weekday: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   col: number;
   row: number;
   isOutOfRange?: boolean;
@@ -50,8 +48,7 @@ function utcDayMs(ymd: string): number {
 }
 
 function msToYmd(ms: number): string {
-  const d = new Date(ms);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  return new Date(ms).toISOString().slice(0, 10);
 }
 
 /** Find the Sunday on or before the given date (UTC). */
@@ -97,34 +94,16 @@ export function buildCalendarLayout(options: {
     const placedDates = new Set<string>();
 
     for (const day of week.days) {
-      const row = day.weekday;
       placedDates.add(day.date.slice(0, 10));
-      placedDays.push({
-        date: day.date,
-        count: day.count,
-        level: day.level,
-        weekday: day.weekday,
-        col,
-        row,
-      });
+      placedDays.push({ date: day.date, level: day.level, col, row: day.weekday });
     }
 
     if (renderPaddingDays) {
       const weekSundayMs = sundayOfWeek(week.firstDay);
-      for (let wd = 0; wd < 7; wd++) {
-        const cellMs = weekSundayMs + wd * MS_PER_DAY;
-        const date = msToYmd(cellMs);
+      for (let row = 0; row < 7; row++) {
+        const date = msToYmd(weekSundayMs + row * MS_PER_DAY);
         if (placedDates.has(date)) continue;
-        const weekday = wd as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        placedDays.push({
-          date,
-          count: 0,
-          level: 0,
-          weekday,
-          col,
-          row: weekday,
-          isOutOfRange: true,
-        });
+        placedDays.push({ date, level: 0, col, row, isOutOfRange: true });
       }
     }
   }
@@ -142,7 +121,7 @@ export function buildCalendarLayout(options: {
       firstDayMs < gridStartMs
         ? 0
         : Math.min(Math.floor((firstDayMs - gridStartMs) / MS_PER_WEEK), columnCount - 1);
-    if (colIndex < prevColIndex + 2 && prevColIndex !== -Infinity) continue;
+    if (colIndex < prevColIndex + 2) continue;
     monthLabels.push({ label: month.name.slice(0, 3), colIndex });
     prevColIndex = colIndex;
   }

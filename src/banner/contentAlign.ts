@@ -1,4 +1,4 @@
-import { isOneOf } from "@/src/lib/isOneOf";
+import { oneOfOr } from "@/src/lib/isOneOf";
 
 export const CONTENT_ALIGNS = ["left", "center", "right"] as const;
 
@@ -11,5 +11,5 @@ export const CONTENT_ALIGN_OPTIONS = CONTENT_ALIGNS.map((value) => ({
 
 /** Centered unless the setting is a valid alignment. */
 export function normalizeContentAlign(raw: unknown): ContentAlign {
-  return isOneOf(CONTENT_ALIGNS, raw) ? raw : "center";
+  return oneOfOr(CONTENT_ALIGNS, raw, "center");
 }

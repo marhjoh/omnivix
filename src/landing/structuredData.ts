@@ -1,6 +1,5 @@
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib/site";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { SITE_LINKS, getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib/site";
+import { BANNER_SIZES, platformNames } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { FAQ } from "@/src/landing/landingContent";
 
@@ -34,9 +33,7 @@ export function landingJsonLd() {
         image: new URL("/opengraph-image", siteUrl).toString(),
         featureList: [
           ...getTemplates().map(({ meta }) => `${meta.title}: ${meta.description}`),
-          ...Object.values(BANNER_SIZES).map(
-            (s) => `${s.label} banner for ${s.platforms.map((p) => p.name).join(", ")}`,
-          ),
+          ...Object.values(BANNER_SIZES).map((s) => `${s.label} banner for ${platformNames(s)}`),
         ],
         creator: {
           "@type": "Person",
