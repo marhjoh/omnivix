@@ -1,6 +1,6 @@
 # Architecture
 
-Omnivix is a Next.js app on Vercel, without a database or user accounts. GitHub data is fetched when a banner needs it, and the visitor's choices stay in their browser's cookies.
+Omnivix is a Next.js app on Vercel that turns public GitHub data and quotes into downloadable banners. No user accounts are needed.
 
 ## Rendering
 

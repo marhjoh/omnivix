@@ -7,7 +7,6 @@ import {
   fontStyleCss,
   fontStyleOptions,
   fontStyleShown,
-  fontVariable,
   QUOTE_FONT_OPTIONS,
   QUOTE_MARKS_OPTIONS,
 } from "@/src/banner/quoteStyle";
@@ -24,7 +23,7 @@ interface QuoteFieldProps {
 
 /**
  * The quote's font, each in its own typeface. The quote fonts aren't preloaded (app/fonts.ts), so
- * their upright faces start loading once the studio is idle: otherwise they'd all start when the
+ * their available styles start loading once the studio is idle: otherwise they'd all start when the
  * list first opens, and its options would change font one by one as they arrive.
  */
 export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
@@ -33,8 +32,13 @@ export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
       // document.fonts.load can't read var(), so each family is read from its variable.
       const root = getComputedStyle(document.documentElement);
       for (const { value: font } of QUOTE_FONT_OPTIONS) {
-        const family = root.getPropertyValue(fontVariable(font));
-        if (family) document.fonts.load(`1em ${family}`).catch(() => {});
+        for (const { value: style } of fontStyleOptions(font)) {
+          const css = fontStyleCss(font, style);
+          const family = css.fontFamily.replace(/var\((--[^)]+)\)/g, (_, variable: string) =>
+            root.getPropertyValue(variable),
+          );
+          document.fonts.load(`${css.fontStyle} ${css.fontWeight} 1em ${family}`).catch(() => {});
+        }
       }
     };
     if ("requestIdleCallback" in window) {

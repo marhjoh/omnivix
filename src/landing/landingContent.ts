@@ -99,7 +99,7 @@ export const FAQ = [
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
     answer:
-      "Only public data: your name, avatar, contribution calendar and public repositories with their languages, stars and forks. It is cached for a few minutes (up to six hours for past years' contributions) to stay within GitHub's rate limits, and never saved to a database. To stop abuse, a hashed form of your IP address is kept for up to a day.",
+      "Only public data: your name, avatar, contributions and repositories with their languages, stars and forks. GitHub data is cached briefly (up to six hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address.",
   },
   {
     topic: "Your GitHub data",
