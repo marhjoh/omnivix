@@ -14,7 +14,7 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export type { BannerSize };
 
-type EditorFieldType =
+export type EditorFieldType =
   | "text"
   | "textarea"
   | "toggle"

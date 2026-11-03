@@ -59,3 +59,21 @@ export function LabeledGroup({
     </div>
   );
 }
+
+/** A setting with its label above it. */
+export function FieldWrapper({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
+      {children}
+    </div>
+  );
+}

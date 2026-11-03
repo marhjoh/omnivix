@@ -7,6 +7,7 @@ import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
 import { normalizeImageFile, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { truncateMiddle } from "@/src/lib/text";
+import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import {
   DropdownGroupLabel,
   DropdownRoot,
@@ -109,7 +110,6 @@ export function ImagePicker({
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
-  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
   const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
@@ -156,12 +156,6 @@ export function ImagePicker({
     }
   }, [urlEditorOpen]);
 
-  useEffect(() => {
-    return () => {
-      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    };
-  }, []);
-
   // uploadSession only ever holds a data URL, so a match means the image is that upload.
   const uploadDisplayName =
     uploadSession && uploadSession.dataUrl === value ? uploadSession.fileName : null;
@@ -177,11 +171,12 @@ export function ImagePicker({
     if (!link && linkValue) onChange(undefined);
   };
 
+  const debouncedSettle = useDebouncedCallback(settle, LINK_SETTLE_MS);
+
   const onUrlChange = (raw: string) => {
     const draft = withoutScheme(raw);
     setUrlDraft(draft);
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    settleTimeoutRef.current = setTimeout(() => settle(draft), LINK_SETTLE_MS);
+    debouncedSettle.schedule(draft);
   };
 
   /**
@@ -189,7 +184,7 @@ export function ImagePicker({
    * Choosing something else in the menu closes it.
    */
   const removeLink = () => {
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    debouncedSettle.cancel();
     setUrlDraft("");
     setSettledLink(undefined);
     onChange(undefined);
@@ -201,7 +196,7 @@ export function ImagePicker({
    */
   const settleUrl = () => {
     if (urlDraft === undefined) return;
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    debouncedSettle.cancel();
     settle(urlDraft);
   };
 

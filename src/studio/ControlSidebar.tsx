@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useState, useEffect, useRef } from "react";
-import { Moon, RotateCcw, Sun } from "lucide-react";
+import { Fragment, useId, useState, type ReactNode } from "react";
+import { Moon, Sun } from "lucide-react";
 import {
   BANNER_SIZE_KEYS,
   BANNER_SIZES,
@@ -22,26 +22,18 @@ import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import type { RepoNormalized } from "@/src/github/normalize";
 import { CheckList, CheckRow } from "@/src/studio/CheckList";
 import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
-import { FieldLabel, LabeledGroup } from "@/src/ui/FieldLabel";
-import { EditorFieldSchema } from "@/src/types/template";
-import { ImagePicker } from "@/src/studio/ImagePicker";
+import { FieldWrapper, LabeledGroup } from "@/src/ui/FieldLabel";
+import type { EditorFieldSchema, EditorFieldType } from "@/src/types/template";
 import { ColorSelect } from "@/src/studio/ColorSelect";
-import { QuoteMarksPreview } from "@/src/studio/QuoteMarksPreview";
 import {
-  fontFamily,
-  fontStyleCss,
-  fontStyleOptions,
-  fontStyleShown,
-  fontVariable,
-  QUOTE_FONT_OPTIONS,
-  QUOTE_MARKS_OPTIONS,
-  AUTHOR_PREFIX_OPTIONS,
-} from "@/src/banner/quoteStyle";
-import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
-import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
-import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
-import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
+  AuthorPrefixSelect,
+  FontSelect,
+  FontStyleSelect,
+  QuoteMarksSelect,
+} from "@/src/studio/QuoteFields";
+import { BackgroundField, LogoField } from "@/src/studio/ImageFields";
+import { ResetButton } from "@/src/studio/ResetButton";
+import type { BannerBackground } from "@/src/banner/background";
 import {
   alignmentShown,
   contentPositionFromState,
@@ -56,6 +48,7 @@ import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { contributionYear } from "@/src/studio/githubUrls";
+import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 
 const currentYear = new Date().getFullYear();
 
@@ -75,36 +68,12 @@ function DebouncedInput({
 }) {
   const [localValue, setLocalValue] = useState(externalValue);
   const [prevExternalValue, setPrevExternalValue] = useState(externalValue);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounced = useDebouncedCallback(onChange, INPUT_DEBOUNCE_MS);
 
   if (externalValue !== prevExternalValue) {
     setPrevExternalValue(externalValue);
     setLocalValue(externalValue);
   }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setLocalValue(newValue);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      timeoutRef.current = null;
-      onChange(newValue);
-    }, INPUT_DEBOUNCE_MS);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  // Leaving the field saves a pending value now instead of after the debounce.
-  const flush = () => {
-    if (!timeoutRef.current) return;
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
-    onChange(localValue);
-  };
 
   return (
     <input
@@ -113,46 +82,13 @@ function DebouncedInput({
       className="field-input"
       maxLength={maxLength}
       value={localValue}
-      onChange={handleChange}
-      onBlur={flush}
-    />
-  );
-}
-
-/** A setting's Reset, at the end of its label row, for what was changed in the preview. */
-function ResetButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={(event) => {
-        // The button goes once the setting is reset: focus the setting, not the page start.
-        const setting = event.currentTarget.parentElement?.querySelector("label")?.control;
-        onClick();
-        setting?.focus();
+      onChange={(e) => {
+        setLocalValue(e.target.value);
+        debounced.schedule(e.target.value);
       }}
-      className={controls.reset}
-    >
-      <RotateCcw className="h-3 w-3" aria-hidden />
-      Reset
-    </button>
-  );
-}
-
-function FieldWrapper({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
-      {children}
-    </div>
+      // Leaving the field saves a pending value now instead of after the debounce.
+      onBlur={debounced.flush}
+    />
   );
 }
 
@@ -288,49 +224,6 @@ function PlatformPicker({
   );
 }
 
-/**
- * The quote's font, each in its own typeface. The quote fonts aren't preloaded (app/fonts.ts), so
- * their upright faces start loading once the studio is idle: otherwise they'd all start when the
- * list first opens, and its options would change font one by one as they arrive.
- */
-function FontSelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  useEffect(() => {
-    const load = () => {
-      // document.fonts.load can't read var(), so each family is read from its variable.
-      const root = getComputedStyle(document.documentElement);
-      for (const { value: font } of QUOTE_FONT_OPTIONS) {
-        const family = root.getPropertyValue(fontVariable(font));
-        if (family) document.fonts.load(`1em ${family}`).catch(() => {});
-      }
-    };
-    if ("requestIdleCallback" in window) {
-      const id = requestIdleCallback(load);
-      return () => cancelIdleCallback(id);
-    }
-    const id = setTimeout(load);
-    return () => clearTimeout(id);
-  }, []);
-  return (
-    <Select
-      label={label}
-      value={value}
-      options={QUOTE_FONT_OPTIONS.map((option) => ({
-        ...option,
-        style: { fontFamily: fontFamily(option.value) },
-      }))}
-      onChange={onChange}
-    />
-  );
-}
-
 /** Show/hide settings as one list, a row per setting with a check on the right. */
 function ShowList({
   fields,
@@ -378,6 +271,189 @@ function SettingsSection({ title, children }: { title: string; children: React.R
   );
 }
 
+/** The owner's repositories for the picker, and how loading them went. */
+interface RepoCatalog {
+  repos: RepoNormalized[];
+  loading: boolean;
+  error: string | null;
+  /** When the rate limit resets, if that's why the repositories didn't load. */
+  retryAt: Date | null;
+  retry: () => void;
+}
+
+/** What every setting can draw on. */
+interface FieldContext {
+  schema: EditorFieldSchema[];
+  state: Record<string, unknown>;
+  onChange: (key: string, value: unknown) => void;
+  disabledFields: ReadonlySet<string>;
+  uiTheme: Theme;
+  years: string[];
+  repoCatalog: RepoCatalog;
+  background: BannerBackground | undefined;
+  onError: (message: string) => number;
+  onErrorResolved: (toastId: number) => void;
+}
+
+type FieldRenderer = (field: EditorFieldSchema, ctx: FieldContext) => ReactNode;
+
+/** The setting's label, value as text, and a change handler: what most controls take. */
+function textProps(field: EditorFieldSchema, { state, onChange }: FieldContext) {
+  return {
+    label: fieldLabel(field),
+    value: String(state[field.key] ?? ""),
+    onChange: (value: string) => onChange(field.key, value),
+  };
+}
+
+/** Settings drawn by their key, before their type: they need more than their schema says. */
+const BY_KEY: Partial<Record<string, FieldRenderer>> = {
+  themeId: (field, ctx) => <ThemePicker {...textProps(field, ctx)} />,
+  year: (field, ctx) => (
+    <Select
+      {...textProps(field, ctx)}
+      value={contributionYear(ctx.state.year)}
+      options={[
+        { value: "latest", label: "Last 365 days" },
+        ...ctx.years.map((year) => ({ value: year, label: year })),
+      ]}
+    />
+  ),
+  font: (field, ctx) => <FontSelect {...textProps(field, ctx)} state={ctx.state} />,
+  fontStyle: (field, ctx) => <FontStyleSelect {...textProps(field, ctx)} state={ctx.state} />,
+  quoteMarks: (field, ctx) => <QuoteMarksSelect {...textProps(field, ctx)} state={ctx.state} />,
+  authorPrefix: (field, ctx) => <AuthorPrefixSelect {...textProps(field, ctx)} state={ctx.state} />,
+  // Off the three spots, Alignment shows Custom.
+  alignment: (field, ctx) => {
+    const disabled = ctx.disabledFields.has(field.key);
+    return (
+      <Select
+        {...textProps(field, ctx)}
+        value={alignmentShown(contentPositionFromState(ctx.state)) ?? ""}
+        options={field.options ?? []}
+        disabled={disabled}
+        placeholder="Custom"
+        labelAction={
+          // Only once the content has been moved in the preview.
+          disabled || isDefaultContentPosition(ctx.state) ? null : (
+            <ResetButton
+              label="Reset content position"
+              onClick={() => ctx.onChange("contentPosition", undefined)}
+            />
+          )
+        }
+      />
+    );
+  },
+};
+
+const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
+  text: (field, ctx) => (
+    <FieldWrapper label={fieldLabel(field)} htmlFor={field.key}>
+      <DebouncedInput id={field.key} maxLength={field.maxLength} {...textProps(field, ctx)} />
+    </FieldWrapper>
+  ),
+  textarea: (field, ctx) => (
+    <FieldWrapper label={fieldLabel(field)} htmlFor={field.key}>
+      <textarea
+        id={field.key}
+        maxLength={field.maxLength}
+        rows={4}
+        className="field-input resize-y"
+        value={String(ctx.state[field.key] ?? "")}
+        onChange={(e) => ctx.onChange(field.key, e.target.value)}
+      />
+    </FieldWrapper>
+  ),
+  // Gathered into one Show list at the end of their group.
+  toggle: () => null,
+  select: (field, ctx) => (
+    <Select
+      {...textProps(field, ctx)}
+      options={field.options ?? []}
+      disabled={ctx.disabledFields.has(field.key)}
+    />
+  ),
+  range: (field, ctx) => {
+    const value = Number(ctx.state[field.key] ?? field.min ?? 1);
+    return (
+      <FieldWrapper label={`${fieldLabel(field)}: ${value}`} htmlFor={field.key}>
+        <input
+          id={field.key}
+          type="range"
+          min={field.min}
+          max={field.max}
+          step={field.step}
+          value={value}
+          onChange={(e) => ctx.onChange(field.key, Number(e.target.value))}
+          className="w-full accent-accent"
+        />
+      </FieldWrapper>
+    );
+  },
+  colorPicker: (field, ctx) => (
+    <ColorSelect
+      label={fieldLabel(field)}
+      value={ctx.state[field.key]}
+      options={field.options ?? []}
+      onChange={(value) => ctx.onChange(field.key, value)}
+      disabled={ctx.disabledFields.has(field.key)}
+      uiTheme={ctx.uiTheme}
+      // The author is muted by default.
+      defaultColor={field.key === "authorColor" ? bannerUiChrome(ctx.uiTheme).textMuted : undefined}
+    />
+  ),
+  sizeSelect: (field, ctx) => (
+    <PlatformPicker
+      label={fieldLabel(field)}
+      state={ctx.state}
+      onChange={(platform) => ctx.onChange("platform", platform)}
+    />
+  ),
+  logoPicker: (field, ctx) => (
+    <LogoField
+      field={field}
+      sizeField={ctx.schema.find((f) => f.key === "logoSize")}
+      state={ctx.state}
+      onChange={ctx.onChange}
+      onError={ctx.onError}
+      onErrorResolved={ctx.onErrorResolved}
+    />
+  ),
+  backgroundPicker: (field, ctx) => (
+    <BackgroundField
+      field={field}
+      background={ctx.background}
+      state={ctx.state}
+      onChange={ctx.onChange}
+      onError={ctx.onError}
+      onErrorResolved={ctx.onErrorResolved}
+    />
+  ),
+  repoMultiSelect: (_field, { repoCatalog, state, onChange }) => (
+    <RepoMultiSelect
+      catalog={repoCatalog.repos}
+      loading={repoCatalog.loading}
+      error={repoCatalog.error}
+      retryAt={repoCatalog.retryAt}
+      onRetry={repoCatalog.retry}
+      valueCsv={String(state.selectedRepos ?? "")}
+      maxPick={MAX_REPOS}
+      onChange={(csv) => onChange("selectedRepos", csv)}
+    />
+  ),
+};
+
+/** Settings that don't show on their own: inside another setting, or not in this mode. */
+function isHidden(field: EditorFieldSchema, state: Record<string, unknown>): boolean {
+  // Inside the logo's picker, once there's a logo.
+  if (field.key === "logoSize") return true;
+  // Selected mode shows the repository picker instead of the amount slider.
+  if (field.key === "maxRepos") return state.mode === "selected";
+  if (field.type === "repoMultiSelect") return state.mode !== "selected";
+  return false;
+}
+
 export function ControlSidebar({
   profile,
   schema,
@@ -385,12 +461,8 @@ export function ControlSidebar({
   accountCreatedYear,
   onChange,
   repoCatalog,
-  repoCatalogLoading,
-  repoCatalogError,
-  repoCatalogRetryAt,
-  onRetryRepoCatalog,
   disabledFields,
-  adjustableBackground: background,
+  adjustableBackground,
   onError,
   onErrorResolved,
 }: {
@@ -398,12 +470,7 @@ export function ControlSidebar({
   state: Record<string, unknown>;
   accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
-  repoCatalog: RepoNormalized[];
-  repoCatalogLoading: boolean;
-  repoCatalogError: string | null;
-  /** When the rate limit resets, if that's why the repositories didn't load. */
-  repoCatalogRetryAt: Date | null;
-  onRetryRepoCatalog: () => void;
+  repoCatalog: RepoCatalog;
   /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
   disabledFields: ReadonlySet<string>;
   /** The background that can be moved and zoomed; none when there's none, or it can't be used. */
@@ -415,317 +482,25 @@ export function ControlSidebar({
   /** For templates that need a username: the Profile section, first. */
   profile?: { username: string; onChangeUsername: () => void };
 }) {
-  const mode = state.mode as string | undefined;
   const { theme: uiTheme } = useTheme();
-
   const startYear = accountCreatedYear ?? currentYear - 9;
-  const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) =>
-    String(currentYear - i),
-  );
+  const ctx: FieldContext = {
+    schema,
+    state,
+    onChange,
+    disabledFields,
+    uiTheme,
+    years: Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(currentYear - i)),
+    repoCatalog,
+    background: adjustableBackground,
+    onError,
+    onErrorResolved,
+  };
 
   const renderField = (field: EditorFieldSchema) => {
-    // Selected mode shows the repository picker instead of the amount slider.
-    if (field.key === "maxRepos" && mode === "selected") {
-      return null;
-    }
-
-    if (field.type === "repoMultiSelect") {
-      if (mode !== "selected") {
-        return null;
-      }
-      return (
-        <RepoMultiSelect
-          key={field.key}
-          catalog={repoCatalog}
-          loading={repoCatalogLoading}
-          error={repoCatalogError}
-          retryAt={repoCatalogRetryAt}
-          onRetry={onRetryRepoCatalog}
-          valueCsv={String(state.selectedRepos ?? "")}
-          maxPick={MAX_REPOS}
-          onChange={(csv) => onChange("selectedRepos", csv)}
-        />
-      );
-    }
-
-    if (field.type === "sizeSelect") {
-      return (
-        <PlatformPicker
-          key={field.key}
-          label={fieldLabel(field)}
-          state={state}
-          onChange={(platform) => onChange("platform", platform)}
-        />
-      );
-    }
-
-    if (field.key === "themeId") {
-      return (
-        <ThemePicker
-          key={field.key}
-          label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          onChange={(v) => onChange(field.key, v)}
-        />
-      );
-    }
-
-    if (field.key === "year") {
-      const yearOptions = [
-        { value: "latest", label: "Last 365 days" },
-        ...years.map((y) => ({ value: y, label: y })),
-      ];
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={contributionYear(state[field.key])}
-          options={yearOptions}
-          onChange={(value) => onChange(field.key, value)}
-        />
-      );
-    }
-
-    if (field.type === "range") {
-      const val = Number(state[field.key] ?? field.min ?? 1);
-      return (
-        <FieldWrapper key={field.key} label={`${fieldLabel(field)}: ${val}`} htmlFor={field.key}>
-          <input
-            id={field.key}
-            type="range"
-            min={field.min}
-            max={field.max}
-            step={field.step}
-            value={val}
-            onChange={(e) => onChange(field.key, Number(e.target.value))}
-            className="w-full accent-accent"
-          />
-        </FieldWrapper>
-      );
-    }
-
-    // Shown inside the logo's picker, once there's a logo.
-    if (field.key === "logoSize") return null;
-
-    if (field.type === "logoPicker") {
-      const raw = state[field.key];
-      const logo = typeof raw === "string" ? raw : undefined;
-      const sizeField = schema.find((f) => f.key === "logoSize");
-      return (
-        <ImagePicker
-          key={field.key}
-          id={field.key}
-          label={fieldLabel(field)}
-          menuLabel="Logo options"
-          policy={LOGO_UPLOAD}
-          value={logo}
-          onChange={(next) => onChange(field.key, next)}
-          onError={onError}
-          onErrorResolved={onErrorResolved}
-          labelAction={
-            // Only once the logo has been moved in the preview.
-            logo && !isDefaultLogoPosition(state) ? (
-              <ResetButton
-                label="Reset logo position"
-                onClick={() => onChange("logoPosition", undefined)}
-              />
-            ) : null
-          }
-        >
-          {logo && sizeField ? (
-            <Select
-              label={fieldLabel(sizeField)}
-              value={String(state.logoSize ?? DEFAULT_LOGO_SIZE)}
-              options={sizeField.options ?? []}
-              onChange={(value) => onChange("logoSize", value)}
-            />
-          ) : null}
-        </ImagePicker>
-      );
-    }
-
-    if (field.key === "font") {
-      return (
-        <FontSelect
-          key={field.key}
-          label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          onChange={(value) => onChange(field.key, value)}
-        />
-      );
-    }
-
-    // Only the styles the font has (some have no italics), each in its own weight and slant.
-    if (field.key === "fontStyle") {
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={fontStyleShown(state.font, state.fontStyle)}
-          options={fontStyleOptions(state.font).map((option) => ({
-            ...option,
-            style: fontStyleCss(state.font, option.value),
-          }))}
-          onChange={(value) => onChange(field.key, value)}
-        />
-      );
-    }
-
-    // Each style shown on a sample in the quote's font.
-    if (field.key === "quoteMarks") {
-      const sample = fontStyleCss(state.font, fontStyleShown(state.font, state.fontStyle));
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          options={QUOTE_MARKS_OPTIONS.map((option) => ({
-            ...option,
-            preview: <QuoteMarksPreview marks={option.value} style={sample} />,
-          }))}
-          onChange={(value) => onChange(field.key, value)}
-        />
-      );
-    }
-
-    // Show each prefix in the author's font.
-    if (field.key === "authorPrefix") {
-      const sample = fontStyleCss(state.font, "regular");
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          options={AUTHOR_PREFIX_OPTIONS.map(({ symbol, ...option }) => ({
-            ...option,
-            preview: (
-              <span style={sample} className="text-base leading-none">
-                {symbol}
-              </span>
-            ),
-          }))}
-          onChange={(value) => onChange(field.key, value)}
-        />
-      );
-    }
-
-    if (field.type === "colorPicker") {
-      return (
-        <ColorSelect
-          key={field.key}
-          label={fieldLabel(field)}
-          value={state[field.key]}
-          options={field.options ?? []}
-          onChange={(value) => onChange(field.key, value)}
-          disabled={disabledFields.has(field.key)}
-          uiTheme={uiTheme}
-          // The author is muted by default.
-          defaultColor={field.key === "authorColor" ? bannerUiChrome(uiTheme).textMuted : undefined}
-        />
-      );
-    }
-
-    // Off the three spots, Alignment shows Custom.
-    if (field.key === "alignment") {
-      const disabled = disabledFields.has(field.key);
-      const at = alignmentShown(contentPositionFromState(state));
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={at ?? ""}
-          options={field.options ?? []}
-          onChange={(value) => onChange(field.key, value)}
-          disabled={disabled}
-          placeholder="Custom"
-          labelAction={
-            // Only once the content has been moved in the preview.
-            disabled || isDefaultContentPosition(state) ? null : (
-              <ResetButton
-                label="Reset content position"
-                onClick={() => onChange("contentPosition", undefined)}
-              />
-            )
-          }
-        />
-      );
-    }
-
-    if (field.type === "select") {
-      return (
-        <Select
-          key={field.key}
-          label={fieldLabel(field)}
-          value={String(state[field.key] ?? "")}
-          options={field.options ?? []}
-          onChange={(value) => onChange(field.key, value)}
-          disabled={disabledFields.has(field.key)}
-        />
-      );
-    }
-
-    if (field.type === "textarea") {
-      return (
-        <FieldWrapper key={field.key} label={fieldLabel(field)} htmlFor={field.key}>
-          <textarea
-            id={field.key}
-            maxLength={field.maxLength}
-            rows={4}
-            className="field-input resize-y"
-            value={String(state[field.key] ?? "")}
-            onChange={(e) => onChange(field.key, e.target.value)}
-          />
-        </FieldWrapper>
-      );
-    }
-
-    if (field.type === "backgroundPicker") {
-      return (
-        <ImagePicker
-          key={field.key}
-          id={field.key}
-          label={fieldLabel(field)}
-          menuLabel="Background options"
-          presets={BACKGROUND_PRESETS}
-          policy={BACKGROUND_UPLOAD}
-          value={typeof state[field.key] === "string" ? (state[field.key] as string) : undefined}
-          onChange={(next) => onChange(field.key, next)}
-          onError={onError}
-          onErrorResolved={onErrorResolved}
-          labelAction={
-            // Only once the image has been moved or zoomed in the preview.
-            background && !isDefaultBackgroundFraming(background) ? (
-              <ResetButton
-                label="Reset position and zoom"
-                onClick={() => {
-                  onChange("backgroundPosition", undefined);
-                  onChange("backgroundZoom", undefined);
-                }}
-              />
-            ) : null
-          }
-        >
-          {background ? (
-            <BackgroundZoomControl
-              id={field.key}
-              zoom={background.zoom}
-              onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
-            />
-          ) : null}
-        </ImagePicker>
-      );
-    }
-
-    return (
-      <FieldWrapper key={field.key} label={fieldLabel(field)} htmlFor={field.key}>
-        <DebouncedInput
-          id={field.key}
-          maxLength={field.maxLength}
-          value={String(state[field.key] ?? "")}
-          onChange={(v) => onChange(field.key, v)}
-        />
-      </FieldWrapper>
-    );
+    if (isHidden(field, state)) return null;
+    const render = BY_KEY[field.key] ?? BY_TYPE[field.type];
+    return <Fragment key={field.key}>{render(field, ctx)}</Fragment>;
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
@@ -13,6 +13,25 @@ export interface ToastMessage {
   message: string;
   /** Errors by default; success confirms something the user did (a copied image). */
   tone?: "error" | "success";
+}
+
+/** One toast at a time: a new message replaces the one showing. */
+export function useToast() {
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  /** Returns the toast's id, so it can be hidden once it's out of date. */
+  const showError = useCallback((message: string) => {
+    const id = Date.now();
+    setToast({ id, message });
+    return id;
+  }, []);
+  const showSuccess = useCallback((message: string) => {
+    setToast({ id: Date.now(), message, tone: "success" });
+  }, []);
+  /** Hides the toast; with an id, only if that toast is still the one showing. */
+  const dismissToast = useCallback((id?: number) => {
+    setToast((current) => (id === undefined || current?.id === id ? null : current));
+  }, []);
+  return { toast, showError, showSuccess, dismissToast };
 }
 
 /**
