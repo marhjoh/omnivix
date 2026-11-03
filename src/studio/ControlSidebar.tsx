@@ -55,6 +55,7 @@ import controls from "@/src/studio/controls.module.css";
 import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
+import { contributionYear } from "@/src/studio/githubUrls";
 
 const currentYear = new Date().getFullYear();
 
@@ -238,8 +239,7 @@ function PlatformPicker({
   const dropdown = useDropdown(id);
   const current = platformOf(state);
   return (
-    <div className="space-y-1.5">
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+    <FieldWrapper label={label} htmlFor={id}>
       <DropdownRoot dropdown={dropdown} className="relative">
         <DropdownTrigger dropdown={dropdown}>
           <span className="flex min-w-0 items-center gap-2">
@@ -285,7 +285,7 @@ function PlatformPicker({
           })}
         </DropdownList>
       </DropdownRoot>
-    </div>
+    </FieldWrapper>
   );
 }
 
@@ -480,7 +480,7 @@ export function ControlSidebar({
         <Select
           key={field.key}
           label={fieldLabel(field)}
-          value={String(state[field.key] ?? currentYear)}
+          value={contributionYear(state[field.key])}
           options={yearOptions}
           onChange={(value) => onChange(field.key, value)}
         />

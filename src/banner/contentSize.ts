@@ -1,4 +1,4 @@
-import { isOneOf } from "@/src/lib/isOneOf";
+import { oneOfOr } from "@/src/lib/isOneOf";
 
 /**
  * The Size control shared by all templates. In the GitHub, contribution and repos banners XL is the
@@ -35,9 +35,9 @@ export function normalizeContentSize(
   raw: unknown,
   fallback: ContentSize = DEFAULT_CONTENT_SIZE,
 ): ContentSize {
-  return isOneOf(CONTENT_SIZES, raw) ? raw : fallback;
+  return oneOfOr(CONTENT_SIZES, raw, fallback);
 }
 
 export function normalizeContentSizeOrFill(raw: unknown): ContentSizeOrFill {
-  return isOneOf(CONTENT_SIZES_OR_FILL, raw) ? raw : DEFAULT_CONTENT_SIZE;
+  return oneOfOr(CONTENT_SIZES_OR_FILL, raw, DEFAULT_CONTENT_SIZE);
 }

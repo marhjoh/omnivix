@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isGithubUsername, usernameFromProfileLink } from "./githubUsername";
+import { isGithubUsername, usernameFromProfileLink, usernameOf } from "./githubUsername";
 
 describe("isGithubUsername", () => {
   it("follows GitHub's rules", () => {
@@ -36,5 +36,13 @@ describe("usernameFromProfileLink", () => {
     expect(usernameFromProfileLink("javascript://github.com/octocat")).toBe(
       "javascript://github.com/octocat",
     );
+  });
+});
+
+describe("usernameOf", () => {
+  it("reads a string username, else none", () => {
+    expect(usernameOf({ username: "octocat" })).toBe("octocat");
+    expect(usernameOf({ username: 1 })).toBe("");
+    expect(usernameOf({})).toBe("");
   });
 });

@@ -9,7 +9,7 @@ import {
   exportPixelRatios,
 } from "@/src/lib/sizes";
 import { EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
-import { EXPORT_FORMATS } from "@/src/export/format";
+import { EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
 export const exportRequestSchema: z.ZodType<ExportRequest> = z.object({
@@ -34,6 +34,9 @@ function toIssues(error: z.ZodError, prefix?: string): ExportIssue[] {
   }));
 }
 
+/** A checked export request: its format is always set. */
+export type ParsedExportRequest = ExportRequest & { format: ExportFormat };
+
 /**
  * Checks an export request. Settings start from the template's defaults, so a caller only sends
  * what it changes; unknown settings are kept for the renderer. Without a format, the size's
@@ -41,7 +44,7 @@ function toIssues(error: z.ZodError, prefix?: string): ExportIssue[] {
  */
 export function parseExportRequest(
   body: unknown,
-): { ok: true; request: ExportRequest } | { ok: false; issues: ExportIssue[] } {
+): { ok: true; request: ParsedExportRequest } | { ok: false; issues: ExportIssue[] } {
   const parsed = exportRequestSchema.safeParse(body);
   if (!parsed.success) return { ok: false, issues: toIssues(parsed.error) };
   const { pixelRatio, size } = parsed.data;

@@ -13,7 +13,9 @@ import {
   PositionStatus,
   useMoveOncePerFrame,
   usePointerDrag,
+  type PreviewScale,
 } from "@/src/studio/preview/dragSurface";
+import type { BannerBox } from "@/src/lib/sizes";
 
 const roundPosition = ({ x, y }: BackgroundPosition) => ({
   x: roundPercent(x),
@@ -34,10 +36,8 @@ export function BackgroundDragSurface({
 }: {
   position: BackgroundPosition;
   zoom: number;
-  /** Banner size in CSS pixels. */
-  frame: { width: number; height: number };
-  /** Preview scale: screen pixels per banner pixel. */
-  scale: number;
+  frame: BannerBox;
+  scale: PreviewScale;
   onMove: (position: BackgroundPosition) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);

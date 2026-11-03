@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { parseExportRequest } from "@/src/export/payload";
+import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
 import { resolveExportImages } from "@/src/export/images";
 import { createExportToken } from "@/src/export/export-token";
 import { getPublicOrigin } from "@/src/export/request-origin";
 import { buildRenderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
-import { EXPORT_FORMAT, EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
+import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { GithubUserNotFoundError } from "@/src/export/renderProblem";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { githubUserNotFound } from "@/src/github/route";
@@ -41,7 +41,7 @@ export async function exportRoute(request: NextRequest) {
   }
 }
 
-async function renderExport(request: NextRequest, exportRequest: ExportRequest) {
+async function renderExport(request: NextRequest, exportRequest: ParsedExportRequest) {
   const resolved = await resolveExportImages(exportRequest);
   if (!resolved.ok) return error(resolved.error, 400);
   const { payload, images } = resolved;
@@ -51,15 +51,14 @@ async function renderExport(request: NextRequest, exportRequest: ExportRequest) 
   if (renderUrl.length > MAX_RENDER_URL_LENGTH) {
     return error("Banner settings are too long to export. Shorten the text.", 413);
   }
-  const format = payload.format ?? EXPORT_FORMAT;
   const image = await captureBanner({
     url: renderUrl,
     size: payload.size,
     pixelRatio: payload.pixelRatio,
-    format,
+    format: payload.format,
     images,
   });
-  return imageResponse(image, format, payload.templateId);
+  return imageResponse(image, payload.format, payload.templateId);
 }
 
 function imageResponse(image: Buffer, format: ExportFormat, templateId: TemplateId) {

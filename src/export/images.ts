@@ -1,11 +1,13 @@
 import type { ExportRequest } from "@/src/types/template";
 import {
   fetchImageLink,
+  formatNames,
   ImageLinkError,
   type ImageBytes,
   type LinkImageType,
 } from "@/src/export/imageLink";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageLink";
 
 const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as const;
 
@@ -43,6 +45,12 @@ const EXPORT_IMAGES: ReadonlyArray<{
   },
 ];
 
+/** The formats a link in image setting `key` can be, e.g. "PNG, JPEG, WebP or AVIF". */
+export function linkFormatsOf(key: string): string {
+  const slot = EXPORT_IMAGES.find((image) => image.key === key);
+  return slot ? formatNames(slot.linkTypes) : "";
+}
+
 /** Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); AVIF is accepted too. */
 const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|webp|avif));base64,([A-Za-z0-9+/]+={0,2})$/;
 
@@ -51,8 +59,8 @@ export interface ExportImage extends ImageBytes {
   path: string;
 }
 
-type ExportImagesResult =
-  { ok: true; payload: ExportRequest; images: ExportImage[] } | { ok: false; error: string };
+type ExportImagesResult<T> =
+  { ok: true; payload: T; images: ExportImage[] } | { ok: false; error: string };
 
 /** One image setting: unchanged, served as bytes, or a problem to report. */
 type Resolved = { keep: true } | { image: ExportImage } | { error: string };
@@ -65,7 +73,7 @@ async function resolveImage(
   if (typeof value !== "string") return { error: `Unsupported ${name} image.` };
   if (presets?.test(value)) return { keep: true };
 
-  if (value.startsWith("data:")) {
+  if (isDataUrl(value)) {
     const match = DATA_URL_PATTERN.exec(value);
     if (!match) return { error: `The uploaded ${name} isn't a supported image.` };
     const body = Buffer.from(match[2], "base64");
@@ -75,7 +83,7 @@ async function resolveImage(
     return { image: { path, contentType: match[1], body } };
   }
 
-  if (/^https?:\/\//i.test(value)) {
+  if (isHttpImageUrl(value)) {
     try {
       return { image: { path, ...(await fetchImageLink(value, linkTypes)) } };
     } catch (error) {
@@ -92,7 +100,9 @@ async function resolveImage(
  * `path` left in the payload in their place; links are downloaded here under `fetchImageLink`'s
  * rules. Presets stay as they are. Anything else is rejected.
  */
-export async function resolveExportImages(payload: ExportRequest): Promise<ExportImagesResult> {
+export async function resolveExportImages<T extends ExportRequest>(
+  payload: T,
+): Promise<ExportImagesResult<T>> {
   const resolved = await Promise.all(
     EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key], slot)),
   );

@@ -2,9 +2,6 @@ import { HOW_IT_WORKS } from "@/src/landing/landingContent";
 import { SectionHeading } from "@/src/landing/SectionHeading";
 import landingStyles from "@/src/landing/landing.module.css";
 
-/** One big word per step, shown above its title. */
-const STEP_WORDS = ["Pick.", "Enter.", "Download."];
-
 export function LandingHowItWorks() {
   return (
     <section
@@ -18,7 +15,7 @@ export function LandingHowItWorks() {
           {HOW_IT_WORKS.map((step, i) => (
             <li key={step.title} className={i % 2 === 1 ? "sm:text-right" : undefined}>
               <span className={landingStyles.stepWord} aria-hidden>
-                {STEP_WORDS[i]}
+                {step.word}
               </span>
               <div
                 className={`${landingStyles.stepText} mt-3 max-w-md sm:mt-4 ${i % 2 === 1 ? "sm:ml-auto" : ""}`}

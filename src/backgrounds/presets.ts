@@ -154,6 +154,13 @@ export function presetBySrc(src: string): BackgroundPreset | undefined {
   return BACKGROUND_PRESETS.find((p) => p.src === src);
 }
 
+/** The preset's image path; throws for an id that doesn't exist (for scripts). */
+export function presetSrcById(id: string): string {
+  const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
+  if (!preset) throw new Error(`No background preset "${id}"`);
+  return preset.src;
+}
+
 /**
  * Smaller copies of the photo presets, for the studio preview (`pnpm backgrounds` writes them next
  * to the full-size photo). The export always uses the full-size photo.

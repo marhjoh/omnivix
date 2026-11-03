@@ -5,6 +5,11 @@ export function isGithubUsername(value: string): boolean {
   return GITHUB_USERNAME.test(value);
 }
 
+/** The banner's username, or "" when it has none. */
+export function usernameOf(state: Record<string, unknown>): string {
+  return typeof state.username === "string" ? state.username : "";
+}
+
 const GITHUB_HOSTS = new Set(["github.com", "www.github.com"]);
 
 /**

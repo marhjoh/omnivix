@@ -1,6 +1,13 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
-import { clampPercent, positionOr, type Position } from "@/src/banner/position";
+import {
+  clamp,
+  clampPercent,
+  positionOr,
+  samePosition,
+  type Position,
+} from "@/src/banner/position";
+import type { Box } from "@/src/lib/sizes";
 
 export const MIN_BACKGROUND_ZOOM = 1;
 export const MAX_BACKGROUND_ZOOM = 1.5;
@@ -15,8 +22,6 @@ export interface BannerBackground {
 }
 
 const CENTER: BackgroundPosition = { x: 50, y: 50 };
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /** Where a background sits by default: its preset's focus, or the center. */
 function defaultBackgroundPosition(src: string): BackgroundPosition {
@@ -37,8 +42,7 @@ export function backgroundFromState(state: Record<string, unknown>): BannerBackg
 
 /** True when the background is at its default position and zoom, so there's nothing to reset. */
 export function isDefaultBackgroundFraming({ src, position, zoom }: BannerBackground): boolean {
-  const initial = defaultBackgroundPosition(src);
-  return zoom === MIN_BACKGROUND_ZOOM && position.x === initial.x && position.y === initial.y;
+  return zoom === MIN_BACKGROUND_ZOOM && samePosition(position, defaultBackgroundPosition(src));
 }
 
 /**
@@ -53,13 +57,8 @@ export function backgroundImageStyle({ position, zoom }: BannerBackground): CSSP
   };
 }
 
-interface Size {
-  width: number;
-  height: number;
-}
-
 /** How far (in banner pixels) the image can move on each axis when it covers `frame`. */
-export function backgroundPanRange(frame: Size, image: Size, zoom: number): Size {
+export function backgroundPanRange(frame: Box, image: Box, zoom: number): Box {
   const cover = Math.max(frame.width / image.width, frame.height / image.height) * zoom;
   return {
     width: Math.max(0, image.width * cover - frame.width),
@@ -74,7 +73,7 @@ export function backgroundPanRange(frame: Size, image: Size, zoom: number): Size
 export function dragBackgroundPosition(
   position: BackgroundPosition,
   delta: { x: number; y: number },
-  range: Size,
+  range: Box,
 ): BackgroundPosition {
   const move = (value: number, by: number, room: number) =>
     room < 1 ? value : clampPercent(value - (by / room) * 100);

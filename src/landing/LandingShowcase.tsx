@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { TemplateId } from "@/src/types/template";
 import { templateRegistry } from "@/src/templates/registry";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, aspectRatioOf } from "@/src/lib/sizes";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
 import { LinkPendingSpinner } from "@/src/landing/LinkPendingSpinner";
@@ -20,7 +20,7 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
     >
       <div
         className={landingStyles.showcasePreview}
-        style={{ aspectRatio: `${BANNER_SIZES.wide.width} / ${BANNER_SIZES.wide.height}` }}
+        style={{ aspectRatio: aspectRatioOf(BANNER_SIZES.wide) }}
       >
         <Image
           src={landingPreviewSrc(templateId)}

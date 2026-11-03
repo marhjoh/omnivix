@@ -4,10 +4,18 @@ import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { BANNER_SIZES, BANNER_SIZE_KEYS, exportFormats, exportPixelRatios } from "@/src/lib/sizes";
+import {
+  BANNER_SIZES,
+  BANNER_SIZE_KEYS,
+  exportFormats,
+  exportPixelRatios,
+  platformNames,
+} from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
 import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
+import { listText } from "@/src/lib/text";
+import { linkFormatsOf } from "@/src/export/images";
 import { THEME_PRESETS } from "@/src/types/theme";
 
 /** The example request in the docs; a test checks that the API accepts it. */
@@ -27,8 +35,7 @@ const code = (value: unknown) => `\`${typeof value === "string" ? value : JSON.s
 
 /** "`a`, `b` or `c`" */
 function oneOf(values: readonly unknown[]): string {
-  const items = values.map(code);
-  return items.length > 1 ? `${items.slice(0, -1).join(", ")} or ${items.at(-1)}` : items[0];
+  return listText(values.map(code));
 }
 
 /** What a setting accepts, in words. */
@@ -50,11 +57,11 @@ function accepts(field: EditorFieldSchema): string {
     case "range":
       return `a number from ${field.min} to ${field.max}`;
     case "backgroundPicker":
-      return "the path of a built-in background (see below), e.g. `/backgrounds/seoul.avif`, or a public `https://` image URL; leave out for none";
+      return `the path of a built-in background (see below), e.g. \`/backgrounds/seoul.avif\`, or a public \`https://\` ${linkFormatsOf("backgroundImage")} image URL; leave out for none`;
     case "colorPicker":
       return `${oneOf(field.options?.map((option) => option.value) ?? [])}, or a hex color such as \`#ff6600\` (\`%23ff6600\` in a studio link)`;
     case "logoPicker":
-      return "a public `https://` PNG, JPEG, WebP, AVIF or SVG image URL; leave out for none";
+      return `a public \`https://\` ${linkFormatsOf("logoImage")} image URL; leave out for none`;
     case "repoMultiSelect":
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     default:
@@ -71,8 +78,8 @@ function defaultOf(key: string, value: unknown): string {
 export function exportApiDocs(siteUrl: URL): string[] {
   const endpoint = new URL("/api/export", siteUrl).toString();
   const sizes = BANNER_SIZE_KEYS.map((key) => {
-    const { label, width, height, platforms } = BANNER_SIZES[key];
-    return `${code(key)} (${label}, ${width} × ${height}: ${platforms.map((p) => p.name).join(", ")})`;
+    const format = BANNER_SIZES[key];
+    return `${code(key)} (${format.label}, ${format.width} × ${format.height}: ${platformNames(format)})`;
   });
   // " (`youtube` as `png`: `1` only)", for the sizes that can't take every ratio.
   const limits = BANNER_SIZE_KEYS.flatMap((key) =>

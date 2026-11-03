@@ -10,6 +10,7 @@ import { ProfileBlock } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/renderers/types";
 import { reposShown } from "@/src/lib/repoSelection";
+import { usernameOf } from "@/src/lib/githubUsername";
 
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
 const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
@@ -26,8 +27,8 @@ export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const background = backgroundFromState(state);
   const mode = state.mode === "selected" ? "selected" : "pinned";
   const shown = reposShown(mode, state.maxRepos);
-  const repos = Array.isArray(data.repos) ? data.repos.slice(0, shown) : [];
-  const username = typeof state.username === "string" ? state.username : "";
+  const repos = data.repos?.slice(0, shown) ?? [];
+  const username = usernameOf(state);
   // Selected mode lays out what was picked; pinned mode keeps the chosen amount's layout.
   const cols = reposBannerColumnCount(mode === "selected" ? Math.max(1, repos.length) : shown);
 

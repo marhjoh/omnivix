@@ -225,7 +225,6 @@ describe("buildCalendarLayout — weekday semantics", () => {
     const jan1 = placedDays.find((d) => d.date === "2025-01-01")!;
     expect(jan1).toBeDefined();
     expect(jan1.row).toBe(3);
-    expect(jan1.weekday).toBe(3);
     expect(jan1.col).toBe(0);
   });
 

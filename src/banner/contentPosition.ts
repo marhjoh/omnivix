@@ -3,7 +3,7 @@ import {
   normalizeContentAlign,
   type ContentAlign,
 } from "@/src/banner/contentAlign";
-import { positionOr, type Position } from "@/src/banner/position";
+import { positionOr, samePosition, type Position } from "@/src/banner/position";
 
 /**
  * Where the content sits in the padded box, as a placement (see `placement.ts`).
@@ -15,12 +15,14 @@ const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 
 
 const MIDDLE = 50;
 
-/** The content's position from banner state: a moved one, or its alignment, centered vertically. */
+/** Where the content is until it's moved: at its alignment, centered vertically. */
+function defaultContentPosition(state: Record<string, unknown>): ContentPosition {
+  return { x: ALIGN_X[normalizeContentAlign(state.alignment)], y: MIDDLE };
+}
+
+/** The content's position from banner state: a moved one, or its default. */
 export function contentPositionFromState(state: Record<string, unknown>): ContentPosition {
-  return positionOr(state.contentPosition, {
-    x: ALIGN_X[normalizeContentAlign(state.alignment)],
-    y: MIDDLE,
-  });
+  return positionOr(state.contentPosition, defaultContentPosition(state));
 }
 
 /** The alignment the content is at, or undefined between them (after a free drag). */
@@ -36,8 +38,7 @@ export function alignmentShown({ x, y }: ContentPosition): ContentAlign | undefi
   return y === MIDDLE ? alignmentAt(x) : undefined;
 }
 
-/** True at its alignment and centered vertically, so there's nothing to reset. */
+/** True at its default position, so there's nothing to reset. */
 export function isDefaultContentPosition(state: Record<string, unknown>): boolean {
-  const { x, y } = contentPositionFromState(state);
-  return x === ALIGN_X[normalizeContentAlign(state.alignment)] && y === MIDDLE;
+  return samePosition(contentPositionFromState(state), defaultContentPosition(state));
 }

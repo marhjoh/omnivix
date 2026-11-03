@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
-import { BANNER_SIZES } from "@/src/lib/sizes";
+import { BANNER_SIZES, aspectRatioOf } from "@/src/lib/sizes";
 import styles from "@/src/landing/landing.module.css";
 
 const CARDS_PER_COLUMN = 6;
@@ -28,7 +28,7 @@ export function HeroMarquee() {
         style={
           {
             "--marquee-columns": COLUMNS,
-            "--banner-ratio": `${BANNER_SIZES.wide.width} / ${BANNER_SIZES.wide.height}`,
+            "--banner-ratio": aspectRatioOf(BANNER_SIZES.wide),
           } as CSSProperties
         }
       >

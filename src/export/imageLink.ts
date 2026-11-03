@@ -1,6 +1,7 @@
 import { lookup as dnsLookup } from "node:dns";
 import { request } from "node:https";
 import { isIP, type LookupFunction } from "node:net";
+import { listText } from "@/src/lib/text";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
 const MAX_LINKED_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -28,9 +29,8 @@ export interface ImageBytes {
 export class ImageLinkError extends Error {}
 
 /** "PNG, JPEG or WebP" */
-function formatNames(types: readonly LinkImageType[]): string {
-  const names = types.map((type) => LINK_IMAGE_FORMATS[type]);
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} or ${names.at(-1)}` : names[0];
+export function formatNames(types: readonly LinkImageType[]): string {
+  return listText(types.map((type) => LINK_IMAGE_FORMATS[type]));
 }
 
 const NOT_ALLOWED = "That image link isn't allowed. Use a public https:// image.";

@@ -1,34 +1,17 @@
-/**
- * Frozen UTC semantics for the product "latest" contribution window:
- * inclusive 365 calendar days from (anchor UTC date − 364) through anchor UTC date.
- */
-
 /** "latest" (the last 365 days) or a four-digit year. */
 export function isContributionYear(year: string): boolean {
   return year === "latest" || /^\d{4}$/.test(year);
 }
 
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
 /**
- * @param anchor Interpreted in UTC (year/month/date components only; time ignored for the "today" calendar day).
+ * The UTC range GitHub is asked for: a calendar year, or for "latest" the 365 calendar days up to
+ * and including `now`'s UTC date (the time of day doesn't matter).
  */
-export function computeLatestContributionRangeUtc(anchor: Date): {
-  fromIso: string;
-  toIso: string;
-  toYyyyMmDd: string;
-} {
-  const y = anchor.getUTCFullYear();
-  const mo = anchor.getUTCMonth();
-  const d = anchor.getUTCDate();
-  const fromDate = new Date(Date.UTC(y, mo, d - 364, 0, 0, 0, 0));
-  const toDate = new Date(Date.UTC(y, mo, d, 23, 59, 59, 999));
-  const toYyyyMmDd = `${y}-${pad2(mo + 1)}-${pad2(d)}`;
+export function contributionRange(year: string, now = new Date()): { from: string; to: string } {
+  if (year !== "latest") return { from: `${year}-01-01T00:00:00Z`, to: `${year}-12-31T23:59:59Z` };
+  const [y, m, d] = [now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()];
   return {
-    fromIso: fromDate.toISOString(),
-    toIso: toDate.toISOString(),
-    toYyyyMmDd,
+    from: new Date(Date.UTC(y, m, d - 364)).toISOString(),
+    to: new Date(Date.UTC(y, m, d, 23, 59, 59, 999)).toISOString(),
   };
 }

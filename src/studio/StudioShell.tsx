@@ -37,12 +37,10 @@ import { UsernameModal } from "@/src/studio/UsernameModal";
 import {
   parseSettingsCookie,
   parseUsernameCookie,
-  fitsInCookie,
-  readCookieClient,
   settingsCookieName,
-  setCookieClient,
   USERNAME_COOKIE,
 } from "@/src/studio/studioCookies";
+import { fitsInCookie, readCookieClient, setCookieClient } from "@/src/lib/cookies";
 import { RenderData } from "@/src/templates/renderers/types";
 import type {
   GithubUserNormalized,
@@ -69,8 +67,9 @@ import {
   applySavedSettings,
   clampSelectedRepos,
   IMAGE_SETTINGS,
-  isSavableImage,
   removeImage,
+  removeImageSettings,
+  removeUnsavableImages,
 } from "@/src/studio/savedSettings";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 
@@ -101,9 +100,7 @@ function storedStateJson(state: Record<string, unknown>, needsUsername: boolean)
   // Username is global; avoid stale per-template copies.
   if (needsUsername) delete clone.username;
   // Presets and https links are kept, with what belongs to them. Uploads are too large.
-  for (const key of Object.keys(IMAGE_SETTINGS)) {
-    if (clone[key] !== undefined && !isSavableImage(key, clone[key])) removeImage(clone, key);
-  }
+  removeUnsavableImages(clone);
   const json = JSON.stringify(clone);
   if (fitsInCookie(json)) return json;
   // A very long link is left out rather than losing every setting to the cookie size limit.
@@ -590,7 +587,7 @@ export function StudioShell({
         const size = key === "platform" ? (sizeOfPlatform(value) ?? prev.size) : prev.size;
         const next = clampSelectedRepos(templateId, { ...prev, size, [key]: value });
         // A new image drops the old one's settings, such as a background's position.
-        for (const related of IMAGE_SETTINGS[key] ?? []) delete next[related];
+        removeImageSettings(next, key);
         // Picking an alignment puts the content at that spot, centered vertically.
         if (key === "alignment") delete next.contentPosition;
         return next;
@@ -627,9 +624,8 @@ export function StudioShell({
   }, []);
 
   const backgroundImage = useBannerImage(state.backgroundImage, "background", showError);
-  const backgroundUnusable = backgroundImage.unusable;
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
-  const adjustableBackground = backgroundUnusable ? undefined : background;
+  const adjustableBackground = backgroundImage.usableSrc ? background : undefined;
   const logoImage = useBannerImage(state.logoImage, "logo", showError);
   const moveLogo = useCallback(
     (position: Position) => updateState("logoPosition", position),
@@ -638,19 +634,18 @@ export function StudioShell({
 
   const backgroundFields = useMemo(
     () => ({
-      backgroundImage: backgroundUnusable ? undefined : state.backgroundImage,
+      backgroundImage: backgroundImage.usableSrc,
       backgroundPosition: state.backgroundPosition,
       backgroundZoom: state.backgroundZoom,
     }),
-    [backgroundUnusable, state.backgroundImage, state.backgroundPosition, state.backgroundZoom],
+    [backgroundImage.usableSrc, state.backgroundPosition, state.backgroundZoom],
   );
   // A new background replaces the old one once it has loaded, instead of leaving the banner
   // without one in between.
   const shownBackground = useKeepWhile(backgroundFields, backgroundImage.status === "loading");
-  const logoUnusable = logoImage.unusable;
   const previewBannerState = useMemo(
-    () => ({ ...state, ...shownBackground, ...(logoUnusable && { logoImage: undefined }) }),
-    [state, shownBackground, logoUnusable],
+    () => ({ ...state, ...shownBackground, logoImage: logoImage.usableSrc }),
+    [state, shownBackground, logoImage.usableSrc],
   );
   // What the preview and the Download button show. A quick load keeps the previous preview
   // instead of flashing the loading screen (see useHoldDuringLoad); both always change together.
@@ -671,7 +666,7 @@ export function StudioShell({
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
     stateValid,
-    imageUnusable: backgroundUnusable || logoUnusable,
+    imageUnusable: backgroundImage.status === "failed" || logoImage.status === "failed",
     previewPending:
       shownPreview !== livePreview ||
       contributionsFetch.stale ||
@@ -786,7 +781,7 @@ export function StudioShell({
               fill ? undefined : { position: contentPositionFromState(state), onMove: moveContent }
             }
             logoAdjust={
-              state.logoImage && !logoUnusable
+              logoImage.usableSrc
                 ? { position: logoPositionFromState(state), onMove: moveLogo }
                 : undefined
             }

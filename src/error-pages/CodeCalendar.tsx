@@ -7,6 +7,11 @@ import {
 } from "@/src/error-pages/calendarGlyphs";
 import styles from "@/src/error-pages/errorPages.module.css";
 
+function cellClass(on: boolean, x: number, y: number): string {
+  if (on) return styles.cellOn;
+  return isQuietDay(x, y) ? styles.cellQuiet : "";
+}
+
 /** A contribution calendar whose brightest days spell the code. */
 export function CodeCalendar({ code }: { code: ErrorCode }) {
   const columns = calendarColumns(code);
@@ -26,7 +31,7 @@ export function CodeCalendar({ code }: { code: ErrorCode }) {
         column.map((on, y) => (
           <span
             key={`${x}-${y}`}
-            className={`${styles.cell} ${on ? styles.cellOn : isQuietDay(x, y) ? styles.cellQuiet : ""}`}
+            className={`${styles.cell} ${cellClass(on, x, y)}`}
             style={{ "--col": x } as CSSProperties}
           />
         )),

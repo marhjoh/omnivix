@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { preload } from "react-dom";
 import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
-import { isHttpImageUrl } from "@/src/lib/imageLink";
+import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageLink";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 
 /**
@@ -21,7 +21,7 @@ export function useBannerImage(
   // priority, instead of when the banner is drawn. Not for uploads: their data URL is the image.
   const srcSet = src ? previewPhotoSrcSet(src) : undefined;
   const sizes = srcSet ? PREVIEW_PHOTO_SIZES : undefined;
-  if (src && !src.startsWith("data:")) {
+  if (src && !isDataUrl(src)) {
     preload(src, { as: "image", imageSrcSet: srcSet, imageSizes: sizes, fetchPriority: "high" });
   }
   const status = useImageStatus(src, { srcSet, sizes });
@@ -35,5 +35,7 @@ export function useBannerImage(
     showError(`Couldn't load this ${name}.`);
   }, [failed, src, name, showError]);
 
-  return { status, unusable: failed };
+  /** The image, unless it failed to load. */
+  const usableSrc = failed ? undefined : src;
+  return { status, usableSrc };
 }

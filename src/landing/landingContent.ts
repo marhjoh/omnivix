@@ -1,6 +1,6 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
-import { BANNER_SIZES, exportFormats, exportPixelRatios } from "@/src/lib/sizes";
+import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
 import { listText } from "@/src/lib/text";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
 import { SITE_LICENSE } from "@/src/lib/site";
@@ -11,10 +11,7 @@ import { SITE_LINKS } from "@/src/lib/site-links";
 
 function bannerFormatsSummary() {
   return Object.values(BANNER_SIZES)
-    .map(
-      (f) =>
-        `${f.label} (${f.width} × ${f.height} px) for ${f.platforms.map((p) => p.name).join(", ")}`,
-    )
+    .map((f) => `${f.label} (${f.width} × ${f.height} px) for ${platformNames(f)}`)
     .join("; ");
 }
 
@@ -36,14 +33,17 @@ function oneTimesOnlyPlatforms() {
 
 export const HOW_IT_WORKS = [
   {
+    word: "Pick.",
     title: "Pick a template",
     body: "Your GitHub profile, repositories, contribution heatmap or a quote.",
   },
   {
+    word: "Enter.",
     title: "Enter your GitHub username",
     body: "Omnivix reads your public GitHub data. No sign-in needed.",
   },
   {
+    word: "Download.",
     title: "Customize and download",
     body: "Choose a background and layout, then download a PNG or JPEG.",
   },

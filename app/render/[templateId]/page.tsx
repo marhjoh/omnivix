@@ -13,6 +13,7 @@ import {
 } from "@/src/github/client";
 import { GithubRateLimitError } from "@/src/github/rateLimit";
 import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
+import { usernameOf } from "@/src/lib/githubUsername";
 
 export default async function RenderPage({
   params,
@@ -30,7 +31,7 @@ export default async function RenderPage({
 
   const size = BANNER_SIZES[payload.size];
   const { state } = payload;
-  const username = typeof state.username === "string" ? state.username : "";
+  const username = usernameOf(state);
   // Only the data this banner draws, fetched in parallel. The export route has already checked
   // the settings against the template's schema, which fills in defaults such as the year.
   const needs = new Set(templateRegistry[templateId].meta.githubData);

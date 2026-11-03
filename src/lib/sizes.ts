@@ -1,4 +1,4 @@
-import { isOneOf } from "@/src/lib/isOneOf";
+import { oneOfOr } from "@/src/lib/isOneOf";
 import { EXPORT_FORMAT, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import {
   EXPORT_PIXEL_RATIO,
@@ -70,6 +70,16 @@ export type BannerBox = Box & Pick<BannerFormat, "views" | "safeArea">;
 export const BANNER_SIZE_KEYS = ["wide", "header", "reddit", "card", "youtube"] as const;
 
 export type BannerSize = (typeof BANNER_SIZE_KEYS)[number];
+
+/** "LinkedIn, X" */
+export function platformNames(format: BannerFormat): string {
+  return format.platforms.map((platform) => platform.name).join(", ");
+}
+
+/** The CSS `aspect-ratio` of a box, e.g. "1584 / 396". */
+export function aspectRatioOf({ width, height }: Box): string {
+  return `${width} / ${height}`;
+}
 
 export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
   // LinkedIn 1584 × 396, Buy Me a Coffee 1600 × 400
@@ -148,7 +158,7 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
 export const BANNER_PLATFORMS = Object.values(BANNER_SIZES).flatMap((format) => format.platforms);
 
 export function normalizeBannerSize(raw: unknown, fallback: BannerSize = "wide"): BannerSize {
-  return isOneOf(BANNER_SIZE_KEYS, raw) ? raw : fallback;
+  return oneOfOr(BANNER_SIZE_KEYS, raw, fallback);
 }
 
 /** The format a platform's banners use. */

@@ -1,3 +1,5 @@
+import { isOneOf } from "@/src/lib/isOneOf";
+
 /** Limits our API names in its 429 body, with the time they reset. */
 const TIMED_LIMITS = ["github", "requests", "daily-exports"] as const;
 
@@ -33,13 +35,9 @@ export async function readApiError(
 }
 
 function limitOf(status: number, { limit, resetAt }: { limit?: unknown; resetAt?: unknown }) {
-  if (isTimedLimit(limit) && typeof resetAt === "string") {
+  if (isOneOf(TIMED_LIMITS, limit) && typeof resetAt === "string") {
     return { kind: limit, resetAt: new Date(resetAt) } satisfies ApiLimit;
   }
   if (status === 429) return { kind: "firewall" } satisfies ApiLimit;
   return null;
-}
-
-function isTimedLimit(value: unknown): value is TimedLimit {
-  return TIMED_LIMITS.includes(value as TimedLimit);
 }

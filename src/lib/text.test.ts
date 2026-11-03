@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listText } from "./text";
+import { listText, truncateMiddle } from "./text";
 
 describe("listText", () => {
   it.each([
@@ -13,5 +13,17 @@ describe("listText", () => {
 
   it("can join with and", () => {
     expect(listText(["YouTube", "Reddit"], "and")).toBe("YouTube and Reddit");
+  });
+});
+
+describe("truncateMiddle", () => {
+  it("leaves short text", () => {
+    expect(truncateMiddle("abc", 10)).toBe("abc");
+  });
+
+  it("keeps the start and end of long text", () => {
+    expect(truncateMiddle("https://example.com/very/long/path/to/file.jpg", 20)).toBe(
+      "https://e…file.jpg",
+    );
   });
 });

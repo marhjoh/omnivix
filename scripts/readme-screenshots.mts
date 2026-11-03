@@ -5,7 +5,7 @@
 import { join } from "node:path";
 import { chromium, type Page } from "playwright";
 import sharp, { type Sharp, type WebpOptions } from "sharp";
-import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
+import { presetSrcById } from "@/src/backgrounds/presets";
 import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
 import { settingsCookieName, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import type { TemplateId } from "@/src/types/template";
@@ -16,12 +16,6 @@ const USERNAME = "marhjoh";
 const WEBP = { quality: 90, smartSubsample: true } as const;
 /** How long each template shows in the animated demo. */
 const DEMO_FRAME_MS = 2200;
-
-function presetSrc(id: string): string {
-  const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
-  if (!preset) throw new Error(`No background preset "${id}"`);
-  return preset.src;
-}
 
 const browser = await chromium.launch();
 
@@ -39,7 +33,7 @@ async function studio(page: Page, templateId: TemplateId, background: string): P
   await page.context().addCookies([
     {
       name: settingsCookieName(templateId),
-      value: encodeURIComponent(JSON.stringify({ backgroundImage: presetSrc(background) })),
+      value: encodeURIComponent(JSON.stringify({ backgroundImage: presetSrcById(background) })),
       url: BASE_URL,
     },
   ]);

@@ -11,6 +11,7 @@ import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { bannerUiChrome } from "@/src/theme/theme";
 import { themePresetById } from "@/src/types/theme";
 import type { RendererProps } from "@/src/templates/renderers/types";
+import { usernameOf } from "@/src/lib/githubUsername";
 
 /** Natural sizes; `FitContent` scales the whole block to the chosen size and banner format. */
 const GRID = { cell: 10, gap: 2 };
@@ -28,7 +29,7 @@ export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps) {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <ProfileBlock
             user={data.user}
-            username={typeof state.username === "string" ? state.username : ""}
+            username={usernameOf(state)}
             chrome={chrome}
             showAvatar={state.showAvatar !== false}
             showDisplayName={state.showDisplayName === true}

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Coffee } from "lucide-react";
 import { APP_RELEASE_URL, APP_VERSION } from "@/src/lib/app-version";
 import { SITE_LINKS } from "@/src/lib/site-links";
-import { GithubIcon } from "@/src/ui/GithubIcon";
+import { SITE_NAV_LINKS } from "@/src/landing/siteNavLinks";
 import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass } from "@/src/ui/highlightClasses";
@@ -37,28 +36,19 @@ export function LandingFooter() {
               </a>
             </HoverHighlightItem>
           </span>
-          <HoverHighlightItem id="coffee">
-            <a
-              href={SITE_LINKS.buyMeACoffee}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={footerLinkClass}
-            >
-              <Coffee className="h-[18px] w-[18px] shrink-0" aria-hidden />
-              Buy me a coffee
-            </a>
-          </HoverHighlightItem>
-          <HoverHighlightItem id="github">
-            <a
-              href={SITE_LINKS.repo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={footerLinkClass}
-            >
-              <GithubIcon />
-              GitHub
-            </a>
-          </HoverHighlightItem>
+          {SITE_NAV_LINKS.map((link) => (
+            <HoverHighlightItem key={link.id} id={link.id}>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={footerLinkClass}
+              >
+                {link.icon}
+                {link.label}
+              </a>
+            </HoverHighlightItem>
+          ))}
           <HoverHighlightItem id="version">
             <a
               href={APP_RELEASE_URL}

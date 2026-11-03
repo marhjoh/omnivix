@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { readCookieClient, setCookieClient } from "@/src/studio/studioCookies";
+import { readCookieClient, setCookieClient } from "@/src/lib/cookies";
 
 /**
  * A choice remembered in a cookie. The server passes what it read as `initial`; the browser reads

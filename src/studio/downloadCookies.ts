@@ -1,3 +1,4 @@
+import { oneOfOr } from "@/src/lib/isOneOf";
 import {
   EXPORT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
@@ -14,5 +15,5 @@ export function parsePixelRatioCookie(value: string | undefined): ExportPixelRat
 }
 
 export function parseFormatCookie(value: string | undefined): ExportFormat {
-  return EXPORT_FORMATS.find((format) => format === value) ?? EXPORT_FORMAT;
+  return oneOfOr(EXPORT_FORMATS, value, EXPORT_FORMAT);
 }

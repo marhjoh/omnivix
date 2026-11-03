@@ -6,10 +6,7 @@ import {
   RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
-import {
-  computeLatestContributionRangeUtc,
-  isContributionYear,
-} from "@/src/lib/utcContributionRange";
+import { contributionRange, isContributionYear } from "@/src/lib/utcContributionRange";
 import { graphql } from "@octokit/graphql";
 import { guardRateLimit, warnIfQuotaLow, type GithubQuota } from "@/src/github/rateLimit";
 
@@ -104,10 +101,9 @@ export function getContributions(username: string, year: string): Promise<Contri
   if (!isContributionYear(year)) {
     return Promise.reject(new Error(`Invalid contribution year: ${year}`));
   }
-  const latest = year === "latest" ? computeLatestContributionRangeUtc(new Date()) : null;
-  const from = latest ? latest.fromIso : `${year}-01-01T00:00:00Z`;
-  const to = latest ? latest.toIso : `${year}-12-31T23:59:59Z`;
-  const period = latest ? `latest:${latest.toYyyyMmDd}` : year;
+  const { from, to } = contributionRange(year);
+  // "latest" moves every day, so its cache key names the day it ends on.
+  const period = year === "latest" ? `latest:${to.slice(0, 10)}` : year;
 
   return cached(`gh:contrib:${userKey(username)}:${period}`, contributionsTtlMs(year), async () => {
     const response = await graphqlClient()<{
@@ -213,13 +209,19 @@ type RepoPage = {
   pageInfo: { hasNextPage: boolean; endCursor: string | null };
 };
 
-const OWNER_REPOS_ARGS = `
-  first: ${REPO_PAGE_SIZE}
-  after: $after
-  ownerAffiliations: OWNER
-  orderBy: { field: UPDATED_AT, direction: DESC }
-  privacy: PUBLIC
-  isFork: false
+/** One page of the owner's public repositories, newest first. */
+const OWNER_REPOS_PAGE = `
+  repositories(
+    first: ${REPO_PAGE_SIZE}
+    after: $after
+    ownerAffiliations: OWNER
+    orderBy: { field: UPDATED_AT, direction: DESC }
+    privacy: PUBLIC
+    isFork: false
+  ) {
+    nodes { ${REPO_FIELDS} }
+    pageInfo { hasNextPage endCursor }
+  }
 `;
 
 /** Pinned repositories and the owner's public repositories (newest first), fetched together. */
@@ -242,10 +244,7 @@ export function getRepoLists(username: string): Promise<RepoLists> {
                 ... on Repository { ${REPO_FIELDS} }
               }
             }
-            repositories(${OWNER_REPOS_ARGS}) {
-              nodes { ${REPO_FIELDS} }
-              pageInfo { hasNextPage endCursor }
-            }
+            ${OWNER_REPOS_PAGE}
           }
         }
       `,
@@ -264,10 +263,7 @@ export function getRepoLists(username: string): Promise<RepoLists> {
           query MoreUserRepos($username: String!, $after: String) {
             ${QUOTA_FIELDS}
             user(login: $username) {
-              repositories(${OWNER_REPOS_ARGS}) {
-                nodes { ${REPO_FIELDS} }
-                pageInfo { hasNextPage endCursor }
-              }
+              ${OWNER_REPOS_PAGE}
             }
           }
         `,

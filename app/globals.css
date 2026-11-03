@@ -82,9 +82,8 @@ body {
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
     cursor: pointer;
-    /* Only hover colors fade; enabling and disabling are instant, like the preview's states. */
     transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
+    transition-duration: var(--hover-fade);
   }
 
   /* Disabled: neutral instead of see-through, like every disabled control (--disabled-text). */
@@ -158,6 +157,9 @@ body {
   --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
   /* Text and icons of disabled controls, which keep their frame instead of fading out. */
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
+  /* How long hover and focus colors fade. Enabling, disabling and selecting are instant, like the
+     preview's states, so only `transition-property` lists what fades. */
+  --hover-fade: 0.15s;
 }
 
 /*
@@ -186,9 +188,8 @@ body {
     font-size: 0.875rem;
     line-height: 1.25rem;
     color: var(--text);
-    /* Hover and focus colors fade like the buttons'. */
     transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: 0.15s;
+    transition-duration: var(--hover-fade);
   }
 
   /* Hover: a faint blue border, like the tiles and secondary buttons. :where keeps it weaker
