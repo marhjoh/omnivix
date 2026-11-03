@@ -1,5 +1,6 @@
 "use client";
 
+import { ERROR_PAGE_TITLE } from "@/src/lib/site";
 import { SiteShell } from "@/src/landing/SiteShell";
 import { RuntimeError, type RuntimeErrorProps } from "@/src/error-pages/RuntimeError";
 
@@ -7,6 +8,7 @@ import { RuntimeError, type RuntimeErrorProps } from "@/src/error-pages/RuntimeE
 export default function PageError(props: RuntimeErrorProps) {
   return (
     <SiteShell>
+      <title>{ERROR_PAGE_TITLE}</title>
       <RuntimeError {...props} />
     </SiteShell>
   );

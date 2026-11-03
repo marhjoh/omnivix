@@ -11,14 +11,14 @@ import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageSource";
 
 const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as const;
 
+type ImageSettingKey = "backgroundImage" | "logoImage";
+
 /**
  * The banner's images, by setting. An upload (data URL) or a link is taken out of the payload and
  * served to the render page at `path` instead. No route serves it: Playwright answers the request
  * from memory (see `captureBanner`), so an upload never has to fit in the render URL's token and
  * Playwright never loads a link itself.
  */
-type ImageSettingKey = "backgroundImage" | "logoImage";
-
 const EXPORT_IMAGES: ReadonlyArray<{
   key: ImageSettingKey;
   /** The image's name in messages. */

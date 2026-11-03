@@ -95,7 +95,7 @@ export async function fetchImageLink(
     res.destroy();
     throw new ImageLinkError(TOO_LARGE);
   }
-  return { contentType, body: await readLimitedBody(res) };
+  return { contentType, body: await readLimitedBody(res, signal) };
 }
 
 /** The link as a URL, if it's https and not a private IP literal (those skip the DNS check). */
@@ -134,7 +134,12 @@ function openResponse(
 /** Where a redirect goes, if it may be followed: https, and not past the redirect limit. */
 function redirectTarget(location: string, from: URL, redirectsLeft: number): string {
   if (redirectsLeft === 0) throw new ImageLinkError("The image link redirects too many times.");
-  const next = new URL(location, from);
+  let next: URL;
+  try {
+    next = new URL(location, from);
+  } catch {
+    throw new ImageLinkError("That image link redirects to an invalid address.");
+  }
   if (next.protocol !== "https:") {
     throw new ImageLinkError("That image link redirects to an insecure address.");
   }
@@ -142,7 +147,7 @@ function redirectTarget(location: string, from: URL, redirectsLeft: number): str
 }
 
 /** The body, stopped as soon as it passes `MAX_LINKED_IMAGE_BYTES`. */
-function readLimitedBody(res: IncomingMessage): Promise<Buffer> {
+function readLimitedBody(res: IncomingMessage, signal: AbortSignal): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     let size = 0;
@@ -156,6 +161,9 @@ function readLimitedBody(res: IncomingMessage): Promise<Buffer> {
       chunks.push(chunk);
     });
     res.on("end", () => resolve(Buffer.concat(chunks)));
-    res.on("error", (error: NodeJS.ErrnoException) => reject(toLinkError(error)));
+    // A timeout aborts the request, and the response then fails as a reset connection.
+    res.on("error", (error: NodeJS.ErrnoException) =>
+      reject(toLinkError(signal.aborted ? signal.reason : error)),
+    );
   });
 }

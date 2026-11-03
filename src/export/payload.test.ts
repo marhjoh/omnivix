@@ -121,7 +121,7 @@ describe("parseExportRequest year", () => {
     expect(parseExportRequest({ ...contributions, state: { username: "x", year } }).ok).toBe(true);
   });
 
-  it("rejects a year GitHub can't be asked for, instead of failing the render", () => {
+  it("rejects a year that isn't four digits or latest, instead of failing the render", () => {
     const result = parseExportRequest({ ...contributions, state: { username: "x", year: "abc" } });
     expect(result).toMatchObject({ ok: false, issues: [{ path: "state.year" }] });
   });

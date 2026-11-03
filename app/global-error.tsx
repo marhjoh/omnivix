@@ -3,6 +3,7 @@
 import { useLayoutEffect } from "react";
 import dynamic from "next/dynamic";
 import type { RuntimeErrorProps } from "@/src/error-pages/RuntimeError";
+import { ERROR_PAGE_TITLE } from "@/src/lib/site";
 import { applyStoredTheme } from "@/src/theme/theme";
 import { inter } from "./fonts";
 import "./globals.css";
@@ -22,7 +23,9 @@ export default function GlobalError(props: RuntimeErrorProps) {
   return (
     // suppressHydrationWarning: applyStoredTheme adds data-theme.
     <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <head />
+      <head>
+        <title>{ERROR_PAGE_TITLE}</title>
+      </head>
       <body className="flex min-h-screen flex-col">
         <RuntimeError {...props} />
       </body>

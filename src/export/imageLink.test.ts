@@ -6,6 +6,8 @@ type FakeResponse = {
   status: number;
   headers?: Record<string, string>;
   chunks?: Buffer[];
+  /** Fails mid-body instead of ending, like a connection reset. */
+  reset?: boolean;
 };
 
 /** Responses by URL, served by the mocked `https.request` below. */
@@ -26,7 +28,13 @@ vi.mock("node:https", () => ({
         });
         onResponse(res);
         for (const chunk of fake.chunks ?? []) res.write(chunk);
-        res.end();
+        if (fake.reset) {
+          setImmediate(() =>
+            res.destroy(Object.assign(new Error("aborted"), { code: "ECONNRESET" })),
+          );
+        } else {
+          res.end();
+        }
       },
     });
     return req;
@@ -106,6 +114,26 @@ describe("fetchImageLink", () => {
   it("rejects an image that turns out too large", async () => {
     responses.set("https://example.com/a.png", png(Buffer.alloc(11 * 1024 * 1024)));
     await expect(fetchImageLink("https://example.com/a.png", PNG)).rejects.toThrow("larger");
+  });
+
+  it("reports a timeout while the body downloads as a timeout", async () => {
+    responses.set("https://example.com/slow.png", { ...png(), reset: true });
+    const timedOut = AbortSignal.abort(new DOMException("timed out", "TimeoutError"));
+    await expect(fetchImageLink("https://example.com/slow.png", PNG, 3, timedOut)).rejects.toThrow(
+      "took too long",
+    );
+  });
+
+  it("reports a connection reset mid-body as a failed load", async () => {
+    responses.set("https://example.com/reset.png", { ...png(), reset: true });
+    await expect(fetchImageLink("https://example.com/reset.png", PNG)).rejects.toThrow(
+      "Couldn't load the image link",
+    );
+  });
+
+  it("rejects a redirect to an invalid address", async () => {
+    responses.set("https://example.com/bad", { status: 302, headers: { location: "https://" } });
+    await expect(fetchImageLink("https://example.com/bad", PNG)).rejects.toThrow("invalid address");
   });
 
   it("reports a host that doesn't exist", async () => {

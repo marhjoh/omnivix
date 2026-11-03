@@ -157,8 +157,8 @@ body {
   --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
   /* Text and icons of disabled controls, which keep their frame instead of fading out. */
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
-  /* How long hover and focus colors fade. Enabling, disabling and selecting are instant, like the
-     preview's states, so only `transition-property` lists what fades. */
+  /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
+     Each rule's `transition-property` lists which colors. */
   --hover-fade: 0.15s;
 }
 

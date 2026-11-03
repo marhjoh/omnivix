@@ -63,7 +63,7 @@ export interface ExportRequest {
   size: BannerSize;
   state: Record<string, unknown>;
   pixelRatio?: ExportPixelRatio;
-  /** The size's first format when left out: PNG, or JPEG for sizes that only take JPEG. */
+  /** PNG when left out, or the size's first format if it doesn't take PNG. */
   format?: ExportFormat;
   /** Matches the studio's theme, so the export looks like the preview. */
   uiTheme?: Theme;

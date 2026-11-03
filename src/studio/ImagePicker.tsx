@@ -44,7 +44,7 @@ const HTTPS = "https://";
 
 /** What the link field holds after its fixed "https://": a pasted link loses its scheme. */
 function withoutScheme(link: string): string {
-  return link.trimStart().replace(/^https?:\/\//i, "");
+  return link.replace(/^\s*https?:\/\//i, "");
 }
 
 function triggerLabel(
@@ -165,7 +165,8 @@ export function ImagePicker({
    * was a link. A preset or upload stays when the field is opened and left empty.
    */
   const settle = (draft: string) => {
-    const rest = draft.trimEnd();
+    // Cleaned again once settled: a pasted "https:// x" or "https://https://x" still works.
+    const rest = withoutScheme(draft.trim());
     const link = rest ? HTTPS + rest : "";
     setSettledLink(link);
     if (!link && linkValue) onChange(undefined);
@@ -201,6 +202,7 @@ export function ImagePicker({
   };
 
   const leaveLinkEditor = () => {
+    debouncedSettle.cancel();
     setSettledLink(undefined);
     setUrlDraft(undefined);
     setUrlEditorOpen(false);
