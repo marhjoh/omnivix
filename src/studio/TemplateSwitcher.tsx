@@ -12,7 +12,7 @@ import {
   DropdownRoot,
   useDropdown,
 } from "@/src/ui/Dropdown";
-import { highlightFocusClass } from "@/src/ui/highlightClasses";
+import { highlightFocusClass } from "@/src/ui/classNames";
 
 /** "GitHub Banner" → "GitHub": the header has room for the short names at every width. */
 const shortTitle = (title: string) => title.replace(/ Banner$/, "");

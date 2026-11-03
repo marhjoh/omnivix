@@ -9,19 +9,19 @@ import { parseLinkSettings, withLink } from "@/src/studio/linkSettings";
 import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
-import { parseSidebarCollapsedCookie, SIDEBAR_COOKIE_NAME } from "@/src/studio/sidebarCookie";
-import { parsePreviewViewCookie, PREVIEW_VIEW_COOKIE_NAME } from "@/src/studio/previewViewCookie";
 import {
-  FORMAT_COOKIE_NAME,
-  parseFormatCookie,
-  parsePixelRatioCookie,
-  PIXEL_RATIO_COOKIE_NAME,
-} from "@/src/studio/downloadCookies";
-import {
+  parseSidebarCollapsedCookie,
+  SIDEBAR_COOKIE_NAME,
   parseSettingsCookie,
   parseUsernameCookie,
   settingsCookieName,
   USERNAME_COOKIE,
+  parsePreviewViewCookie,
+  PREVIEW_VIEW_COOKIE_NAME,
+  FORMAT_COOKIE_NAME,
+  parseFormatCookie,
+  parsePixelRatioCookie,
+  PIXEL_RATIO_COOKIE_NAME,
 } from "@/src/studio/studioCookies";
 
 export async function generateMetadata({

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { preload } from "react-dom";
 import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
-import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageLink";
+import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageSource";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 
 /**

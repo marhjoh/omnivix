@@ -1,5 +1,5 @@
 import { Coffee } from "lucide-react";
-import { SITE_LINKS } from "@/src/lib/site-links";
+import { SITE_LINKS } from "@/src/lib/site";
 import { GithubIcon } from "@/src/ui/GithubIcon";
 
 /** The support and repository links, in the landing page's header and footer. */

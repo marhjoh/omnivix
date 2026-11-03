@@ -2,9 +2,8 @@ import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
 import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
 import { listText } from "@/src/lib/text";
-import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
-import { SITE_LICENSE } from "@/src/lib/site";
-import { SITE_LINKS } from "@/src/lib/site-links";
+import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
+import { SITE_LICENSE, SITE_LINKS } from "@/src/lib/site";
 
 // Single source for the landing page's "How it works" and FAQ, the FAQPage JSON-LD and /llms.txt.
 // Keep each answer self-contained: AI answers and search snippets quote single passages.

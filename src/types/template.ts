@@ -1,8 +1,7 @@
 import { z } from "zod";
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
-import type { ExportPixelRatio } from "@/src/export/viewport";
-import type { ExportFormat } from "@/src/export/format";
+import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 
 export const TEMPLATE_IDS = [
   "github-banner",

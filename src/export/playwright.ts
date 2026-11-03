@@ -1,12 +1,10 @@
 import { access, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Page } from "playwright";
-import { chromium as playwrightChromium } from "playwright";
+import { type Page, chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
-import type { ExportPixelRatio } from "@/src/export/viewport";
-import type { ExportFormat } from "@/src/export/format";
+import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";

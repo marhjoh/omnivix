@@ -1,5 +1,4 @@
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib/site";
+import { SITE_LINKS, getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME } from "@/src/lib/site";
 import { BANNER_SIZES, platformNames } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { FAQ } from "@/src/landing/landingContent";

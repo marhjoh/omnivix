@@ -21,7 +21,7 @@ export function computePreviewContentState(params: {
     return "error";
   }
 
-  if (params.needsUsername && !params.dataReady) {
+  if (!params.dataReady) {
     return "loading";
   }
 

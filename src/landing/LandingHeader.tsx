@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/src/theme/ThemeToggle";
 import { ThemedIcon, ThemedLogo } from "@/src/theme/ThemedBrand";
 import styles from "@/src/landing/landing.module.css";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemClass } from "@/src/ui/highlightClasses";
+import { highlightItemClass } from "@/src/ui/classNames";
 
 function subscribeScroll(onChange: () => void) {
   window.addEventListener("scroll", onChange, { passive: true });

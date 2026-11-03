@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isDataUrl } from "@/src/lib/imageLink";
+import { isDataUrl } from "@/src/lib/imageSource";
 
 type ImageStatus = "none" | "loading" | "loaded" | "failed";
 

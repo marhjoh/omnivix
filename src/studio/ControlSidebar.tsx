@@ -165,7 +165,6 @@ function ThemePicker({
   value: string;
   onChange: (id: string) => void;
 }) {
-  const resolvedId = THEME_PRESETS.some((p) => p.id === value) ? value : "default";
   return (
     <LabeledGroup label={label}>
       <div className="grid grid-cols-2 gap-2">
@@ -174,7 +173,7 @@ function ThemePicker({
             key={preset.id}
             type="button"
             onClick={() => onChange(preset.id)}
-            aria-pressed={resolvedId === preset.id}
+            aria-pressed={value === preset.id}
             className={`${controls.tile} ${controls.colorTile}`}
           >
             <span className={controls.colorStrip} aria-hidden>

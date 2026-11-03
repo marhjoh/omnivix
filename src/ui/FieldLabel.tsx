@@ -22,7 +22,7 @@ export function FieldLabel({
   children: ReactNode;
 }) {
   const label = htmlFor ? (
-    <label htmlFor={htmlFor} id={id ?? fieldLabelId(htmlFor)} className="field-label">
+    <label htmlFor={htmlFor} id={fieldLabelId(htmlFor)} className="field-label">
       {children}
     </label>
   ) : (

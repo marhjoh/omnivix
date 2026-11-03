@@ -7,7 +7,7 @@ import {
   type LinkImageType,
 } from "@/src/export/imageLink";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
-import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageLink";
+import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageSource";
 
 const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as const;
 
@@ -17,8 +17,10 @@ const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as 
  * from memory (see `captureBanner`), so an upload never has to fit in the render URL's token and
  * Playwright never loads a link itself.
  */
+type ImageSettingKey = "backgroundImage" | "logoImage";
+
 const EXPORT_IMAGES: ReadonlyArray<{
-  key: string;
+  key: ImageSettingKey;
   /** The image's name in messages. */
   name: string;
   path: string;
@@ -46,9 +48,8 @@ const EXPORT_IMAGES: ReadonlyArray<{
 ];
 
 /** The formats a link in image setting `key` can be, e.g. "PNG, JPEG, WebP or AVIF". */
-export function linkFormatsOf(key: string): string {
-  const slot = EXPORT_IMAGES.find((image) => image.key === key);
-  return slot ? formatNames(slot.linkTypes) : "";
+export function linkFormatsOf(key: ImageSettingKey): string {
+  return formatNames(EXPORT_IMAGES.find((image) => image.key === key)!.linkTypes);
 }
 
 /** Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); AVIF is accepted too. */

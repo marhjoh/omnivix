@@ -1,7 +1,12 @@
 import { useId } from "react";
 import { Copy, Download, Link, Loader2 } from "lucide-react";
-import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
-import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import {
+  EXPORT_PIXEL_RATIOS,
+  type ExportPixelRatio,
+  EXPORT_FORMAT_DETAILS,
+  EXPORT_FORMATS,
+  type ExportFormat,
+} from "@/src/export/format";
 import {
   exportFormatFor,
   exportFormats,

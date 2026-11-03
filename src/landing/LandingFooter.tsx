@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { APP_RELEASE_URL, APP_VERSION } from "@/src/lib/app-version";
-import { SITE_LINKS } from "@/src/lib/site-links";
+import packageJson from "@/package.json";
+import { SITE_LINKS } from "@/src/lib/site";
 import { SITE_NAV_LINKS } from "@/src/landing/siteNavLinks";
 import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
-import { highlightItemBaseClass } from "@/src/ui/highlightClasses";
+import { highlightItemBaseClass } from "@/src/ui/classNames";
+
+/** Deployed version, bumped in package.json with each release, and its release notes. */
+const APP_VERSION = packageJson.version;
+const APP_RELEASE_URL = `${SITE_LINKS.repo}/releases/tag/v${APP_VERSION}`;
 
 /** Labeled footer links: brighter than the header's muted links, 9px side padding like it. */
 const footerLinkClass = `${highlightItemBaseClass} w-auto px-[9px] text-text/90 hover:text-text`;

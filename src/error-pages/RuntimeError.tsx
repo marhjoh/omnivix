@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { SITE_NAME } from "@/src/lib/site";
-import { SITE_LINKS } from "@/src/lib/site-links";
-import { textLinkClass } from "@/src/ui/textLinkClass";
+import { SITE_NAME, SITE_LINKS } from "@/src/lib/site";
+import { textLinkClass } from "@/src/ui/classNames";
 import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
 
 /** What Next passes an error boundary. */

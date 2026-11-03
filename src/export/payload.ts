@@ -8,8 +8,7 @@ import {
   exportFormats,
   exportPixelRatios,
 } from "@/src/lib/sizes";
-import { EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
-import { EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import { EXPORT_PIXEL_RATIOS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
 export const exportRequestSchema: z.ZodType<ExportRequest> = z.object({

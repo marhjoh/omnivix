@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
 import { resolveExportImages } from "@/src/export/images";
 import { createExportToken } from "@/src/export/export-token";
-import { getPublicOrigin } from "@/src/export/request-origin";
-import { buildRenderUrl } from "@/src/export/render-url";
+import { renderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { GithubUserNotFoundError } from "@/src/export/renderProblem";
@@ -47,12 +46,12 @@ async function renderExport(request: NextRequest, exportRequest: ParsedExportReq
   const { payload, images } = resolved;
 
   const token = createExportToken(payload);
-  const renderUrl = buildRenderUrl(getPublicOrigin(request), payload.templateId, token);
-  if (renderUrl.length > MAX_RENDER_URL_LENGTH) {
+  const url = renderUrl(request, payload.templateId, token);
+  if (url.length > MAX_RENDER_URL_LENGTH) {
     return error("Banner settings are too long to export. Shorten the text.", 413);
   }
   const image = await captureBanner({
-    url: renderUrl,
+    url,
     size: payload.size,
     pixelRatio: payload.pixelRatio,
     format: payload.format,

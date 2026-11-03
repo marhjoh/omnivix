@@ -15,7 +15,7 @@ import {
   type ContentSizeOrFill,
 } from "@/src/banner/contentSize";
 import { oneOfOr } from "@/src/lib/isOneOf";
-import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { BANNER_SIZE_KEYS, DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
@@ -145,9 +145,6 @@ const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
 
 const CURRENT_YEAR = String(new Date().getFullYear());
 
-/** The size every template starts at. */
-const DEFAULT_SIZE = "wide";
-
 const yearState = z
   .string()
   .refine(isContributionYear, 'Must be a four-digit year or "latest"')
@@ -175,7 +172,7 @@ export const githubBannerDefinition: TemplateDefinition<
     id: "github-banner",
     title: "GitHub Banner",
     description: "Username, avatar, and contributions.",
-    defaultSize: DEFAULT_SIZE,
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["user", "contributions"],
   },
@@ -212,7 +209,7 @@ export const githubBannerDefinition: TemplateDefinition<
     ...logoInitialState,
     username: "",
     themeId: "default",
-    size: DEFAULT_SIZE,
+    size: DEFAULT_BANNER_SIZE,
     year: CURRENT_YEAR,
     showMonthLabels: true,
     showDayLabels: true,
@@ -250,7 +247,7 @@ export const reposBannerDefinition: TemplateDefinition<
     id: "repos-banner",
     title: "Repos Banner",
     description: "Languages, stars, and forks.",
-    defaultSize: DEFAULT_SIZE,
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["user", "repos"],
   },
@@ -310,7 +307,7 @@ export const reposBannerDefinition: TemplateDefinition<
     showForks: true,
     contentSize: DEFAULT_CONTENT_SIZE,
     themeId: "default",
-    size: DEFAULT_SIZE,
+    size: DEFAULT_BANNER_SIZE,
   },
 };
 
@@ -330,7 +327,7 @@ export const contributionBannerDefinition: TemplateDefinition<
     id: "contribution-banner",
     title: "Contribution Banner",
     description: "Contribution heatmap.",
-    defaultSize: DEFAULT_SIZE,
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: true,
     githubData: ["contributions"],
   },
@@ -358,7 +355,7 @@ export const contributionBannerDefinition: TemplateDefinition<
     contentSize: DEFAULT_CONTENT_SIZE,
     cellShape: "rounded",
     themeId: "default",
-    size: DEFAULT_SIZE,
+    size: DEFAULT_BANNER_SIZE,
     year: CURRENT_YEAR,
   },
 };
@@ -387,7 +384,7 @@ export const quoteBannerDefinition: TemplateDefinition<
     id: "quote-banner",
     title: "Quote Banner",
     description: "Typographic quotes.",
-    defaultSize: DEFAULT_SIZE,
+    defaultSize: DEFAULT_BANNER_SIZE,
     needsUsername: false,
     githubData: [],
   },
@@ -442,6 +439,6 @@ export const quoteBannerDefinition: TemplateDefinition<
     alignment: "center",
     contentSize: "m",
     themeId: "default",
-    size: DEFAULT_SIZE,
+    size: DEFAULT_BANNER_SIZE,
   },
 };

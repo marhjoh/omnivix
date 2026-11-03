@@ -1,3 +1,20 @@
-export function buildRenderUrl(origin: string, templateId: string, token: string) {
-  return `${origin}/render/${templateId}?token=${encodeURIComponent(token)}`;
+import type { NextRequest } from "next/server";
+
+/** The render page Playwright opens for this export. */
+export function renderUrl(request: NextRequest, templateId: string, token: string): string {
+  return `${publicOrigin(request)}/render/${templateId}?token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Origin Playwright opens the render page on. On Vercel, the forwarded headers are set by the
+ * platform and name the public URL users use (right deployment, cookies, auth bypass rules);
+ * `nextUrl` can be an internal host there. Elsewhere those headers could come from the client, so
+ * the server's own origin is used.
+ */
+function publicOrigin(request: NextRequest): string {
+  if (!process.env.VERCEL) return request.nextUrl.origin;
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  if (host) return `https://${host}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return request.nextUrl.origin;
 }

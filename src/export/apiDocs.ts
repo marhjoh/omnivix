@@ -1,8 +1,12 @@
 // The export API and studio link sections of /llms.txt, generated from the templates, sizes and
 // formats, so they stay in step with what the API and the studio accept.
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { EXPORT_FORMAT, EXPORT_FORMATS } from "@/src/export/format";
-import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/viewport";
+import {
+  EXPORT_FORMAT,
+  EXPORT_FORMATS,
+  EXPORT_PIXEL_RATIO,
+  EXPORT_PIXEL_RATIOS,
+} from "@/src/export/format";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import {
   BANNER_SIZES,

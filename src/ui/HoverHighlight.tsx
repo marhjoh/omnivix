@@ -12,7 +12,7 @@ const GroupContext = createContext<GroupState | null>(null);
 
 /**
  * A row of items sharing one highlight that slides to whichever item is hovered or focused.
- * Style the items with the classes in ./highlightClasses (a plain module, so server components can use them too).
+ * Style the items with the classes in ./classNames (a plain module, so server components can use them too).
  */
 export function HoverHighlightGroup({
   layoutId,

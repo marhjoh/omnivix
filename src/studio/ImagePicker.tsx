@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageLink";
+import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
 import { normalizeImageFile, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { truncateMiddle } from "@/src/lib/text";
 import {

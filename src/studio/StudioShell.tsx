@@ -29,17 +29,23 @@ import {
   contentPositionFromState,
   type ContentPosition,
 } from "@/src/banner/contentPosition";
-import { setSidebarCollapsedCookieClient } from "@/src/studio/sidebarCookie";
-import { TopBar } from "@/src/studio/TopBar";
-import { ExportControls } from "@/src/studio/ExportControls";
-import { useBannerExport } from "@/src/studio/useBannerExport";
-import { UsernameModal } from "@/src/studio/UsernameModal";
 import {
+  setSidebarCollapsedCookieClient,
   parseSettingsCookie,
   parseUsernameCookie,
   settingsCookieName,
   USERNAME_COOKIE,
+  parsePreviewViewCookie,
+  PREVIEW_VIEW_COOKIE_NAME,
+  FORMAT_COOKIE_NAME,
+  parseFormatCookie,
+  parsePixelRatioCookie,
+  PIXEL_RATIO_COOKIE_NAME,
 } from "@/src/studio/studioCookies";
+import { TopBar } from "@/src/studio/TopBar";
+import { ExportControls } from "@/src/studio/ExportControls";
+import { useBannerExport } from "@/src/studio/useBannerExport";
+import { UsernameModal } from "@/src/studio/UsernameModal";
 import { fitsInCookie, readCookieClient, setCookieClient } from "@/src/lib/cookies";
 import { RenderData } from "@/src/templates/renderers/types";
 import type {
@@ -49,18 +55,10 @@ import type {
   RepoNormalized,
 } from "@/src/github/normalize";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import type { ExportPixelRatio } from "@/src/export/viewport";
-import type { ExportFormat } from "@/src/export/format";
-import {
-  FORMAT_COOKIE_NAME,
-  parseFormatCookie,
-  parsePixelRatioCookie,
-  PIXEL_RATIO_COOKIE_NAME,
-} from "@/src/studio/downloadCookies";
+import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
 import { BANNER_SIZES, sizeOfPlatform, type BannerView } from "@/src/lib/sizes";
-import { parsePreviewViewCookie, PREVIEW_VIEW_COOKIE_NAME } from "@/src/studio/previewViewCookie";
 import styles from "@/src/studio/studio.module.css";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import {
