@@ -2,7 +2,13 @@ import { useId } from "react";
 import { Copy, Download, Link, Loader2 } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/viewport";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
-import { exportPixelRatioFor, exportPixelRatios, type BannerFormat } from "@/src/lib/sizes";
+import {
+  exportFormatFor,
+  exportFormats,
+  exportPixelRatioFor,
+  exportPixelRatios,
+  type BannerFormat,
+} from "@/src/lib/sizes";
 import { LabeledGroup } from "@/src/ui/FieldLabel";
 import { DropdownChevron } from "@/src/ui/Dropdown";
 import { useDisclosure } from "@/src/ui/useDisclosure";
@@ -70,15 +76,17 @@ export function ExportControls({
   /** The saved choice. A banner format that can't take it as `format` uses its largest instead. */
   pixelRatio: ExportPixelRatio;
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
+  /** The saved choice. A banner format that doesn't take it uses its own instead. */
   format: ExportFormat;
   onFormatChange: (format: ExportFormat) => void;
-  /** The chosen banner format: its size at 1×, for the pixel sizes, and the ratios it takes. */
+  /** The chosen banner format: its size at 1×, for the pixel sizes, and what it takes. */
   bannerFormat: BannerFormat;
 }) {
   const { open, setOpen, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
-  const formatLabel = EXPORT_FORMAT_DETAILS[format].label;
-  const shownPixelRatio = exportPixelRatioFor(bannerFormat, format, pixelRatio);
+  const shownFormat = exportFormatFor(bannerFormat, format);
+  const formatLabel = EXPORT_FORMAT_DETAILS[shownFormat].label;
+  const shownPixelRatio = exportPixelRatioFor(bannerFormat, shownFormat, pixelRatio);
   const busy = exporting !== null;
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
@@ -156,8 +164,8 @@ export function ExportControls({
                 label: `${ratio}×`,
                 // Thin spaces keep the largest size on one line in the narrow tile.
                 hint: `${bannerFormat.width * ratio}\u2009×\u2009${bannerFormat.height * ratio}`,
-                // YouTube's 3× is JPEG only; Reddit is 1× only.
-                disabled: !exportPixelRatios(bannerFormat, format).includes(ratio),
+                // YouTube and Reddit are 1× only.
+                disabled: !exportPixelRatios(bannerFormat, shownFormat).includes(ratio),
               }))}
               value={shownPixelRatio}
               onChange={onPixelRatioChange}
@@ -168,8 +176,10 @@ export function ExportControls({
                 value: option,
                 label: EXPORT_FORMAT_DETAILS[option].label,
                 hint: EXPORT_FORMAT_DETAILS[option].hint,
+                // Reddit is JPEG only.
+                disabled: !exportFormats(bannerFormat).includes(option),
               }))}
-              value={format}
+              value={shownFormat}
               onChange={onFormatChange}
             />
           </div>

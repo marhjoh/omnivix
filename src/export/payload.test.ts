@@ -26,15 +26,30 @@ describe("exportRequestSchema format", () => {
 describe("parseExportRequest", () => {
   it("rejects a pixel ratio the size can't be exported at in that file format", () => {
     const youtube = { ...request, size: "youtube" };
-    expect(parseExportRequest({ ...youtube, pixelRatio: 3 })).toEqual({
+    expect(parseExportRequest({ ...youtube, pixelRatio: 2 })).toEqual({
       ok: false,
-      issues: [
-        { path: "pixelRatio", message: 'Must be 1 or 2 for size "youtube" with format "png"' },
-      ],
+      issues: [{ path: "pixelRatio", message: 'Must be 1 for size "youtube" with format "png"' }],
     });
-    expect(parseExportRequest({ ...youtube, pixelRatio: 3, format: "jpeg" }).ok).toBe(true);
-    expect(parseExportRequest({ ...youtube, pixelRatio: 2 }).ok).toBe(true);
+    expect(parseExportRequest({ ...youtube, pixelRatio: 3, format: "jpeg" })).toEqual({
+      ok: false,
+      issues: [{ path: "pixelRatio", message: 'Must be 1 for size "youtube" with format "jpeg"' }],
+    });
+    expect(parseExportRequest({ ...youtube, pixelRatio: 1 }).ok).toBe(true);
     expect(parseExportRequest(youtube).ok).toBe(true);
+  });
+
+  it("rejects a file format the size can't be exported as", () => {
+    expect(parseExportRequest({ ...request, size: "reddit", format: "png" })).toEqual({
+      ok: false,
+      issues: [{ path: "format", message: 'Must be "jpeg" for size "reddit"' }],
+    });
+  });
+
+  it("uses the size's own file format when none is sent", () => {
+    const reddit = parseExportRequest({ ...request, size: "reddit" });
+    expect(reddit.ok && reddit.request.format).toBe("jpeg");
+    const wide = parseExportRequest(request);
+    expect(wide.ok && wide.request.format).toBe("png");
   });
 
   it("fills in the template's defaults, so a caller only sends what it changes", () => {

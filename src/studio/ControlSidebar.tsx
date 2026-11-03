@@ -32,6 +32,7 @@ import {
   fontStyleCss,
   fontStyleOptions,
   fontStyleShown,
+  fontVariable,
   QUOTE_FONT_OPTIONS,
   QUOTE_MARKS_OPTIONS,
   AUTHOR_PREFIX_OPTIONS,
@@ -288,6 +289,49 @@ function PlatformPicker({
   );
 }
 
+/**
+ * The quote's font, each in its own typeface. The quote fonts aren't preloaded (app/fonts.ts), so
+ * their upright faces start loading once the studio is idle: otherwise they'd all start when the
+ * list first opens, and its options would change font one by one as they arrive.
+ */
+function FontSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  useEffect(() => {
+    const load = () => {
+      // document.fonts.load can't read var(), so each family is read from its variable.
+      const root = getComputedStyle(document.documentElement);
+      for (const { value: font } of QUOTE_FONT_OPTIONS) {
+        const family = root.getPropertyValue(fontVariable(font));
+        if (family) document.fonts.load(`1em ${family}`).catch(() => {});
+      }
+    };
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(load);
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(load);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <Select
+      label={label}
+      value={value}
+      options={QUOTE_FONT_OPTIONS.map((option) => ({
+        ...option,
+        style: { fontFamily: fontFamily(option.value) },
+      }))}
+      onChange={onChange}
+    />
+  );
+}
+
 /** Show/hide settings as one list, a row per setting with a check on the right. */
 function ShowList({
   fields,
@@ -501,17 +545,12 @@ export function ControlSidebar({
       );
     }
 
-    // Each font in its own typeface.
     if (field.key === "font") {
       return (
-        <Select
+        <FontSelect
           key={field.key}
           label={fieldLabel(field)}
           value={String(state[field.key] ?? "")}
-          options={QUOTE_FONT_OPTIONS.map((option) => ({
-            ...option,
-            style: { fontFamily: fontFamily(option.value) },
-          }))}
           onChange={(value) => onChange(field.key, value)}
         />
       );

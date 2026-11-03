@@ -298,6 +298,11 @@ function fontOf(value: unknown): QuoteFont {
   return isOneOf(QUOTE_FONTS, value) ? value : DEFAULT_QUOTE_STYLE.font;
 }
 
+/** The CSS variable with the font's upright family (app/fonts.ts). */
+export function fontVariable(font: QuoteFont): string {
+  return FONTS[font].variable;
+}
+
 /** The font's CSS font-family, upright or italic. */
 export function fontFamily(font: QuoteFont, italic = false): string {
   const { variable, fallback, italic: italicFont } = FONTS[font];

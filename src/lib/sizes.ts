@@ -1,5 +1,5 @@
 import { isOneOf } from "@/src/lib/isOneOf";
-import type { ExportFormat } from "@/src/export/format";
+import { EXPORT_FORMAT, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import {
   EXPORT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
@@ -46,13 +46,10 @@ export const BANNER_VIEWS = ["phone", "desktop", "tv"] as const;
 
 export type BannerView = (typeof BANNER_VIEWS)[number];
 
-/** A part of the banner a device shows; centered on an axis without `left` or `top`. */
-type ViewArea = Box & Partial<Pick<Rect, "left" | "top">>;
-
 export interface BannerFormat extends Box {
   label: string;
   /** Set when devices show different parts of the image. Formats without TVs have no `tv`. */
-  views?: { phone: ViewArea; desktop: ViewArea; tv?: ViewArea };
+  views?: { phone: Box; desktop: Box; tv?: Box };
   /**
    * The part every device shows clearly, which the content fits: the phone view unless the
    * platform puts its own buttons or photo over part of that.
@@ -60,6 +57,10 @@ export interface BannerFormat extends Box {
   safeArea?: Rect;
   /** The largest pixel ratio per file format, for those that can't take every ratio. */
   maxPixelRatio?: Partial<Record<ExportFormat, ExportPixelRatio>>;
+  /** The file formats the platform takes, when it doesn't take every one. */
+  formats?: readonly ExportFormat[];
+  /** Uploads must be smaller than this many bytes; JPEG quality is lowered until the file is. */
+  uploadLimit?: number;
   platforms: BannerPlatform[];
 }
 
@@ -94,20 +95,25 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
     ],
   },
   // Reddit keeps the whole upload and each screen crops it (3000 × 1000 test uploads, #111).
-  // Desktop cuts the top tenth. The iPhone app shows the middle half, x 750–2250, with its buttons
-  // down to y 381, the avatar over x 870–1164 from y 437, and a fade from y 750 that's still
-  // readable to y 850. The safe area is right of the avatar and between the buttons and the fade.
+  // Desktop shows it as a 316 × 97 card in the sidebar: a 10:3 crop whose rows Reddit picks from
+  // the content (about the middle 900), less about 35 px each side. The iPhone app shows the middle
+  // half, x 750–2250, with its buttons down to y 381, the avatar over x 870–1164 from y 437, and a
+  // fade from y 750 that's still readable to y 850. The safe area is right of the avatar and between
+  // the buttons and the fade.
   reddit: {
     label: "3:1",
     width: 3000,
     height: 1000,
     views: {
       phone: { width: 1500, height: 1000 },
-      desktop: { top: 100, width: 3000, height: 900 },
+      desktop: { width: 2930, height: 900 },
     },
     safeArea: { left: 1190, top: 390, width: 1040, height: 460 },
     // Already twice the width the app shows.
-    maxPixelRatio: { png: 1, jpeg: 1 },
+    maxPixelRatio: { jpeg: 1 },
+    // Reddit rejects 500 KB or more, which a PNG with a photo always is (3.5 MB with London).
+    formats: ["jpeg"],
+    uploadLimit: 500_000,
     platforms: [{ id: "reddit", name: "Reddit" }],
   },
   // Twitch 1200 × 480, Patreon 2500 × 1000, Discord 600 × 240
@@ -132,8 +138,8 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
       desktop: { width: 2560, height: 423 },
       tv: { width: 2560, height: 1440 },
     },
-    // A 3× PNG (7680 × 4320) with a photo is over YouTube's 6 MB limit; as JPEG it's about 1 MB.
-    maxPixelRatio: { png: 2 },
+    // YouTube shows at most 1×. Above it, PNGs pass its 6 MB limit and 3× runs Chromium out of memory.
+    maxPixelRatio: { png: 1, jpeg: 1 },
     platforms: [{ id: "youtube", name: "YouTube" }],
   },
 };
@@ -171,12 +177,12 @@ export function shownView(format: BannerBox, view: BannerView): BannerView {
   return format.views?.[view] ? view : "phone";
 }
 
-/** The part of the banner `view` shows: the whole banner without that view. */
+/** The centered part of the banner `view` shows: the whole banner without that view. */
 export function viewRect(format: BannerBox, view: BannerView): Rect {
-  const { width, height, left, top }: ViewArea = format.views?.[view] ?? format;
+  const { width, height } = format.views?.[view] ?? format;
   return {
-    left: left ?? Math.round((format.width - width) / 2),
-    top: top ?? Math.round((format.height - height) / 2),
+    left: Math.round((format.width - width) / 2),
+    top: Math.round((format.height - height) / 2),
     width,
     height,
   };
@@ -185,6 +191,20 @@ export function viewRect(format: BannerBox, view: BannerView): Rect {
 /** The part every device shows clearly, where the content goes. */
 export function safeAreaOf(format: BannerBox): Rect {
   return format.safeArea ?? viewRect(format, "phone");
+}
+
+/** The file formats the banner format can be exported as. */
+export function exportFormats(format: BannerFormat): readonly ExportFormat[] {
+  return format.formats ?? EXPORT_FORMATS;
+}
+
+/** `file`, or the banner format's first file format if it doesn't take `file`. */
+export function exportFormatFor(
+  format: BannerFormat,
+  file: ExportFormat = EXPORT_FORMAT,
+): ExportFormat {
+  const formats = exportFormats(format);
+  return formats.includes(file) ? file : formats[0];
 }
 
 /** The pixel ratios the banner format can be exported at as `file`. */

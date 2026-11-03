@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   BANNER_SIZES,
   bannerViews,
+  exportFormatFor,
+  exportFormats,
   exportPixelRatioFor,
   exportPixelRatios,
   normalizeBannerSize,
@@ -50,18 +52,6 @@ describe("viewRect", () => {
   });
 });
 
-describe("positioned views", () => {
-  it("keeps a view's own place on the axes it sets", () => {
-    // Reddit's desktop cuts the top tenth, so it's not centered vertically.
-    expect(viewRect(BANNER_SIZES.reddit, "desktop")).toEqual({
-      left: 0,
-      top: 100,
-      width: 3000,
-      height: 900,
-    });
-  });
-});
-
 describe("bannerViews", () => {
   it("lists the views the format has", () => {
     expect(bannerViews(BANNER_SIZES.wide)).toEqual([]);
@@ -89,23 +79,43 @@ describe("safeAreaOf", () => {
   });
 });
 
+describe("exportFormats", () => {
+  it("lists the file formats the platform takes", () => {
+    expect(exportFormats(BANNER_SIZES.wide)).toEqual(["png", "jpeg"]);
+    expect(exportFormats(BANNER_SIZES.reddit)).toEqual(["jpeg"]);
+  });
+});
+
+describe("exportFormatFor", () => {
+  it("keeps a file format the platform takes", () => {
+    expect(exportFormatFor(BANNER_SIZES.wide, "jpeg")).toBe("jpeg");
+    expect(exportFormatFor(BANNER_SIZES.wide)).toBe("png");
+  });
+
+  it("uses the platform's own when it doesn't take the chosen one", () => {
+    expect(exportFormatFor(BANNER_SIZES.reddit, "png")).toBe("jpeg");
+    expect(exportFormatFor(BANNER_SIZES.reddit)).toBe("jpeg");
+  });
+});
+
 describe("exportPixelRatios", () => {
   it("lists every ratio the format takes in the file format", () => {
     expect(exportPixelRatios(BANNER_SIZES.wide, "png")).toEqual([1, 2, 3]);
-    expect(exportPixelRatios(BANNER_SIZES.youtube, "png")).toEqual([1, 2]);
-    expect(exportPixelRatios(BANNER_SIZES.youtube, "jpeg")).toEqual([1, 2, 3]);
+    expect(exportPixelRatios(BANNER_SIZES.youtube, "png")).toEqual([1]);
+    expect(exportPixelRatios(BANNER_SIZES.youtube, "jpeg")).toEqual([1]);
   });
 });
 
 describe("exportPixelRatioFor", () => {
   it("keeps a ratio the format takes", () => {
     expect(exportPixelRatioFor(BANNER_SIZES.wide, "png", 2)).toBe(2);
-    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 3)).toBe(3);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 1)).toBe(1);
   });
 
   it("lowers it to the format's largest ratio for the file format", () => {
-    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png", 3)).toBe(2);
-    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png")).toBe(2);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png", 3)).toBe(1);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "jpeg", 3)).toBe(1);
+    expect(exportPixelRatioFor(BANNER_SIZES.youtube, "png")).toBe(1);
     expect(exportPixelRatioFor(BANNER_SIZES.wide, "png")).toBe(3);
   });
 });

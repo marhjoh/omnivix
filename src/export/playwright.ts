@@ -1,9 +1,13 @@
+import { access, rename, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { Page } from "playwright";
 import { chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
 import type { ExportPixelRatio } from "@/src/export/viewport";
-import { type ExportFormat, JPEG_QUALITY } from "@/src/export/format";
+import type { ExportFormat } from "@/src/export/format";
+import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import type { ExportImage } from "@/src/export/images";
@@ -13,6 +17,23 @@ import {
   GITHUB_USER_MISSING_ATTRIBUTE,
   GithubUserNotFoundError,
 } from "@/src/export/renderProblem";
+
+/**
+ * A script that starts `executable` with core dumps off. Chromium crashes as it closes on Vercel,
+ * and each crash dumps hundreds of MB into /tmp, which fills it within two exports.
+ */
+async function withoutCoreDumps(executable: string): Promise<string> {
+  const script = join(tmpdir(), "chromium-no-core-dumps");
+  try {
+    await access(script);
+  } catch {
+    // Written elsewhere first, so a concurrent export never runs a half-written script.
+    const draft = `${script}-${process.pid}-${Date.now()}`;
+    await writeFile(draft, `#!/bin/sh\nulimit -c 0\nexec "${executable}" "$@"\n`, { mode: 0o755 });
+    await rename(draft, script);
+  }
+  return script;
+}
 
 /** How long each step of a render may take: loading the page, the banner, fonts and images. */
 const RENDER_TIMEOUT_MS = 25_000;
@@ -74,7 +95,7 @@ export async function captureBanner({
   const browser = isVercel
     ? await playwrightChromium.launch({
         headless: true,
-        executablePath: await chromium.executablePath(),
+        executablePath: await withoutCoreDumps(await chromium.executablePath()),
         args: chromium.args,
       })
     : await playwrightChromium.launch({ headless: true });
@@ -82,7 +103,7 @@ export async function captureBanner({
     const { width, height } = BANNER_SIZES[size];
     const context = await browser.newContext({
       viewport: { width, height },
-      // The default when unset, capped for the banner format (YouTube PNGs go up to 2×).
+      // The default when unset, capped for the banner format (YouTube PNGs are 1× only).
       deviceScaleFactor: exportPixelRatioFor(BANNER_SIZES[size], format, pixelRatio),
     });
     const page = await context.newPage();
@@ -135,13 +156,8 @@ export async function captureBanner({
     await target.waitFor({ state: "visible" });
     await waitForRasterReady(page);
     await waitForContentFit(page);
-    const screenshot = await target.screenshot({
-      type: format,
-      quality: format === "jpeg" ? JPEG_QUALITY : undefined,
-      animations: "disabled",
-      scale: "device",
-    });
-    return screenshot;
+    const png = await target.screenshot({ type: "png", animations: "disabled", scale: "device" });
+    return format === "jpeg" ? await toJpeg(png, BANNER_SIZES[size].uploadLimit) : png;
   } finally {
     await browser.close();
   }

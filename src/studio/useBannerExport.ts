@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
-import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
+import { BANNER_SIZES, exportFormatFor, exportFormats, exportPixelRatioFor } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
 import { EXPORT_LIMIT_MESSAGE, githubLimitMessage } from "@/src/lib/rateLimitMessage";
 import { readApiError } from "@/src/lib/apiError";
@@ -62,13 +62,15 @@ export function useBannerExport({
     if (blocked || exporting) return;
     setExporting("download");
     dismissToast();
+    // The chosen format, or the banner format's own if it doesn't take that one.
+    const file = exportFormatFor(BANNER_SIZES[request.size], format);
     try {
-      const blob = await exportBanner(requestAs(format));
+      const blob = await exportBanner(requestAs(file));
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       const ratioSlug = BANNER_SIZES[request.size].label.replace(":", "x");
-      anchor.download = `omnivix-${request.templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[format].extension}`;
+      anchor.download = `omnivix-${request.templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[file].extension}`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch (error) {
@@ -83,6 +85,14 @@ export function useBannerExport({
     dismissToast();
     if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
       showError("This browser can't copy images. Download the banner instead.");
+      return;
+    }
+    const bannerFormat = BANNER_SIZES[request.size];
+    if (!exportFormats(bannerFormat).includes("png")) {
+      const names = bannerFormat.platforms.map((platform) => platform.name).join(", ");
+      showError(
+        `${names} only takes JPEG, and images are copied as PNG. Download the banner instead.`,
+      );
       return;
     }
     setExporting("copy");
