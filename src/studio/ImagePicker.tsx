@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
@@ -106,6 +106,12 @@ export function ImagePicker({
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
   );
+  // Converting and scaling an upload can take seconds (HEIC); the trigger shows it as pending.
+  const [processing, startProcessing] = useTransition();
+  /** The file being processed, shown in the trigger; null once another choice replaces it. */
+  const [processingName, setProcessingName] = useState<string | null>(null);
+  /** The latest chosen file, so a slower earlier upload can't replace it. */
+  const latestUploadRef = useRef<File | null>(null);
   /** What's typed after "https://"; `undefined` shows the current link (`value`) instead. */
   const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
   /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
@@ -155,6 +161,8 @@ export function ImagePicker({
       requestAnimationFrame(() => urlInputRef.current?.focus());
     }
   }, [urlEditorOpen]);
+
+  const uploadingName = processing ? processingName : null;
 
   // uploadSession only ever holds a data URL, so a match means the image is that upload.
   const uploadDisplayName =
@@ -208,8 +216,15 @@ export function ImagePicker({
     setUrlEditorOpen(false);
   };
 
+  /** Another choice replaces an upload still being processed. */
+  const cancelUpload = () => {
+    latestUploadRef.current = null;
+    setProcessingName(null);
+  };
+
   /** A preset, or no image (`undefined`). */
   const select = (src: string | undefined) => {
+    cancelUpload();
     leaveLinkEditor();
     setUploadSession(null);
     onChange(src);
@@ -217,6 +232,7 @@ export function ImagePicker({
   };
 
   const selectEnterUrl = () => {
+    cancelUpload();
     setUrlEditorOpen(true);
     dropdown.close();
     if (linkValue) {
@@ -242,8 +258,10 @@ export function ImagePicker({
 
       <div>
         <DropdownRoot dropdown={dropdown} className="relative">
-          <DropdownTrigger dropdown={dropdown} joinedBelow={joined}>
-            {triggerLabel(value, uploadDisplayName, presets)}
+          <DropdownTrigger dropdown={dropdown} joinedBelow={joined} busy={uploadingName !== null}>
+            {uploadingName !== null
+              ? truncateMiddle(uploadingName, TRIGGER_LABEL_MAX)
+              : triggerLabel(value, uploadDisplayName, presets)}
           </DropdownTrigger>
 
           <DropdownList dropdown={dropdown} label={menuLabel}>
@@ -293,17 +311,22 @@ export function ImagePicker({
             type="file"
             accept={fileAccept(policy)}
             className="hidden"
-            onChange={async (e) => {
+            onChange={(e) => {
               const file = e.target.files?.[0];
               e.target.value = "";
               if (!file) return;
-              const result = await normalizeImageFile(file, policy);
-              if (!result.ok) {
-                onError(result.error);
-                return;
-              }
-              setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
-              onChange(result.dataUrl);
+              latestUploadRef.current = file;
+              setProcessingName(file.name);
+              startProcessing(async () => {
+                const result = await normalizeImageFile(file, policy);
+                if (latestUploadRef.current !== file) return;
+                if (!result.ok) {
+                  onError(result.error);
+                  return;
+                }
+                setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
+                onChange(result.dataUrl);
+              });
             }}
           />
         </DropdownRoot>

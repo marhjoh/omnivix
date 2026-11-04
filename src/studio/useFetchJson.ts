@@ -47,6 +47,7 @@ const lastFetchedByKey = new Map<string, unknown>();
  * Results are stored with the url/nonce they belong to and derived on read,
  * so nothing has to be reset synchronously when the url changes.
  * On error, the last data for the same url is kept (from `lastFetched`).
+ * Not a transition: a fetch starts when the url changes, not from an action.
  */
 export function useFetchJson<T>(
   url: string | null,
