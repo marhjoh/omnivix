@@ -8,7 +8,7 @@ type Phase = "idle" | "holding" | "showing";
  * flashing in between; slower loads show it after the delay, and keep it for at least
  * `minShowMs` so it never just blinks. Only values `canHold` accepts are held (holding an error
  * would show it longer for nothing). `value` must keep its identity between renders unless it
- * changes (memoize it).
+ * changes (memoize it). Explicit state: a transition can't express the delay or minimum show time.
  */
 export function useHoldDuringLoad<T>(
   value: T,
