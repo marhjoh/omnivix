@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.1](https://github.com/marhjoh/omnivix/compare/v1.21.0...v1.21.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* isolate rate-limit counters by environment ([#214](https://github.com/marhjoh/omnivix/issues/214)) ([d09e274](https://github.com/marhjoh/omnivix/commit/d09e2748f7fe28a5cd02c7267d968651fe108616))
+
 ## [1.21.0](https://github.com/marhjoh/omnivix/compare/v1.20.1...v1.21.0) (2026-11-03)
 
 
