@@ -10,7 +10,7 @@ import {
   useLayoutEffect,
   useState,
 } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { FieldLabel, fieldLabelId } from "@/src/ui/FieldLabel";
 import { useDismiss } from "@/src/ui/useDismiss";
 
@@ -117,23 +117,29 @@ export function DropdownRoot({
 export function FieldButton({
   id,
   open,
+  busy = false,
   className = "",
   children,
   ...props
-}: ComponentProps<"button"> & { id: string; open: boolean }) {
+}: ComponentProps<"button"> & { id: string; open: boolean; busy?: boolean }) {
   return (
     <button
       type="button"
       id={id}
       aria-labelledby={`${fieldLabelId(id)} ${id}-value`}
       aria-expanded={open}
+      aria-busy={busy}
       className={`field-select flex items-center justify-between gap-2 text-left ${className}`}
       {...props}
     >
       <span id={`${id}-value`} className="min-w-0 flex-1 truncate">
         {children}
       </span>
-      <DropdownChevron open={open} className="self-center text-muted" />
+      {busy ? (
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin self-center text-muted" aria-hidden />
+      ) : (
+        <DropdownChevron open={open} className="self-center text-muted" />
+      )}
     </button>
   );
 }
@@ -142,18 +148,22 @@ export function DropdownTrigger({
   dropdown,
   disabled,
   joinedBelow = false,
+  busy,
   children,
 }: PropsWithChildren<{
   dropdown: Dropdown;
   disabled?: boolean;
   /** Something is attached under the trigger (see ImagePicker), so its bottom is square. */
   joinedBelow?: boolean;
+  /** The choice is still being applied (an upload being processed); a spinner replaces the chevron. */
+  busy?: boolean;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
   return (
     <FieldButton
       id={triggerId}
       open={open}
+      busy={busy}
       aria-haspopup="listbox"
       aria-controls={open ? listId : undefined}
       disabled={disabled}
