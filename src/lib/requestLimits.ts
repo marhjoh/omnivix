@@ -52,9 +52,12 @@ function requestLimit(prefix: string, algorithm: RatelimitConfig["limiter"]) {
 function createLimiter(prefix: string, algorithm: RatelimitConfig["limiter"]): Ratelimit | null {
   const redis = redisFromEnv();
   if (!redis) return null;
+  const environment = process.env.VERCEL_ENV || "development";
+  // Keep existing production counters; previews and local runs use separate namespaces.
+  const namespace = environment === "production" ? "omnivix" : `omnivix:${environment}`;
   return new Ratelimit({
     redis,
-    prefix: `omnivix:${prefix}`,
+    prefix: `${namespace}:${prefix}`,
     limiter: algorithm,
     timeout: CHECK_TIMEOUT_MS,
   });
