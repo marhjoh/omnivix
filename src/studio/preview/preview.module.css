@@ -167,6 +167,90 @@
   }
 }
 
+/* Over the banner while an export runs (ExportProgress): it dims, a light band sweeps across it, and
+   the status sits in a pill in the middle. Fades in and out; hidden, it takes no clicks. */
+.exportOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: inherit;
+  background: color-mix(in oklab, var(--bg) 45%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0s 0.2s;
+}
+
+.exportOverlay[data-shown="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s;
+}
+
+.exportOverlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 25%,
+    color-mix(in oklab, var(--text) 14%, transparent) 50%,
+    transparent 75%
+  );
+  transform: translateX(-100%);
+}
+
+.exportOverlay[data-shown="true"]::before {
+  animation: omnivixExportSweep 1.6s ease-in-out infinite;
+}
+
+.exportStatus {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text);
+}
+
+.exportStatusText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exportOverlay,
+  .exportOverlay[data-shown="true"] {
+    transition: none;
+  }
+
+  .exportOverlay[data-shown="true"]::before {
+    animation: none;
+  }
+}
+
+@keyframes omnivixExportSweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 /* Under a format that devices crop (YouTube, Reddit): a quiet label, and under it the tiles for
    what a phone, desktop or TV shows, centered under the banner. */
 .views {
