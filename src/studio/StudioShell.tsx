@@ -282,6 +282,7 @@ export function StudioShell({
             data={shownPreview.data}
             previewState={shownPreview.previewState}
             problem={shownPreview.problem}
+            exporting={bannerExport.exporting !== null}
             onRetry={github.retry}
             onChangeUsername={openUsernameModal}
             onEditSetting={sidebar.focusSetting}

@@ -17,6 +17,7 @@ import type { BackgroundPosition } from "@/src/banner/background";
 import type { ContentPosition } from "@/src/banner/contentPosition";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
 import { PreviewViewToggle } from "@/src/studio/preview/PreviewViewToggle";
+import { ExportProgress } from "@/src/studio/preview/ExportProgress";
 
 /** How the preview's label ends for each view of a format that devices crop. */
 const VIEW_LABELS: Record<BannerView, string> = {
@@ -34,6 +35,7 @@ export function PreviewArtboard({
   data,
   previewState,
   problem,
+  exporting,
   onRetry,
   onChangeUsername,
   onEditSetting,
@@ -51,6 +53,8 @@ export function PreviewArtboard({
   previewState: PreviewContentState;
   /** Shown in place of the banner when `previewState` is "error". */
   problem: PreviewProblem | null;
+  /** An export runs: the preview shows its progress and can't be moved meanwhile. */
+  exporting: boolean;
   onRetry: () => void;
   onChangeUsername: () => void;
   /** Opens the settings with the cursor in this setting's field. */
@@ -112,7 +116,8 @@ export function PreviewArtboard({
                   <BannerRenderer templateId={templateId} state={state} data={data} />
                 </PreviewPhotosContext>
               </div>
-              {scale !== null && (
+              {/* No moving while an export runs: the file has the positions from the click. */}
+              {scale !== null && !exporting && (
                 <>
                   {backgroundAdjust && (
                     <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
@@ -140,6 +145,7 @@ export function PreviewArtboard({
                   )}
                 </>
               )}
+              <ExportProgress running={exporting} />
             </>
           ) : (
             <PreviewStatus
