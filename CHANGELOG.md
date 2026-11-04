@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.22.0](https://github.com/marhjoh/omnivix/compare/v1.21.1...v1.22.0) (2026-11-04)
+
+
+### Features
+
+* show when an uploaded background is still processing ([801dab8](https://github.com/marhjoh/omnivix/commit/801dab8c83405ad3ccf76f8a2e65eb4843b085a0))
+
+
+### Bug Fixes
+
+* keep the latest background upload when an earlier one finishes later ([801dab8](https://github.com/marhjoh/omnivix/commit/801dab8c83405ad3ccf76f8a2e65eb4843b085a0))
+
 ## [1.21.1](https://github.com/marhjoh/omnivix/compare/v1.21.0...v1.21.1) (2026-11-04)
 
 
