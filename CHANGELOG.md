@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.1](https://github.com/marhjoh/omnivix/compare/v1.22.0...v1.22.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* stop the upload spinner from flickering and the page from freezing on large uploads ([#219](https://github.com/marhjoh/omnivix/issues/219)) ([4985e73](https://github.com/marhjoh/omnivix/commit/4985e73aee6ef22a4bef6918fba185efb529ca6e))
+
 ## [1.22.0](https://github.com/marhjoh/omnivix/compare/v1.21.1...v1.22.0) (2026-11-04)
 
 
