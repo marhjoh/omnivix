@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/marhjoh/omnivix/compare/v1.22.1...v1.23.0) (2026-11-04)
+
+
+### Features
+
+* show export progress on the preview ([#221](https://github.com/marhjoh/omnivix/issues/221)) ([71110e4](https://github.com/marhjoh/omnivix/commit/71110e4484dd4e8d6fad08f181448e17a630eb86))
+
 ## [1.22.1](https://github.com/marhjoh/omnivix/compare/v1.22.0...v1.22.1) (2026-11-04)
 
 
