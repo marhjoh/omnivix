@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useTransition } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { BANNER_SIZES, exportFormatFor, exportFormats, exportPixelRatioFor } from "@/src/lib/sizes";
 import type { ExportRequest } from "@/src/types/template";
@@ -28,8 +28,8 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
 }
 
 /**
- * Download and Copy for the studio. One export runs at a time, so a second click can't start
- * another; problems and the copy confirmation are reported through the studio's toast.
+ * Download and Copy for the studio, each an async transition whose pending state says which export
+ * runs. One export runs at a time; problems and the copy confirmation go to the studio's toast.
  */
 export function useBannerExport({
   request,
@@ -48,7 +48,9 @@ export function useBannerExport({
   showSuccess: (message: string) => void;
   dismissToast: () => void;
 }) {
-  const [exporting, setExporting] = useState<ExportKind | null>(null);
+  const [downloading, startDownload] = useTransition();
+  const [copying, startCopy] = useTransition();
+  const exporting: ExportKind | null = downloading ? "download" : copying ? "copy" : null;
 
   /** The request as `file`, at the chosen ratio or the largest the banner format takes as `file`. */
   function requestAs(file: ExportFormat): ExportRequest {
@@ -56,29 +58,30 @@ export function useBannerExport({
     return { ...request, pixelRatio, format: file };
   }
 
-  async function download() {
+  // dismissToast runs before the action, where it would wait for the export to end. Errors are
+  // caught: thrown from an action, they'd reach an error boundary instead of the toast.
+  function download() {
     if (blocked || exporting) return;
-    setExporting("download");
     dismissToast();
     // The chosen format, or the banner format's own if it doesn't take that one.
     const file = exportFormatFor(BANNER_SIZES[request.size], format);
-    try {
-      const blob = await exportBanner(requestAs(file));
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      const ratioSlug = BANNER_SIZES[request.size].label.replace(":", "x");
-      anchor.download = `omnivix-${request.templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[file].extension}`;
-      anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    } catch (error) {
-      showError((error as Error).message);
-    } finally {
-      setExporting(null);
-    }
+    startDownload(async () => {
+      try {
+        const blob = await exportBanner(requestAs(file));
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        const ratioSlug = BANNER_SIZES[request.size].label.replace(":", "x");
+        anchor.download = `omnivix-${request.templateId}-${ratioSlug}.${EXPORT_FORMAT_DETAILS[file].extension}`;
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+      } catch (error) {
+        showError((error as Error).message);
+      }
+    });
   }
 
-  async function copy() {
+  function copy() {
     if (blocked || exporting) return;
     dismissToast();
     if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
@@ -93,22 +96,21 @@ export function useBannerExport({
       );
       return;
     }
-    setExporting("copy");
     // Safari only allows the write during the click, so the image goes in as a promise that
-    // resolves when the export is done.
-    const png = exportBanner(requestAs("png"));
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
-      showSuccess("Banner copied to the clipboard.");
-    } catch {
-      const exportError = await png.then(
-        () => null,
-        (error: Error) => error.message,
-      );
-      showError(exportError ?? "Couldn't copy the banner. Download it instead.");
-    } finally {
-      setExporting(null);
-    }
+    // resolves when the export is done. The action runs synchronously until its first await.
+    startCopy(async () => {
+      const png = exportBanner(requestAs("png"));
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+        showSuccess("Banner copied to the clipboard.");
+      } catch {
+        const exportError = await png.then(
+          () => null,
+          (error: Error) => error.message,
+        );
+        showError(exportError ?? "Couldn't copy the banner. Download it instead.");
+      }
+    });
   }
 
   return { exporting, download, copy };
