@@ -1,9 +1,10 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
 import { normalizeImageFile, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { truncateMiddle } from "@/src/lib/text";
@@ -35,6 +36,9 @@ interface ImagePreset {
 }
 
 const TRIGGER_LABEL_MAX = 44;
+
+/** Uploads quicker than this apply without the trigger flashing a spinner. */
+const UPLOAD_PENDING_DELAY_MS = 300;
 
 /** How long the link field must be idle before a link that can't be used is reported. */
 const LINK_SETTLE_MS = 1000;
@@ -106,10 +110,12 @@ export function ImagePicker({
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
   );
-  // Converting and scaling an upload can take seconds (HEIC); the trigger shows it as pending.
-  const [processing, startProcessing] = useTransition();
-  /** The file being processed, shown in the trigger; null once another choice replaces it. */
-  const [processingName, setProcessingName] = useState<string | null>(null);
+  /**
+   * The upload being converted and scaled (seconds for a large photo), shown in the trigger; null
+   * when it's done or another choice replaced it. Not a transition: its pending state would stay
+   * on until replaced uploads had finished too.
+   */
+  const [processingFile, setProcessingFile] = useState<File | null>(null);
   /** The latest chosen file, so a slower earlier upload can't replace it. */
   const latestUploadRef = useRef<File | null>(null);
   /** What's typed after "https://"; `undefined` shows the current link (`value`) instead. */
@@ -162,7 +168,8 @@ export function ImagePicker({
     }
   }, [urlEditorOpen]);
 
-  const uploadingName = processing ? processingName : null;
+  const showUploading = useDelayedFlag(processingFile !== null, UPLOAD_PENDING_DELAY_MS);
+  const uploadingName = showUploading ? (processingFile?.name ?? null) : null;
 
   // uploadSession only ever holds a data URL, so a match means the image is that upload.
   const uploadDisplayName =
@@ -219,7 +226,7 @@ export function ImagePicker({
   /** Another choice replaces an upload still being processed. */
   const cancelUpload = () => {
     latestUploadRef.current = null;
-    setProcessingName(null);
+    setProcessingFile(null);
   };
 
   /** A preset, or no image (`undefined`). */
@@ -311,22 +318,21 @@ export function ImagePicker({
             type="file"
             accept={fileAccept(policy)}
             className="hidden"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
               e.target.value = "";
               if (!file) return;
               latestUploadRef.current = file;
-              setProcessingName(file.name);
-              startProcessing(async () => {
-                const result = await normalizeImageFile(file, policy);
-                if (latestUploadRef.current !== file) return;
-                if (!result.ok) {
-                  onError(result.error);
-                  return;
-                }
-                setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
-                onChange(result.dataUrl);
-              });
+              setProcessingFile(file);
+              const result = await normalizeImageFile(file, policy);
+              if (latestUploadRef.current !== file) return;
+              setProcessingFile(null);
+              if (!result.ok) {
+                onError(result.error);
+                return;
+              }
+              setUploadSession({ dataUrl: result.dataUrl, fileName: file.name });
+              onChange(result.dataUrl);
             }}
           />
         </DropdownRoot>

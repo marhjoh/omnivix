@@ -68,6 +68,8 @@ export function supportedFormatsMessage(policy: ImageUploadPolicy): string {
 /** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
 const UNREADABLE_MESSAGE = "Couldn't read this image. Try another file.";
 
+const PROCESSING_MESSAGE = "Couldn't process this image in your browser.";
+
 const GIF_MAGIC = [0x47, 0x49, 0x46]; // "GIF"
 
 export function isGifMagicBytes(bytes: Uint8Array): boolean {
@@ -130,18 +132,25 @@ export function shouldDecodeHeicWithHeic2any(file: File): boolean {
   return /\.(heic|heif)$/i.test(file.name);
 }
 
-/** Size in bytes of a base64 data URL's content. */
-export function dataUrlByteLength(dataUrl: string): number {
-  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
-  return (base64.length * 3) / 4 - padding;
+/** `toBlob` encodes off the main thread; `toDataURL` blocks it for seconds on a large photo. */
+function canvasBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
 }
 
-function encodeCanvas(canvas: HTMLCanvasElement, policy: ImageUploadPolicy): string {
-  const webp = canvas.toDataURL("image/webp", policy.quality);
+async function encodeCanvas(canvas: HTMLCanvasElement, policy: ImageUploadPolicy) {
+  const webp = await canvasBlob(canvas, "image/webp", policy.quality);
   // Browsers that can't encode WebP (Safari) return a PNG instead, which is far larger.
-  if (webp.startsWith("data:image/webp") || policy.transparent) return webp;
-  return canvas.toDataURL("image/jpeg", policy.quality);
+  if (webp?.type === "image/webp" || policy.transparent) return webp;
+  return canvasBlob(canvas, "image/jpeg", policy.quality);
+}
+
+function readAsDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 }
 
 /** A decoded image, ready to draw; `vector` images can be drawn at any size. */
@@ -221,9 +230,7 @@ export async function normalizeImageFile(
     const { width, height } = image;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      return { ok: false, error: "Couldn't process this image in your browser." };
-    }
+    if (!ctx) return { ok: false, error: PROCESSING_MESSAGE };
     for (const maxDim of policy.dimensions) {
       // Photos are only scaled down; a vector is drawn at the full size.
       const fit = maxDim / Math.max(width, height, 1);
@@ -232,10 +239,14 @@ export async function normalizeImageFile(
       canvas.height = Math.max(1, Math.round(height * scale));
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image.source, 0, 0, canvas.width, canvas.height);
-      const dataUrl = encodeCanvas(canvas, policy);
-      if (dataUrlByteLength(dataUrl) <= policy.maxBytes) return { ok: true, dataUrl };
+      const blob = await encodeCanvas(canvas, policy);
+      if (blob && blob.size <= policy.maxBytes) {
+        return { ok: true, dataUrl: await readAsDataUrl(blob) };
+      }
     }
     return { ok: false, error: "This image is too large to use. Try a smaller one." };
+  } catch {
+    return { ok: false, error: PROCESSING_MESSAGE };
   } finally {
     image.close();
   }

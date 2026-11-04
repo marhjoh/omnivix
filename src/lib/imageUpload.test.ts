@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   BACKGROUND_UPLOAD,
-  dataUrlByteLength,
   isGifMagicBytes,
   LOGO_UPLOAD,
   MAX_IMAGE_FILE_BYTES,
@@ -138,12 +137,5 @@ describe("readFileHead", () => {
     const f = new File([buf], "t.bin");
     const head = await readFileHead(f, 3);
     expect(Array.from(head)).toEqual([1, 2, 3]);
-  });
-});
-
-describe("dataUrlByteLength", () => {
-  it.each([0, 1, 2, 3, 1000])("matches the decoded size of %i bytes", (size) => {
-    const dataUrl = `data:image/webp;base64,${Buffer.alloc(size, 7).toString("base64")}`;
-    expect(dataUrlByteLength(dataUrl)).toBe(size);
   });
 });
