@@ -164,11 +164,23 @@
     0 10px 32px rgba(31, 35, 40, 0.08);
 }
 
-/* Hide the banner until its content is fitted (FitContent sets data-banner-fit). Otherwise the
-   background shows alone until the page's JavaScript runs. Keep in sync with BANNER_ROOT_CLASS and
-   FIT_STATUS_ATTRIBUTE (src/banner/). */
-:global(.omnivix-artboard:has([data-banner-fit="pending"]) .banner-export-root) {
-  visibility: hidden;
+/* The background shows as soon as it loads. The content and a background that loads later fade
+   in, instead of popping in. Exports aren't affected: these rules only apply in the preview. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(.omnivix-artboard [data-banner-content]) {
+    transition: opacity 0.2s ease-out;
+  }
+
+  :global(.omnivix-artboard img[data-banner-background][data-fade-in]) {
+    animation: bannerFadeIn 0.3s ease-out;
+  }
+}
+
+/* No `to`: it fades up to the image's own opacity. */
+@keyframes bannerFadeIn {
+  from {
+    opacity: 0;
+  }
 }
 
 /* Loading/empty/error copy needs more room than a scaled-down LinkedIn banner on phones. */

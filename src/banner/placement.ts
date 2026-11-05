@@ -14,10 +14,7 @@ export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
 /** Marks the background image, whose natural size the preview needs to pan it. */
 export const BANNER_BACKGROUND_ATTRIBUTE = "data-banner-background";
 
-/**
- * The class on Frame's root. The export screenshots this element, and the studio hides it until
- * the content is fitted. Keep in sync with studio.module.css.
- */
+/** The class on Frame's root. The export screenshots this element. */
 export const BANNER_ROOT_CLASS = "banner-export-root";
 
 /** While dragging, items snap to the edges and the middle of the box. */

@@ -42,6 +42,7 @@ export function FitContent({
     scaler.style.top = `${box.top + (room.height * position.y) / 100}px`;
     scaler.style.transform = `scale(${scale})`;
     scaler.style.visibility = "visible";
+    scaler.style.opacity = "1";
     if (document.fonts.status === "loaded") {
       container.setAttribute(FIT_STATUS_ATTRIBUTE, "ready");
     }
@@ -77,12 +78,14 @@ export function FitContent({
     >
       <div
         ref={scalerRef}
-        // `fit` sets left, top and transform. Until then the content is hidden. The server-rendered
-        // banner shows before JavaScript runs, and the content would visibly jump into place.
+        // `fit` sets left, top and transform, then shows the content. Until then it's hidden: the
+        // server-rendered banner shows before JavaScript runs, and the content would jump into
+        // place. The studio fades the opacity in (studio.module.css).
         {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
         style={{
           position: "absolute",
           visibility: "hidden",
+          opacity: 0,
           transformOrigin: "0 0",
           width: "max-content",
         }}

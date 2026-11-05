@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext } from "react";
+import { createContext, PropsWithChildren, type SyntheticEvent, useContext } from "react";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { backgroundImageStyle, type BannerBackground } from "@/src/banner/background";
 import { previewPhotoSrcSet } from "@/src/backgrounds/presets";
@@ -16,6 +16,15 @@ import {
  * and always gets the full-size photo.
  */
 export const PreviewPhotosContext = createContext(false);
+
+function markLoadedBackground(img: HTMLImageElement | null) {
+  if (img?.complete) img.dataset.loadedEarly = "";
+}
+
+function fadeInLateBackground(event: SyntheticEvent<HTMLImageElement>) {
+  const img = event.currentTarget;
+  if (!("loadedEarly" in img.dataset)) img.dataset.fadeIn = "";
+}
 
 /**
  * The banner's root, the same in the preview and the export. It stacks the background image, the
@@ -57,6 +66,10 @@ export function Frame({
           sizes={srcSet ? PREVIEW_PHOTO_SIZES : undefined}
           alt=""
           {...{ [BANNER_BACKGROUND_ATTRIBUTE]: "" }}
+          // In the studio, a background that arrives after the banner fades in (studio.module.css).
+          // One that's already loaded when the banner appears shows right away.
+          ref={previewPhotos ? markLoadedBackground : undefined}
+          onLoad={previewPhotos ? fadeInLateBackground : undefined}
           style={{
             position: "absolute",
             inset: 0,
