@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.2](https://github.com/marhjoh/omnivix/compare/v1.23.1...v1.23.2) (2026-11-05)
+
+
+### Bug Fixes
+
+* report broken saved image links and stop stray background moves ([#231](https://github.com/marhjoh/omnivix/issues/231)) ([fc753b0](https://github.com/marhjoh/omnivix/commit/fc753b09157871dfbee121ad3df6ec7da76f097b))
+
 ## [1.23.1](https://github.com/marhjoh/omnivix/compare/v1.23.0...v1.23.1) (2026-11-05)
 
 
