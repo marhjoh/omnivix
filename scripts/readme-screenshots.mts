@@ -47,6 +47,8 @@ async function studio(page: Page, templateId: TemplateId, background: string): P
     null,
     { timeout: 60_000 },
   );
+  // Scroll the sidebar so the background's sliders show.
+  await page.locator("#backgroundImage-opacity").scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
   await page.waitForTimeout(500);
   return page.screenshot();
