@@ -10,6 +10,8 @@ import { ExportTimedOut } from "@/src/export/errors";
 import type { TimedLimit } from "@/src/lib/apiError";
 import { errorResponse, githubErrorResponses, tooManyRequests } from "@/src/lib/apiResponse";
 import { usernameOf } from "@/src/lib/githubUsername";
+import { countStats, visitorId } from "@/src/stats/stats";
+import { exportFields, failureFields, type ExportSource } from "@/src/stats/statFields";
 
 /** The token holds all the settings, and proxies refuse very long URLs. */
 const MAX_RENDER_URL_LENGTH = 7500;
@@ -49,10 +51,12 @@ export async function renderBanner(
   request: NextRequest,
   banner: ParsedExportRequest,
   {
+    source,
     limit,
     limitedUntil,
     headers,
   }: {
+    source: ExportSource;
     limit: TimedLimit;
     /** The time the limit resets if it's used up, otherwise null. */
     limitedUntil: () => Promise<Date | null>;
@@ -68,6 +72,7 @@ export async function renderBanner(
   }
   const resetAt = await limitedUntil();
   if (resetAt) return tooManyRequests(limit, resetAt);
+  const startedAt = performance.now();
 
   return Effect.runPromise(
     Effect.gen(function* () {
@@ -79,6 +84,12 @@ export async function renderBanner(
         format: payload.format,
         images,
       });
+      const seconds = (performance.now() - startedAt) / 1000;
+      // Image URLs come through GitHub's image proxy, not from a visitor.
+      countStats(
+        exportFields(source, payload, seconds),
+        source === "download" ? { id: visitorId(request), steps: ["export"] } : undefined,
+      );
       return new NextResponse(new Uint8Array(image), {
         headers: { "Content-Type": EXPORT_FORMAT_DETAILS[payload.format].contentType, ...headers },
       });
@@ -95,9 +106,18 @@ export async function renderBanner(
       Effect.catchCause((cause) =>
         Effect.sync(() => {
           console.error("Export failed", Cause.pretty(cause));
+          countStats(failureFields(failureMessage(Cause.squash(cause))));
           return errorResponse(EXPORT_FAILED, 500);
         }),
       ),
     ),
   );
+}
+
+/** The error's tag and message. A failed render's message is its browser error. */
+function failureMessage(error: unknown): string {
+  const tag = typeof error === "object" && error && "_tag" in error ? String(error._tag) : null;
+  const inner = tag && error instanceof Error && error.cause ? error.cause : error;
+  const message = inner instanceof Error ? inner.message : String(inner);
+  return tag ? `${tag}: ${message}` : message;
 }

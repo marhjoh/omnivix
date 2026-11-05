@@ -23,6 +23,7 @@ export async function exportRoute(request: NextRequest): Promise<Response> {
   }
   const { templateId, format } = parsed.request;
   return renderBanner(request, parsed.request, {
+    source: "download",
     limit: "daily-exports",
     limitedUntil: () => dailyExportLimit(request),
     headers: {

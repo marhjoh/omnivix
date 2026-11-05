@@ -68,6 +68,7 @@ async function bannerImage(request: NextRequest, file: string): Promise<Response
     });
   }
   return renderBanner(request, parsed.request, {
+    source: "image-url",
     limit: "banner-images",
     limitedUntil: () => bannerImageLimit(limitKey(parsed.request)),
     headers: { "Cache-Control": IMAGE_CACHE },
