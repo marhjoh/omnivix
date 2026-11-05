@@ -1,4 +1,4 @@
-// Satori renders plain <img>; next/image does not apply here.
+// Satori only renders plain <img>, not next/image.
 /* eslint-disable @next/next/no-img-element */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -9,8 +9,8 @@ import { DARK_PALETTE } from "@/src/theme/theme";
 import type { TemplateId } from "@/src/templates/types";
 import { templateRegistry } from "@/src/templates/registry";
 
-// ImageResponse (Satori) can't decode WebP, so src/og/banners holds 1200px JPEG copies
-// of public/landing/*.webp. Regenerate them when the landing banners change.
+// Satori can't decode WebP, so src/og/banners holds 1200px JPEG copies of public/landing/*.webp.
+// Update them when the landing banners change.
 
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/jpeg";
@@ -36,13 +36,13 @@ const assets = Promise.all([
   logo,
 }));
 
-// ImageResponse only outputs PNG, and Messenger and Slack showed no image at those sizes.
-// Re-encode as baseline JPEG (mozjpeg: true would force progressive). Runs once, at build time.
+// ImageResponse only makes PNGs, and Messenger and Slack showed no image at those file sizes.
+// A baseline JPEG works. mozjpeg: true would make it progressive. Runs once, at build time.
 async function toJpeg(png: ImageResponse) {
   const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
     .jpeg({
       quality: 85,
-      trellisQuantisation: true, // only british spelling is accepted in the options
+      trellisQuantisation: true, // sharp only accepts the British spelling
       overshootDeringing: true,
       optimizeCoding: true,
       quantizationTable: 3,
@@ -76,9 +76,9 @@ const bannerStyle = {
 } as const;
 
 /**
- * Site-wide preview: logo, tagline and a tilted stack of template banners. Also the repository's
- * social preview (scripts/social-preview.mts), at the same size: GitHub recommends 1280×640, but
- * Slack crops previews to 16:9 and a 2:1 image loses more than its text margin.
+ * The site's link preview: logo, tagline and a tilted stack of banners. scripts/social-preview.mts
+ * uses it for the GitHub repository too. GitHub recommends 1280×640, but Slack crops previews to
+ * 16:9, and that would cut into the text of a 2:1 image.
  */
 export async function renderSiteOgImage() {
   const { fonts, logo } = await assets;
@@ -116,7 +116,7 @@ export async function renderSiteOgImage() {
             flexDirection: "column",
             justifyContent: "space-between",
             width: 600,
-            // Extra bottom padding: X overlays the page title on the bottom-left corner.
+            // Extra bottom padding because X shows the page title over the bottom-left corner.
             padding: "64px 0 136px 64px",
           }}
         >

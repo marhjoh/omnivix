@@ -11,8 +11,9 @@ import type { Position } from "@/src/banner/position";
 import type { Rect } from "@/src/lib/sizes";
 
 /**
- * The dashed frame of a drag surface. It and the badge show on hover, focus and while dragging, so
- * the banner reads clean otherwise. Forced colors would show the transparent frame all the time.
+ * The dashed frame of a drag surface. The frame and the badge only show on hover, on focus and
+ * while dragging, so the banner looks clean otherwise. forced-color-adjust-none stops forced colors
+ * mode from showing the transparent frame all the time.
  */
 export const DRAG_FRAME_CLASS =
   "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-(--hover-fade) hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
@@ -46,8 +47,8 @@ export function describePosition({ x, y }: Position): string {
 }
 
 /**
- * Tells screen readers where something is (`text`, e.g. "logo: left, top") when it moves; during a
- * drag (`quiet`), at its end. A click that doesn't move it says nothing.
+ * Announces `text` (e.g. "logo: left, top") to screen readers when the item moves. While `quiet` is
+ * set during a drag, it waits until the drag ends. A click that doesn't move anything stays silent.
  */
 export function PositionStatus({ text, quiet }: { text: string; quiet: boolean }) {
   const [initial] = useState(text);
@@ -95,7 +96,7 @@ export function arrowStep(event: KeyboardEvent): { x: number; y: number } | null
   );
 }
 
-/** Moves are applied once per frame; pointer events can fire faster than the screen updates. */
+/** Applies moves once per frame, since pointer events can fire faster than the screen updates. */
 export function useMoveOncePerFrame(onMove: (position: Position) => void) {
   const moveFrame = useRef<number | null>(null);
   const pending = useRef<Position | null>(null);
@@ -112,9 +113,9 @@ export function useMoveOncePerFrame(onMove: (position: Position) => void) {
 }
 
 /**
- * Pointer handlers for a drag measured from where it started, so what's dragged follows the
- * pointer exactly. `begin` returns what the drag needs, or null to ignore the press; `move` gets
- * it with how far the pointer has moved, in banner pixels. `dragging` is true until it ends.
+ * Pointer handlers for a drag. Moves are measured from where the drag started, so the item follows
+ * the pointer exactly. `begin` returns the drag's starting data, or null to ignore the press.
+ * `move` gets that data and how far the pointer has moved, in banner pixels.
  */
 export function usePointerDrag<T>({
   scale,
@@ -141,7 +142,7 @@ export function usePointerDrag<T>({
     dragging,
     handlers: {
       onPointerDown(event: PointerEvent<HTMLElement>) {
-        // Only the primary button: a right-click's menu can swallow the pointerup, leaving a drag
+        // Only the primary button. A right-click menu can swallow the pointerup and leave a drag
         // that follows the mouse with no button pressed.
         if (event.button !== 0) return;
         const start = begin();

@@ -1,6 +1,6 @@
-// Downloads the photo backgrounds from the Unsplash CDN and writes them to public/backgrounds/
-// as AVIF. The widest export is 1584px at 3× (4752px), so photos are stored 4800px wide, plus
-// smaller copies for the studio preview (PREVIEW_PHOTO_WIDTHS).
+// Downloads the photo backgrounds from Unsplash and saves them as AVIF in public/backgrounds/.
+// The widest export is 4752px (1584px at 3×), so photos are saved 4800px wide. Smaller copies for
+// the studio preview are saved next to them.
 // Run with `pnpm backgrounds`, or `pnpm backgrounds <id> ...` for some of them.
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
@@ -18,7 +18,7 @@ const WIDTH = 4800;
  * background can be moved and zoomed in the studio.
  */
 const MAX_HEIGHT = WIDTH / 1.5;
-/** Shown at 28% opacity, where compression artifacts don't show. */
+/** Backgrounds show at 28% opacity, which hides compression artifacts. */
 const QUALITY = 40;
 
 const photos = BACKGROUND_PRESETS.filter((preset) => preset.credit);

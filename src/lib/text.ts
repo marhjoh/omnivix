@@ -16,10 +16,10 @@ export function truncateMiddle(text: string, maxChars: number): string {
   return `${text.slice(0, Math.ceil(keep / 2))}…${text.slice(-Math.floor(keep / 2))}`;
 }
 
-/** Longest address shown in full; longer ones would take a whole line of text. */
+/** Longer addresses would take up a whole line of text. */
 const MAX_LINK_TEXT_LENGTH = 40;
 
-/** How to show a URL as link text: without https://, or only its domain when it's long. */
+/** Drops https://, and shortens long URLs to their domain. */
 export function linkText(url: string): string {
   const text = url.replace(/^https:\/\//, "");
   return text.length > MAX_LINK_TEXT_LENGTH ? new URL(url).hostname : text;

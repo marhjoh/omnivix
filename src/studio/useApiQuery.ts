@@ -11,22 +11,23 @@ class FetchError extends Error {
   }
 }
 
-/** Shown when a request fails without a message of its own (network, platform errors). */
+/** Shown when an error has no message from our API, such as a network error. */
 const FALLBACK_ERROR = "Couldn't load GitHub data.";
 
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const { message, limit } = await readApiError(res);
-    // Without a message of ours, FALLBACK_ERROR is used.
+    // An empty message falls back to FALLBACK_ERROR.
     throw new FetchError(message ?? "", res.status, limit);
   }
   return res.json() as Promise<T>;
 }
 
 /**
- * JSON from one of our API routes, through the studio's query cache (see StudioQueryProvider). A
- * failed refresh keeps the url's last data next to the error. Leaving a url cancels its request.
+ * Fetches JSON from one of our API routes through the studio's query cache (see
+ * StudioQueryProvider). If a refresh fails, the last data stays next to the error. Switching to
+ * another URL cancels the old request.
  */
 export function useApiQuery<T>(
   url: string | null,
@@ -35,12 +36,11 @@ export function useApiQuery<T>(
     initial,
   }: {
     /**
-     * Responses with the same key stand in for each other while a new url loads, e.g. the
-     * contributions for another year, so the preview keeps its content instead of flashing
-     * "loading".
+     * While a new URL loads, the last data with the same key is shown instead. For example,
+     * switching the contributions year keeps the old year on screen instead of flashing "loading".
      */
     keepKey?: string;
-    /** This url's data from the page's server render (see initialGithubData), if it has it. */
+    /** Data for this URL from the server render (see initialGithubData). */
     initial?: T;
   } = {},
 ) {
@@ -52,24 +52,24 @@ export function useApiQuery<T>(
     placeholderData: (previous, previousQuery) =>
       keepKey && previousQuery?.meta?.keepKey === keepKey ? previous : undefined,
   });
-  // A refetch hides the error it may clear, so a retry shows as loading at once.
+  // Hide the error during a refetch so a retry shows as loading right away.
   const error = query.isFetching ? null : query.error;
   const fetchError = error instanceof FetchError ? error : null;
   return {
     data: query.data,
-    /** The data is from another request with the same `keepKey`, shown while this one loads. */
+    /** True while showing data from another URL with the same `keepKey`. */
     stale: query.isPlaceholderData,
-    // Only our API's own messages are shown; network errors ("Failed to fetch") use the fallback.
+    // Show only our API's messages. Network errors like "Failed to fetch" get the fallback.
     error: error ? fetchError?.message || FALLBACK_ERROR : null,
     notFound: fetchError?.status === 404,
     limit: fetchError?.limit ?? null,
     loading: query.isFetching,
-    /** Asks again, even when the data is recent. */
+    /** Fetches again, even if the data is fresh. */
     refetch: query.refetch,
   };
 }
 
-/** `url`'s data from the server render, if it has it. */
+/** Data for `url` from the server render, if there is any. */
 export function initialData<T>(initialGithubData: Record<string, unknown>, url: string | null) {
   return url ? (initialGithubData[url] as T | undefined) : undefined;
 }

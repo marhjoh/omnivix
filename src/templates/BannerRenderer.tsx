@@ -28,7 +28,7 @@ export function BannerRenderer({
   templateId: TemplateId;
   state: Record<string, unknown>;
   data: RenderData;
-  /** When set (the export's render page), overrides the app's theme. */
+  /** Overrides the app's theme. The export's render page sets it. */
   uiTheme?: Theme;
 }) {
   const { theme } = useTheme();

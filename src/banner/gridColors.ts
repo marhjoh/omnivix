@@ -1,6 +1,6 @@
 /**
- * The contribution grid's color presets: the "Grid colors" setting, saved as `themeId`. Not the
- * app's light/dark theme (src/theme/theme.ts).
+ * A preset for the "Grid colors" setting, saved as `themeId`. It's unrelated to the app's
+ * light/dark theme.
  */
 export interface GridColorPreset {
   id: string;

@@ -12,16 +12,19 @@ import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
 import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
 
-/** Entries each cache keeps at most; the oldest are dropped first. */
+/** Each cache keeps at most this many entries and drops the oldest first. */
 const CACHE_CAPACITY = 500;
 
-/** Repositories are listed 100 per page; this caps the picker at 1,000 of the most recently updated. */
+/**
+ * GitHub lists at most 100 repositories per page. Ten pages cap the picker at the 1,000 most
+ * recently updated.
+ */
 const REPO_PAGE_SIZE = 100;
 const MAX_REPO_PAGES = 10;
 
 /**
- * A cache for one kind of GitHub data. Concurrent requests for a key share one GitHub call;
- * failures aren't kept, so the next request asks again.
+ * A cache for one kind of GitHub data. Concurrent requests for a key share one GitHub call.
+ * Failures aren't kept, so the next request asks again.
  */
 function githubCache<A>(
   lookup: (key: string) => Effect.Effect<A, GithubError>,
@@ -107,8 +110,9 @@ const ContributionCalendar = Schema.Struct({
 });
 
 /**
- * Keys are `login year from to`. The range is in the key, so `LATEST_YEAR` (which moves every day)
- * gets a new key each day, and a lookup always asks for exactly the range its key names.
+ * Keys are `login year from to`. `LATEST_YEAR` covers a different range each day, and with the
+ * range in the key it gets a new key every day. A lookup always asks for exactly the range its key
+ * names.
  */
 const contributions = githubCache(
   (key) => {
@@ -166,7 +170,7 @@ const contributions = githubCache(
 
 /**
  * Contributions for a calendar year, or for the last 365 days when `year` is `LATEST_YEAR`. Callers
- * check the year first (`isContributionYear`).
+ * must check the year first (`isContributionYear`).
  */
 export function getContributions(
   username: string,
@@ -216,7 +220,7 @@ const RepoPage = Schema.Struct({
   pageInfo: Schema.Struct({ hasNextPage: Schema.Boolean, endCursor: Schema.NullOr(Schema.String) }),
 });
 
-/** One page of the owner's public repositories, newest first. */
+/** One page of the owner's public repositories, most recently updated first. */
 const OWNER_REPOS_PAGE = `
   repositories(
     first: ${REPO_PAGE_SIZE}
@@ -288,7 +292,7 @@ const repoLists = githubCache(
   () => TTL_SHORT,
 );
 
-/** Pinned repositories and the owner's public repositories (newest first), fetched together. */
+/** The pinned repositories and the owner's public ones, most recently updated first. */
 export function getRepoLists(username: string): Effect.Effect<RepoLists, GithubError> {
   return Cache.get(repoLists, userKey(username));
 }

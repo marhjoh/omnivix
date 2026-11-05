@@ -9,7 +9,6 @@ const LABELS: Record<string, string> = {
   logoSize: "Size",
 };
 
-/** The sidebar's name for a setting. */
 export function fieldLabel(field: EditorFieldSchema): string {
   return LABELS[field.key] ?? field.label;
 }
@@ -40,7 +39,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
-  // Everything else, in schema order: a new setting shows up here until it gets a place.
+  // Everything else, in schema order. New settings land here until they get a group.
   { title: "Content", keys: null },
 ];
 
@@ -50,8 +49,8 @@ export interface SettingGroup {
 }
 
 /**
- * A template's settings grouped by what they change. The username is set elsewhere. Empty groups
- * are left out, except Style, which always holds the light/dark setting.
+ * Groups a template's settings for the sidebar. The username has its own field and isn't included.
+ * Empty groups are dropped, except Style, which always has the light/dark setting.
  */
 export function groupFields(fields: EditorFieldSchema[]): SettingGroup[] {
   const placed = new Set(GROUPS.flatMap((group) => group.keys ?? []));

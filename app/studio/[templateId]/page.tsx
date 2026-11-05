@@ -31,7 +31,7 @@ export async function generateMetadata({
   const description = `${meta.description} Create a ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
   const url = studioPath(templateId);
   const title = `${meta.title} · ${SITE_NAME}`;
-  // twitter replaces the layout's object rather than merging, so set every field.
+  // Next replaces the layout's twitter object instead of merging it, so set every field.
   return {
     title: meta.title,
     description,
@@ -62,7 +62,7 @@ export default async function StudioPage({
   // A studio link's settings win over the saved ones (see linkSettings.ts).
   const link = parseLinkSettings(templateId, await searchParams);
   const start = startingSettings(templateId, readCookie, link);
-  // The settings the studio starts from, so the GitHub data matches what it shows.
+  // Load GitHub data for the starting settings, so it matches what the studio shows first.
   const initialGithubData = await loadInitialGithubData(templateId, start.state);
   return (
     // The banner preview picks its colors in JavaScript, so the theme must be right on the server.

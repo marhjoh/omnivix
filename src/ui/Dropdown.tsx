@@ -13,8 +13,8 @@ import { Spinner } from "@/src/ui/Spinner";
 import { type Dropdown, DROPDOWN_ROOT_ATTRIBUTE, useDropdown } from "@/src/ui/useDropdown";
 
 /**
- * The down arrow on a button that opens a list or panel; it turns over while that's open. While
- * `busy` (something the button started is still running), a spinner takes its place.
+ * The down arrow on a button that opens a list or panel. It flips while open, and a spinner
+ * replaces it while `busy`.
  */
 export function DropdownChevron({
   open,
@@ -48,8 +48,8 @@ export function DropdownRoot({
 }
 
 /**
- * A setting's field: its value and a chevron, opening a list or panel. It's named by its
- * FieldLabel and then its value, so screen readers read both: "Alignment, Center".
+ * A setting's button that shows its value and opens a list or panel. Screen readers read the label
+ * and then the value, like "Alignment, Center".
  */
 export function FieldButton({
   id,
@@ -86,9 +86,9 @@ export function DropdownTrigger({
 }: PropsWithChildren<{
   dropdown: Dropdown;
   disabled?: boolean;
-  /** Something is attached under the trigger (see ImagePicker), so its bottom is square. */
+  /** Squares off the bottom corners for something attached below, like in ImagePicker. */
   joinedBelow?: boolean;
-  /** The choice is still being applied (an upload being processed); a spinner replaces the chevron. */
+  /** Shows a spinner instead of the chevron while a choice is applied, such as an upload. */
   busy?: boolean;
 }>) {
   const { open, setOpen, listId, triggerId } = dropdown;
@@ -117,14 +117,14 @@ export function DropdownList({
   dropdown: Dropdown;
   label: string;
   /**
-   * Floats below a frameless button (the studio's template picker), as wide as its options.
-   * Otherwise the list is attached under its DropdownTrigger, like the native selects' lists.
+   * Floats below a frameless button, like the studio's template picker, as wide as its options.
+   * Without it, the list attaches under its DropdownTrigger.
    */
   floating?: boolean;
 }>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
-  // The frame is .popover, and .popover-attached joins it to the trigger (app/globals.css).
+  // The popover classes are in app/globals.css.
   const placement = floating
     ? "absolute top-full left-0 z-50 mt-1.5 w-max rounded-lg"
     : "popover-attached";
@@ -141,7 +141,7 @@ export function DropdownList({
   );
 }
 
-/** One option: a check mark when selected, otherwise `icon` or an empty slot of the same width. */
+/** Shows a check mark when selected, otherwise `icon` or a blank of the same width. */
 export function DropdownOption({
   selected,
   icon,
@@ -172,8 +172,8 @@ export function DropdownGroupLabel({ children }: PropsWithChildren) {
 }
 
 /**
- * An option's name, after its `preview` if it has one. Previews (a color, a quote mark) share one
- * width, so the names after them line up from field to field.
+ * An option's name, with an optional `preview` (a color, a quote mark) before it. Every preview
+ * gets the same width, so the names line up across fields.
  */
 export function OptionLabel({
   label,
@@ -199,8 +199,8 @@ export function OptionLabel({
 }
 
 /**
- * A setting's dropdown with its label: the same list as the Background picker, so every dropdown
- * looks and opens the same on every browser and phone.
+ * A labeled dropdown for a setting. It uses our own list instead of a native select, so it looks
+ * and behaves the same on every browser and phone.
  */
 export function Select({
   label,
@@ -214,8 +214,8 @@ export function Select({
   label: string;
   value: string;
   /**
-   * `style` shows an option in its own look, such as a font in its typeface; `preview` is a small
-   * sample before its name; an empty one keeps the names lined up.
+   * `style` shows an option in its own look, like a font in its typeface. `preview` is a small
+   * sample before the name. Pass an empty one to keep names lined up.
    */
   options: ReadonlyArray<{
     label: string;
@@ -232,8 +232,8 @@ export function Select({
 }) {
   const id = useId();
   const dropdown = useDropdown(id);
-  // Without a placeholder, a value that isn't among the options (a saved year older than the
-  // list) is shown as is, and listed first so it stays selected.
+  // A value missing from the options, like a saved year older than the list, is added at the top
+  // so it still shows as selected. With a placeholder, the placeholder shows instead.
   const shown =
     placeholder !== undefined || options.some((option) => option.value === value)
       ? options

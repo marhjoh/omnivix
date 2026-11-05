@@ -22,9 +22,8 @@ function ymdFromMs(ms: number): string {
 }
 
 /**
- * Simulate GitHub's week response for a year range.
- * GitHub returns: first week starts at rangeStart (not necessarily Sunday),
- * remaining weeks start on Sunday.  Only in-range days are in `days`.
+ * Builds weeks the way GitHub returns them. The first week starts on rangeStart, which may not be a
+ * Sunday, and the rest start on Sundays. `days` only holds days in the range.
  */
 function buildWeeksForRange(rangeStart: string, rangeEnd: string): ContributionWeekNormalized[] {
   const rangeStartMs = parseYmd(rangeStart);
@@ -33,7 +32,7 @@ function buildWeeksForRange(rangeStart: string, rangeEnd: string): ContributionW
 
   const weeks: ContributionWeekNormalized[] = [];
 
-  // First (possibly partial) week — starts at rangeStart, ends at next Saturday.
+  // The first week may be partial, from rangeStart to the next Saturday.
   const firstWeekEnd = rangeStartMs + (6 - startWd) * 86400000;
   const firstWeekDays: ContributionDayNormalized[] = [];
   for (let ms = rangeStartMs; ms <= Math.min(firstWeekEnd, rangeEndMs); ms += 86400000) {
@@ -62,10 +61,7 @@ function buildWeeksForRange(rangeStart: string, rangeEnd: string): ContributionW
   return weeks;
 }
 
-/**
- * Build weeks where firstDay is always the Sunday on or before rangeStart
- * (an alternate possible GitHub behavior).
- */
+/** Builds weeks whose firstDay is the Sunday on or before rangeStart, in case GitHub does that. */
 function buildSundayAlignedWeeksForRange(
   rangeStart: string,
   rangeEnd: string,
@@ -290,7 +286,7 @@ describe("buildCalendarLayout — month labels", () => {
     });
     const feb = monthLabels.find((m) => m.label === "Feb");
     expect(feb).toBeDefined();
-    // Feb 1, 2025 is Saturday → it falls in the week containing it.
+    // Feb 1, 2025 is a Saturday, the last day of its week.
     const febWeekIdx = weeks.findIndex((w) => {
       const wStart = parseYmd(w.firstDay);
       const wdOfFirst = weekdayFromYmd(w.firstDay);

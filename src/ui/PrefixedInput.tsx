@@ -2,9 +2,9 @@ import { useId, useImperativeHandle, useRef, type InputHTMLAttributes, type Ref 
 import { X } from "lucide-react";
 
 /**
- * A text field with fixed text in front (https://, https://github.com/) and a × that clears it and
- * keeps focus in the field. Prefix, field and × share one frame, which shows the focus ring while
- * the field has focus (`.field-input:focus-within`).
+ * A text field with fixed text in front, like https://github.com/, and a × that clears it without
+ * moving focus. Prefix, field and × share one frame, which gets the focus ring from
+ * `.field-input:focus-within`.
  */
 export function PrefixedInput({
   prefix,

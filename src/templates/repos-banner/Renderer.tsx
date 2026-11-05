@@ -15,7 +15,7 @@ export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const mode = repoModeOf(state.mode);
   const shown = reposShown(mode, state.maxRepos);
   const repos = data.repos?.slice(0, shown) ?? [];
-  // Selected mode lays out what was picked; pinned mode keeps the chosen amount's layout.
+  // In selected mode the layout follows the picked repos. In pinned mode it follows the amount.
   const cols = COLUMNS_BY_COUNT[(mode === "selected" ? Math.max(1, repos.length) : shown) - 1];
 
   const showDescription = state.showDescription !== false;

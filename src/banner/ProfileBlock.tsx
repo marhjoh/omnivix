@@ -7,13 +7,10 @@ import { normalizeContentSize } from "@/src/banner/contentSize";
 import { ELLIPSIS } from "@/src/banner/textStyle";
 import type { BannerUiChrome } from "@/src/theme/theme";
 
-/** Natural sizes; `FitContent` scales the profile together with the rest of the banner. */
+/** Sizes before scaling. FitContent scales the profile with the rest of the content. */
 const SIZING = { avatar: 28, name: 13, handle: 12 };
 
-/**
- * The GitHub and repos banners' content: avatar, name and @handle as the banner's state shows
- * them, above `children`, placed and scaled to the Content size setting.
- */
+/** Content for the GitHub and repos banners: the avatar, name and @handle above `children`. */
 export function ProfileBanner({
   state,
   user,

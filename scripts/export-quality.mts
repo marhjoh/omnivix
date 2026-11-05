@@ -1,10 +1,10 @@
-// Measures export quality (#185) against a running app (`pnpm dev` first, or set BASE_URL).
-// Exports every template at each pixel ratio as PNG and JPEG and compares each JPEG with the PNG
-// of the same render: PSNR for brightness (Y) and color (Cb, Cr), and a zoomed crop of the block
-// that changed most, PNG left and JPEG right. Also measures how large the avatar is drawn at XL
-// next to the 460px GitHub serves. Files go to a temp folder named after the first argument, so
-// runs before and after a change can be compared.
-// Run with `pnpm export-quality before`.
+// Compares exported JPEGs with PNGs of the same render (see #185). Needs a running app
+// (`pnpm dev`, or set BASE_URL). For every template and pixel ratio it reports PSNR for
+// brightness (Y) and color (Cb, Cr), and saves a zoomed crop of the worst block, PNG left and
+// JPEG right. It also checks how large the avatar is drawn at XL compared with the 460px that
+// GitHub serves.
+// Output goes to a temp folder named after the first argument, so you can compare runs before and
+// after a change. Run with `pnpm export-quality before`.
 import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -22,13 +22,13 @@ import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
 const LABEL = process.argv[2] ?? "latest";
 const OUT_DIR = join(tmpdir(), "omnivix-export-quality", LABEL);
 const BACKGROUND = "sydney";
-/** LinkedIn and X, the platforms the issue tests uploads on. */
+/** LinkedIn and X, where the issue tested uploads. */
 const SIZES: BannerSize[] = ["wide", "header"];
 /** The templates that show the GitHub profile photo. */
 const AVATAR_TEMPLATES: TemplateId[] = ["github-banner", "repos-banner"];
 /** The largest avatar GitHub serves, whatever size is asked for. */
 const AVATAR_SOURCE_PX = 460;
-/** Side of the compared blocks, in banner pixels (times the pixel ratio in the image). */
+/** Block size in banner pixels. In the image it's multiplied by the pixel ratio. */
 const BLOCK = 48;
 const CROP_WIDTH = 480;
 
@@ -42,7 +42,7 @@ async function exportBanner(body: object): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-/** BT.601 YCbCr planes of an image, as 8-bit RGB is turned into JPEG. */
+/** Splits an image into BT.601 YCbCr planes, the color space JPEG uses. */
 async function ycbcr(image: Buffer) {
   const { data, info } = await sharp(image)
     .removeAlpha()
@@ -156,7 +156,7 @@ async function measureExports(): Promise<string[]> {
   return rows;
 }
 
-/** The avatar's drawn size at XL: its preview width over the preview's scale, times the ratio. */
+/** How large the avatar is drawn at XL in each banner size, as a Markdown table. */
 async function measureAvatars(): Promise<string[]> {
   const rows = [
     "| Template | Size | Avatar (CSS px) | Largest ratio | Avatar (image px) | Sharp |",

@@ -47,7 +47,7 @@ export function HoverHighlightItem({
   children,
 }: {
   id: string;
-  /** Lets the item narrow when the row is short of room (its content should truncate). */
+  /** Lets the item shrink when the row runs out of room. Its content should truncate. */
   shrink?: boolean;
   children: ReactNode;
 }) {

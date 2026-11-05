@@ -6,11 +6,11 @@ import { ThemedLogo } from "@/src/theme/ThemedBrand";
 import { HoverHighlightGroup, HoverHighlightItem } from "@/src/ui/HoverHighlight";
 import { highlightItemBaseClass } from "@/src/ui/classNames";
 
-/** Deployed version, bumped in package.json with each release, and its release notes. */
+/** The deployed version, from package.json, and its release notes. */
 const APP_VERSION = packageJson.version;
 const APP_RELEASE_URL = `${SITE_LINKS.repo}/releases/tag/v${APP_VERSION}`;
 
-/** Labeled footer links: brighter than the header's muted links, 9px side padding like it. */
+/** Brighter than the header's muted links, with the same 9px side padding. */
 const footerLinkClass = `${highlightItemBaseClass} w-auto px-[9px] text-text/90 hover:text-text`;
 
 export function LandingFooter() {

@@ -3,21 +3,21 @@ import { isHttpsUrl } from "@/src/lib/imageSource";
 import { useImageStatus } from "@/src/studio/useImageStatus";
 import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 
-/** How long the link field must be idle before a link that can't be used is reported. */
+/** How long typing must pause before the link is checked. */
 const LINK_SETTLE_MS = 1000;
 
-/** The link field starts with this, fixed: the export only loads https images. */
+/** Fixed prefix of the link field. The export only loads https images. */
 export const HTTPS = "https://";
 
-/** What the link field holds after its fixed "https://": a pasted link loses its scheme. */
+/** Strips the scheme from a pasted link, since the field already shows "https://". */
 function withoutScheme(link: string): string {
   return link.replace(/^\s*https?:\/\//i, "");
 }
 
 /**
- * The image picker's link field (ImagePicker): what's typed, the link once the user stops typing,
- * and the toast for a link that can't be loaded. A typed link becomes the image only once the
- * browser has loaded it (or failed to), so the banner keeps its image while the user types.
+ * State for the link field in ImagePicker. A typed link only becomes the image once the browser has
+ * loaded it (or failed to), so the banner keeps its current image while the user types. A link
+ * that fails to load is reported in a toast.
  */
 export function useImageLinkField({
   value,
@@ -35,18 +35,17 @@ export function useImageLinkField({
   inputRef: RefObject<HTMLInputElement | null>;
 }) {
   const [editorOpen, setEditorOpen] = useState(false);
-  /** What's typed after "https://"; `undefined` shows the current link (`value`) instead. */
+  /** Text after "https://". `undefined` shows the current link instead. */
   const [draft, setDraft] = useState<string | undefined>(undefined);
-  /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
+  /** The link once typing stops, on Enter, or on leaving the field. Only this one is reported. */
   const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
-  /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
+  /** The link with an open error toast, so it's reported once and the toast can be closed. */
   const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
 
-  /** The current image when it's a link. */
   const linkValue = typeof value === "string" && isHttpsUrl(value) ? value.trim() : undefined;
   const linkStatus = useImageStatus(linkValue);
-  // A link the browser can't load is left out of the preview (see useBannerImage) and reported
-  // once the user has stopped typing it.
+  // The preview leaves out a link the browser can't load (see useBannerImage). It's reported once
+  // the user stops typing.
   const linkProblem =
     settledLink && settledLink === linkValue && linkStatus === "failed"
       ? "Couldn't load this image link."
@@ -63,7 +62,7 @@ export function useImageLinkField({
 
   useEffect(() => {
     const reported = reportedRef.current;
-    // The reported link was changed, or works now: its toast is out of date.
+    // The reported link changed or works now, so its toast is out of date.
     if (reported && (reported.link !== settledLink || !linkProblem)) {
       onErrorResolved(reported.toastId);
       reportedRef.current = null;
@@ -80,11 +79,11 @@ export function useImageLinkField({
   }, [editorOpen, inputRef]);
 
   /**
-   * The user has stopped typing: a link is checked, and an emptied field removes the image if that
-   * was a link. A preset or upload stays when the field is opened and left empty.
+   * Runs when the user stops typing. Checks the link, or removes the image if the field was emptied
+   * and the image was a link. A preset or upload stays if the field is opened and left empty.
    */
   const settle = (text: string) => {
-    // Cleaned again once settled: a pasted "https:// x" or "https://https://x" still works.
+    // Clean it again so a pasted "https:// x" or "https://https://x" still works.
     const rest = withoutScheme(text.trim());
     const link = rest ? HTTPS + rest : "";
     setSettledLink(link);
@@ -94,8 +93,8 @@ export function useImageLinkField({
   const debouncedSettle = useDebouncedCallback(settle, LINK_SETTLE_MS);
 
   /**
-   * Enter or leaving the field: check the link now, without waiting for the pause. Leaving never
-   * closes the field (switching windows to copy a link would); another choice in the menu does.
+   * On Enter or leaving the field, check the link right away. Leaving doesn't close the field,
+   * because switching windows to copy a link would close it. Another choice in the menu does.
    */
   const settleNow = () => {
     if (draft === undefined) return;
@@ -118,10 +117,7 @@ export function useImageLinkField({
       },
       onBlur: settleNow,
       onEnter: settleNow,
-      /**
-       * The × button: the link and the image go, but the field stays open, ready for another link.
-       * Choosing something else in the menu closes it.
-       */
+      /** The × button. Removes the link and image but keeps the field open for another link. */
       onClear: () => {
         debouncedSettle.cancel();
         setDraft("");
@@ -129,18 +125,17 @@ export function useImageLinkField({
         onChange(undefined);
       },
     },
-    /** "Image from URL" was chosen: the field opens with the current link, or empty. */
+    /** For "Image from URL": opens the field with the current link, or empty. */
     open: () => {
       setEditorOpen(true);
       if (linkValue) {
         setDraft(undefined);
         return;
       }
-      // Start over with an empty field.
       setDraft("");
       setSettledLink(undefined);
     },
-    /** Something else was chosen in the menu: the field closes, and what was typed is dropped. */
+    /** For another menu choice: closes the field and drops what was typed. */
     close: () => {
       debouncedSettle.cancel();
       setSettledLink(undefined);

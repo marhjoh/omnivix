@@ -6,14 +6,14 @@ import sharp from "sharp";
  */
 const JPEG_QUALITY = 90;
 
-/** The lowest quality tried to fit an upload limit, in steps of QUALITY_STEP from JPEG_QUALITY. */
+/** The lowest quality tried when a file has to fit an upload limit. */
 const MIN_JPEG_QUALITY = 60;
 const QUALITY_STEP = 5;
 
 /**
- * A PNG screenshot as JPEG. Chromium's own JPEG halves the color resolution (4:2:0), which blurs
- * colored text and the contribution grid's edges; sharp keeps it whole (4:4:4) for about 20% more
- * bytes. With `uploadLimit`, the quality steps down until the file is smaller, or reaches
+ * Converts a PNG screenshot to JPEG. Chromium's own JPEG halves the color resolution (4:2:0), which
+ * blurs colored text and the edges of the contribution grid. sharp keeps full color (4:4:4) for
+ * about 20% more bytes. With `uploadLimit`, the quality steps down until the file fits or reaches
  * MIN_JPEG_QUALITY.
  */
 export async function toJpeg(png: Buffer, uploadLimit?: number): Promise<Buffer> {

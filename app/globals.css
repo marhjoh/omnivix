@@ -16,8 +16,8 @@
   --color-divider-strong: var(--divider-strong);
 }
 
-/* App chrome tokens, by <html data-theme> (set before first paint by THEME_INIT_SCRIPT). Keep
-   --bg, --text, --muted and --accent in sync with DARK_PALETTE in src/theme/theme.ts. */
+/* The app's colors per theme. THEME_INIT_SCRIPT sets data-theme before first paint. Keep --bg,
+   --text, --muted and --accent in sync with DARK_PALETTE in src/theme/theme.ts. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
@@ -27,7 +27,7 @@ html[data-theme="dark"] {
   --muted: #9da8b3;
   --accent: #2f81f7;
   --accent-hover: #58a6ff;
-  /* Blue behind white text: darker than --accent here, for 4.5:1 contrast on hover too. */
+  /* Blue behind white text. Darker than --accent, so the text keeps 4.5:1 contrast on hover too. */
   --accent-fill: #1f6feb;
   --accent-fill-hover: #1158c7;
   --danger: #f85149;
@@ -50,24 +50,24 @@ html[data-theme="light"] {
 }
 
 :root {
-  /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
+  /* Borders of fields and tiles, and the faint blue they turn on hover. */
   --control-border: color-mix(in oklab, var(--border) 85%, transparent);
   --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
-  /* Text and icons of disabled controls, which keep their frame instead of fading out. */
+  /* Text and icons of disabled controls. The controls keep their frame instead of fading out. */
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
-  /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
-     Each rule's `transition-property` lists which colors; --fade-colors is all of them. */
+  /* How long a control's colors fade on hover, focus, selection and disable. Each rule lists the
+     colors it fades in `transition-property`. --fade-colors has all of them. */
   --hover-fade: 0.15s;
   --fade-colors: background-color, border-color, box-shadow, color;
   /* The focus outline of tiles, rows and links (Tailwind: ring-focus-ring). */
   --focus-ring: color-mix(in oklab, var(--accent) 45%, transparent);
-  /* Rules between areas (the studio's header and sidebar, the landing header), and the stronger
-     ones under titles and between groups (Tailwind: border-divider, border-divider-strong). */
+  /* Lines between areas, like the studio's header and sidebar (Tailwind: border-divider). The
+     strong one goes under titles and between groups (border-divider-strong). */
   --divider: color-mix(in oklab, var(--border) 30%, transparent);
   --divider-strong: color-mix(in oklab, var(--border) 60%, transparent);
 }
 
-/* Themed artwork: ThemedBrand renders both variants; show the one matching <html data-theme>. */
+/* ThemedBrand renders both the light and the dark artwork. Only the current theme's one shows. */
 html[data-theme="dark"] .show-in-light,
 html[data-theme="light"] .show-in-dark {
   display: none;
@@ -75,19 +75,18 @@ html[data-theme="light"] .show-in-dark {
 
 html {
   height: 100%;
-  /* Narrowest supported screen (Galaxy Z Fold cover display). Below this the page scrolls
-     sideways instead of squeezing headers until controls overlap or fall off screen. */
+  /* The narrowest screen we support (Galaxy Z Fold cover display). Narrower screens scroll
+     sideways, so headers don't get squeezed until controls overlap. */
   min-width: 280px;
 }
 
 body {
   min-height: 100%;
-  /* `clip`, not `hidden`: hidden turns body into a scroll container, which stops
-     position: sticky (landing header) from working. */
+  /* `hidden` would make body a scroll container and break the sticky landing header. */
   overflow-x: clip;
   color: var(--text);
   background: var(--bg);
-  /* Inter is loaded in app/fonts.ts (next/font); the rest are fallbacks while it loads. */
+  /* Inter comes from app/fonts.ts. The rest are fallbacks while it loads. */
   font-family:
     var(--font-inter),
     "Segoe UI",
@@ -108,7 +107,7 @@ body {
     transition-duration: var(--hover-fade);
   }
 
-  /* Disabled: neutral instead of see-through, like every disabled control (--disabled-text). */
+  /* Disabled buttons turn gray instead of see-through, like other disabled controls. */
   .btn-primary:disabled,
   .btn-secondary:disabled {
     border-color: var(--control-border);
@@ -161,16 +160,16 @@ body {
     background: var(--surface);
   }
 
-  /* The frame of floating popups: the dropdown lists (src/ui/Dropdown.tsx), the color panel and
-     the studio's export options panel. Utilities still override it. */
+  /* Frame of floating popups, like dropdown lists and the color panel. Tailwind utilities can
+     still override it. */
   .popover {
     border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
     background: var(--surface);
     box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
   }
 
-  /* Joined under a field, sharing its bottom border, so the two read as one frame: a field's list
-     or panel (.popover-attached), or the image picker's frame for the chosen image's controls. */
+  /* Sits under a field and shares its bottom border, so the two look like one frame. Used for a
+     field's list or panel, and for the image picker's controls. */
   .popover-attached,
   .field-attached {
     margin-top: -1px;
@@ -179,7 +178,6 @@ body {
     border-end-end-radius: 0.5rem;
   }
 
-  /* A .popover joined under its field, as wide as the field, over what's below it. */
   .popover-attached {
     position: absolute;
     top: 100%;
@@ -194,8 +192,7 @@ body {
     background: var(--surface);
   }
 
-  /* The brand gradient on big type: the landing page's hero name and section headings, the error
-     pages' titles and the studio's section titles. */
+  /* The brand gradient for big headings on the landing page, the error pages and the studio. */
   .gradient-text {
     color: transparent;
     background-image: linear-gradient(
@@ -208,13 +205,13 @@ body {
     background-size: 100% 100%;
     -webkit-background-clip: text;
     background-clip: text;
-    /* Room below the line box, so the gradient also paints descenders (the p in Templates). */
+    /* Without this, the gradient cuts off descenders, like the p in Templates. */
     padding-bottom: 0.12em;
   }
 
-  /* Section headings in the brand gradient (with .gradient-text) that wipe in: on the landing page
-     as they scroll into view (where animation-timeline works), on the error pages on load, as those
-     don't scroll, after their calendar. Without motion they show finished. */
+  /* Big gradient headings that wipe in. On the landing page they wipe in as they scroll into view,
+     where animation-timeline is supported. The error pages don't scroll, so there the heading
+     wipes in on load, after the calendar. With reduced motion they show finished. */
   .section-heading,
   .heading-on-load {
     display: block;
@@ -242,8 +239,7 @@ body {
     }
   }
 
-  /* A setting's label, above its control: like the landing page's step titles (text color,
-     semibold), one size below the value in the control. */
+  /* A setting's label, one size smaller than the text in its control. */
   .field-label {
     display: block;
     font-size: 0.8125rem;
@@ -251,7 +247,7 @@ body {
     color: var(--text);
   }
 
-  /* Text fields and selects: one frame, 40px tall with the 20px line, 8px corners like buttons. */
+  /* Text fields and selects: 40px tall, with 8px corners like buttons. */
   .field-input,
   .field-select {
     display: block;
@@ -267,14 +263,14 @@ body {
     transition-duration: var(--hover-fade);
   }
 
-  /* Hover: a faint blue border, like the tiles and secondary buttons. :where keeps it weaker
-     than focus, so a focused field keeps its full blue border. */
+  /* A faint blue border on hover. :where keeps it weaker than focus, so a focused field keeps its
+     full blue border. */
   .field-input:where(:hover:not(:disabled)),
   .field-select:where(:hover:not(:disabled)) {
     border-color: var(--control-border-hover);
   }
 
-  /* :focus-within, so a frame holding a field (the background link) shows it too. */
+  /* `:focus-within` so a frame around a field, like the background link, shows focus too. */
   .field-input:focus-within,
   .field-select:focus-visible {
     outline: none;
@@ -282,7 +278,7 @@ body {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
   }
 
-  /* Forced colors drop the blue border and shadow: focus needs an outline. */
+  /* Forced colors mode hides the blue border and shadow, so focus needs an outline. */
   @media (forced-colors: active) {
     .field-input:focus-within,
     .field-select:focus-visible {
@@ -308,7 +304,7 @@ body {
   }
 }
 
-/* A .gradient-text heading wiping in: the gradient grows from the left while an outline fades. */
+/* The gradient grows from the left while the outline fades out. */
 @keyframes heading-wipe {
   from {
     background-size: 0% 100%;

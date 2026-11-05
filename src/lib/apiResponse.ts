@@ -5,14 +5,17 @@ import type { TimedLimit } from "@/src/lib/apiError";
 import { LIMIT_TITLES } from "@/src/lib/rateLimitMessage";
 import type { GithubRateLimited } from "@/src/github/errors";
 
-// The API's error responses; `readApiError` (apiError.ts) reads them in the browser.
+// The API's error responses. `readApiError` (apiError.ts) reads them in the browser, so keep the
+// two in sync.
 
-/** `{ error }` with `status`, plus any `extra` fields. */
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
   return NextResponse.json({ error: message, ...extra }, { status });
 }
 
-/** A limit's 429: `limit` names it and `resetAt` says when to try again, in the visitor's time. */
+/**
+ * A 429 that names the limit. `resetAt` is an absolute time, so the browser can show it in the
+ * visitor's time zone.
+ */
 export function tooManyRequests(limit: TimedLimit, resetAt: Date) {
   const seconds = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
   return NextResponse.json(
@@ -21,7 +24,7 @@ export function tooManyRequests(limit: TimedLimit, resetAt: Date) {
   );
 }
 
-/** The user doesn't exist, as a 404 naming `state.username`. */
+/** A 404 that points at `state.username`, so the studio can offer to change it. */
 export function githubUserNotFound(username: string) {
   return errorResponse(`No GitHub user named @${username}`, 404, {
     issues: [{ path: "state.username", message: "No GitHub user with this name" }],
@@ -29,8 +32,8 @@ export function githubUserNotFound(username: string) {
 }
 
 /**
- * Responses for the GitHub problems every route that loads GitHub data can hit, for
- * `Effect.catchTags`: the GitHub routes, and the export (its render page loads the data).
+ * `Effect.catchTags` handlers that turn GitHub errors into responses. The GitHub routes use them,
+ * and so does the export, because its render page loads GitHub data.
  */
 export function githubErrorResponses(username: string) {
   return {

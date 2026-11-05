@@ -6,8 +6,8 @@ export const THEMES = ["light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
 
 /**
- * The app's dark colors, for what can't read the CSS tokens (the Open Graph images). Keep in sync
- * with `html[data-theme="dark"]` in app/globals.css.
+ * The app's dark colors for places that can't read the CSS tokens, like the Open Graph images. Keep
+ * in sync with `html[data-theme="dark"]` in app/globals.css.
  */
 export const DARK_PALETTE = {
   bg: "#0d1117",
@@ -16,7 +16,7 @@ export const DARK_PALETTE = {
   accent: "#2f81f7",
 } as const;
 
-/** Studio and export: banner chrome follows app light/dark (template `themeId` is separate). */
+/** Banner colors that follow the app's light or dark theme. Grid colors are a separate setting. */
 export type BannerUiChrome = {
   baseBg: string;
   text: string;
@@ -60,7 +60,7 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
     gridOverlayBorder: "rgba(255, 255, 255, 0.1)",
     cardBg: "rgba(21, 28, 40, 0.82)",
     cardBorder: "rgba(255, 255, 255, 0.12)",
-    // A little brighter than the banner's text: the cards sit on their own dark fill.
+    // A little brighter than the banner text, since the cards have their own dark fill.
     cardText: "rgba(255,255,255,0.94)",
     cardTextMuted: "rgba(255,255,255,0.68)",
     cardShadow: "0 10px 26px rgba(2, 6, 23, 0.34)",
@@ -68,30 +68,30 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
   };
 }
 
-/** App chrome only (banner template `themeId` is separate). */
+/** For the app's theme, not the banner's grid colors (`themeId`). */
 export const THEME_COOKIE_NAME = "omnivix-theme";
 
-/** Until the browser's own theme is known (the inline script sets it before first paint). */
+/** Used until the inline script has read the cookie or the OS preference. */
 export const DEFAULT_THEME: Theme = "dark";
 
 export function parseThemeCookie(value: string | undefined): Theme {
   return oneOfOr(THEMES, value, DEFAULT_THEME);
 }
 
-/** Matches the theme cookie in `document.cookie`; also used, as source, by THEME_INIT_SCRIPT. */
+/** Matches the theme cookie in `document.cookie`. THEME_INIT_SCRIPT inlines it as well. */
 const THEME_COOKIE_PATTERN = `(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`;
 
 /**
- * Runs in <head> before first paint: applies the theme cookie, or on a first visit the OS
- * preference (saved to the cookie, which the studio's server render reads).
+ * Runs in <head> before first paint. It applies the theme cookie, or the OS preference on a first
+ * visit. It saves that preference to the cookie, because the studio's server render reads it.
  */
 export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=document.cookie.match(/${THEME_COOKIE_PATTERN}/),t=m?m[1]:matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";d.setAttribute("data-theme",t);if(!m)document.cookie="${THEME_COOKIE_NAME}="+t+"; ${COOKIE_ATTRIBUTES}"+(location.protocol==="https:"?"; Secure":"")}catch(e){}})()`;
 
 /**
- * Client-only THEME_INIT_SCRIPT, for renders where it didn't run: Strict Mode remounts in
- * development, and pages rendered in the browser (a studio 404, where Next sends an empty error
- * shell, and global-error.tsx). Like the script, it saves the OS preference on a first visit, so
- * the next studio request is rendered in the same theme.
+ * THEME_INIT_SCRIPT for renders where it didn't run: Strict Mode remounts in development, and
+ * pages rendered in the browser, like a studio 404 (Next sends an empty error shell) and
+ * global-error.tsx. Like the script, it saves the OS preference on a first visit so the next
+ * studio request renders in the same theme.
  */
 export function applyStoredTheme(): void {
   const root = document.documentElement;

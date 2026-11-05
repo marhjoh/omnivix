@@ -3,8 +3,8 @@ import { useEffect, useEffectEvent } from "react";
 type DismissReason = "outside" | "escape";
 
 /**
- * While `open`, dismisses a popup on a press outside it and on Escape (shared by useDropdown and
- * useDisclosure). Escape stops there, so the phone settings drawer around it stays open.
+ * While `open`, dismisses a popup on Escape or a press outside it. Escape doesn't propagate, so the
+ * phone settings drawer around the popup stays open.
  */
 export function useDismiss({
   open,

@@ -6,10 +6,10 @@ import { isDataUrl, isHttpsUrl } from "@/src/lib/imageSource";
 import { useImageStatus } from "@/src/studio/useImageStatus";
 
 /**
- * An image setting (the background, the logo) as the preview loads it. One that failed is left out
- * of the preview and blocks the export; the sidebar keeps it. A failed preset, upload, or link the
- * studio opened with (saved or from a studio link) is reported here, once; links typed later are
- * reported by the link field (useImageLinkField).
+ * Loads an image setting (background or logo) for the preview. An image that fails is left out of
+ * the preview and blocks the export, but stays in the sidebar. Failures are reported here once, for
+ * presets, uploads and links the studio opened with. Links typed later are reported by the link
+ * field (useImageLinkField).
  */
 export function useBannerImage(
   value: unknown,
@@ -18,9 +18,10 @@ export function useBannerImage(
   showError: (message: string) => void,
 ) {
   const src = typeof value === "string" && value ? value : undefined;
-  // The preview loads a photo preset's smaller copy (see PreviewPhotosContext), so the check below
-  // and the preload ask for the same file. The preload starts it from the page's <head>, at high
-  // priority, instead of when the banner is drawn. Not for uploads: their data URL is the image.
+  // The preview loads a smaller copy of photo presets (see PreviewPhotosContext), so the status
+  // check and the preload ask for that same file. The preload starts the download from the page's
+  // <head> at high priority, before the banner is drawn. Uploads skip it because their data URL is
+  // already the image.
   const srcSet = src ? previewPhotoSrcSet(src) : undefined;
   const sizes = srcSet ? PREVIEW_PHOTO_SIZES : undefined;
   if (src && !isDataUrl(src)) {

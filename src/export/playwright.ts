@@ -16,15 +16,15 @@ import { RenderFailed } from "@/src/export/errors";
 import { GithubRateLimited, GithubUserNotFound } from "@/src/github/errors";
 
 /**
- * A script that starts `executable` with core dumps off. Chromium crashes as it closes on Vercel,
- * and each crash dumps hundreds of MB into /tmp, which fills it within two exports.
+ * Writes a script that starts `executable` with core dumps off. On Vercel, Chromium crashes as it
+ * closes. Each crash dumps hundreds of MB into /tmp, which fills up within two exports.
  */
 async function withoutCoreDumps(executable: string): Promise<string> {
   const script = join(tmpdir(), "chromium-no-core-dumps");
   try {
     await access(script);
   } catch {
-    // Written elsewhere first, so a concurrent export never runs a half-written script.
+    // Write under another name and rename, so a concurrent export never runs a half-written script.
     const draft = `${script}-${process.pid}-${Date.now()}`;
     await writeFile(draft, `#!/bin/sh\nulimit -c 0\nexec "${executable}" "$@"\n`, { mode: 0o755 });
     await rename(draft, script);
@@ -32,13 +32,13 @@ async function withoutCoreDumps(executable: string): Promise<string> {
   return script;
 }
 
-/** How long each Playwright step may take; the whole export has its own deadline (exportRoute). */
+/** The limit for each Playwright step. The whole export also has a deadline (renderBanner.ts). */
 const RENDER_TIMEOUT_MS = 25_000;
 
-/** Hosts the render page may load from besides its own origin (GitHub profile photos). */
+/** Hosts besides the app that the render page may load from, for GitHub profile photos. */
 const ALLOWED_HOSTS = new Set(["avatars.githubusercontent.com"]);
 
-/** `FitContent` sizes content in the browser after hydration, so wait for every fit to finish. */
+/** `FitContent` sizes content in the browser after hydration. Wait until every fit is done. */
 async function waitForContentFit(page: Page) {
   await page.waitForFunction(
     (attribute) =>
@@ -85,9 +85,9 @@ async function launchBrowser() {
 }
 
 /**
- * Only the app and allowed hosts are reachable; links are downloaded and checked beforehand. The
- * main page may still navigate (a Vercel login redirect is reported by `openRenderPage`), frames
- * may not. Uploaded and linked images are answered from memory at their `path`.
+ * Blocks every request except to the app and ALLOWED_HOSTS. Image links were already downloaded
+ * and checked. The main page may still navigate, so `openRenderPage` can report a redirect to the
+ * Vercel login. Frames may not. Uploaded and linked images are served from memory at their `path`.
  */
 async function restrictRequests(page: Page, origin: string, images: ExportImage[]) {
   // Sent to the app only, never to the other allowed hosts.
@@ -115,24 +115,24 @@ async function restrictRequests(page: Page, origin: string, images: ExportImage[
   }
 }
 
-/** A step in Chromium; its failures are render failures. */
+/** Runs a step in Chromium. Any failure becomes `RenderFailed`. */
 function step<A>(run: () => Promise<A>) {
   return Effect.tryPromise({ try: run, catch: (cause) => new RenderFailed({ cause }) });
 }
 
 /**
- * Chromium for one export, closed when the export's scope ends: after the screenshot, after a
- * failure, and when the deadline stops the export mid-step.
+ * Chromium for one export. It closes when the export's scope ends: after the screenshot, after a
+ * failure, or when the deadline stops the export mid-step.
  */
 const scopedBrowser = Effect.acquireRelease(
-  // A launch that fails is tried once more before the export gives up.
+  // If the launch fails, try once more.
   step(launchBrowser).pipe(Effect.retry({ times: 1, schedule: Schedule.spaced("500 millis") })),
   (browser) =>
-    // Chromium can crash as it closes on Vercel; the export is done by then.
+    // On Vercel, Chromium can crash while closing. The export is done by then.
     Effect.promise(() => browser.close().catch(() => undefined)),
 );
 
-/** Loads the render page, failing if it didn't render: an HTTP error or a Vercel login. */
+/** Loads the render page. Fails on an HTTP error or a redirect to the Vercel login. */
 const openRenderPage = Effect.fnUntraced(function* (page: Page, url: string) {
   const response = yield* step(() => page.goto(url, { waitUntil: "load" }));
   const status = response?.status() ?? 0;
@@ -146,7 +146,10 @@ const openRenderPage = Effect.fnUntraced(function* (page: Page, url: string) {
   }
 });
 
-/** The render page marks GitHub problems instead of a banner; they fail as their errors. */
+/**
+ * If GitHub data failed, the render page shows a marker instead of the banner. This turns it back
+ * into the GitHub error.
+ */
 const failOnRenderProblem = Effect.fnUntraced(function* (page: Page) {
   const problem = yield* step(() =>
     page.evaluate(
@@ -183,7 +186,7 @@ export const captureBanner = Effect.fnUntraced(function* ({
   const page = yield* step(async () => {
     const context = await browser.newContext({
       viewport: { width: banner.width, height: banner.height },
-      // The default when unset, capped for the banner format (YouTube PNGs are 1× only).
+      // Falls back to the default ratio and caps it for the format. YouTube PNGs are 1× only.
       deviceScaleFactor: exportPixelRatioFor(banner, format, pixelRatio),
     });
     return context.newPage();

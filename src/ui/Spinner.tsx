@@ -1,8 +1,8 @@
 import { Loader2 } from "lucide-react";
 
 /**
- * A busy indicator in place of an icon; with reduced motion it shows without spinning. Hidden from
- * screen readers (the button around it says it's busy) unless it has a `label` of its own.
+ * A busy indicator that takes an icon's place. It doesn't spin with reduced motion. Screen readers
+ * skip it unless it has a `label`, because the button around it already reports busy.
  */
 export function Spinner({ label, className = "" }: { label?: string; className?: string }) {
   return (

@@ -1,6 +1,6 @@
 /**
- * Places GitHub's contribution weeks in a grid: a column per week, a row per weekday (0 = Sunday).
- * GitHub's first week can start mid-week on the range start, so padding counts from its Sunday.
+ * Lays out GitHub's contribution weeks with one column per week and one row per weekday (0 is
+ * Sunday). GitHub's first week can start mid-week, so padding counts from that week's Sunday.
  */
 
 import type { ContributionWeekNormalized, ContributionMonthNormalized } from "@/src/github/types";
@@ -78,7 +78,7 @@ export function buildCalendarLayout(options: {
     }
   }
 
-  // Month labels from GitHub months metadata.
+  // A month label too close to the previous one is skipped.
   const gridStartMs = sundayOfWeek(weeks[0].firstDay);
   const MS_PER_WEEK = 7 * MS_PER_DAY;
   const monthLabels: MonthLabel[] = [];

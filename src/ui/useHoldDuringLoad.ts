@@ -4,13 +4,14 @@ import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/ui/useDelayedFlag";
 type Phase = "idle" | "holding" | "showing";
 
 /**
- * While `loading`, keeps returning the value from before the load started, for up to
- * `PENDING_DELAY_MS`.
- * Quick loads then go straight from the old preview to the new one, without a loading screen
- * flashing in between; slower loads show it after the delay, and keep it for at least
- * `PENDING_MIN_SHOW_MS` so it never just blinks. Only values `canHold` accepts are held (holding an error
- * would show it longer for nothing). `value` must keep its identity between renders unless it
- * changes (memoize it). Explicit state: a transition can't express the delay or minimum show time.
+ * While `loading`, keeps returning the value from before the load for up to `PENDING_DELAY_MS`.
+ * A quick load then goes straight from the old preview to the new one, with no loading screen.
+ * A slower load shows the loading screen after the delay and keeps it for at least
+ * `PENDING_MIN_SHOW_MS`, so it doesn't blink.
+ *
+ * Only values that `canHold` accepts are held. Holding an error would just show it for longer.
+ * Memoize `value`, since a new identity counts as a change. A React transition can't do a delay or
+ * a minimum show time, hence the timers.
  */
 export function useHoldDuringLoad<T>(
   value: T,

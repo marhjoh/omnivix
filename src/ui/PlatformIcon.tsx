@@ -13,7 +13,7 @@ import {
 } from "simple-icons";
 import type { PlatformId } from "@/src/lib/sizes";
 
-// LinkedIn isn't in simple-icons (removed at LinkedIn's request), so it stays a text mark.
+// simple-icons removed LinkedIn at LinkedIn's request, so we draw a text mark instead.
 const ICONS: Record<Exclude<PlatformId, "linkedin">, SimpleIcon> = {
   x: siX,
   bluesky: siBluesky,

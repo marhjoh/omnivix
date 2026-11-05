@@ -1,21 +1,20 @@
 /**
- * Background presets live in `public/backgrounds/` (served as `/backgrounds/...`).
+ * Background images in `public/backgrounds/`.
  *
- * Photos are from Unsplash (https://unsplash.com/license), vendored in-repo for reliable export and
- * preview. `pnpm backgrounds` regenerates them; see `scripts/backgrounds.mts`. The abstract SVGs
- * are hand-written.
+ * Photos are from Unsplash (https://unsplash.com/license). They're kept in the repo so the preview
+ * and export never depend on Unsplash. `pnpm backgrounds` downloads them again
+ * (scripts/backgrounds.mts). The abstract SVGs are hand-written.
  */
 interface BackgroundPreset {
   id: string;
   label: string;
   group: string;
-  /** Public path served from /public */
   src: string;
   /** For photo presets: photographer, Unsplash photo page, and the image on Unsplash's CDN. */
   credit?: { author: string; url: string; image: string };
   /**
-   * Default background position in percent (CSS `object-position`), chosen so the subject stays in
-   * frame at every banner size. Defaults to the center.
+   * Default `object-position` in percent, picked so the subject stays in frame at every banner
+   * size. Centered if left out.
    */
   focus?: { x: number; y: number };
 }
@@ -154,7 +153,7 @@ export function presetBySrc(src: string): BackgroundPreset | undefined {
   return BACKGROUND_PRESETS.find((p) => p.src === src);
 }
 
-/** The preset's image path; throws for an id that doesn't exist (for scripts). */
+/** The preset's image path. Throws for an unknown id. */
 export function presetSrcById(id: string): string {
   const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
   if (!preset) throw new Error(`No background preset "${id}"`);
@@ -162,8 +161,8 @@ export function presetSrcById(id: string): string {
 }
 
 /**
- * Smaller copies of the photo presets, for the studio preview (`pnpm backgrounds` writes them next
- * to the full-size photo). The export always uses the full-size photo.
+ * Widths of the smaller photo copies the studio preview uses. `pnpm backgrounds` writes them next
+ * to the full-size photo, which the export always uses.
  */
 export const PREVIEW_PHOTO_WIDTHS = [1200, 2400] as const;
 
@@ -171,7 +170,7 @@ export function previewPhotoPath(src: string, width: number): string {
   return src.replace(/\.avif$/, `-${width}.avif`);
 }
 
-/** `srcset` for a photo preset's preview copies; undefined for other backgrounds. */
+/** `srcset` for a photo preset's preview copies, or undefined for other backgrounds. */
 export function previewPhotoSrcSet(src: string): string | undefined {
   if (!presetBySrc(src)?.credit) return undefined;
   return PREVIEW_PHOTO_WIDTHS.map((width) => `${previewPhotoPath(src, width)} ${width}w`).join(

@@ -9,11 +9,11 @@ import landingStyles from "@/src/landing/landing.module.css";
 import { LinkPendingSpinner } from "@/src/landing/LinkPendingSpinner";
 import { SectionHeading } from "@/src/landing/SectionHeading";
 
-/** Two columns in the 72rem container (16px side padding, 24px gap) from the sm breakpoint. */
+/** One column on phones, then two in the 72rem container with 16px padding and a 24px gap. */
 const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
 
 function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
-  // No fade-in: cards are visible in the server HTML, so the grid never looks empty while JS loads.
+  // No fade-in. The cards are in the server HTML, so the grid never looks empty while JS loads.
   return (
     <Link
       href={studioPath(templateId)}
@@ -25,7 +25,7 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
       >
         <Image
           src={landingPreviewSrc(templateId)}
-          // Decorative: the caption names the link.
+          // The caption below names the link.
           alt=""
           fill
           sizes={IMAGE_SIZES}

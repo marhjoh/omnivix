@@ -13,8 +13,8 @@ function subscribePhone(onChange: () => void) {
 }
 
 /**
- * The settings panel: a sidebar on desktop, whose collapse is remembered (cookie, read by the
- * page), and a drawer on phones, which starts closed.
+ * The settings panel: a sidebar on desktop and a drawer on phones. The sidebar's collapsed state is
+ * saved in a cookie. The drawer always starts closed.
  */
 export function useStudioSidebar(initialCollapsed: boolean) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialCollapsed);
@@ -26,9 +26,9 @@ export function useStudioSidebar(initialCollapsed: boolean) {
     () => false,
   );
 
-  // Crossing the breakpoint keeps what the user sees: widening turns a closed drawer into a
-  // collapsed sidebar (and an open one into an open sidebar); narrowing always closes the drawer,
-  // so it never pops up over the preview by itself.
+  // Crossing the breakpoint keeps what the user sees. Widening turns a closed drawer into a
+  // collapsed sidebar and an open one into an open sidebar. Narrowing always closes the drawer, so
+  // it never pops up over the preview on its own.
   const [prevIsPhone, setPrevIsPhone] = useState(isPhone);
   if (isPhone !== prevIsPhone) {
     setPrevIsPhone(isPhone);
@@ -75,7 +75,7 @@ export function useStudioSidebar(initialCollapsed: boolean) {
   const focusSetting = useCallback(
     (key: string) => {
       animateSidebar(() => (isPhone ? setDrawerOpen(true) : setSidebarCollapsed(false)));
-      // The panel is visible from this render on, so its field can take focus next frame.
+      // The panel shows after this render, so focus the field on the next frame.
       requestAnimationFrame(() => document.getElementById(key)?.focus());
     },
     [animateSidebar, isPhone],

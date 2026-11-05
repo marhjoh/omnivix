@@ -3,7 +3,7 @@ import { ProfileBanner } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/types";
 
-/** Natural sizes; `FitContent` scales the whole block to the chosen size and banner format. */
+/** Cell size before FitContent scales the content. */
 const GRID = { cell: 10, gap: 2 };
 
 export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps) {

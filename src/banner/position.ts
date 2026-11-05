@@ -1,16 +1,14 @@
 import { clamp } from "@/src/lib/math";
 
 /**
- * A point in percent: 0 is the left/top, 100 the right/bottom. The background uses it as CSS
- * `object-position`; the content and the logo as their place in the room left around them
- * (`placement.ts`).
+ * A point in percent, from 0 (left or top) to 100 (right or bottom). The background uses it as CSS
+ * `object-position`. The content and the logo use it to place themselves (see placement.ts).
  */
 export interface Position {
   x: number;
   y: number;
 }
 
-/** Keeps a percentage between 0 and 100. */
 export const clampPercent = (value: number) => clamp(value, 0, 100);
 
 export function samePosition(a: Position, b: Position): boolean {
@@ -20,7 +18,7 @@ export function samePosition(a: Position, b: Position): boolean {
 /** Rounds a percentage to 0.1, which is finer than a pixel at any banner size. */
 export const roundPercent = (value: number) => Math.round(value * 10) / 10;
 
-/** A position rounded to 0.1 on each axis (roundPercent), as dragged positions are saved. */
+/** Rounds both axes to 0.1. Dragged positions are saved this way. */
 export function roundPosition({ x, y }: Position): Position {
   return { x: roundPercent(x), y: roundPercent(y) };
 }
@@ -43,7 +41,7 @@ export function positionOr(raw: unknown, fallback: Position): Position {
   return isPosition(raw) ? clampPosition(raw) : fallback;
 }
 
-/** A position in a studio link, e.g. `100,0`; null unless both are numbers from 0 to 100. */
+/** Parses a studio link's position, like `100,0`. Null unless both are numbers from 0 to 100. */
 export function parsePositionText(text: string): Position | null {
   const parts = text.split(",");
   if (parts.length !== 2 || parts.some((part) => part.trim() === "")) return null;

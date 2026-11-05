@@ -31,39 +31,38 @@ import {
   textWhere,
 } from "@/src/lib/schema";
 
-// Each template's settings, as the export API and studio links check them. They're always checked over the template's `initialState`, so every key has
-// a value and no defaults are needed here.
+// Validates settings from the export API and studio links. The input always starts from the
+// template's `initialState`, so every key has a value and no defaults are needed here.
 
 const percent = numberBetween(0, 100);
 const position = Schema.Struct({ x: percent, y: percent }).annotate({
   message: "Must be an object with x and y",
 });
 
-/** Settings every banner has. */
 const bannerFields = {
   size: oneOf(BANNER_SIZE_KEYS),
   alignment: oneOf(CONTENT_ALIGNS),
   backgroundImage: Schema.optional(text),
   backgroundPosition: Schema.optional(position),
   backgroundZoom: Schema.optional(numberBetween(MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)),
-  /** Set by dragging the content in the preview; see `src/banner/contentPosition.ts`. */
+  /** Set by dragging the content in the preview. */
   contentPosition: Schema.optional(position),
   logoImage: Schema.optional(text),
   logoSize: oneOf(CONTENT_SIZES),
-  /** Set by dragging the logo in the preview; see `src/banner/logo.ts`. */
+  /** Set by dragging the logo in the preview. */
   logoPosition: Schema.optional(position),
 };
 
 const contentSize = oneOf(CONTENT_SIZES);
 
-/** The contribution grid's settings (GitHub and contribution banners). */
+/** Shared by the GitHub and contribution banners. */
 const contributionGridFields = {
   year: textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`),
   themeId: oneOf(GRID_COLOR_IDS),
   cellShape: oneOf(CONTRIBUTION_CELL_SHAPES),
 };
 
-/** The GitHub profile above the content (GitHub and repos banners). */
+/** Shared by the GitHub and repos banners. */
 const profileFields = {
   username: requiredText,
   showAvatar: flag,
@@ -71,7 +70,6 @@ const profileFields = {
   profilePosition: oneOf(PROFILE_POSITIONS),
 };
 
-/** The quote banner's colors: a named one or a hex code (src/banner/quoteStyle.ts). */
 const quoteColor = textWhere(isQuoteColor, "Unknown color");
 
 const STATE_SCHEMAS = {
@@ -119,8 +117,8 @@ const STATE_SCHEMAS = {
 } satisfies Record<TemplateId, Schema.Top>;
 
 /**
- * Checks a template's settings: the checked settings, or each field that failed (as `state.…`
- * paths). Keys the template doesn't know are left out of the result.
+ * Checks a template's settings. On failure it returns each bad field as a `state.…` path. Unknown
+ * keys are dropped from the result.
  */
 export function checkTemplateState(
   templateId: TemplateId,

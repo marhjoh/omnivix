@@ -2,12 +2,12 @@ import type { PreviewProblem } from "./types";
 import type { ApiLimit } from "@/src/lib/apiError";
 import { LIMIT_TITLES, TRY_AGAIN_SOON, tryAgainAt } from "@/src/lib/rateLimitMessage";
 
-// Why the preview can't show the banner, from the GitHub data: shown in place of it (PreviewStatus).
+// Problems with the GitHub data that keep the preview from showing the banner (see PreviewStatus).
 
 /**
- * A failed GitHub request. A rate limit says when it resets, and keeps "Try again" off until then
- * (a bare 429 from the platform has no reset time). A user that doesn't exist can't be retried,
- * only changed. Anything else shows the server's message, with a retry.
+ * A failed GitHub request. A rate limit says when it resets and keeps "Try again" disabled until
+ * then. A bare 429 from the platform has no reset time. A user that doesn't exist can't be retried,
+ * only changed. Anything else shows the server's message with a retry.
  */
 export function fetchProblem({
   error,
@@ -39,7 +39,7 @@ export function fetchProblem({
     };
   }
   return {
-    // A heading, so no closing period (the same message ends with one elsewhere).
+    // Used as a heading, so drop the closing period. The message has one elsewhere.
     title: error.replace(/\.$/, ""),
     hint: "Check the username or your connection, then try again.",
     action: "retry",

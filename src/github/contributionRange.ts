@@ -1,8 +1,8 @@
 import { LATEST_YEAR } from "@/src/lib/contributionYear";
 
 /**
- * The UTC range GitHub is asked for: a calendar year, or for `LATEST_YEAR` the 365 calendar days
- * up to and including `now`'s UTC date (the time of day doesn't matter).
+ * The UTC range to ask GitHub for. A year gives that calendar year. `LATEST_YEAR` gives the 365
+ * days up to and including `now`'s UTC date, whatever the time of day.
  */
 export function contributionRange(year: string, now = new Date()): { from: string; to: string } {
   if (year !== LATEST_YEAR) {

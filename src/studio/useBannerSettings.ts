@@ -23,20 +23,20 @@ import type { TemplateId } from "@/src/templates/types";
 /** The part of the state that's saved per template, as JSON. */
 function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {
   const clone = { ...state };
-  // Username is global; avoid stale per-template copies.
+  // The username is saved once for all templates.
   if (needsUsername) delete clone.username;
-  // Presets and https links are kept, with what belongs to them. Uploads are too large.
+  // Keep presets and https links with their settings. Uploads are too large for a cookie.
   removeUnsavableImages(clone);
   const json = JSON.stringify(clone);
   if (fitsInCookie(json)) return json;
-  // A very long link is left out rather than losing every setting to the cookie size limit.
+  // If a very long link doesn't fit, drop it instead of losing every setting.
   for (const key of Object.keys(IMAGE_SETTINGS)) removeImage(clone, key);
   return JSON.stringify(clone);
 }
 
 /**
- * The banner's settings: the template's defaults with the saved ones and a studio link applied,
- * saved again as they change.
+ * The banner's settings. They start from the template defaults with the saved settings and the
+ * link applied, and changes are saved to cookies.
  */
 export function useBannerSettings({
   templateId,
@@ -44,23 +44,23 @@ export function useBannerSettings({
   link,
 }: {
   templateId: TemplateId;
-  /** What the server rendered from: the saved settings with the link applied. */
+  /** The settings the server rendered with. */
   start: StartingSettings;
   link: LinkSettings | null;
 }) {
   const needsUsername = templateRegistry[templateId].meta.needsUsername;
 
-  // Saved settings come from cookies, so the server renders them and nothing switches after load.
-  // The browser reads the cookies again when the studio is opened by navigating (Back, Forward, a
-  // link): Next.js may reuse the page from an earlier visit then, with props holding older settings.
+  // Settings live in cookies so the server can render them and nothing changes after load. The
+  // browser still reads the cookies again. On Back, Forward or a link, Next.js may reuse the page
+  // from an earlier visit, and its props then hold older settings.
   const [start] = useState(() =>
     typeof document === "undefined"
       ? serverStart
       : startingSettings(templateId, readCookieClient, link),
   );
   const [state, setState] = useState<Record<string, unknown>>(start.state);
-  // The link is applied once: drop it from the address bar, so a reload keeps later changes
-  // (saved in cookies like any other).
+  // Apply the link once, then remove it from the address bar. Otherwise a reload would apply it
+  // again over the user's later changes.
   useEffect(() => {
     if (link) window.history.replaceState(null, "", window.location.pathname);
   }, [link]);
@@ -81,7 +81,7 @@ export function useBannerSettings({
     [templateId],
   );
 
-  // On the left, center or right line, the alignment follows.
+  // Dropping the content on the left, center or right line also sets the alignment.
   const moveContent = useCallback((position: Position) => {
     setState((prev) => ({
       ...prev,
@@ -92,7 +92,7 @@ export function useBannerSettings({
 
   const username = usernameOf(state);
 
-  // Saved as cookies, and only when the saved part changes (not on every background drag).
+  // Write the cookie only when the saved part changes, not on every background drag.
   const storedJson = useMemo(() => storedStateJson(state, needsUsername), [state, needsUsername]);
   useEffect(() => {
     setCookieClient(settingsCookie(templateId).name, storedJson);

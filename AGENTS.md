@@ -75,6 +75,14 @@ The server runs on Effect 4: the export API (`src/export/`), the GitHub client a
 
 American English everywhere: code, comments, UI copy, docs, commits and PRs (customize, color, center, behavior, canceled).
 
+### Comments
+
+- Comment why, not what: a constraint, a workaround or a decision the code can't show. Prefer a clearer name or simpler code over a comment, and no comment over one that repeats the code.
+- Write like you'd explain it to a colleague: plain, short sentences. Avoid packed "X, so Y; Z" chains and abstract phrasing ("the response its failure becomes").
+- Doc comments (`/** */`) are for callers of exported code: what it does and anything surprising. Don't restate the name or the types.
+- Link the source for a workaround or a library quirk instead of explaining it at length.
+- No history ("moved from", "now uses") or roadmap notes; that belongs in commits and issues.
+
 ## Git and pull requests
 
 - Branch from `main` with a `feat/`, `fix/`, `docs/`, `refactor/` or `chore/` prefix. Each branch gets a Vercel preview; `main` is protected by CI and deploys to production.

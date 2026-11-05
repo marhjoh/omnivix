@@ -3,8 +3,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 type Size = { width: number; height: number };
 
 /**
- * Content-box size of an element without padding, kept up to date with ResizeObserver. Measured
- * once in a layout effect, so the first paint already has it.
+ * An element's content-box size, kept up to date with ResizeObserver. It's first measured in a
+ * layout effect, so the first paint already has it.
  */
 export function useElementSize<T extends HTMLElement>() {
   const ref = useRef<T>(null);

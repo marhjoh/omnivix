@@ -3,7 +3,9 @@ import type { Theme } from "@/src/theme/theme";
 import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
 import type { TemplateId } from "@/src/templates/types";
 
-/** The export API's request body; the studio sends one too (src/studio/useBannerExport.ts). */
+/**
+ * The export API's request body. The studio sends the same shape (src/studio/useBannerExport.ts).
+ */
 export interface ExportRequest {
   templateId: TemplateId;
   size: BannerSize;

@@ -15,7 +15,7 @@ import {
 import { EXPORT_PIXEL_RATIOS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
-/** The request's own fields; `state` is checked by the template's schema (stateSchemas.ts). */
+/** Only the request's own fields. The template's schema checks `state` (stateSchemas.ts). */
 const exportRequestSchema = Schema.Struct({
   templateId: oneOf(TEMPLATE_IDS),
   size: oneOf(BANNER_SIZE_KEYS),
@@ -27,13 +27,12 @@ const exportRequestSchema = Schema.Struct({
 
 const decodeRequest = Schema.decodeUnknownResult(exportRequestSchema, { errors: "all" });
 
-/** A checked export request: its format is always set. */
 export type ParsedExportRequest = ExportRequest & { format: ExportFormat };
 
 /**
  * Checks an export request. Settings start from the template's defaults, so a caller only sends
- * what it changes; unknown settings are kept for the renderer. Without a format, the size's
- * default is used (JPEG for Reddit).
+ * what it changes. Unknown settings are kept for the renderer. Without a format, the size's
+ * default is used, like JPEG for Reddit.
  */
 export function parseExportRequest(
   body: unknown,

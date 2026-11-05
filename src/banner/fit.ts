@@ -1,6 +1,6 @@
 import { bannerFormatOf, safeAreaOf, type BannerBox, type Box, type Rect } from "@/src/lib/sizes";
 
-/** Fit math for `FitContent`, kept free of the DOM so it can be unit tested. */
+/** Fit math for FitContent. It doesn't touch the DOM, so it can be unit tested. */
 
 /** "pending" until `FitContent` has fitted its content with fonts loaded, then "ready". */
 export const FIT_STATUS_ATTRIBUTE = "data-banner-fit";
@@ -9,8 +9,8 @@ export const FIT_STATUS_ATTRIBUTE = "data-banner-fit";
 const CONTENT_INSET_RATIO = 0.08;
 
 /**
- * The padded box the content and the logo are placed in: the part every device shows clearly (the
- * whole banner, or a format's safe area), less a margin.
+ * The padded box for the content and the logo. It's the format's safe area, or the whole banner,
+ * less a margin, so every device shows it.
  */
 export function contentBox(banner: BannerBox): Rect {
   const shown = safeAreaOf(banner);
@@ -23,7 +23,7 @@ export function contentBox(banner: BannerBox): Rect {
   };
 }
 
-/** The padded box of the banner format in banner state's `size`. */
+/** `contentBox` for the format named in banner state's `size`. */
 export function contentBoxOf(size: unknown): Rect {
   return contentBox(bannerFormatOf(size));
 }

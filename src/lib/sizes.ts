@@ -13,7 +13,7 @@ import {
  * Comments note each platform's recommended upload size.
  */
 
-/** A platform, also naming its icon. */
+/** Also names the platform's icon. */
 export type PlatformId =
   | "linkedin"
   | "x"
@@ -43,7 +43,9 @@ export interface Rect extends Box {
   top: number;
 }
 
-/** What a device shows of the banner. Every view of a format without `views` is the whole banner. */
+/**
+ * What a device shows of the banner. Every view of a format without `views` is the whole banner.
+ */
 export const BANNER_VIEWS = ["phone", "desktop", "tv"] as const;
 
 export type BannerView = (typeof BANNER_VIEWS)[number];
@@ -53,15 +55,15 @@ export interface BannerFormat extends Box {
   /** Set when devices show different parts of the image. Formats without TVs have no `tv`. */
   views?: { phone: Box; desktop: Box; tv?: Box };
   /**
-   * The part every device shows clearly, which the content fits: the phone view unless the
-   * platform puts its own buttons or photo over part of that.
+   * The part every device shows clearly, where the content goes. Defaults to the phone view. Set it
+   * when the platform puts its own buttons or photo over part of that.
    */
   safeArea?: Rect;
   /** The largest pixel ratio per file format, for those that can't take every ratio. */
   maxPixelRatio?: Partial<Record<ExportFormat, ExportPixelRatio>>;
   /** The file formats the platform takes, when it doesn't take every one. */
   formats?: readonly ExportFormat[];
-  /** Uploads must be smaller than this many bytes; JPEG quality is lowered until the file is. */
+  /** Uploads must be smaller than this many bytes. The export lowers JPEG quality until it fits. */
   uploadLimit?: number;
   platforms: BannerPlatform[];
 }
@@ -107,11 +109,11 @@ export const BANNER_SIZES: Record<BannerSize, BannerFormat> = {
     ],
   },
   // Reddit keeps the whole upload and each screen crops it (3000 × 1000 test uploads, #111).
-  // Desktop shows it as a 316 × 97 card in the sidebar: a 10:3 crop whose rows Reddit picks from
-  // the content (about the middle 900), less about 35 px each side. The iPhone app shows the middle
-  // half, x 750–2250, with its buttons down to y 381, the avatar over x 870–1164 from y 437, and a
-  // fade from y 750 that's still readable to y 850. The safe area is right of the avatar and between
-  // the buttons and the fade.
+  // Desktop shows it as a 316 × 97 card in the sidebar. That's a 10:3 crop whose rows Reddit picks
+  // from the content (about the middle 900), minus about 35 px on each side. The iPhone app shows
+  // the middle half, x 750–2250, with its buttons down to y 381, the avatar over x 870–1164 from
+  // y 437, and a fade from y 750 that's still readable to y 850. The safe area is right of the
+  // avatar and between the buttons and the fade.
   reddit: {
     label: "3:1",
     width: 3000,
@@ -174,28 +176,33 @@ export function sizeOfPlatform(id: unknown): BannerSize | undefined {
   return BANNER_SIZE_KEYS.find((key) => BANNER_SIZES[key].platforms.some((p) => p.id === id));
 }
 
-/** The platform picked in banner state, or its format's first when that's from another format. */
+/**
+ * The platform picked in banner state. If it belongs to another format, the format's first
+ * platform.
+ */
 export function platformOf(state: Record<string, unknown>): BannerPlatform {
   const { platforms } = bannerFormatOf(state.size);
   return platforms.find((platform) => platform.id === state.platform) ?? platforms[0];
 }
 
-/** The format in banner state's `size`. */
 export function bannerFormatOf(size: unknown): BannerFormat {
   return BANNER_SIZES[normalizeBannerSize(size)];
 }
 
-/** The views the format has, in toggle order; none when every device shows all of it. */
+/** The format's views in toggle order. Empty when every device shows the whole banner. */
 export function bannerViews(format: BannerBox): BannerView[] {
   return BANNER_VIEWS.filter((view) => format.views?.[view]);
 }
 
-/** `view` if the format has it, else the phone view (a TV view saved for YouTube, on Reddit). */
+/**
+ * Falls back to the phone view when the format lacks `view`, like a TV view saved for YouTube and
+ * then used on Reddit.
+ */
 export function shownView(format: BannerBox, view: BannerView): BannerView {
   return format.views?.[view] ? view : "phone";
 }
 
-/** The centered part of the banner `view` shows: the whole banner without that view. */
+/** The centered part of the banner that `view` shows. Without that view, it's the whole banner. */
 export function viewRect(format: BannerBox, view: BannerView): Rect {
   const { width, height } = format.views?.[view] ?? format;
   return {
@@ -211,12 +218,10 @@ export function safeAreaOf(format: BannerBox): Rect {
   return format.safeArea ?? viewRect(format, "phone");
 }
 
-/** The file formats the banner format can be exported as. */
 export function exportFormats(format: BannerFormat): readonly ExportFormat[] {
   return format.formats ?? EXPORT_FORMATS;
 }
 
-/** `file`, or the banner format's first file format if it doesn't take `file`. */
 export function exportFormatFor(
   format: BannerFormat,
   file: ExportFormat = DEFAULT_EXPORT_FORMAT,
@@ -225,7 +230,6 @@ export function exportFormatFor(
   return formats.includes(file) ? file : formats[0];
 }
 
-/** The pixel ratios the banner format can be exported at as `file`. */
 export function exportPixelRatios(
   format: BannerFormat,
   file: ExportFormat,
@@ -234,7 +238,7 @@ export function exportPixelRatios(
   return max ? EXPORT_PIXEL_RATIOS.filter((ratio) => ratio <= max) : EXPORT_PIXEL_RATIOS;
 }
 
-/** `ratio`, or the banner format's largest one for `file` if that's smaller. */
+/** Caps `ratio` at the format's largest one for `file`. */
 export function exportPixelRatioFor(
   format: BannerFormat,
   file: ExportFormat,

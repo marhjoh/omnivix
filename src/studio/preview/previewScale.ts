@@ -14,8 +14,8 @@ export function previewScale(
 }
 
 /**
- * previewScale's fit as CSS: the banner's width in the preview, for an element inside the preview
- * stage (a size container). Used until the stage is measured, so the first paint is right.
+ * The same fit as previewScale, as a CSS width. Only works inside the preview stage, which is a
+ * size container. Used until the stage is measured, so the first paint is right.
  */
 export function cssFitWidth(content: { width: number; height: number }): string {
   return `min(100cqw, 100cqh * ${content.width / content.height}, ${content.width}px)`;

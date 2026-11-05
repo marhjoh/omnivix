@@ -44,7 +44,7 @@ interface TemplateMeta {
   title: string;
   description: string;
   needsUsername: boolean;
-  /** GitHub data the banner itself draws; the export fetches only these. */
+  /** GitHub data the banner draws. The export fetches only these. */
   githubData: GithubDataKind[];
 }
 

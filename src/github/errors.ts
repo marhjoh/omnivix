@@ -1,10 +1,10 @@
 import "server-only";
 import { Schema } from "effect";
 
-// Why a GitHub request failed. The routes turn each into its response (see githubRoute), and the
-// render page into a marker the export reads (see renderProblem.ts).
+// Ways a GitHub request can fail. The API routes turn each into a response (see githubRoute). The
+// render page turns them into a marker that the export reads (see renderProblem.ts).
 
-/** GitHub's rate limit for the app's token is reached; requests work again at `resetAt`. */
+/** The app's token hit GitHub's rate limit. Requests work again at `resetAt`. */
 export class GithubRateLimited extends Schema.TaggedError<GithubRateLimited>()(
   "GithubRateLimited",
   { resetAt: Schema.Date },
@@ -17,8 +17,8 @@ export class GithubUserNotFound extends Schema.TaggedError<GithubUserNotFound>()
 ) {}
 
 /**
- * Any other failure: GitHub unreachable or slow, an HTTP or GraphQL error, or a response that
- * doesn't match what we asked for. `transient` ones (network, timeout, 5xx) are retried once.
+ * Any other failure, like GitHub being down or slow, an HTTP or GraphQL error, or a response in
+ * the wrong shape. `transient` failures (network, timeout, 5xx) are retried once.
  */
 export class GithubRequestFailed extends Schema.TaggedError<GithubRequestFailed>()(
   "GithubRequestFailed",

@@ -13,29 +13,30 @@ import {
 import { QuoteMarksPreview } from "@/src/studio/QuoteMarksPreview";
 import { Select } from "@/src/ui/Dropdown";
 
-// The quote banner's typography settings, each option shown in the quote's own type.
+// Typography settings for the quote banner. Each option is shown in its own type.
 
 interface QuoteFieldProps {
   label: string;
-  /** The setting's value; `state` is for the settings its options are shown in (the font). */
+  /** `state` gives the settings the options are shown in, such as the font. */
   value: string;
   state: Record<string, unknown>;
   onChange: (value: string) => void;
 }
 
 /**
- * The quote's font, each in its own typeface. The quote fonts aren't preloaded (app/fonts.ts), so
- * upright and italic faces start loading once the studio is idle, for both Font and Font style.
- * This reduces font swaps when either list opens; an early opening can still beat the warmup.
+ * The quote font picker, with each option in its own typeface. Quote fonts aren't preloaded
+ * (app/fonts.ts), so the upright and italic faces load once the studio is idle. That covers both
+ * Font and Font style and cuts font swaps when a list opens. A list opened very early can still
+ * show a swap.
  */
 export function FontSelect({ label, value, onChange }: Omit<QuoteFieldProps, "state">) {
   useEffect(() => {
     const load = () => {
-      // document.fonts.load can't read var(), so each family is read from its variable.
+      // document.fonts.load can't resolve var(), so look up each family's variable.
       const root = getComputedStyle(document.documentElement);
       for (const { value: font } of QUOTE_FONT_OPTIONS) {
         for (const { value: style } of fontStyleOptions(font)) {
-          // Each variable face covers every offered weight; load it only once per slant.
+          // A variable face covers every weight we offer, so load it once per slant.
           if (style !== "regular" && style !== "italic") continue;
           const css = fontStyleCss(font, style);
           const family = css.fontFamily.replace(/var\((--[^)]+)\)/g, (_, variable: string) =>

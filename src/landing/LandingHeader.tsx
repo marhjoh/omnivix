@@ -18,16 +18,15 @@ function subscribeScroll(onChange: () => void) {
 /** The morph between the bar and the pill. */
 const MORPH = { duration: 0.5, ease: [0.22, 1, 0.36, 1] } as const;
 
-/** The pill's corner radius: half its height (3.25rem). */
+/** Half the pill's height (3.25rem), for round ends. */
 const PILL_RADIUS = 26;
 
 /**
- * Full-width bar at the top of the page; once scrolled, a floating frosted-glass pill. CSS sets
- * both layouts (`data-scrolled`, see landing.module.css) and Motion animates between them with
- * transforms, keeping the corners and the logo and links undistorted. The header keeps a fixed
- * height, so the page never shifts. A highlight slides between the hovered/focused options.
- * Labeled links use 9px side padding (the space around an 18px icon in a 36px square), so the
- * visible gaps between options are even at every width.
+ * A full-width bar at the top that turns into a floating glass pill once you scroll. CSS sets both
+ * layouts (see `data-scrolled` in landing.module.css). Motion animates between them with
+ * transforms, which keeps the corners, logo and links from stretching. The header has a fixed
+ * height, so the page never shifts. Labeled links have 9px side padding, the same space an 18px
+ * icon has in its 36px square, so the gaps between items look even.
  */
 export function LandingHeader() {
   const scrolled = useSyncExternalStore(
@@ -52,7 +51,7 @@ export function LandingHeader() {
               className="shrink-0 transition-opacity hover:opacity-85"
               aria-label="Omnivix home"
             >
-              {/* Below 300px the wordmark would push the nav off screen: the app icon instead. */}
+              {/* Below 300px the wordmark would push the nav off screen, so show the app icon. */}
               <span className="hidden min-[300px]:contents">
                 <ThemedLogo className="h-8 w-auto sm:h-9" />
               </span>

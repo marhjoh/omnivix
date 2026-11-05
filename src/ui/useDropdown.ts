@@ -1,7 +1,7 @@
 import { type KeyboardEvent, useId, useLayoutEffect, useState } from "react";
 import { useDismiss } from "@/src/ui/useDismiss";
 
-/** On DropdownRoot, holding the list's id: presses inside it aren't outside presses. */
+/** Set on DropdownRoot to the list's id. Presses inside that element don't close the list. */
 export const DROPDOWN_ROOT_ATTRIBUTE = "data-dropdown";
 
 function optionsIn(listId: string): HTMLElement[] {
@@ -10,11 +10,10 @@ function optionsIn(listId: string): HTMLElement[] {
 }
 
 /**
- * Open state, focus handling and keyboard support for a button-triggered listbox. The selected (or
- * first) option gets focus on open; choosing an option or pressing Escape closes the list and
- * returns focus to the trigger, while Tab and outside clicks close it and leave focus where it went.
- * The trigger's label toggles the list like the trigger. Elements are found by id, so nothing here
- * is a ref.
+ * Open state, focus and keyboard support for a listbox opened by a button. Opening focuses the
+ * selected option, or the first one. Choosing an option or pressing Escape closes the list and
+ * focuses the trigger. Tab and outside clicks close it and leave focus alone. Clicking the
+ * trigger's label works like clicking the trigger.
  */
 export function useDropdown(triggerId: string) {
   const listId = useId();
@@ -36,8 +35,8 @@ export function useDropdown(triggerId: string) {
 
   useDismiss({
     open,
-    // A press on the trigger's label isn't outside: the label passes its click on to the trigger,
-    // which closes the list, so closing here too would open it again.
+    // The label forwards its click to the trigger, which closes the list. If we closed it here as
+    // well, that click would open it again.
     isInside: (target) =>
       target.closest(`[${DROPDOWN_ROOT_ATTRIBUTE}]`)?.getAttribute(DROPDOWN_ROOT_ATTRIBUTE) ===
         listId || target.closest("label")?.htmlFor === triggerId,

@@ -1,7 +1,7 @@
 /** The Year setting's value for the last 365 days instead of a calendar year. */
 export const LATEST_YEAR = "latest";
 
-/** This year, in UTC: GitHub's contribution ranges are UTC (see `contributionRange`). */
+/** This year in UTC, because GitHub's contribution ranges are in UTC (see `contributionRange`). */
 export function currentYear(): number {
   return new Date().getUTCFullYear();
 }

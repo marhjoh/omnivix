@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/ui/useDelayedFlag";
 
 /**
- * What the preview says while an export runs, from when each step starts. Exports take about
- * 6–10 s once the server is warm and about 14 s on a cold start; the first step's delay (like the
- * studio's loading screen) keeps quick exports from flashing it.
+ * Status text while an export runs, and when each step starts. Exports take about 6–10 s on a warm
+ * server and about 14 s on a cold start. The first step's delay, like the studio's loading screen,
+ * keeps fast exports from flashing it.
  */
 const EXPORT_STEPS = [
   { afterMs: PENDING_DELAY_MS, text: "Rendering your banner…" },
@@ -13,9 +13,8 @@ const EXPORT_STEPS = [
 ] as const;
 
 /**
- * The status text to show while `running`, or null: none for the first `PENDING_DELAY_MS`, then a
- * text that changes with the elapsed time. Once shown, it stays at least `PENDING_MIN_SHOW_MS`.
- * Explicit state: a transition can't express the delays.
+ * The status text while `running`, or null. Nothing shows for the first `PENDING_DELAY_MS`, then
+ * the text changes with the elapsed time. Once shown, it stays for at least `PENDING_MIN_SHOW_MS`.
  */
 export function useExportProgress(running: boolean): string | null {
   const [shown, setShown] = useState<{ step: number; since: number } | null>(null);

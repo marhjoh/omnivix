@@ -21,9 +21,8 @@ export class ImageLinkError extends Error {}
 const NOT_ALLOWED = "That image link isn't allowed. Use a public https:// image.";
 
 /**
- * Resolves like `dns.lookup`, but fails when any address isn't public. Used for every connection,
- * redirects included, so a link can't reach the server's own network or be re-pointed (DNS
- * rebinding) between a check and the request.
+ * `dns.lookup` that fails on any non-public address. Every connection uses it, redirects included,
+ * so a link can't reach the server's network, even through DNS rebinding.
  */
 const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
   dnsLookup(hostname, { ...options, all: true }, (error, addresses) => {
@@ -45,9 +44,10 @@ function toLinkError(error: NodeJS.ErrnoException): ImageLinkError {
 const TOO_LARGE = `The linked image is larger than ${megabytes(MAX_LINKED_IMAGE_BYTES)}.`;
 
 /**
- * Downloads an image link for export: https only, public addresses only, one of `types`, at most
- * `MAX_LINKED_IMAGE_BYTES`, redirects included. Throws `ImageLinkError` when the link can't be
- * used. `signal` stops it (the caller's timeout, see `resolveExportImages`).
+ * Downloads an image link for export. Only https links to public addresses work, and the image must
+ * be one of `types` and at most `MAX_LINKED_IMAGE_BYTES`. Redirects follow the same rules. Throws
+ * `ImageLinkError` when the link can't be used. `signal` cancels the download (see the timeout in
+ * `resolveExportImages`).
  */
 export async function fetchImageLink(
   link: string,
@@ -79,7 +79,10 @@ export async function fetchImageLink(
   return { contentType, body: await readLimitedBody(res) };
 }
 
-/** The link as a URL, if it's https and not a private IP literal (those skip the DNS check). */
+/**
+ * Rejects links that aren't https. IP literals skip the DNS lookup, so private ones are rejected
+ * here.
+ */
 function checkedUrl(link: string): URL {
   let url: URL;
   try {
@@ -95,7 +98,7 @@ function checkedUrl(link: string): URL {
   return url;
 }
 
-/** The response's headers, from a connection that only reaches public addresses. */
+/** Connects through `publicOnlyLookup`, so only public addresses are reached. */
 function openResponse(
   url: URL,
   types: readonly LinkImageType[],
@@ -112,7 +115,6 @@ function openResponse(
   });
 }
 
-/** Where a redirect goes, if it may be followed: https, and not past the redirect limit. */
 function redirectTarget(location: string, from: URL, redirectsLeft: number): string {
   if (redirectsLeft === 0) throw new ImageLinkError("The image link redirects too many times.");
   let next: URL;
@@ -127,7 +129,7 @@ function redirectTarget(location: string, from: URL, redirectsLeft: number): str
   return next.href;
 }
 
-/** The body, stopped as soon as it passes `MAX_LINKED_IMAGE_BYTES`. */
+/** Stops as soon as the body passes `MAX_LINKED_IMAGE_BYTES`, whatever Content-Length said. */
 function readLimitedBody(res: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];

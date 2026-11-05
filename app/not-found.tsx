@@ -8,8 +8,8 @@ import { LazySiteShell } from "@/src/landing/LazySiteShell";
 export const metadata: Metadata = { title: "Page not found" };
 
 /**
- * Unknown URLs and notFound(). Status stays 404 (the export checks it) as long as notFound() runs
- * before streaming.
+ * Unknown URLs and notFound(). The status is only 404 if notFound() runs before streaming starts.
+ * The export relies on that status.
  */
 export default function NotFound() {
   return (

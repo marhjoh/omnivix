@@ -5,7 +5,7 @@ import { contributionYear, isContributionYear } from "@/src/lib/contributionYear
 import { githubRoute } from "@/src/github/route";
 
 export function GET(request: NextRequest) {
-  // Without a year, the same one the studio shows by default.
+  // No year means the one the studio shows by default.
   const year = contributionYear(request.nextUrl.searchParams.get("year"));
   if (!isContributionYear(year)) {
     return NextResponse.json({ error: "That isn't a valid year." }, { status: 400 });

@@ -12,9 +12,10 @@ import {
 } from "@/src/lib/apiResponse";
 
 /**
- * Shared GitHub API route for `?username=`. An impossible username is a 404, so the studio offers
- * to change it; unexpected failures are logged and return 502 with `failure`. The data is cached by
- * the CDN for `ttlMs` (the server cache's TTL), so repeat requests don't reach this server.
+ * Shared handler for the GitHub API routes, which take `?username=`. An invalid username gets a
+ * 404, so the studio offers to change it. Unexpected failures are logged and return 502 with
+ * `failure`. The CDN caches the data for `ttlMs`, the same as the server cache, so repeat requests
+ * don't reach this server.
  */
 export async function githubRoute<T>(
   request: NextRequest,

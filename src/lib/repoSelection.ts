@@ -10,12 +10,10 @@ export const REPO_MODES = ["pinned", "selected"] as const;
 
 export type RepoMode = (typeof REPO_MODES)[number];
 
-/** Pinned unless the setting is a valid mode. */
 export function repoModeOf(raw: unknown): RepoMode {
   return oneOfOr(REPO_MODES, raw, "pinned");
 }
 
-/** A banner's `selectedRepos` setting as text (it's unset on banners without it). */
 export function selectedReposOf(state: Record<string, unknown>): string {
   return String(state.selectedRepos ?? "");
 }
@@ -28,14 +26,13 @@ export function parseRepoSelection(raw: string | null | undefined): string[] {
     .filter(Boolean);
 }
 
-/** How many repositories the banner shows: up to the limit when selected, else the chosen amount. */
 export function reposShown(mode: unknown, maxRepos: unknown): number {
   if (mode === "selected") return MAX_REPOS;
   const amount = Number(maxRepos ?? MAX_REPOS);
   return clamp(Number.isFinite(amount) ? Math.round(amount) : MAX_REPOS, 1, MAX_REPOS);
 }
 
-/** The repositories a repos banner shows: pinned, or the selected ones in the order picked. */
+/** Selected repositories keep the order they were picked in. */
 export function reposForBanner(
   lists: RepoLists,
   mode: unknown,

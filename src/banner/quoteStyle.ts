@@ -3,7 +3,7 @@ import type { Theme } from "@/src/theme/theme";
 
 /** The quote banner's typography: font, weight and italic, quote marks, and their colors. */
 
-/** A post's length: still readable on the 4:1 banner at the smallest text size. */
+/** The length of an X post. It still reads on the 4:1 banner at the smallest text size. */
 export const QUOTE_MAX_LENGTH = 280;
 export const AUTHOR_MAX_LENGTH = 60;
 
@@ -74,9 +74,9 @@ export const DEFAULT_QUOTE_STYLE = {
 } as const;
 
 /**
- * Each font (app/fonts.ts) with its italic (none, in the same family, or a font of its own), its
- * letter spacing, and its lowercase height: every font is sized to it so all look the same size.
- * Serifs and Caveat sit lower, keeping their tall capitals in scale; monos too, as they're wide.
+ * The quote fonts, loaded in app/fonts.ts. Text is sized by `xHeight`, the lowercase height, so
+ * every font looks the same size. Serifs and Caveat use a smaller value so their tall capitals stay
+ * in scale. Monospace fonts do too, because they're wide.
  */
 const FONTS: Record<
   QuoteFont,
@@ -84,7 +84,7 @@ const FONTS: Record<
     label: string;
     variable: string;
     fallback: string;
-    /** "same" when the family has it; a CSS variable when it's a font of its own. */
+    /** "same" when the family has the italic, or the CSS variable of a separate italic font. */
     italic: "none" | "same" | `--${string}`;
     letterSpacing: string;
     xHeight: number;
@@ -193,7 +193,7 @@ const FONT_STYLE: Record<
   "bold-italic": { label: "Bold italic", weight: 700, italic: true, upright: "bold" },
 };
 
-/** Each style's label, and the opening and closing marks of the styles set around the text. */
+/** `text` holds the opening and closing marks for the styles that wrap the text. */
 const MARKS: Record<QuoteMarks, { label: string; text?: readonly [string, string] }> = {
   curly: { label: "Curly", text: ["“", "”"] },
   single: { label: "Single", text: ["‘", "’"] },
@@ -216,8 +216,8 @@ const AUTHOR_PREFIX: Record<AuthorPrefix, { label: string; text: string }> = {
 };
 
 /**
- * The colors, with a deeper shade for light banners and a brighter one for dark, so each has at
- * least 3:1 contrast on its banner, the minimum for large text (quoteStyle.test.ts checks).
+ * Each color has a deeper shade for light banners and a brighter one for dark. Both meet 3:1
+ * contrast, the minimum for large text. quoteStyle.test.ts checks this.
  */
 export const PALETTE: Record<
   Exclude<QuoteColor, "default">,
@@ -237,7 +237,7 @@ export const PALETTE: Record<
   pink: { label: "Pink", light: "#db2777", dark: "#f472b6" },
 };
 
-/** A color picked by hand, as a hex code; used as is in both themes. */
+/** A hand-picked hex color. It's used as is in both themes. */
 const CUSTOM_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 export function isCustomColor(value: unknown): value is string {
@@ -282,7 +282,7 @@ export function fontFamily(font: QuoteFont, italic = false): string {
   return `var(${name}), ${fallback}`;
 }
 
-/** The large marks' glyph: Source Serif's, the classic shape, whatever the quote's font. */
+/** Large marks always use Source Serif for the classic shape, whatever the quote's font. */
 export const LARGE_MARK_FONT_FAMILY = fontFamily("source-serif");
 
 /** A font style's CSS in a font, for showing it in its own look. */
@@ -312,14 +312,14 @@ export function fontStyleShown(font: unknown, fontStyle: unknown): QuoteFontStyl
   return FONTS[fontOf(font)].italic === "none" ? FONT_STYLE[style].upright : style;
 }
 
-/** The color to draw with: undefined for Default, the banner's text color. */
+/** The color to draw with, or undefined for Default (the banner's text color). */
 export function colorValue(color: unknown, uiTheme: Theme): string | undefined {
   if (isCustomColor(color)) return color;
   if (!isOneOf(QUOTE_COLORS, color) || color === "default") return undefined;
   return PALETTE[color][uiTheme];
 }
 
-/** The quote's typography from banner state; anything missing or unknown is the default. */
+/** Reads the quote's typography from banner state. Unknown values fall back to defaults. */
 export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: Theme) {
   const font = fontOf(state.font);
   const style = FONT_STYLE[fontStyleShown(font, state.fontStyle)];

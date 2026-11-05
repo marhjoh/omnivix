@@ -1,6 +1,6 @@
-// Captures the README screenshots in docs/images/ from a running app (`pnpm dev` first, or set
-// BASE_URL). Pages are captured at 2× and encoded as WebP q90 with smartSubsample: 1× looks soft on
-// high-DPI screens, and WebP's default chroma subsampling smears text and sharp UI edges.
+// Captures the README screenshots in docs/images/. Needs a running app (`pnpm dev`, or set
+// BASE_URL). Pages are captured at 2× because 1× looks soft on high-DPI screens. WebP's default
+// chroma subsampling smears text and sharp edges, so they're saved at q90 with smartSubsample.
 // Run with `pnpm readme-screenshots`.
 import { join } from "node:path";
 import { chromium, type Page } from "playwright";

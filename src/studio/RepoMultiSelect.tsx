@@ -10,17 +10,17 @@ import { FieldValue, LabeledGroup } from "@/src/ui/FieldLabel";
 
 const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
 
-/** The owner's repositories for the picker, and how loading them went. */
+/** The owner's repositories for the picker, with their loading state. */
 export interface RepoCatalog {
   repos: RepoNormalized[];
   loading: boolean;
   error: string | null;
-  /** When the rate limit resets, if that's why the repositories didn't load; Retry waits for it. */
+  /** When the rate limit resets, if that's why loading failed. Retry waits until then. */
   retryAt: Date | null;
   retry: () => void;
 }
 
-/** The repositories to show, picked from the user's public ones, up to MAX_REPOS. */
+/** Picks up to MAX_REPOS of the user's public repositories to show. */
 export function RepoMultiSelect({
   catalog: { repos: catalog, loading, error, retryAt, retry },
   valueCsv,
@@ -32,11 +32,11 @@ export function RepoMultiSelect({
 }) {
   const retryReached = useTimeReached(retryAt);
   const selected = parseRepoSelection(valueCsv);
-  // The picks from when the list opened come first, so they show (checked) while the rest
-  // loads and don't move when it arrives. Clicking later doesn't reorder anything.
+  // Repositories picked when the list opened come first. They show checked while the rest loads,
+  // and don't move when it arrives. Later clicks don't reorder anything.
   const [initialPicks] = useState(selected);
-  // A skeleton while the list loads slowly, kept for its minimum time once shown; quicker loads go
-  // straight to the list.
+  // Show a skeleton only when loading is slow, and keep it for a minimum time once shown. Fast
+  // loads go straight to the list.
   const showSkeleton = useDelayedFlag(loading);
   const pending = loading || showSkeleton;
 
@@ -67,8 +67,8 @@ export function RepoMultiSelect({
     );
   };
 
-  // A pick that's no longer in the list (renamed, deleted, made private) still shows, so it can
-  // be removed: otherwise it would count toward the limit with no way to unpick it.
+  // Keep showing a pick that's gone from the list (renamed, deleted or made private). Otherwise it
+  // would count toward the limit with no way to remove it.
   const missing = selected.filter((name) => !catalog.some((repo) => repo.name === name));
   const ordered = [
     ...initialPicks.flatMap((name) => catalog.find((repo) => repo.name === name) ?? []),
@@ -78,7 +78,7 @@ export function RepoMultiSelect({
   return (
     <LabeledGroup
       label="Repositories"
-      // Picked of the most allowed, so rows greyed out at the limit make sense.
+      // Shows picked out of the maximum, so it's clear why rows are grayed out at the limit.
       end={
         <FieldValue>
           {selected.length}/{MAX_REPOS}

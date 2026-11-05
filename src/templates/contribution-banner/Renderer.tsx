@@ -5,12 +5,12 @@ import { contentFit } from "@/src/banner/contentPosition";
 import { bannerFormatOf, viewRect } from "@/src/lib/sizes";
 import type { RendererProps } from "@/src/templates/types";
 
-/** Natural cell size; `FitContent` scales the grid to the chosen size and banner format. */
+/** Cell size before FitContent scales the grid. */
 const GRID = { cell: 12, gap: 3 };
 
 /**
- * Fill: the grid covers the banner, with columns running past the edges. On YouTube it covers the
- * strip desktop shows, so phones and desktop see a full grid.
+ * For Fill, the grid covers the banner and runs past its edges. On YouTube it covers the strip
+ * desktop shows, so phones and desktop both see a full grid.
  */
 const FILL_GRID = { cell: 22, gap: 4 };
 

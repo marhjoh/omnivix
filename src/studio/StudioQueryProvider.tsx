@@ -7,12 +7,12 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Data younger than this is used as is: returning to the studio, or to a year or user
-        // shown before, renders it at once without asking GitHub again. Unused data is dropped
-        // after gcTime (5 minutes by default).
+        // Data younger than this is used without refetching. Going back to the studio, or to a
+        // year or user seen before, renders right away. Unused data is dropped after gcTime
+        // (5 minutes by default).
         staleTime: 60_000,
-        // Retrying is the user's choice (the preview's Retry button): a GitHub error or one of
-        // our 429s would only fail again.
+        // No automatic retries. A GitHub error or one of our 429s would just fail again, so the
+        // user retries with the preview's Retry button.
         retry: false,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
@@ -24,10 +24,10 @@ function makeQueryClient() {
   });
 }
 
-/** One for the browser session, so the data survives moving between templates. */
+/** One client per browser session, so data survives switching templates. */
 const browserQueryClient = environmentManager.isServer() ? undefined : makeQueryClient();
 
-/** The studio's query cache. A server render gets its own, so requests never share one. */
+/** The studio's query cache. Each server render gets a new one so requests never share data. */
 export function StudioQueryProvider({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={browserQueryClient ?? makeQueryClient()}>

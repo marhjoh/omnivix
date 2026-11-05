@@ -28,7 +28,7 @@ import type { EditorFieldSchema } from "@/src/templates/types";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { Theme } from "@/src/theme/theme";
 
-// The sidebar's own controls, which ControlSidebar draws settings with.
+// Controls that ControlSidebar uses to draw settings.
 
 export function GridColorsPicker({
   label,
@@ -68,8 +68,8 @@ const APPEARANCES: Array<{ value: Theme; label: string; icon: typeof Sun }> = [
 ];
 
 /**
- * Light or dark for the whole app, which the banner's text and panels follow too. Not a template
- * setting: it's saved in the theme cookie and shown in every template's Style group.
+ * Light or dark mode for the whole app, including the banner's text and panels. It isn't a
+ * template setting. It's saved in the theme cookie and shows in every template's Style group.
  */
 export function AppearancePicker() {
   const { theme, setTheme } = useTheme();
@@ -93,8 +93,8 @@ export function AppearancePicker() {
 }
 
 /**
- * The platform the banner is for, grouped by the format they share: every platform in a group gets
- * the same image.
+ * The platform the banner is for. Platforms are grouped by banner format, and every platform in a
+ * group gets the same image.
  */
 export function PlatformPicker({
   label,
@@ -159,7 +159,7 @@ export function PlatformPicker({
   );
 }
 
-/** Show/hide settings as one list, a row per setting with a check on the right. */
+/** Show/hide settings as one list, with a row per setting. */
 export function ShowList({
   fields,
   state,
@@ -198,7 +198,7 @@ export function SettingsSection({ title, children }: { title: string; children: 
   return (
     <section aria-labelledby={`settings-${title}`}>
       <h2 id={`settings-${title}`} className={controls.groupTitle}>
-        {/* The landing page's heading gradient, on a span so it spans the word, not the row. */}
+        {/* The landing page's heading gradient, on a span so it covers the word, not the row. */}
         <span className="gradient-text">{title}</span>
       </h2>
       <div className="space-y-4">{children}</div>

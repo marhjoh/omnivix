@@ -1,8 +1,8 @@
 import "server-only";
 import { Schema, SchemaIssue } from "effect";
 
-// Building blocks for the API's schemas. Each one carries its own message, so an issue never
-// repeats the value that failed (the default messages do).
+// Building blocks for the API's schemas. Each has its own message because Effect's default
+// messages repeat the value that failed.
 
 /** One of `values`, with the message naming them all. */
 export function oneOf<const L extends ReadonlyArray<string | number>>(values: L) {
@@ -30,12 +30,14 @@ export function numberBetween(minimum: number, maximum: number) {
   );
 }
 
-/** Text that passes `test`, or fails with `message`. */
 export function textWhere(test: (value: string) => boolean, message: string) {
   return text.check(Schema.makeFilter(test, { message }));
 }
 
-/** A field that failed, e.g. `{ path: "state.username", message: "Required" }`; no values. */
+/**
+ * A field that failed, e.g. `{ path: "state.username", message: "Required" }`. It never holds the
+ * value.
+ */
 export interface FieldIssue {
   path: string;
   message: string;
@@ -46,7 +48,7 @@ const formatIssues = SchemaIssue.makeFormatterStandardSchemaV1({
     issue._tag === "MissingKey" ? "Required" : SchemaIssue.defaultLeafHook(issue),
 });
 
-/** The fields that failed, as paths under `prefix` ("request" for the value itself). */
+/** The fields that failed, as paths under `prefix`. A failure of the whole value gets "request". */
 export function fieldIssues(issue: SchemaIssue.Issue, prefix?: string): FieldIssue[] {
   return formatIssues(issue).issues.map(({ path, message }) => ({
     path:

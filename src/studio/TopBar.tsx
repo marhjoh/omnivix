@@ -8,7 +8,7 @@ import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 
-/** The studio header: the same at every width except the Download label, shown from sm. */
+/** The studio header. Only the Download label depends on width: it shows from sm up. */
 export function TopBar({
   templateId,
   sidebarExpanded,
@@ -49,7 +49,7 @@ export function TopBar({
         </HoverHighlightItem>
         {/* The visible title is the template picker, so the h1 is a hidden copy. */}
         <h1 className="sr-only">{templateRegistry[templateId].meta.title}</h1>
-        {/* What gives way on the narrowest phones: the template name truncates. */}
+        {/* On the narrowest phones, the template name truncates. */}
         <HoverHighlightItem id="template" shrink>
           <TemplateSwitcher templateId={templateId} />
         </HoverHighlightItem>
