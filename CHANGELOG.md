@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.1](https://github.com/marhjoh/omnivix/compare/v1.23.0...v1.23.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* stop an export after 45 seconds and close Chromium ([a99ea5e](https://github.com/marhjoh/omnivix/commit/a99ea5e8587d0c8c38c0ba56124201c95d7f024a))
+
 ## [1.23.0](https://github.com/marhjoh/omnivix/compare/v1.22.1...v1.23.0) (2026-11-04)
 
 
