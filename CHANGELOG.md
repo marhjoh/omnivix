@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.3](https://github.com/marhjoh/omnivix/compare/v1.23.2...v1.23.3) (2026-11-05)
+
+
+### Bug Fixes
+
+* share the export token's fallback secret across bundles ([a0f7ce1](https://github.com/marhjoh/omnivix/commit/a0f7ce1d9c08a7e288dc24ae2e98f226d135318e))
+
 ## [1.23.2](https://github.com/marhjoh/omnivix/compare/v1.23.1...v1.23.2) (2026-11-05)
 
 
