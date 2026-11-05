@@ -12,7 +12,8 @@ import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import type { ExportImage } from "@/src/export/images";
 import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
-import { GithubLimitReached, GithubUserMissing, RenderFailed } from "@/src/export/errors";
+import { RenderFailed } from "@/src/export/errors";
+import { GithubRateLimited, GithubUserNotFound } from "@/src/github/errors";
 
 /**
  * A script that starts `executable` with core dumps off. Chromium crashes as it closes on Vercel,
@@ -157,9 +158,9 @@ const failOnRenderProblem = Effect.fnUntraced(function* (page: Page) {
     ),
   );
   if (problem.limitUntil) {
-    return yield* new GithubLimitReached({ resetAt: new Date(problem.limitUntil) });
+    return yield* new GithubRateLimited({ resetAt: new Date(problem.limitUntil) });
   }
-  if (problem.userMissing) return yield* new GithubUserMissing();
+  if (problem.userMissing) return yield* new GithubUserNotFound();
 });
 
 /** Opens the render page at the banner's size and pixel ratio and screenshots the banner. */

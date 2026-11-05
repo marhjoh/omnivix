@@ -26,9 +26,6 @@ export const exportRequestSchema = Schema.Struct({
 
 const decodeRequest = Schema.decodeUnknownResult(exportRequestSchema, { errors: "all" });
 
-/** A field that failed, e.g. `{ path: "state.username", message: "Required" }`; no values. */
-export type ExportIssue = FieldIssue;
-
 /** A checked export request: its format is always set. */
 export type ParsedExportRequest = ExportRequest & { format: ExportFormat };
 
@@ -39,7 +36,7 @@ export type ParsedExportRequest = ExportRequest & { format: ExportFormat };
  */
 export function parseExportRequest(
   body: unknown,
-): { ok: true; request: ParsedExportRequest } | { ok: false; issues: ExportIssue[] } {
+): { ok: true; request: ParsedExportRequest } | { ok: false; issues: FieldIssue[] } {
   const decoded = decodeRequest(body);
   if (Result.isFailure(decoded)) return { ok: false, issues: fieldIssues(decoded.failure.issue) };
   const request = { ...decoded.success, state: { ...decoded.success.state } };

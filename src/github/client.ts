@@ -9,6 +9,7 @@ import type {
 } from "@/src/github/normalize";
 import { contributionRange, isContributionYear } from "@/src/lib/utcContributionRange";
 import type { GithubError } from "@/src/github/errors";
+import type { GithubDataKind } from "@/src/types/template";
 import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
 
 /**
@@ -119,11 +120,13 @@ const ContributionCalendar = Schema.Struct({
   }),
 });
 
-/** Keys are `login year rangeEnd`: "latest" moves every day, so its key names the day it ends on. */
+/**
+ * Keys are `login year from to`. The range is in the key, so "latest" (which moves every day) gets
+ * a new key each day, and a lookup always asks for exactly the range its key names.
+ */
 const contributions = githubCache(
   (key) => {
-    const [login, year] = key.split(" ");
-    const { from, to } = contributionRange(year);
+    const [login, , from, to] = key.split(" ");
     return githubQuery(
       `
         query UserContributions($username: String!, $from: DateTime, $to: DateTime) {
@@ -181,8 +184,8 @@ export function getContributions(
   year: string,
 ): Effect.Effect<ContributionsNormalized, GithubError> {
   if (!isContributionYear(year)) return Effect.die(new Error(`Invalid contribution year: ${year}`));
-  const { to } = contributionRange(year);
-  return Cache.get(contributions, `${userKey(username)} ${year} ${to.slice(0, 10)}`);
+  const { from, to } = contributionRange(year);
+  return Cache.get(contributions, `${userKey(username)} ${year} ${from} ${to}`);
 }
 
 const RepoFields = Schema.Struct({
@@ -310,3 +313,10 @@ const repoLists = githubCache(
 export function getRepoLists(username: string): Effect.Effect<RepoLists, GithubError> {
   return Cache.get(repoLists, userKey(username));
 }
+
+/** How each kind of GitHub data a banner draws is loaded (see `meta.githubData`). */
+export const GITHUB_LOADERS = {
+  user: (username: string) => getUserSummary(username),
+  contributions: (username: string, year: string) => getContributions(username, year),
+  repos: (username: string) => getRepoLists(username),
+} satisfies Record<GithubDataKind, (username: string, year: string) => unknown>;

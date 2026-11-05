@@ -1,6 +1,6 @@
 import "server-only";
 import { Effect } from "effect";
-import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
+import { GITHUB_LOADERS } from "@/src/github/client";
 import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
@@ -35,15 +35,15 @@ export async function loadInitialGithubData(
     year,
   });
   const loads: [string | null, () => Promise<unknown>][] = [
-    [urls.user, () => Effect.runPromise(getUserSummary(username))],
+    [urls.user, () => Effect.runPromise(GITHUB_LOADERS.user(username))],
     [
       urls.contributions,
       () =>
         isContributionYear(year)
-          ? Effect.runPromise(getContributions(username, year))
+          ? Effect.runPromise(GITHUB_LOADERS.contributions(username, year))
           : Promise.reject(),
     ],
-    [urls.repos, () => Effect.runPromise(getRepoLists(username))],
+    [urls.repos, () => Effect.runPromise(GITHUB_LOADERS.repos(username))],
   ];
   const timeout = new Promise<undefined>((resolve) => setTimeout(resolve, WAIT_MS));
   const entries = await Promise.all(

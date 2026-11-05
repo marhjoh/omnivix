@@ -3,18 +3,13 @@ import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import type { GithubError } from "@/src/github/errors";
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { githubDataLimit, tooManyRequests } from "@/src/lib/requestLimits";
-
-/** The user doesn't exist, as a 404 naming `state.username`. Also used by the export. */
-export function githubUserNotFound(username: string) {
-  return NextResponse.json(
-    {
-      error: `No GitHub user named @${username}`,
-      issues: [{ path: "state.username", message: "No GitHub user with this name" }],
-    },
-    { status: 404 },
-  );
-}
+import { githubDataLimit } from "@/src/lib/requestLimits";
+import {
+  errorResponse,
+  githubErrorResponses,
+  githubUserNotFound,
+  tooManyRequests,
+} from "@/src/lib/apiResponse";
 
 /**
  * Shared GitHub API route: reads and checks `?username=`, runs `load` and returns its JSON.
@@ -42,14 +37,11 @@ export async function githubRoute<T>(
           headers: { "Cache-Control": `public, s-maxage=${Math.round(ttlMs / 1000)}` },
         }),
       ),
-      Effect.catchTags({
-        GithubUserNotFound: () => Effect.succeed(githubUserNotFound(username)),
-        GithubRateLimited: ({ resetAt }) => Effect.succeed(tooManyRequests("github", resetAt)),
-      }),
+      Effect.catchTags(githubErrorResponses(username)),
       Effect.catchCause((cause) =>
         Effect.sync(() => {
           console.error(failure, Cause.pretty(cause));
-          return NextResponse.json({ error: failure }, { status: 502 });
+          return errorResponse(failure, 502);
         }),
       ),
     ),

@@ -30,11 +30,16 @@ const Envelope = Schema.Struct({
   ),
 });
 
-const Quota = Schema.Struct({
-  rateLimit: Schema.optional(
-    Schema.Struct({ limit: Schema.Number, remaining: Schema.Number, resetAt: Schema.String }),
-  ),
+const GithubQuota = Schema.Struct({
+  limit: Schema.Number,
+  remaining: Schema.Number,
+  resetAt: Schema.String,
 });
+
+/** The token's quota, as GitHub's GraphQL `rateLimit` field reports it. */
+export type GithubQuota = typeof GithubQuota.Type;
+
+const Quota = Schema.Struct({ rateLimit: Schema.optional(GithubQuota) });
 
 const failed = (cause: unknown, transient = false) => new GithubRequestFailed({ cause, transient });
 

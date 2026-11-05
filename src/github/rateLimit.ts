@@ -1,6 +1,7 @@
 import "server-only";
 import { Effect } from "effect";
 import { GithubRateLimited } from "@/src/github/errors";
+import type { GithubQuota } from "@/src/github/graphql";
 
 /** Used when GitHub reports a limit without saying when it resets. */
 const DEFAULT_WAIT_MS = 60_000;
@@ -54,9 +55,6 @@ export function guardRateLimit<A, E>(request: Effect.Effect<A, E | GithubRateLim
         ),
   );
 }
-
-/** The token's quota, as GitHub's GraphQL `rateLimit` field reports it. */
-export type GithubQuota = { limit: number; remaining: number; resetAt: string };
 
 const LOW_QUOTA_SHARE = 0.1;
 

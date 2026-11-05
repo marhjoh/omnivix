@@ -8,8 +8,9 @@ import { renderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { DailyExportLimitReached, ExportTimedOut, SettingsTooLong } from "@/src/export/errors";
-import { githubUserNotFound } from "@/src/github/route";
-import { dailyExportLimit, tooManyRequests } from "@/src/lib/requestLimits";
+import { dailyExportLimit } from "@/src/lib/requestLimits";
+import { errorResponse, githubErrorResponses, tooManyRequests } from "@/src/lib/apiResponse";
+import { usernameOf } from "@/src/lib/githubUsername";
 import type { TemplateId } from "@/src/types/template";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
@@ -26,10 +27,6 @@ const EXPORT_DEADLINE = "45 seconds";
 const INVALID_REQUEST = "Couldn't export this banner. Reload the page and try again.";
 
 const EXPORT_FAILED = "Couldn't export the banner. Try again.";
-
-function error(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
-}
 
 function imageResponse(image: Buffer, format: ExportFormat, templateId: TemplateId) {
   const { contentType, extension } = EXPORT_FORMAT_DETAILS[format];
@@ -71,9 +68,8 @@ const exportBanner = Effect.fnUntraced(function* (
 export async function exportRoute(request: NextRequest): Promise<Response> {
   const parsed = parseExportRequest(await request.json().catch(() => null));
   if (!parsed.ok) {
-    return NextResponse.json({ error: INVALID_REQUEST, issues: parsed.issues }, { status: 400 });
+    return errorResponse(INVALID_REQUEST, 400, { issues: parsed.issues });
   }
-  const username = String(parsed.request.state.username ?? "");
   return Effect.runPromise(
     exportBanner(request, parsed.request).pipe(
       Effect.timeoutOrElse({
@@ -83,17 +79,18 @@ export async function exportRoute(request: NextRequest): Promise<Response> {
       Effect.catchTags({
         DailyExportLimitReached: ({ resetAt }) =>
           Effect.succeed(tooManyRequests("daily-exports", resetAt)),
-        UnusableImage: ({ message }) => Effect.succeed(error(message, 400)),
+        UnusableImage: ({ message }) => Effect.succeed(errorResponse(message, 400)),
         SettingsTooLong: () =>
-          Effect.succeed(error("Banner settings are too long to export. Shorten the text.", 413)),
+          Effect.succeed(
+            errorResponse("Banner settings are too long to export. Shorten the text.", 413),
+          ),
         // The render page loads GitHub data, so its GitHub problems reach the export too.
-        GithubLimitReached: ({ resetAt }) => Effect.succeed(tooManyRequests("github", resetAt)),
-        GithubUserMissing: () => Effect.succeed(githubUserNotFound(username)),
+        ...githubErrorResponses(usernameOf(parsed.request.state)),
       }),
       Effect.catchCause((cause) =>
         Effect.sync(() => {
           console.error("Export failed", Cause.pretty(cause));
-          return error(EXPORT_FAILED, 500);
+          return errorResponse(EXPORT_FAILED, 500);
         }),
       ),
     ),

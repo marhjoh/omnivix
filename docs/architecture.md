@@ -31,13 +31,16 @@ sequenceDiagram
   participant Render as /render/[templateId]
 
   Studio->>API: template, size, settings, pixel ratio, format
-  alt invalid settings or unknown GitHub user
-    API-->>Studio: 400 or 404
+  alt invalid settings, daily quota used up, or an unusable image
+    API-->>Studio: 400 or 429
   end
-  API->>API: sign settings into a token (HMAC, expires in 2 minutes)
+  API->>API: download linked images, sign settings into a token (HMAC, expires in 2 minutes)
   API->>Browser: open the render URL at the banner's size and pixel ratio
   Browser->>Render: GET ?token=…
-  Render-->>Browser: banner
+  Render-->>Browser: banner, or a marker for an unknown GitHub user or GitHub's limit
+  alt marker
+    API-->>Studio: 404 or 429
+  end
   Browser->>Browser: wait for fonts, images and content sizing
   Browser-->>API: screenshot of .banner-export-root
   API-->>Studio: PNG, or JPEG at 90% quality (lower to fit a platform's upload limit)
