@@ -1,8 +1,6 @@
 import "server-only";
 import { Schema, SchemaIssue } from "effect";
 
-// Server only: Effect stays out of the browser (see AGENTS.md).
-//
 // Building blocks for the API's schemas. Each one carries its own message, so an issue never
 // repeats the value that failed (the default messages do).
 

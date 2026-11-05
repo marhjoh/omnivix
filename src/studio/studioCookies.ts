@@ -1,7 +1,6 @@
 /** The studio's cookies (see src/lib/cookies.ts). Values come from the browser, so they're checked. */
 
 import { isGithubUsername } from "@/src/lib/githubUsername";
-import { setCookieClient } from "@/src/lib/cookies";
 import { BANNER_VIEWS, type BannerView } from "@/src/lib/sizes";
 import { oneOfOr } from "@/src/lib/isOneOf";
 import {
@@ -56,10 +55,6 @@ export const SIDEBAR_COOKIE: StudioCookie<boolean> = {
   name: "omnivix-sidebar",
   parse: (value) => value === "collapsed",
 };
-
-export function setSidebarCollapsedCookieClient(collapsed: boolean): void {
-  setCookieClient(SIDEBAR_COOKIE.name, collapsed ? "collapsed" : "expanded");
-}
 
 /**
  * The preview's view (Phone, Desktop or TV), so the server renders it. Phones by default: most

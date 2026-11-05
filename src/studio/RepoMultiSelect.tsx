@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { RepoNormalized } from "@/src/github/types";
-import { parseRepoSelection } from "@/src/lib/repoSelection";
+import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 import { CheckList, CheckRow, CheckRowSkeleton } from "@/src/studio/CheckList";
 import { useDelayedFlag } from "@/src/ui/useDelayedFlag";
 import { useTimeReached } from "@/src/ui/useTimeReached";
@@ -10,25 +10,24 @@ import { FieldValue, LabeledGroup } from "@/src/ui/FieldLabel";
 
 const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
 
-/** The repositories to show, picked from the user's public ones, up to `maxPick`. */
-export function RepoMultiSelect({
-  catalog,
-  loading,
-  error,
-  retryAt,
-  onRetry,
-  valueCsv,
-  maxPick,
-  onChange,
-}: {
-  catalog: RepoNormalized[];
+/** The owner's repositories for the picker, and how loading them went. */
+export interface RepoCatalog {
+  repos: RepoNormalized[];
   loading: boolean;
   error: string | null;
-  /** Until then Retry is disabled (a rate limit). */
+  /** When the rate limit resets, if that's why the repositories didn't load; Retry waits for it. */
   retryAt: Date | null;
-  onRetry: () => void;
+  retry: () => void;
+}
+
+/** The repositories to show, picked from the user's public ones, up to MAX_REPOS. */
+export function RepoMultiSelect({
+  catalog: { repos: catalog, loading, error, retryAt, retry },
+  valueCsv,
+  onChange,
+}: {
+  catalog: RepoCatalog;
   valueCsv: string;
-  maxPick: number;
   onChange: (csv: string) => void;
 }) {
   const retryReached = useTimeReached(retryAt);
@@ -46,7 +45,7 @@ export function RepoMultiSelect({
     let next: string[];
     if (i >= 0) {
       next = [...selected.slice(0, i), ...selected.slice(i + 1)];
-    } else if (selected.length >= maxPick) {
+    } else if (selected.length >= MAX_REPOS) {
       return;
     } else {
       next = [...selected, name];
@@ -62,7 +61,7 @@ export function RepoMultiSelect({
         label={name}
         on={on}
         // At the limit, only already-selected repositories can be clicked (to remove them).
-        disabled={!on && selected.length >= maxPick}
+        disabled={!on && selected.length >= MAX_REPOS}
         onClick={() => toggle(name)}
       />
     );
@@ -82,7 +81,7 @@ export function RepoMultiSelect({
       // Picked of the most allowed, so rows greyed out at the limit make sense.
       end={
         <FieldValue>
-          {selected.length}/{maxPick}
+          {selected.length}/{MAX_REPOS}
         </FieldValue>
       }
     >
@@ -94,7 +93,7 @@ export function RepoMultiSelect({
             </p>
             <button
               type="button"
-              onClick={onRetry}
+              onClick={retry}
               disabled={!retryReached}
               className="btn-secondary h-9 px-3 py-0"
             >

@@ -1,24 +1,11 @@
-import {
-  CONTENT_ALIGN_OPTIONS,
-  DEFAULT_CONTENT_ALIGN,
-  type ContentAlign,
-} from "@/src/banner/contentPosition";
-import { PROFILE_POSITION_OPTIONS, type ProfilePosition } from "@/src/banner/profilePosition";
-import {
-  CONTENT_SIZE_OPTIONS,
-  DEFAULT_CONTENT_SIZE,
-  type ContentSize,
-  type ContentSizeOrFill,
-} from "@/src/banner/contentSize";
-import {
-  CONTRIBUTION_CELL_SHAPE_OPTIONS,
-  DEFAULT_CELL_SHAPE,
-  type ContributionCellShape,
-} from "@/src/banner/cellShape";
-import { DEFAULT_GRID_COLORS_ID, type GridColorsId } from "@/src/banner/gridColors";
-import { DEFAULT_BANNER_SIZE, type BannerSize } from "@/src/lib/sizes";
+import { CONTENT_ALIGN_OPTIONS, DEFAULT_CONTENT_ALIGN } from "@/src/banner/contentPosition";
+import { PROFILE_POSITION_OPTIONS } from "@/src/banner/profilePosition";
+import { CONTENT_SIZE_OPTIONS, DEFAULT_CONTENT_SIZE } from "@/src/banner/contentSize";
+import { CONTRIBUTION_CELL_SHAPE_OPTIONS, DEFAULT_CELL_SHAPE } from "@/src/banner/cellShape";
+import { DEFAULT_GRID_COLORS_ID } from "@/src/banner/gridColors";
+import { DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import type { EditorFieldSchema, TemplateDefinition } from "@/src/templates/types";
-import { MAX_REPOS, REPO_MODES, type RepoMode } from "@/src/lib/repoSelection";
+import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 import {
@@ -27,31 +14,19 @@ import {
   QUOTE_COLOR_OPTIONS,
   QUOTE_MAX_LENGTH,
   AUTHOR_PREFIX_OPTIONS,
-  type AuthorPrefix,
   QUOTE_FONT_OPTIONS,
   QUOTE_FONT_STYLE_OPTIONS,
   QUOTE_MARKS_OPTIONS,
-  type QuoteFont,
-  type QuoteFontStyle,
-  type QuoteMarks,
 } from "@/src/banner/quoteStyle";
 
 // The sidebar shows each template's fields in its `schema` order. Settings rules: stateSchemas.ts.
 
-/** Settings every banner has: its size, background, logo and alignment. */
-type BannerState = {
-  size: BannerSize;
-  backgroundImage?: string;
-  logoImage?: string;
-  logoSize: ContentSize;
-  alignment: ContentAlign;
-};
-
+/** Settings every banner has: its size, logo and alignment (the background has no default). */
 const bannerInitialState = {
   size: DEFAULT_BANNER_SIZE,
   logoSize: DEFAULT_LOGO_SIZE,
   alignment: DEFAULT_CONTENT_ALIGN,
-} satisfies BannerState;
+};
 
 const sizeField: EditorFieldSchema = { key: "size", label: "Type", type: "sizeSelect" };
 
@@ -84,17 +59,11 @@ const contentSizeField: EditorFieldSchema = {
 };
 
 /** The contribution grid's settings (GitHub and contribution banners). */
-type ContributionGridState = {
-  year: string;
-  themeId: GridColorsId;
-  cellShape: ContributionCellShape;
-};
-
 const contributionGridInitialState = {
   year: String(currentYear()),
   themeId: DEFAULT_GRID_COLORS_ID,
   cellShape: DEFAULT_CELL_SHAPE,
-} satisfies ContributionGridState;
+};
 
 /** The grid colors; the sidebar calls them "Grid colors" (settingGroups.ts). */
 const gridColorsField: EditorFieldSchema = { key: "themeId", label: "Theme", type: "select" };
@@ -109,19 +78,12 @@ const cellShapeField: EditorFieldSchema = {
 };
 
 /** The GitHub profile above the content (GitHub and repos banners). */
-type ProfileState = {
-  username: string;
-  showAvatar: boolean;
-  showDisplayName: boolean;
-  profilePosition: ProfilePosition;
-};
-
 const profileInitialState = {
   username: "",
   showAvatar: true,
   showDisplayName: false,
   profilePosition: "left",
-} satisfies ProfileState;
+};
 
 /** Which side of the content the avatar and name sit on. */
 const profilePositionField: EditorFieldSchema = {
@@ -136,16 +98,7 @@ const profileFields: EditorFieldSchema[] = [
   { key: "showDisplayName", label: "Full name", type: "toggle" },
 ];
 
-export const githubBannerDefinition: TemplateDefinition<
-  BannerState &
-    ContributionGridState &
-    ProfileState & {
-      showMonthLabels: boolean;
-      showDayLabels: boolean;
-      showTotal: boolean;
-      contentSize: ContentSize;
-    }
-> = {
+export const githubBannerDefinition: TemplateDefinition = {
   meta: {
     id: "github-banner",
     title: "GitHub Banner",
@@ -179,19 +132,7 @@ export const githubBannerDefinition: TemplateDefinition<
   },
 };
 
-export const reposBannerDefinition: TemplateDefinition<
-  BannerState &
-    ProfileState & {
-      mode: RepoMode;
-      selectedRepos: string;
-      maxRepos: number;
-      showDescription: boolean;
-      showLanguage: boolean;
-      showStars: boolean;
-      showForks: boolean;
-      contentSize: ContentSize;
-    }
-> = {
+export const reposBannerDefinition: TemplateDefinition = {
   meta: {
     id: "repos-banner",
     title: "Repos Banner",
@@ -237,13 +178,7 @@ export const reposBannerDefinition: TemplateDefinition<
   },
 };
 
-export const contributionBannerDefinition: TemplateDefinition<
-  BannerState &
-    ContributionGridState & {
-      username: string;
-      contentSize: ContentSizeOrFill;
-    }
-> = {
+export const contributionBannerDefinition: TemplateDefinition = {
   meta: {
     id: "contribution-banner",
     title: "Contribution Banner",
@@ -269,22 +204,7 @@ export const contributionBannerDefinition: TemplateDefinition<
   },
 };
 
-export const quoteBannerDefinition: TemplateDefinition<
-  BannerState & {
-    quote: string;
-    author: string;
-    contentSize: ContentSize;
-    font: QuoteFont;
-    fontStyle: QuoteFontStyle;
-    quoteMarks: QuoteMarks;
-    /** A named color or a hex code. */
-    quoteColor: string;
-    markColor: string;
-    authorColor: string;
-    authorPrefix: AuthorPrefix;
-    authorSize: ContentSize;
-  }
-> = {
+export const quoteBannerDefinition: TemplateDefinition = {
   meta: {
     id: "quote-banner",
     title: "Quote Banner",

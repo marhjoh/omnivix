@@ -38,12 +38,11 @@ for (const [network, prefix] of [
   nonPublic.addSubnet(network, prefix, "ipv6");
 }
 
-const IPV4_MAPPED = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i;
-
-/** True for a public unicast IP address; false for private, loopback, link-local, etc. */
+/**
+ * True for a public unicast IP address; false for private, loopback, link-local, etc. BlockList
+ * checks IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) against the IPv4 ranges.
+ */
 export function isPublicAddress(address: string): boolean {
-  const mapped = IPV4_MAPPED.exec(address);
-  if (mapped) return isPublicAddress(mapped[1]);
   if (isIPv4(address)) return !nonPublic.check(address, "ipv4");
   if (isIPv6(address)) return !nonPublic.check(address, "ipv6");
   return false;

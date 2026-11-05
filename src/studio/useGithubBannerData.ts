@@ -6,7 +6,7 @@ import type {
   RepoLists,
   RepoNormalized,
 } from "@/src/github/types";
-import { type ApiLimit, limitResetAt } from "@/src/lib/apiError";
+import { limitResetAt } from "@/src/lib/apiError";
 import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
 import { repoModeOf, reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
 import { githubDataUrls } from "@/src/studio/githubUrls";
@@ -16,28 +16,9 @@ import type { PreviewProblem } from "@/src/studio/preview/types";
 import { useImageStatus } from "@/src/studio/useImageStatus";
 import { initialData, useApiQuery } from "@/src/studio/useApiQuery";
 import { templateRegistry } from "@/src/templates/registry";
-import type { GithubDataKind, RenderData, TemplateId } from "@/src/templates/types";
-
-/** Shown when a GitHub request fails without a message of its own (network, platform errors). */
-const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";
+import type { RenderData, TemplateId } from "@/src/templates/types";
 
 const NO_REPOS: RepoNormalized[] = [];
-
-type FailedFetch = { error: string | null; limit: ApiLimit | null; notFound: boolean };
-
-/**
- * The fetch the preview reports: the first failing one among the data the banner draws. (The
- * contribution banner's user fetch is only for the sidebar's year list, so it never shows.)
- */
-function failedFetchFor(
-  githubData: readonly GithubDataKind[],
-  fetches: Record<GithubDataKind, FailedFetch | null>,
-): FailedFetch | null {
-  for (const kind of githubData) {
-    if (fetches[kind]?.error) return fetches[kind];
-  }
-  return null;
-}
 
 /**
  * The GitHub data the banner draws, loaded for its username, and what the preview and the
@@ -61,27 +42,16 @@ export function useGithubBannerData({
   const selectedRepos = selectedReposOf(state);
   // Both repository lists come in one request per user: picking repositories and switching
   // between pinned and selected need nothing more from GitHub.
-  const urls = githubDataUrls({
-    needsUsername,
-    githubData,
-    username,
-    year: contributionYear(state.year),
-  });
+  const urls = githubDataUrls({ githubData, username, year: contributionYear(state.year) });
 
   const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
-  const userFetch = useApiQuery<GithubUserNormalized>(urls.user, GITHUB_FETCH_FALLBACK, {
-    initial: initialUser,
+  const userFetch = useApiQuery<GithubUserNormalized>(urls.user, { initial: initialUser });
+  const contributionsFetch = useApiQuery<ContributionsNormalized>(urls.contributions, {
+    // Another year keeps the current grid until it arrives, instead of flashing "Loading".
+    keepKey: username,
+    initial: initialData<ContributionsNormalized>(initialGithubData, urls.contributions),
   });
-  const contributionsFetch = useApiQuery<ContributionsNormalized>(
-    urls.contributions,
-    GITHUB_FETCH_FALLBACK,
-    {
-      // Another year keeps the current grid until it arrives, instead of flashing "Loading".
-      keepKey: username,
-      initial: initialData<ContributionsNormalized>(initialGithubData, urls.contributions),
-    },
-  );
-  const repoListsFetch = useApiQuery<RepoLists>(urls.repos, GITHUB_FETCH_FALLBACK, {
+  const repoListsFetch = useApiQuery<RepoLists>(urls.repos, {
     initial: initialData<RepoLists>(initialGithubData, urls.repos),
   });
   const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
@@ -123,12 +93,14 @@ export function useGithubBannerData({
     (githubData.every((kind) => data[kind] !== undefined) &&
       (!githubData.includes("user") || avatarReady));
 
-  const failedFetch = failedFetchFor(githubData, {
+  // The first failing fetch among the data the banner draws (the contribution banner's user fetch
+  // is only for the sidebar's year list). A failed refetch of the same year keeps its grid.
+  const fetches = {
     user: userFetch,
-    // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
     contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch,
     repos: repoListsFetch,
-  });
+  };
+  const failedFetch = githubData.map((kind) => fetches[kind]).find((fetch) => fetch?.error);
   // The repos banner with no repositories to show is handled like a failed fetch: the preview
   // says why instead of drawing an empty banner, and export is blocked.
   const noRepos = githubData.includes("repos") && dataReady && data.repos?.length === 0;

@@ -41,7 +41,7 @@ export function useItemRect(surface: RefObject<HTMLElement | null>, target: stri
       frameId = requestAnimationFrame(measure);
     });
     observer.observe(item);
-    if (item.parentElement) observer.observe(item.parentElement);
+    observer.observe(item.parentElement!);
     return () => {
       cancelAnimationFrame(frameId);
       observer.disconnect();

@@ -4,8 +4,6 @@
   container-type: size;
   flex: 1;
   width: 100%;
-  min-width: 0;
-  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,8 +22,6 @@
 .stateFrame {
   position: absolute;
   inset: 0;
-  min-width: 0;
-  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,12 +65,6 @@
   animation: omnivixPreviewPulse 1.5s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pulseLogo {
-    animation: none;
-  }
-}
-
 /* In the title's row (its line height), so the bars below sit where the other states' hint does. */
 .loadingText {
   margin: 0;
@@ -108,13 +98,6 @@
 .skeletonRowNarrow {
   width: min(160px, 55cqw);
   opacity: 0.7;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeletonRow {
-    animation: none;
-    background: var(--surface-2);
-  }
 }
 
 /* One line, cut short with "…" when it doesn't fit (a long @username). */
@@ -163,7 +146,7 @@
 }
 
 /* Over the banner while an export runs (ExportProgress): it dims, a light band sweeps across it, and
-   the status sits in a pill in the middle. Fades in and out; hidden, it takes no clicks. */
+   the status sits in a pill in the middle. Fades in and out, and never takes clicks. */
 .exportOverlay {
   position: absolute;
   inset: 0;
@@ -177,16 +160,11 @@
   background: color-mix(in oklab, var(--bg) 45%, transparent);
   pointer-events: none;
   opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.2s,
-    visibility 0s 0.2s;
+  transition: opacity 0.2s;
 }
 
 .exportOverlay[data-shown="true"] {
   opacity: 1;
-  visibility: visible;
-  transition: opacity 0.2s;
 }
 
 .exportOverlay::before {
@@ -230,13 +208,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .exportOverlay,
-  .exportOverlay[data-shown="true"] {
-    transition: none;
-  }
-
+  .pulseLogo,
   .exportOverlay[data-shown="true"]::before {
     animation: none;
+  }
+
+  .skeletonRow {
+    animation: none;
+    background: var(--surface-2);
+  }
+
+  .exportOverlay {
+    transition: none;
   }
 }
 

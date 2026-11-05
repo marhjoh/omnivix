@@ -16,8 +16,8 @@
   --color-divider-strong: var(--divider-strong);
 }
 
-/* App chrome tokens: THEME_INIT_SCRIPT (src/theme/theme.ts) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
-/* Keep --bg, --text, --muted and --accent in sync with DARK_PALETTE in src/theme/theme.ts. */
+/* App chrome tokens, by <html data-theme> (set before first paint by THEME_INIT_SCRIPT). Keep
+   --bg, --text, --muted and --accent in sync with DARK_PALETTE in src/theme/theme.ts. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
@@ -47,6 +47,24 @@ html[data-theme="light"] {
   --accent-fill-hover: var(--accent-hover);
   --danger: #cf222e;
   color-scheme: light;
+}
+
+:root {
+  /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
+  --control-border: color-mix(in oklab, var(--border) 85%, transparent);
+  --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
+  /* Text and icons of disabled controls, which keep their frame instead of fading out. */
+  --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
+  /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
+     Each rule's `transition-property` lists which colors; --fade-colors is all of them. */
+  --hover-fade: 0.15s;
+  --fade-colors: background-color, border-color, box-shadow, color;
+  /* The focus outline of tiles, rows and links (Tailwind: ring-focus-ring). */
+  --focus-ring: color-mix(in oklab, var(--accent) 45%, transparent);
+  /* Rules between areas (the studio's header and sidebar, the landing header), and the stronger
+     ones under titles and between groups (Tailwind: border-divider, border-divider-strong). */
+  --divider: color-mix(in oklab, var(--border) 30%, transparent);
+  --divider-strong: color-mix(in oklab, var(--border) 60%, transparent);
 }
 
 /* Themed artwork: ThemedBrand renders both variants; show the one matching <html data-theme>. */
@@ -99,8 +117,7 @@ body {
   }
 
   .btn-primary:disabled,
-  .btn-secondary:disabled,
-  .btn-ghost:disabled {
+  .btn-secondary:disabled {
     color: var(--disabled-text);
     cursor: not-allowed;
   }
@@ -143,9 +160,7 @@ body {
     color: var(--text);
     background: var(--surface);
   }
-}
 
-@layer components {
   /* The frame of floating popups: the dropdown lists (src/ui/Dropdown.tsx), the color panel and
      the studio's export options panel. Utilities still override it. */
   .popover {
@@ -226,48 +241,7 @@ body {
       animation: heading-wipe 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s both;
     }
   }
-}
 
-/* A .gradient-text heading wiping in: the gradient grows from the left while an outline fades. */
-@keyframes heading-wipe {
-  from {
-    background-size: 0% 100%;
-    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
-  }
-
-  70% {
-    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 40%, transparent);
-  }
-
-  to {
-    background-size: 100% 100%;
-    -webkit-text-stroke-color: transparent;
-  }
-}
-
-:root {
-  /* The border of fields, tiles and their frames, and the faint blue they get on hover. */
-  --control-border: color-mix(in oklab, var(--border) 85%, transparent);
-  --control-border-hover: color-mix(in oklab, var(--accent) 40%, transparent);
-  /* Text and icons of disabled controls, which keep their frame instead of fading out. */
-  --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
-  /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
-     Each rule's `transition-property` lists which colors; --fade-colors is all of them. */
-  --hover-fade: 0.15s;
-  --fade-colors: background-color, border-color, box-shadow, color;
-  /* The focus outline of tiles, rows and links (Tailwind: ring-focus-ring). */
-  --focus-ring: color-mix(in oklab, var(--accent) 45%, transparent);
-  /* Rules between areas (the studio's header and sidebar, the landing header), and the stronger
-     ones under titles and between groups (Tailwind: border-divider, border-divider-strong). */
-  --divider: color-mix(in oklab, var(--border) 30%, transparent);
-  --divider-strong: color-mix(in oklab, var(--border) 60%, transparent);
-}
-
-/*
- * Fields, and the dropdown triggers in src/ui/Dropdown.tsx. In the components layer like the
- * buttons, so utilities such as `hidden` still apply.
- */
-@layer components {
   /* A setting's label, above its control: like the landing page's step titles (text color,
      semibold), one size below the value in the control. */
   .field-label {
@@ -331,5 +305,22 @@ body {
   .field-select:disabled {
     color: var(--disabled-text);
     cursor: not-allowed;
+  }
+}
+
+/* A .gradient-text heading wiping in: the gradient grows from the left while an outline fades. */
+@keyframes heading-wipe {
+  from {
+    background-size: 0% 100%;
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  }
+
+  70% {
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 40%, transparent);
+  }
+
+  to {
+    background-size: 100% 100%;
+    -webkit-text-stroke-color: transparent;
   }
 }

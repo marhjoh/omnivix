@@ -11,8 +11,8 @@ type GroupState = {
 const GroupContext = createContext<GroupState | null>(null);
 
 /**
- * A row of items sharing one highlight that slides to whichever item is hovered or focused.
- * Style the items with the classes in ./classNames (a plain module, so server components can use them too).
+ * A row of items sharing one highlight that slides to whichever item is hovered or focused. Style
+ * the items with the classes in ./classNames.
  */
 export function HoverHighlightGroup({
   layoutId,
@@ -51,9 +51,7 @@ export function HoverHighlightItem({
   shrink?: boolean;
   children: ReactNode;
 }) {
-  const group = useContext(GroupContext);
-  if (!group) throw new Error("HoverHighlightItem must be inside a HoverHighlightGroup");
-  const { active, setActive, layoutId } = group;
+  const { active, setActive, layoutId } = useContext(GroupContext)!;
   return (
     <div
       className={`relative ${shrink ? "min-w-0" : "shrink-0"}`}

@@ -50,10 +50,10 @@ interface TemplateMeta {
 
 export type GithubDataKind = "user" | "contributions" | "repos";
 
-export interface TemplateDefinition<TState extends Record<string, unknown>> {
+export interface TemplateDefinition {
   meta: TemplateMeta;
   schema: EditorFieldSchema[];
-  initialState: TState;
+  initialState: Record<string, unknown>;
 }
 
 export interface RenderData {

@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { contentBoxOf } from "@/src/banner/fit";
 import { BANNER_CONTENT_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
-import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
+import type { ContentSize } from "@/src/banner/contentSize";
 import {
   LARGE_MARK_FONT_FAMILY,
   quoteStyleFromState,
@@ -10,7 +10,6 @@ import {
 } from "@/src/banner/quoteStyle";
 import { ELLIPSIS, lineClamp } from "@/src/banner/textStyle";
 import { bannerUiChrome } from "@/src/theme/theme";
-import { quoteBannerDefinition } from "@/src/templates/definitions";
 import type { RendererProps } from "@/src/templates/types";
 
 /** A quote longer than this is set smaller and may run to more lines. */
@@ -71,12 +70,9 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
   const style = quoteStyleFromState(state, uiTheme);
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
-  const { initialState } = quoteBannerDefinition;
-  const quoteSize = QUOTE_SIZES[normalizeContentSize(state.contentSize, initialState.contentSize)];
+  const quoteSize = QUOTE_SIZES[state.contentSize as ContentSize];
   // In step with the quote's size setting, not with a long quote's smaller type.
-  const authorFontSize = Math.round(
-    quoteSize * AUTHOR_SCALE[normalizeContentSize(state.authorSize, initialState.authorSize)],
-  );
+  const authorFontSize = Math.round(quoteSize * AUTHOR_SCALE[state.authorSize as ContentSize]);
 
   const longText = quote.length > LONG_QUOTE_CHARS;
   const quoteFontSize = longText
@@ -84,12 +80,6 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
     : quoteSize;
 
   const [open, close] = style.textMarks ?? ["", ""];
-  const quoteType: CSSProperties = {
-    fontFamily: style.fontFamily,
-    fontSize: quoteFontSize,
-    lineHeight: 1.2,
-    fontWeight: style.fontWeight,
-  };
   const largeMark = LARGE_MARKS[style.marks];
   const mark = (glyph: string) =>
     glyph ? <span style={{ color: style.markColor }}>{glyph}</span> : null;
@@ -140,7 +130,10 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
         <div style={{ position: "relative", minWidth: 0 }}>
           <blockquote
             style={{
-              ...quoteType,
+              fontFamily: style.fontFamily,
+              fontSize: quoteFontSize,
+              lineHeight: 1.2,
+              fontWeight: style.fontWeight,
               fontStyle: style.fontStyle,
               letterSpacing: style.letterSpacing,
               color: style.color,

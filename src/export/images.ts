@@ -91,14 +91,10 @@ function downloadLink(link: string, types: readonly LinkImageType[]) {
 
 /** One image setting: null to keep it as it is, or the image to serve at its `path`. */
 const resolveImage = Effect.fnUntraced(function* (
-  value: unknown,
+  value: string | undefined,
   { name, path, maxUploadBytes, linkTypes, presets }: ImageSlot,
 ): Effect.fn.Return<ExportImage | null, UnusableImage> {
-  if (value === undefined || value === "") return null;
-  if (typeof value !== "string") {
-    return yield* new UnusableImage({ message: `Unsupported ${name} image.` });
-  }
-  if (presets?.test(value)) return null;
+  if (!value || presets?.test(value)) return null;
 
   if (isDataUrl(value)) {
     const match = DATA_URL_PATTERN.exec(value);
@@ -144,7 +140,8 @@ export const resolveExportImages = Effect.fnUntraced(function* <T extends Export
   payload: T,
 ): Effect.fn.Return<{ payload: T; images: ExportImage[] }, UnusableImage> {
   const resolved = yield* Effect.all(
-    EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key], slot)),
+    // The settings are checked, so each is text or unset.
+    EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key] as string | undefined, slot)),
     { concurrency: "unbounded" },
   );
   const state = { ...payload.state };
@@ -154,5 +151,5 @@ export const resolveExportImages = Effect.fnUntraced(function* <T extends Export
     state[EXPORT_IMAGES[index].key] = image.path;
     images.push(image);
   }
-  return { payload: images.length ? { ...payload, state } : payload, images };
+  return { payload: { ...payload, state }, images };
 });

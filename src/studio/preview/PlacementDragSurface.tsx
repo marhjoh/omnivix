@@ -13,7 +13,6 @@ import {
   SnapGuide,
   useMoveOncePerFrame,
   usePointerDrag,
-  type PreviewScale,
 } from "@/src/studio/preview/dragSurface";
 import { useItemRect } from "@/src/studio/preview/useItemRect";
 
@@ -39,7 +38,7 @@ export function PlacementDragSurface({
   frame: BannerBox;
   /** The part of the banner the preview shows, in CSS pixels. */
   shown: Rect;
-  scale: PreviewScale;
+  scale: number;
   onMove: (position: Position) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);

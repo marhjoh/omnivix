@@ -33,8 +33,8 @@ function ChoiceTile({ label, hint }: { label: string; hint: string }) {
 
 /**
  * Download joined to its options panel, for the studio header's right group. The panel holds
- * everything that takes the banner out of the studio: resolution and format, then the copy actions
- * (Copy image, Copy link, and later the embed URL, #83), so the header stays one button wide.
+ * everything that takes the banner out of the studio: resolution and format, then the copy actions,
+ * so the header stays one button wide.
  */
 export function ExportControls({
   onDownload,

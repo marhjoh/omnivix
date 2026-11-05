@@ -1,19 +1,6 @@
 /**
- * Calendar-aligned contribution grid layout driven by GitHub's authoritative
- * `contributionCalendar.weeks` and `contributionCalendar.months`.
- *
- * Key contract:
- *   columnCount = weeks.length
- *   row = weekday (0=Sun..6=Sat)
- *   col = week index
- *
- * `renderPaddingDays` fills empty weekday slots in the first/last week column
- * with out-of-range cells (level=0). It never creates extra week columns.
- *
- * GitHub's first week for a year range may start on the range start (e.g.,
- * Wednesday Jan 1), not on the previous Sunday. The layout handles this
- * by using API-provided days as the authoritative source and computing
- * the week's Sunday for padding.
+ * Places GitHub's contribution weeks in a grid: a column per week, a row per weekday (0 = Sunday).
+ * GitHub's first week can start mid-week on the range start, so padding counts from its Sunday.
  */
 
 import type { ContributionWeekNormalized, ContributionMonthNormalized } from "@/src/github/types";
@@ -40,7 +27,7 @@ export const DAY_LABEL_ROWS: Array<{ label: string; row: number }> = [
 const MS_PER_DAY = 86400000;
 
 function utcDayMs(ymd: string): number {
-  const [y, m, d] = ymd.slice(0, 10).split("-").map(Number);
+  const [y, m, d] = ymd.split("-").map(Number);
   return Date.UTC(y, m - 1, d);
 }
 
@@ -55,17 +42,7 @@ function sundayOfWeek(ymd: string): number {
   return ms - dow * MS_PER_DAY;
 }
 
-/**
- * Build calendar-aligned grid layout from GitHub weeks and months.
- *
- * For each week column we place the API-provided `contributionDays` first
- * (authoritative in-range cells). When `renderPaddingDays` is true we then
- * fill the remaining weekday slots with synthetic out-of-range padding.
- *
- * Padding dates are derived from the week's actual Sunday (which may differ
- * from `week.firstDay` when GitHub returns a partial first week starting on
- * the range start rather than the preceding Sunday).
- */
+/** `renderPaddingDays` fills the empty weekday slots of the first and last weeks. */
 export function buildCalendarLayout(options: {
   weeks: ContributionWeekNormalized[];
   months: ContributionMonthNormalized[];
@@ -78,10 +55,6 @@ export function buildCalendarLayout(options: {
 } {
   const { weeks, months, rangeEndYmd, renderPaddingDays = false } = options;
 
-  if (weeks.length === 0) {
-    return { placedDays: [], monthLabels: [], columnCount: 0 };
-  }
-
   const columnCount = weeks.length;
   const rangeEndMs = utcDayMs(rangeEndYmd);
   const placedDays: PlacedCalendarDay[] = [];
@@ -91,7 +64,7 @@ export function buildCalendarLayout(options: {
     const placedDates = new Set<string>();
 
     for (const day of week.days) {
-      placedDates.add(day.date.slice(0, 10));
+      placedDates.add(day.date);
       placedDays.push({ date: day.date, level: day.level, col, row: day.weekday });
     }
 

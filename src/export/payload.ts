@@ -40,7 +40,7 @@ export function parseExportRequest(
 ): { ok: true; request: ParsedExportRequest } | { ok: false; issues: FieldIssue[] } {
   const decoded = decodeRequest(body);
   if (Result.isFailure(decoded)) return { ok: false, issues: fieldIssues(decoded.failure.issue) };
-  const request = { ...decoded.success, state: { ...decoded.success.state } };
+  const request = decoded.success;
   const { pixelRatio, size } = request;
   const formats = exportFormats(BANNER_SIZES[size]);
   if (request.format !== undefined && !formats.includes(request.format)) {

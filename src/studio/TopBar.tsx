@@ -8,10 +8,7 @@ import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 
-/**
- * The studio header: the same at every width except the Download label, shown from sm. The
- * username and light/dark are in the sidebar (Profile and Style).
- */
+/** The studio header: the same at every width except the Download label, shown from sm. */
 export function TopBar({
   templateId,
   sidebarExpanded,

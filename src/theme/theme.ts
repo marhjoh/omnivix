@@ -68,13 +68,12 @@ export function bannerUiChrome(t: Theme): BannerUiChrome {
   };
 }
 
-/** App chrome only (banner template `themeId` is separate). Cookie name avoids `:` for broad client compatibility. */
+/** App chrome only (banner template `themeId` is separate). */
 export const THEME_COOKIE_NAME = "omnivix-theme";
 
 /** Until the browser's own theme is known (the inline script sets it before first paint). */
 export const DEFAULT_THEME: Theme = "dark";
 
-/** Single parser: cookie raw value → Theme. Invalid/missing → default. */
 export function parseThemeCookie(value: string | undefined): Theme {
   return oneOfOr(THEMES, value, DEFAULT_THEME);
 }
@@ -88,12 +87,6 @@ const THEME_COOKIE_PATTERN = `(?:^|; )${THEME_COOKIE_NAME}=(light|dark)(?:;|$)`;
  */
 export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=document.cookie.match(/${THEME_COOKIE_PATTERN}/),t=m?m[1]:matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";d.setAttribute("data-theme",t);if(!m)document.cookie="${THEME_COOKIE_NAME}="+t+"; ${COOKIE_ATTRIBUTES}"+(location.protocol==="https:"?"; Secure":"")}catch(e){}})()`;
 
-/** Client-only: the theme stored in the cookie, or null if none. */
-function readThemeCookieClient(): Theme | null {
-  const match = document.cookie.match(new RegExp(THEME_COOKIE_PATTERN));
-  return match ? (match[1] as Theme) : null;
-}
-
 /**
  * Client-only THEME_INIT_SCRIPT, for renders where it didn't run: Strict Mode remounts in
  * development, and pages rendered in the browser (a studio 404, where Next sends an empty error
@@ -102,7 +95,7 @@ function readThemeCookieClient(): Theme | null {
  */
 export function applyStoredTheme(): void {
   const root = document.documentElement;
-  const stored = readThemeCookieClient();
+  const stored = document.cookie.match(new RegExp(THEME_COOKIE_PATTERN))?.[1] as Theme | undefined;
   const theme = stored ?? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
   if (!stored) setThemeCookieClient(theme);
   if (root.dataset.theme !== theme) root.dataset.theme = theme;

@@ -20,7 +20,6 @@ export function TileGroup<T extends string | number, O extends TileOption<T>>({
   onChange,
   columns,
   tileClassName,
-  tileData,
   className,
   labelClassName,
   tilesClassName = "grid gap-2",
@@ -33,8 +32,6 @@ export function TileGroup<T extends string | number, O extends TileOption<T>>({
   columns?: number;
   /** The tiles' own look, such as controls.colorTile. */
   tileClassName: string;
-  /** `data-*` attributes for a tile, for styles that pick it out. */
-  tileData?: (option: O) => Record<`data-${string}`, string>;
   /** The group's and its label's classes, when they differ from a sidebar setting's. */
   className?: string;
   labelClassName?: string;
@@ -55,7 +52,8 @@ export function TileGroup<T extends string | number, O extends TileOption<T>>({
             disabled={option.disabled}
             onClick={() => onChange(option.value)}
             className={`${controls.tile} ${tileClassName}`}
-            {...tileData?.(option)}
+            // For styles that pick a tile out (the Appearance tiles).
+            data-value={option.value}
           >
             {children(option)}
           </button>

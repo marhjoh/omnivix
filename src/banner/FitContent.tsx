@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, useEffectEvent, useLayoutEffect, useRef } from "react";
 import { CONTENT_SIZE_FACTOR, type ContentSize } from "@/src/banner/contentSize";
-import { type ContentPosition } from "@/src/banner/contentPosition";
+import type { Position } from "@/src/banner/position";
 import { FIT_STATUS_ATTRIBUTE, fitScale } from "@/src/banner/fit";
 import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
 import type { Rect } from "@/src/lib/sizes";
@@ -20,7 +20,7 @@ export function FitContent({
   box,
   size,
   position,
-}: PropsWithChildren<{ box: Rect; size: ContentSize; position: ContentPosition }>) {
+}: PropsWithChildren<{ box: Rect; size: ContentSize; position: Position }>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scalerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);

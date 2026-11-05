@@ -76,7 +76,6 @@ describe("resolveExportImages with a background", () => {
     ["another app path", "/api/github/repos"],
     ["an old .jpg preset path", "/backgrounds/chicago.jpg"],
     ["a path escaping the presets", "/backgrounds/../api/github/repos"],
-    ["a non-string value", 42],
   ])("rejects %s", async (_, value) => {
     expect((await resolveExportImages(payload(value))).ok).toBe(false);
   });
@@ -130,7 +129,7 @@ describe("resolveExportImages with a logo", () => {
   });
 
   it("names the logo in its problems", async () => {
-    expect(await resolveExportImages(withLogo(42))).toEqual({
+    expect(await resolveExportImages(withLogo("ftp://example.com/logo.png"))).toEqual({
       ok: false,
       error: "Unsupported logo image.",
     });

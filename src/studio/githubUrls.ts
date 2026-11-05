@@ -5,19 +5,18 @@ import type { GithubDataKind } from "@/src/templates/types";
  * username. The studio page loads the same urls on the server, so they must match exactly.
  */
 export function githubDataUrls({
-  needsUsername,
   githubData,
   username,
   year,
 }: {
-  needsUsername: boolean;
   githubData: readonly GithubDataKind[];
   username: string;
   year: string;
 }): Record<GithubDataKind, string | null> {
   const user = encodeURIComponent(username);
   return {
-    user: needsUsername && username ? `/api/github/user-summary?username=${user}` : null,
+    // Every GitHub banner loads the user: the sidebar's year list needs the account's age.
+    user: username && githubData.length ? `/api/github/user-summary?username=${user}` : null,
     contributions:
       username && githubData.includes("contributions")
         ? `/api/github/contributions?username=${user}&year=${encodeURIComponent(year)}`

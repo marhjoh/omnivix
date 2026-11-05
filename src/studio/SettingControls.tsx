@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
 import {
   BANNER_SIZE_KEYS,
@@ -19,7 +19,6 @@ import {
 import { useDropdown } from "@/src/ui/useDropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import { FieldWrapper, LabeledGroup } from "@/src/ui/FieldLabel";
-import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import { CheckList, CheckRow } from "@/src/studio/CheckList";
 import { TileGroup } from "@/src/studio/TileGroup";
 import { fieldLabel } from "@/src/studio/settingGroups";
@@ -30,46 +29,6 @@ import { useTheme } from "@/src/theme/ThemeProvider";
 import type { Theme } from "@/src/theme/theme";
 
 // The sidebar's own controls, which ControlSidebar draws settings with.
-
-/** How long text fields wait after the last keystroke before updating the banner. */
-const INPUT_DEBOUNCE_MS = 400;
-
-export function DebouncedInput({
-  id,
-  maxLength,
-  value: externalValue,
-  onChange,
-}: {
-  id: string;
-  maxLength?: number;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const [localValue, setLocalValue] = useState(externalValue);
-  const [prevExternalValue, setPrevExternalValue] = useState(externalValue);
-  const debounced = useDebouncedCallback(onChange, INPUT_DEBOUNCE_MS);
-
-  if (externalValue !== prevExternalValue) {
-    setPrevExternalValue(externalValue);
-    setLocalValue(externalValue);
-  }
-
-  return (
-    <input
-      id={id}
-      type="text"
-      className="field-input"
-      maxLength={maxLength}
-      value={localValue}
-      onChange={(e) => {
-        setLocalValue(e.target.value);
-        debounced.schedule(e.target.value);
-      }}
-      // Leaving the field saves a pending value now instead of after the debounce.
-      onBlur={debounced.flush}
-    />
-  );
-}
 
 export function GridColorsPicker({
   label,
@@ -119,7 +78,6 @@ export function AppearancePicker() {
       label="Appearance"
       columns={2}
       tileClassName={controls.appearanceTile}
-      tileData={(option) => ({ "data-appearance": option.value })}
       options={APPEARANCES}
       value={theme}
       onChange={setTheme}

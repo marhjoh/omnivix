@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { alignmentAt, type ContentPosition } from "@/src/banner/contentPosition";
+import { alignmentAt } from "@/src/banner/contentPosition";
+import type { Position } from "@/src/banner/position";
 import { fitsInCookie, readCookieClient, setCookieClient } from "@/src/lib/cookies";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { sizeOfPlatform } from "@/src/lib/sizes";
@@ -81,7 +82,7 @@ export function useBannerSettings({
   );
 
   // On the left, center or right line, the alignment follows.
-  const moveContent = useCallback((position: ContentPosition) => {
+  const moveContent = useCallback((position: Position) => {
     setState((prev) => ({
       ...prev,
       contentPosition: position,

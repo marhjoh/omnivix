@@ -52,9 +52,7 @@ export function useImageLinkField({
       ? "Couldn't load this image link."
       : null;
 
-  // A settled link that isn't the image yet. It becomes the image once the browser has loaded it
-  // or it has failed; until then the banner keeps the image it has, so typing never makes it
-  // flicker.
+  // A settled link that isn't the image yet.
   const pendingLink = settledLink && settledLink !== linkValue ? settledLink : undefined;
   const pendingStatus = useImageStatus(pendingLink);
   useEffect(() => {
