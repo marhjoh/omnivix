@@ -14,6 +14,9 @@ importers:
       '@sparticuz/chromium':
         specifier: ^153.0.0
         version: 153.0.0
+      '@tanstack/react-query':
+        specifier: 5.106.0
+        version: 5.106.0(@types/react@19.3.0)(react@19.3.1)
       '@upstash/ratelimit':
         specifier: 2.2.0
         version: 2.2.0(@upstash/redis@1.39.0)
@@ -1119,6 +1122,18 @@ packages:
 
   '@tailwindcss/postcss@4.3.3':
     resolution: {integrity: sha512-JTSZZGQi1AyKirbLN3azmjVzef92tcX7h+iSqPdaeStyFpGpDlKvvpxeOE8njhbUanbRwr3z8DyzhICWnMtQeg==}
+
+  '@tanstack/query-core@5.106.0':
+    resolution: {integrity: sha512-3GuqVrhCG0bBfmLt4AU0SIm8UuZ1rzeRjDiQBnYuzW3lkri1RdawWN73jZYvB4kC8WyDUoDgBx3kyO3TbNH/6Q==}
+
+  '@tanstack/react-query@5.106.0':
+    resolution: {integrity: sha512-OuP/ST9dEMBwHhisE5A/bBSWMhMmB/xKPfeZ2U0Wy8W/txb9QiGd7iXhxJPQ7jGbfcKlV13sJUHip9Nki54yyg==}
+    peerDependencies:
+      '@types/react': ^18 || ^19
+      react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
@@ -3804,6 +3819,15 @@ snapshots:
       '@tailwindcss/oxide': 4.3.3
       postcss: 8.5.32
       tailwindcss: 4.3.3
+
+  '@tanstack/query-core@5.106.0': {}
+
+  '@tanstack/react-query@5.106.0(@types/react@19.3.0)(react@19.3.1)':
+    dependencies:
+      '@tanstack/query-core': 5.106.0
+      react: 19.3.1
+    optionalDependencies:
+      '@types/react': 19.3.0
 
   '@tybys/wasm-util@0.10.4':
     dependencies:
