@@ -23,14 +23,7 @@ export function useExportProgress(running: boolean): string | null {
   useEffect(() => {
     if (!running) return;
     const timers = EXPORT_STEPS.map(({ afterMs }, step) =>
-      setTimeout(
-        () =>
-          setShown((previous) => ({
-            step,
-            since: step === 0 || !previous ? Date.now() : previous.since,
-          })),
-        afterMs,
-      ),
+      setTimeout(() => setShown({ step, since: Date.now() }), afterMs),
     );
     return () => timers.forEach(clearTimeout);
   }, [running]);

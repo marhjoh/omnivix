@@ -50,15 +50,7 @@ export function verifyExportToken(token: string): ExportRequest | null {
     return null;
   }
 
-  let decoded: TokenBody;
-  try {
-    decoded = JSON.parse(Buffer.from(encoded, "base64url").toString("utf-8")) as TokenBody;
-  } catch {
-    return null;
-  }
-
-  if (decoded.exp < Math.floor(Date.now() / 1000)) return null;
-  if (!decoded.payload || typeof decoded.payload !== "object") return null;
-
-  return decoded.payload;
+  // Signed by us, so it's the body createExportToken wrote.
+  const { exp, payload }: TokenBody = JSON.parse(Buffer.from(encoded, "base64url").toString());
+  return exp < Math.floor(Date.now() / 1000) ? null : payload;
 }

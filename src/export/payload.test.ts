@@ -76,8 +76,8 @@ describe("parseExportRequest", () => {
       state: { quote: "x".repeat(1000), alignment: "diagonal" },
     });
     expect(!result.ok && result.issues.map((issue) => issue.path)).toEqual([
-      "state.quote",
       "state.alignment",
+      "state.quote",
     ]);
   });
 

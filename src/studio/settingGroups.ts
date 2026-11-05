@@ -53,8 +53,7 @@ export interface SettingGroup {
  * A template's settings grouped by what they change. The username is set elsewhere. Empty groups
  * are left out, except Style, which always holds the light/dark setting.
  */
-export function groupFields(schema: EditorFieldSchema[]): SettingGroup[] {
-  const fields = schema.filter((field) => field.key !== "username");
+export function groupFields(fields: EditorFieldSchema[]): SettingGroup[] {
   const placed = new Set(GROUPS.flatMap((group) => group.keys ?? []));
   return GROUPS.map(({ title, keys }) => ({
     title,

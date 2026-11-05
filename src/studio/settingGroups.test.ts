@@ -37,11 +37,10 @@ describe("groupFields", () => {
     expect(groupFields(schema).map((g) => g.title)).toEqual([STYLE_GROUP, "Content"]);
   });
 
-  it("keeps every setting except the username, once", () => {
+  it("keeps every setting, once", () => {
     for (const { meta, schema } of getTemplates()) {
       const grouped = groupFields(schema).flatMap((g) => g.fields.map((f) => f.key));
-      const expected = schema.map((f) => f.key).filter((key) => key !== "username");
-      expect(grouped.toSorted(), meta.id).toEqual(expected.toSorted());
+      expect(grouped.toSorted(), meta.id).toEqual(schema.map((f) => f.key).toSorted());
     }
   });
 });

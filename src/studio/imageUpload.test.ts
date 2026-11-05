@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD, MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
 import {
-  isGifMagicBytes,
-  readFileHead,
   shouldDecodeHeicWithHeic2any,
   supportedFormatsMessage,
   validateImageUploadMeta,
@@ -116,24 +114,5 @@ describe("shouldDecodeHeicWithHeic2any", () => {
   it("is false for JPEG mime", () => {
     const f = new File([], "x.jpg", { type: "image/jpeg" });
     expect(shouldDecodeHeicWithHeic2any(f)).toBe(false);
-  });
-});
-
-describe("GIF magic", () => {
-  it("detects GIF signature", () => {
-    expect(isGifMagicBytes(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]))).toBe(true);
-  });
-
-  it("does not flag PNG", () => {
-    expect(isGifMagicBytes(new Uint8Array([0x89, 0x50, 0x4e]))).toBe(false);
-  });
-});
-
-describe("readFileHead", () => {
-  it("reads leading bytes", async () => {
-    const buf = new Uint8Array([1, 2, 3, 4, 5]);
-    const f = new File([buf], "t.bin");
-    const head = await readFileHead(f, 3);
-    expect(Array.from(head)).toEqual([1, 2, 3]);
   });
 });

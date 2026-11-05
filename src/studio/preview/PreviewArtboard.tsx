@@ -19,8 +19,6 @@ import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurfac
 import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
 import { BANNER_CONTENT_ATTRIBUTE, BANNER_LOGO_ATTRIBUTE } from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
-import type { BackgroundPosition } from "@/src/banner/background";
-import type { ContentPosition } from "@/src/banner/contentPosition";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
 import { PreviewViewToggle } from "@/src/studio/preview/PreviewViewToggle";
 import { ExportProgress } from "@/src/studio/preview/ExportProgress";
@@ -70,14 +68,14 @@ export function PreviewArtboard({
   onEditSetting: (key: string) => void;
   /** Set when the banner has a background that can be moved: the preview can then be dragged. */
   backgroundAdjust?: {
-    position: BackgroundPosition;
+    position: Position;
     zoom: number;
-    onMove: (position: BackgroundPosition) => void;
+    onMove: (position: Position) => void;
   };
   /** Set when the banner's content can be moved (not when it fills the banner). */
   contentAdjust?: {
-    position: ContentPosition;
-    onMove: (position: ContentPosition) => void;
+    position: Position;
+    onMove: (position: Position) => void;
   };
   /** Set when the banner has a logo that shows. */
   logoAdjust?: {

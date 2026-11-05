@@ -6,14 +6,13 @@ import type { TemplateId } from "@/src/templates/types";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/preview/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview/computePreviewContentState";
-import type { PreviewContentState } from "@/src/studio/preview/types";
 import { Toast, useToast } from "@/src/ui/Toast";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { logoPositionFromState } from "@/src/banner/logo";
 import type { Position } from "@/src/banner/position";
 import { useHoldDuringLoad } from "@/src/ui/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/ui/useKeepWhile";
-import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
+import { backgroundFromState } from "@/src/banner/background";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
 import { FORMAT_COOKIE, PIXEL_RATIO_COOKIE, PREVIEW_VIEW_COOKIE } from "@/src/studio/studioCookies";
 import { TopBar } from "@/src/studio/TopBar";
@@ -29,12 +28,6 @@ import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
-import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/ui/useDelayedFlag";
-
-/** Only a finished preview is held during a load; an empty or error state goes straight to it. */
-function isReadyPreview(preview: { previewState: PreviewContentState }): boolean {
-  return preview.previewState === "ready";
-}
 
 export function StudioShell({
   templateId,
@@ -101,10 +94,8 @@ export function StudioShell({
   const missingSetting =
     needsUsername && !username.trim()
       ? "username"
-      : definition.schema.find(
-          (field) =>
-            field.required && field.key !== "username" && !String(state[field.key] ?? "").trim(),
-        )?.key;
+      : definition.schema.find((field) => field.required && !String(state[field.key] ?? "").trim())
+          ?.key;
   const previewState = computePreviewContentState({
     missingSetting,
     hasProblem: github.problem !== null,
@@ -143,11 +134,12 @@ export function StudioShell({
     }),
     [previewState, github.problem, previewBannerState, github.data],
   );
-  const shownPreview = useHoldDuringLoad(livePreview, previewState === "loading", {
-    delayMs: PENDING_DELAY_MS,
-    minShowMs: PENDING_MIN_SHOW_MS,
-    canHold: isReadyPreview,
-  });
+  // Only a finished preview is held; an empty or error state goes straight to loading.
+  const shownPreview = useHoldDuringLoad(
+    livePreview,
+    previewState === "loading",
+    (preview) => preview.previewState === "ready",
+  );
   // Download and Copy have no message of their own: the preview shows why they're off (empty,
   // loading or a problem), and an unusable image is reported with a toast. They're also off while
   // the preview still shows an earlier version (a quick load being held, the previous year's grid,
@@ -164,7 +156,6 @@ export function StudioShell({
   const bannerExport = useBannerExport({
     request: { templateId, size, state, pixelRatio, uiTheme: appTheme },
     format,
-    blocked: exportBlocked,
     showError,
     showSuccess,
     dismissToast,
@@ -253,8 +244,7 @@ export function StudioShell({
                 ? {
                     position: adjustableBackground.position,
                     zoom: adjustableBackground.zoom,
-                    onMove: (position: BackgroundPosition) =>
-                      updateState("backgroundPosition", position),
+                    onMove: (position: Position) => updateState("backgroundPosition", position),
                   }
                 : undefined
             }

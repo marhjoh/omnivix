@@ -11,11 +11,14 @@ class FetchError extends Error {
   }
 }
 
+/** Shown when a request fails without a message of its own (network, platform errors). */
+const FALLBACK_ERROR = "Couldn't load GitHub data.";
+
 async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const { message, limit } = await readApiError(res);
-    // Without a message of ours, the caller's fallback is used.
+    // Without a message of ours, FALLBACK_ERROR is used.
     throw new FetchError(message ?? "", res.status, limit);
   }
   return res.json() as Promise<T>;
@@ -27,7 +30,6 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
  */
 export function useApiQuery<T>(
   url: string | null,
-  fallbackError: string,
   {
     keepKey,
     initial,
@@ -58,7 +60,7 @@ export function useApiQuery<T>(
     /** The data is from another request with the same `keepKey`, shown while this one loads. */
     stale: query.isPlaceholderData,
     // Only our API's own messages are shown; network errors ("Failed to fetch") use the fallback.
-    error: error ? fetchError?.message || fallbackError : null,
+    error: error ? fetchError?.message || FALLBACK_ERROR : null,
     notFound: fetchError?.status === 404,
     limit: fetchError?.limit ?? null,
     loading: query.isFetching,

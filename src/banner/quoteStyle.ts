@@ -61,7 +61,7 @@ export type QuoteFont = (typeof QUOTE_FONTS)[number];
 export type QuoteFontStyle = (typeof QUOTE_FONT_STYLES)[number];
 export type QuoteMarks = (typeof QUOTE_MARKS)[number];
 type QuoteColor = (typeof QUOTE_COLORS)[number];
-export type AuthorPrefix = (typeof AUTHOR_PREFIXES)[number];
+type AuthorPrefix = (typeof AUTHOR_PREFIXES)[number];
 
 export const DEFAULT_QUOTE_STYLE = {
   font: "inter",
@@ -71,15 +71,7 @@ export const DEFAULT_QUOTE_STYLE = {
   markColor: "default",
   authorColor: "default",
   authorPrefix: "em-dash",
-} as const satisfies {
-  font: QuoteFont;
-  fontStyle: QuoteFontStyle;
-  quoteMarks: QuoteMarks;
-  quoteColor: QuoteColor;
-  markColor: QuoteColor;
-  authorColor: QuoteColor;
-  authorPrefix: AuthorPrefix;
-};
+} as const;
 
 /**
  * Each font (app/fonts.ts) with its italic (none, in the same family, or a font of its own), its
@@ -201,28 +193,18 @@ const FONT_STYLE: Record<
   "bold-italic": { label: "Bold italic", weight: 700, italic: true, upright: "bold" },
 };
 
-/** Marks around the text: opening and closing. */
-const TEXT_MARKS = {
-  curly: ["“", "”"],
-  single: ["‘", "’"],
-  guillemets: ["«", "»"],
-  "low-high": ["„", "“"],
-  straight: ['"', '"'],
-} as const;
-
-const TEXT_MARK_STYLES = Object.keys(TEXT_MARKS) as Array<keyof typeof TEXT_MARKS>;
-
-const MARKS_LABEL: Record<QuoteMarks, string> = {
-  curly: "Curly",
-  single: "Single",
-  guillemets: "Guillemets",
-  "low-high": "Low-high",
-  straight: "Straight",
-  "large-above": "Large above",
-  "large-beside": "Large beside",
-  "large-behind": "Large behind",
-  bar: "Bar",
-  none: "None",
+/** Each style's label, and the opening and closing marks of the styles set around the text. */
+const MARKS: Record<QuoteMarks, { label: string; text?: readonly [string, string] }> = {
+  curly: { label: "Curly", text: ["“", "”"] },
+  single: { label: "Single", text: ["‘", "’"] },
+  guillemets: { label: "Guillemets", text: ["«", "»"] },
+  "low-high": { label: "Low-high", text: ["„", "“"] },
+  straight: { label: "Straight", text: ['"', '"'] },
+  "large-above": { label: "Large above" },
+  "large-beside": { label: "Large beside" },
+  "large-behind": { label: "Large behind" },
+  bar: { label: "Bar" },
+  none: { label: "None" },
 };
 
 /** What comes before the author's name. */
@@ -276,7 +258,7 @@ export const QUOTE_FONT_STYLE_OPTIONS = QUOTE_FONT_STYLES.map((value) => ({
   value,
 }));
 export const QUOTE_MARKS_OPTIONS = QUOTE_MARKS.map((value) => ({
-  label: MARKS_LABEL[value],
+  label: MARKS[value].label,
   value,
 }));
 export const AUTHOR_PREFIX_OPTIONS = AUTHOR_PREFIXES.map((value) => ({
@@ -315,7 +297,7 @@ export function fontStyleCss(font: unknown, fontStyle: QuoteFontStyle) {
 
 /** The marks set around the text in a style, if it has them (for previews). */
 export function textMarksOf(marks: QuoteMarks): readonly [string, string] | undefined {
-  return isOneOf(TEXT_MARK_STYLES, marks) ? TEXT_MARKS[marks] : undefined;
+  return MARKS[marks].text;
 }
 
 /** The font styles a font has: only the upright ones for a font without an italic. */
@@ -337,30 +319,8 @@ export function colorValue(color: unknown, uiTheme: Theme): string | undefined {
   return PALETTE[color][uiTheme];
 }
 
-export interface QuoteStyle {
-  fontFamily: string;
-  /** The author line's: the font upright. */
-  authorFontFamily: string;
-  fontWeight: number;
-  fontStyle: "normal" | "italic";
-  letterSpacing: string;
-  /** Lowercase height as a share of the font size (CSS `font-size-adjust`). */
-  xHeight: number;
-  marks: QuoteMarks;
-  /** Opening and closing marks, for the styles set around the text. */
-  textMarks: readonly [string, string] | undefined;
-  /** The quote's color, or undefined for the banner's text color. */
-  color: string | undefined;
-  /** The marks' and the bar's color: their own, or the quote's. */
-  markColor: string | undefined;
-  /** The author's color, or undefined for the banner's muted text color. */
-  authorColor: string | undefined;
-  /** Before the author's name, e.g. "— ". */
-  authorPrefix: string;
-}
-
 /** The quote's typography from banner state; anything missing or unknown is the default. */
-export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: Theme): QuoteStyle {
+export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: Theme) {
   const font = fontOf(state.font);
   const style = FONT_STYLE[fontStyleShown(font, state.fontStyle)];
   const marks = oneOfOr(QUOTE_MARKS, state.quoteMarks, DEFAULT_QUOTE_STYLE.quoteMarks);

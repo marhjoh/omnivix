@@ -4,9 +4,8 @@ import { Fragment, type ReactNode } from "react";
 import { Select } from "@/src/ui/Dropdown";
 import { FieldWrapper } from "@/src/ui/FieldLabel";
 import { RangeField } from "@/src/ui/RangeField";
-import type { RepoNormalized } from "@/src/github/types";
 import type { EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
-import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
+import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import {
   AuthorPrefixSelect,
@@ -18,7 +17,6 @@ import { BackgroundField, LogoField } from "@/src/studio/ImageFields";
 import { ResetButton } from "@/src/studio/ResetButton";
 import {
   AppearancePicker,
-  DebouncedInput,
   GridColorsPicker,
   PlatformPicker,
   SettingsSection,
@@ -30,22 +28,12 @@ import {
   contentPositionFromState,
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
-import { MAX_REPOS, selectedReposOf } from "@/src/lib/repoSelection";
+import { selectedReposOf } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { contributionYear, currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
-
-/** The owner's repositories for the picker, and how loading them went. */
-interface RepoCatalog {
-  repos: RepoNormalized[];
-  loading: boolean;
-  error: string | null;
-  /** When the rate limit resets, if that's why the repositories didn't load. */
-  retryAt: Date | null;
-  retry: () => void;
-}
 
 /** What every setting can draw on. */
 interface FieldContext {
@@ -116,7 +104,14 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
 const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
   text: (field, ctx) => (
     <FieldWrapper label={fieldLabel(field)} htmlFor={field.key}>
-      <DebouncedInput id={field.key} maxLength={field.maxLength} {...textProps(field, ctx)} />
+      <input
+        id={field.key}
+        type="text"
+        className="field-input"
+        maxLength={field.maxLength}
+        value={String(ctx.state[field.key] ?? "")}
+        onChange={(e) => ctx.onChange(field.key, e.target.value)}
+      />
     </FieldWrapper>
   ),
   textarea: (field, ctx) => (
@@ -196,13 +191,8 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
   ),
   repoMultiSelect: (_field, { repoCatalog, state, onChange }) => (
     <RepoMultiSelect
-      catalog={repoCatalog.repos}
-      loading={repoCatalog.loading}
-      error={repoCatalog.error}
-      retryAt={repoCatalog.retryAt}
-      onRetry={repoCatalog.retry}
+      catalog={repoCatalog}
       valueCsv={selectedReposOf(state)}
-      maxPick={MAX_REPOS}
       onChange={(csv) => onChange("selectedRepos", csv)}
     />
   ),

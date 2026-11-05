@@ -14,28 +14,18 @@ export const CONTENT_ALIGN_OPTIONS = CONTENT_ALIGNS.map((value) => ({
 
 export const DEFAULT_CONTENT_ALIGN: ContentAlign = "center";
 
-/** Centered unless the setting is a valid alignment. */
-function normalizeContentAlign(raw: unknown): ContentAlign {
-  return oneOfOr(CONTENT_ALIGNS, raw, DEFAULT_CONTENT_ALIGN);
-}
-
-/**
- * Where the content sits in the padded box, as a placement (see `placement.ts`).
- */
-export type ContentPosition = Position;
-
 /** Each alignment's place on the x axis. By default the content is centered vertically. */
 const ALIGN_X: Record<ContentAlign, number> = { left: 0, center: 50, right: 100 };
 
 const MIDDLE = 50;
 
 /** Where the content is until it's moved: at its alignment, centered vertically. */
-function defaultContentPosition(state: Record<string, unknown>): ContentPosition {
-  return { x: ALIGN_X[normalizeContentAlign(state.alignment)], y: MIDDLE };
+function defaultContentPosition(state: Record<string, unknown>): Position {
+  return { x: ALIGN_X[oneOfOr(CONTENT_ALIGNS, state.alignment, DEFAULT_CONTENT_ALIGN)], y: MIDDLE };
 }
 
 /** The content's position from banner state: a moved one, or its default. */
-export function contentPositionFromState(state: Record<string, unknown>): ContentPosition {
+export function contentPositionFromState(state: Record<string, unknown>): Position {
   return positionOr(state.contentPosition, defaultContentPosition(state));
 }
 
@@ -53,7 +43,7 @@ export function alignmentAt(x: number): ContentAlign | undefined {
  * The alignment the sidebar shows: one of the three spots, centered vertically. Anywhere else the
  * content is at none of them.
  */
-export function alignmentShown({ x, y }: ContentPosition): ContentAlign | undefined {
+export function alignmentShown({ x, y }: Position): ContentAlign | undefined {
   return y === MIDDLE ? alignmentAt(x) : undefined;
 }
 

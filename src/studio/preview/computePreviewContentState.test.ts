@@ -41,7 +41,6 @@ describe("previewLoadingMessage", () => {
     );
     expect(previewLoadingMessage(["contributions"])).toBe("Loading contributions…");
     expect(previewLoadingMessage(["user", "repos"])).toBe("Loading profile and repositories…");
-    expect(previewLoadingMessage([])).toBe("Loading…");
   });
 });
 
@@ -49,7 +48,7 @@ describe("previewEmptyCopy", () => {
   it("asks for a username, which opens the username dialog", () => {
     expect(previewEmptyCopy("username")).toMatchObject({
       title: "Choose a GitHub username",
-      action: { label: "Choose username", setting: "username" },
+      actionLabel: "Choose username",
     });
   });
 
@@ -57,7 +56,7 @@ describe("previewEmptyCopy", () => {
     expect(previewEmptyCopy("quote")).toEqual({
       title: "Add your quote",
       hint: "Enter quote text in the sidebar to see it here.",
-      action: { label: "Add quote", setting: "quote" },
+      actionLabel: "Add quote",
     });
   });
 });

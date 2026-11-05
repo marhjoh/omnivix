@@ -7,10 +7,6 @@ import { repoModeOf, reposShown } from "@/src/lib/repoSelection";
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
 const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
 
-function reposBannerColumnCount(count: number): number {
-  return COLUMNS_BY_COUNT[Math.min(COLUMNS_BY_COUNT.length, count) - 1];
-}
-
 const REPO_GRID_GAP_PX = 10;
 const REPO_CARD_COLUMN_PX = 250;
 
@@ -20,7 +16,7 @@ export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const shown = reposShown(mode, state.maxRepos);
   const repos = data.repos?.slice(0, shown) ?? [];
   // Selected mode lays out what was picked; pinned mode keeps the chosen amount's layout.
-  const cols = reposBannerColumnCount(mode === "selected" ? Math.max(1, repos.length) : shown);
+  const cols = COLUMNS_BY_COUNT[(mode === "selected" ? Math.max(1, repos.length) : shown) - 1];
 
   const showDescription = state.showDescription !== false;
   const showLanguage = state.showLanguage !== false;

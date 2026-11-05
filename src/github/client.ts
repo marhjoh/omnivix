@@ -8,10 +8,8 @@ import type {
   RepoNormalized,
 } from "@/src/github/types";
 import { contributionRange } from "@/src/github/contributionRange";
-import { isContributionYear } from "@/src/lib/contributionYear";
 import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
-import type { GithubDataKind } from "@/src/templates/types";
 import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
 
 /** Entries each cache keeps at most; the oldest are dropped first. */
@@ -68,7 +66,7 @@ const users = githubCache(
       `,
       { username: login },
       UserSummary,
-    ).pipe(Effect.map(({ user }): GithubUserNormalized => ({ ...user }))),
+    ).pipe(Effect.map(({ user }): GithubUserNormalized => user)),
   () => TTL_SHORT,
 );
 
@@ -157,7 +155,7 @@ const contributions = githubCache(
               weekday: day.weekday,
             })),
           })),
-          months: calendar.months.map((month) => ({ ...month })),
+          months: [...calendar.months],
           rangeEndYmd: to.slice(0, 10),
         };
       }),
@@ -166,12 +164,14 @@ const contributions = githubCache(
   (key) => contributionsTtlMs(key.split(" ")[1]),
 );
 
-/** Contributions for a calendar year, or for the last 365 days when `year` is `LATEST_YEAR`. */
+/**
+ * Contributions for a calendar year, or for the last 365 days when `year` is `LATEST_YEAR`. Callers
+ * check the year first (`isContributionYear`).
+ */
 export function getContributions(
   username: string,
   year: string,
 ): Effect.Effect<ContributionsNormalized, GithubError> {
-  if (!isContributionYear(year)) return Effect.die(new Error(`Invalid contribution year: ${year}`));
   const { from, to } = contributionRange(year);
   return Cache.get(contributions, `${userKey(username)} ${year} ${from} ${to}`);
 }
@@ -234,13 +234,7 @@ const OWNER_REPOS_PAGE = `
 const FirstRepoPage = Schema.Struct({
   user: Schema.Struct({
     pinnedItems: Schema.Struct({
-      // Only repositories are asked for; anything else is skipped.
-      nodes: Schema.Array(
-        Schema.Union([
-          Schema.Struct({ __typename: Schema.Literal("Repository"), ...RepoFields.fields }),
-          Schema.Struct({ __typename: Schema.String }),
-        ]),
-      ),
+      nodes: Schema.Array(RepoFields),
     }),
     repositories: RepoPage,
   }),
@@ -258,7 +252,6 @@ const repoLists = githubCache(
             user(login: $username) {
               pinnedItems(first: 6, types: REPOSITORY) {
                 nodes {
-                  __typename
                   ... on Repository { ${REPO_FIELDS} }
                 }
               }
@@ -269,9 +262,7 @@ const repoLists = githubCache(
         { username: login, after: null },
         FirstRepoPage,
       );
-      const pinned = first.user.pinnedItems.nodes.flatMap((node) =>
-        "id" in node ? [normalizeRepo(node)] : [],
-      );
+      const pinned = first.user.pinnedItems.nodes.map(normalizeRepo);
 
       const nodes = [...first.user.repositories.nodes];
       let page = first.user.repositories.pageInfo;
@@ -301,10 +292,3 @@ const repoLists = githubCache(
 export function getRepoLists(username: string): Effect.Effect<RepoLists, GithubError> {
   return Cache.get(repoLists, userKey(username));
 }
-
-/** How each kind of GitHub data a banner draws is loaded (see `meta.githubData`). */
-export const GITHUB_LOADERS = {
-  user: (username: string) => getUserSummary(username),
-  contributions: (username: string, year: string) => getContributions(username, year),
-  repos: (username: string) => getRepoLists(username),
-} satisfies Record<GithubDataKind, (username: string, year: string) => unknown>;

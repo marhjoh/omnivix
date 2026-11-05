@@ -7,50 +7,27 @@ import {
   SVG_TYPES,
   uploadImageTypes,
 } from "@/src/lib/imageSource";
-import { MAX_IMAGE_FILE_BYTES, uploadFormats, type ImageUploadPolicy } from "@/src/lib/imageUpload";
+import { MAX_IMAGE_FILE_BYTES, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { megabytes } from "@/src/lib/text";
-
-/**
- * Client-side image uploads (the background and the logo): static images only (no GIF /
- * animation). HEIC/HEIF is converted in-browser (see `heic2any`) before `createImageBitmap`; SVG
- * is drawn onto a canvas, so no SVG code is kept. `accept` on file inputs is a hint only — always
- * validate here.
- */
 
 /** Every upload format but SVG, HEIC included. */
 const RASTER_TYPES = uploadImageTypes({ svg: false });
 
 /** The file input's `accept`: MIME types and extensions. A hint only; uploads are checked here. */
 export function uploadAccept(policy: ImageUploadPolicy): string {
-  const types = uploadFormats(policy);
+  const types = uploadImageTypes(policy);
   return [...types, ...formatExtensions(types).map((extension) => `.${extension}`)].join(",");
 }
 
 /** User-facing line when a file type isn't allowed (including GIFs, which are animated). */
 export function supportedFormatsMessage(policy: ImageUploadPolicy): string {
-  return `Only ${formatNames(uploadFormats(policy), "and")} are supported.`;
+  return `Only ${formatNames(uploadImageTypes(policy), "and")} are supported.`;
 }
 
 /** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
 const UNREADABLE_MESSAGE = "Couldn't read this image. Try another file.";
 
 const PROCESSING_MESSAGE = "Couldn't process this image in your browser.";
-
-const GIF_MAGIC = [0x47, 0x49, 0x46]; // "GIF"
-
-export function isGifMagicBytes(bytes: Uint8Array): boolean {
-  if (bytes.length < 3) return false;
-  return GIF_MAGIC.every((b, i) => bytes[i] === b);
-}
-
-/**
- * Read first bytes of a file to detect GIF (even if MIME/extension lie).
- */
-export async function readFileHead(file: File, byteCount: number): Promise<Uint8Array> {
-  const slice = file.slice(0, byteCount);
-  const buf = await slice.arrayBuffer();
-  return new Uint8Array(buf);
-}
 
 function mimeOf(file: File): string {
   return file.type.toLowerCase().trim();
@@ -61,20 +38,12 @@ function isSvgFile(file: File): boolean {
   return isOneOf(SVG_TYPES, type) || (!type && hasFormatExtension(file.name, SVG_TYPES));
 }
 
-/**
- * Pre-decode checks: size, MIME allowlist, GIF rejection, extension hint when type missing.
- * Returns `null` if OK, otherwise a user-facing English message.
- */
+/** Checks before decoding: size, then type (by extension when there's no type). Null if OK. */
 export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): string | null {
   if (file.size > MAX_IMAGE_FILE_BYTES) {
     return `Image must be ${megabytes(MAX_IMAGE_FILE_BYTES)} or smaller.`;
   }
   const unsupported = supportedFormatsMessage(policy);
-
-  const name = file.name.toLowerCase();
-  if (name.endsWith(".gif")) {
-    return unsupported;
-  }
   if (isSvgFile(file)) {
     return policy.svg ? null : unsupported;
   }
@@ -178,17 +147,6 @@ export async function normalizeImageFile(
   const metaErr = validateImageUploadMeta(file, policy);
   if (metaErr) return { ok: false, error: metaErr };
 
-  let head: Uint8Array;
-  try {
-    head = await readFileHead(file, 6);
-  } catch {
-    // The file changed or went away after it was picked (or is a cloud placeholder).
-    return { ok: false, error: UNREADABLE_MESSAGE };
-  }
-  if (isGifMagicBytes(head)) {
-    return { ok: false, error: supportedFormatsMessage(policy) };
-  }
-
   let image: Decoded;
   try {
     image = isSvgFile(file) ? await decodeSvg(file) : await decodeRaster(file, policy);
@@ -199,11 +157,10 @@ export async function normalizeImageFile(
   try {
     const { width, height } = image;
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return { ok: false, error: PROCESSING_MESSAGE };
+    const ctx = canvas.getContext("2d")!;
     for (const maxDim of policy.dimensions) {
       // Photos are only scaled down; a vector is drawn at the full size.
-      const fit = maxDim / Math.max(width, height, 1);
+      const fit = maxDim / Math.max(width, height);
       const scale = image.vector ? fit : Math.min(1, fit);
       canvas.width = Math.max(1, Math.round(width * scale));
       canvas.height = Math.max(1, Math.round(height * scale));

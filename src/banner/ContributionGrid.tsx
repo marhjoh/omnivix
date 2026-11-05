@@ -1,28 +1,27 @@
 import { useMemo } from "react";
 import type { ContributionsNormalized } from "@/src/github/types";
 import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/banner/contributionCalendarLayout";
-import { contributionCellShapeFromState, type ContributionCellShape } from "@/src/banner/cellShape";
+import {
+  CONTRIBUTION_CELL_SHAPES,
+  DEFAULT_CELL_SHAPE,
+  type ContributionCellShape,
+} from "@/src/banner/cellShape";
 import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
+import { oneOfOr } from "@/src/lib/isOneOf";
 
 /** The grid's look from banner state: its Grid colors and Cell shape settings. */
 export function contributionGridStyle(state: Record<string, unknown>) {
   return {
     colors: gridColorsById(state.themeId),
-    cellShape: contributionCellShapeFromState(state.cellShape),
+    cellShape: oneOfOr(CONTRIBUTION_CELL_SHAPES, state.cellShape, DEFAULT_CELL_SHAPE),
   };
 }
 
-function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number; ry: number } {
-  if (shape === "square") return { rx: 0, ry: 0 };
-  if (shape === "circle") {
-    const r = cellSize / 2;
-    return { rx: r, ry: r };
-  }
-  const r = Math.min(cellSize * 0.22, Math.max(1.25, cellSize * 0.16));
-  const cap = cellSize / 2 - 0.001;
-  const clamped = Math.min(r, cap);
-  return { rx: clamped, ry: clamped };
-}
+const CELL_RADIUS: Record<ContributionCellShape, number> = {
+  square: 0,
+  rounded: 0.16,
+  circle: 0.5,
+};
 
 interface ContributionGridProps {
   contributions: ContributionsNormalized;
@@ -31,10 +30,7 @@ interface ContributionGridProps {
   cellSize: number;
   gap: number;
   showMonthLabels?: boolean;
-  /**
-   * Semantic Mon/Wed/Fri labels in the left gutter.
-   * Calendar-correct: the row labeled "Mon" contains actual Mondays.
-   */
+  /** Mon/Wed/Fri labels in the left gutter. */
   showDayLabels?: boolean;
   showTotal?: boolean;
   /**
@@ -55,8 +51,7 @@ export function ContributionGrid({
   showTotal = false,
   fill = false,
 }: ContributionGridProps) {
-  const cellOutline = !fill;
-  const { rx, ry } = cellRadii(cellShape, cellSize);
+  const radius = cellSize * CELL_RADIUS[cellShape];
   // About 370 cells; worth keeping while the banner re-renders (e.g. dragging the background).
   const { placedDays, monthLabels, columnCount } = useMemo(
     () =>
@@ -69,23 +64,6 @@ export function ContributionGrid({
     [contributions, fill],
   );
 
-  if (!contributions.weeks.length) {
-    return (
-      <div
-        style={{
-          padding: "20px 16px",
-          textAlign: "center",
-          fontSize: 13,
-          lineHeight: 1.45,
-          color: "currentColor",
-          maxWidth: 300,
-        }}
-      >
-        No contribution calendar data for this range.
-      </div>
-    );
-  }
-
   const dayLabelWidth = showDayLabels ? 28 : 0;
   const monthLabelHeight = showMonthLabels ? 20 : 0;
   const step = cellSize + gap;
@@ -94,7 +72,7 @@ export function ContributionGrid({
   const footerHeight = showTotal ? 28 : 0;
   const svgW = dayLabelWidth + gridW;
   const svgH = monthLabelHeight + gridH + footerHeight;
-  const viewPad = cellOutline ? 1 : 0;
+  const viewPad = fill ? 0 : 1;
   const vbW = svgW + 2 * viewPad;
   const vbH = svgH + 2 * viewPad;
 
@@ -149,11 +127,10 @@ export function ContributionGrid({
             y={monthLabelHeight + row * step}
             width={cellSize}
             height={cellSize}
-            rx={rx}
-            ry={ry}
+            rx={radius}
             fill={colors.gridLevels[level]}
-            stroke={cellOutline ? "rgba(255,255,255,0.14)" : undefined}
-            strokeWidth={cellOutline ? 0.6 : 0}
+            stroke={fill ? undefined : "rgba(255,255,255,0.14)"}
+            strokeWidth={fill ? 0 : 0.6}
             opacity={isOutOfRange ? 0.3 : 1}
           />
         ))}
@@ -165,7 +142,6 @@ export function ContributionGrid({
             fill="currentColor"
             fontSize={11}
             textAnchor="end"
-            dominantBaseline="alphabetic"
           >
             {/* A fixed locale, so the preview and the server-rendered export match. */}
             {contributions.total.toLocaleString("en-US")} contributions

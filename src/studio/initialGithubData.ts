@@ -1,6 +1,6 @@
 import "server-only";
 import { Effect } from "effect";
-import { GITHUB_LOADERS } from "@/src/github/client";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 import { contributionYear, isContributionYear } from "@/src/lib/contributionYear";
 import { githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
@@ -29,21 +29,20 @@ export async function loadInitialGithubData(
   if (!meta.needsUsername || !username) return {};
   const year = contributionYear(state.year);
   const urls = githubDataUrls({
-    needsUsername: true,
     githubData: meta.githubData,
     username,
     year,
   });
   const loads: [string | null, () => Promise<unknown>][] = [
-    [urls.user, () => Effect.runPromise(GITHUB_LOADERS.user(username))],
+    [urls.user, () => Effect.runPromise(getUserSummary(username))],
     [
       urls.contributions,
       () =>
         isContributionYear(year)
-          ? Effect.runPromise(GITHUB_LOADERS.contributions(username, year))
+          ? Effect.runPromise(getContributions(username, year))
           : Promise.reject(),
     ],
-    [urls.repos, () => Effect.runPromise(GITHUB_LOADERS.repos(username))],
+    [urls.repos, () => Effect.runPromise(getRepoLists(username))],
   ];
   const timeout = new Promise<undefined>((resolve) => setTimeout(resolve, WAIT_MS));
   const entries = await Promise.all(

@@ -46,36 +46,34 @@ export type LinkImageType = {
 
 const IMAGE_TYPES = Object.keys(IMAGE_FORMATS) as ImageType[];
 
-function formatOf(type: ImageType): ImageFormat {
-  return IMAGE_FORMATS[type];
-}
+const FORMATS: Record<ImageType, ImageFormat> = IMAGE_FORMATS;
 
 /** The formats an upload can be; SVG only when `svg`. */
 export function uploadImageTypes({ svg }: { svg: boolean }): ImageType[] {
-  return IMAGE_TYPES.filter((type) => svg || !formatOf(type).vector);
+  return IMAGE_TYPES.filter((type) => svg || !FORMATS[type].vector);
 }
 
 /** The formats a link can be; SVG only when `svg`. */
 export function linkImageTypes({ svg }: { svg: boolean }): LinkImageType[] {
   return IMAGE_TYPES.filter(
-    (type): type is LinkImageType => !formatOf(type).uploadOnly && (svg || !formatOf(type).vector),
+    (type): type is LinkImageType => !FORMATS[type].uploadOnly && (svg || !FORMATS[type].vector),
   );
 }
 
 /** The upload-only formats (HEIC), which the browser converts before it can draw them. */
-export const HEIC_TYPES = IMAGE_TYPES.filter((type) => formatOf(type).uploadOnly);
+export const HEIC_TYPES = IMAGE_TYPES.filter((type) => FORMATS[type].uploadOnly);
 
 /** The vector formats (SVG), drawn onto a canvas when uploaded. */
-export const SVG_TYPES = IMAGE_TYPES.filter((type) => formatOf(type).vector);
+export const SVG_TYPES = IMAGE_TYPES.filter((type) => FORMATS[type].vector);
 
 /** "PNG, JPEG or WebP" (or "PNG, JPEG and WebP"). */
 export function formatNames(types: readonly ImageType[], conjunction: "or" | "and" = "or"): string {
-  return listText([...new Set(types.map((type) => formatOf(type).name))], conjunction);
+  return listText([...new Set(types.map((type) => FORMATS[type].name))], conjunction);
 }
 
 /** The file extensions of `types`, without the dot. */
 export function formatExtensions(types: readonly ImageType[]): string[] {
-  return types.flatMap((type) => formatOf(type).extensions);
+  return types.flatMap((type) => FORMATS[type].extensions);
 }
 
 /** Whether `fileName` ends in one of the extensions of `types`, in any case. */

@@ -12,11 +12,9 @@ import {
 } from "@/src/lib/apiResponse";
 
 /**
- * Shared GitHub API route: reads and checks `?username=`, runs `load` and returns its JSON.
- * A username that doesn't exist (or can't, by GitHub's rules) is a 404, so the studio offers to
- * change it. Our per-IP limit and GitHub's rate limit are 429s (tooManyRequests); other failures are
- * logged and return 502 with `failure`. Only the data is cached by the CDN, for `ttlMs` (the server
- * cache's TTL), so repeat requests for a user don't reach this server or GitHub.
+ * Shared GitHub API route for `?username=`. An impossible username is a 404, so the studio offers
+ * to change it; unexpected failures are logged and return 502 with `failure`. The data is cached by
+ * the CDN for `ttlMs` (the server cache's TTL), so repeat requests don't reach this server.
  */
 export async function githubRoute<T>(
   request: NextRequest,

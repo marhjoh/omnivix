@@ -1,5 +1,3 @@
-import { uploadImageTypes, type ImageType } from "@/src/lib/imageSource";
-
 /**
  * What an image upload (the background and the logo) may be: its formats, file size and processed
  * size. The studio processes uploads to fit (src/studio/imageUpload.ts); the export checks them.
@@ -44,8 +42,3 @@ export const LOGO_UPLOAD: ImageUploadPolicy = {
   transparent: true,
   svg: true,
 };
-
-/** The formats an upload under `policy` can be. */
-export function uploadFormats(policy: ImageUploadPolicy): ImageType[] {
-  return uploadImageTypes({ svg: policy.svg });
-}

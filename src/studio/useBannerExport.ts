@@ -34,7 +34,6 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
 export function useBannerExport({
   request,
   format,
-  blocked,
   showError,
   showSuccess,
   dismissToast,
@@ -42,8 +41,6 @@ export function useBannerExport({
   /** Everything but the format, which Download chooses and Copy can't (the clipboard takes PNG). */
   request: Omit<ExportRequest, "format">;
   format: ExportFormat;
-  /** Nothing to export yet, or a problem with it (see StudioShell's exportBlocked). */
-  blocked: boolean;
   showError: (message: string) => void;
   showSuccess: (message: string) => void;
   dismissToast: () => void;
@@ -61,7 +58,7 @@ export function useBannerExport({
   // dismissToast runs before the action, where it would wait for the export to end. Errors are
   // caught: thrown from an action, they'd reach an error boundary instead of the toast.
   function download() {
-    if (blocked || exporting) return;
+    if (exporting) return;
     dismissToast();
     // The chosen format, or the banner format's own if it doesn't take that one.
     const file = exportFormatFor(BANNER_SIZES[request.size], format);
@@ -82,7 +79,7 @@ export function useBannerExport({
   }
 
   function copy() {
-    if (blocked || exporting) return;
+    if (exporting) return;
     dismissToast();
     if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
       showError("This browser can't copy images. Download the banner instead.");

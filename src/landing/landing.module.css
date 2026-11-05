@@ -304,6 +304,7 @@ details[open] .faqToggle {
 /* One soft glow behind the name. "closest-side" fades it out before its own edges, so wherever
    the page clips it, no hard edge shows. */
 .heroGlow {
+  --glow-strength: 24%;
   position: absolute;
   /* Sideways, no further than the page's 1rem side padding until there's room to spare. */
   inset: -2rem -1rem auto -1rem;
@@ -313,7 +314,7 @@ details[open] .faqToggle {
   pointer-events: none;
   background: radial-gradient(
     ellipse closest-side,
-    color-mix(in oklab, var(--accent) 24%, transparent),
+    color-mix(in oklab, var(--accent) var(--glow-strength), transparent),
     transparent 75%
   );
 }
@@ -326,11 +327,7 @@ details[open] .faqToggle {
 }
 
 html[data-theme="light"] .heroGlow {
-  background: radial-gradient(
-    ellipse closest-side,
-    color-mix(in oklab, var(--accent) 12%, transparent),
-    transparent 75%
-  );
+  --glow-strength: 12%;
 }
 
 /* Like the section headings (.section-heading, app/globals.css), one size below, so "How it

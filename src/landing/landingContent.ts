@@ -1,6 +1,6 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { BACKGROUND_UPLOAD, MAX_IMAGE_FILE_BYTES, uploadFormats } from "@/src/lib/imageUpload";
-import { formatNames } from "@/src/lib/imageSource";
+import { BACKGROUND_UPLOAD, MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
+import { formatNames, uploadImageTypes } from "@/src/lib/imageSource";
 import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
 import { listText, megabytes } from "@/src/lib/text";
 import { DEFAULT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
@@ -96,7 +96,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "Can I use my own background image?",
-    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own ${formatNames(uploadFormats(BACKGROUND_UPLOAD))} image (up to ${megabytes(MAX_IMAGE_FILE_BYTES)}). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own ${formatNames(uploadImageTypes(BACKGROUND_UPLOAD))} image (up to ${megabytes(MAX_IMAGE_FILE_BYTES)}). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
   },
   {
     topic: "Banners",

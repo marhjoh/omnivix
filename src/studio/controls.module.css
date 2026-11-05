@@ -23,28 +23,10 @@
   transition-duration: var(--hover-fade);
 }
 
-/* Hover: a faint blue border, like the app's other bordered controls. It shows only where a
-   click changes something, so not on the selected tile: :where keeps it weaker than the selected
-   style below. */
-.tile:where(:hover:not(:disabled)) {
-  border-color: var(--control-border-hover);
-}
-
 /* Disabled controls keep their frame; text and icons turn --disabled-text (app/globals.css). */
-.tile:disabled {
-  color: var(--disabled-text);
-  cursor: not-allowed;
-}
-
-.tile:disabled svg {
-  color: var(--disabled-text);
-}
-
-.tile:disabled .colorStrip {
-  opacity: 0.4;
-}
-
-.tile:focus-visible {
+.tile:disabled,
+.tile:focus-visible,
+.reset:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
@@ -53,8 +35,8 @@
    color. Appearance tiles follow <html data-theme>, set before first paint, as the server render
    may not know the theme yet (a first visit has no cookie). */
 .tile[aria-pressed="true"]:not(.appearanceTile),
-:global(html[data-theme="light"]) .appearanceTile[data-appearance="light"],
-:global(html[data-theme="dark"]) .appearanceTile[data-appearance="dark"] {
+:global(html[data-theme="light"]) .appearanceTile[data-value="light"],
+:global(html[data-theme="dark"]) .appearanceTile[data-value="dark"] {
   border-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
   background: color-mix(in oklab, var(--accent) 8%, var(--surface));
   cursor: default;
@@ -178,21 +160,20 @@
   transition-duration: var(--hover-fade);
 }
 
+/* Hover: a faint blue border, like the app's other bordered controls. After .tile and .reset, as
+   :where gives it their weight. On tiles it shows only where a click changes something, so not on
+   the selected tile, whose style outweighs it. */
+.tile:where(:hover:not(:disabled)),
 .reset:where(:hover) {
   border-color: var(--control-border-hover);
-}
-
-.reset:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
 }
 
 /* Forced colors (Windows High Contrast) drop the tint: a thicker frame in the selection color,
    as a border so the focus outline still shows. */
 @media (forced-colors: active) {
   .tile[aria-pressed="true"]:not(.appearanceTile),
-  :global(html[data-theme="light"]) .appearanceTile[data-appearance="light"],
-  :global(html[data-theme="dark"]) .appearanceTile[data-appearance="dark"] {
+  :global(html[data-theme="light"]) .appearanceTile[data-value="light"],
+  :global(html[data-theme="dark"]) .appearanceTile[data-value="dark"] {
     border: 2px solid Highlight;
     /* Grows outward by the extra pixel, so the content stays put. */
     margin: -1px;
@@ -263,11 +244,6 @@
 /* Rows inside a frame: hover is a light background, like the dropdown options. */
 .checkRow:where(:hover:not(:disabled)) {
   background: var(--surface-2);
-}
-
-.checkRow:disabled {
-  color: var(--disabled-text);
-  cursor: not-allowed;
 }
 
 .checkRow:focus-visible {

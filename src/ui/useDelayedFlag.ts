@@ -9,15 +9,11 @@ export const PENDING_MIN_SHOW_MS = 400;
 type Phase = "idle" | "waiting" | "shown";
 
 /**
- * True once `on` has stayed true for `delayMs`, so quick loads never turn it on; once on, it stays
- * on for at least `minShowMs`, even if `on` turns false sooner. Explicit state: a transition can't
+ * True once `on` has stayed true for `PENDING_DELAY_MS`, so quick loads never turn it on; once on,
+ * it stays on for at least `PENDING_MIN_SHOW_MS`, even if `on` turns false sooner. Explicit state: a transition can't
  * express the delay or the minimum show time.
  */
-export function useDelayedFlag(
-  on: boolean,
-  delayMs = PENDING_DELAY_MS,
-  minShowMs = PENDING_MIN_SHOW_MS,
-): boolean {
+export function useDelayedFlag(on: boolean): boolean {
   const [phase, setPhase] = useState<Phase>("idle");
   const [minShown, setMinShown] = useState(false);
 
@@ -29,15 +25,15 @@ export function useDelayedFlag(
     const timer = setTimeout(() => {
       setPhase("shown");
       setMinShown(false);
-    }, delayMs);
+    }, PENDING_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [phase, delayMs]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "shown") return;
-    const timer = setTimeout(() => setMinShown(true), minShowMs);
+    const timer = setTimeout(() => setMinShown(true), PENDING_MIN_SHOW_MS);
     return () => clearTimeout(timer);
-  }, [phase, minShowMs]);
+  }, [phase]);
 
   return phase === "shown";
 }

@@ -11,12 +11,6 @@ import type { Position } from "@/src/banner/position";
 import type { Rect } from "@/src/lib/sizes";
 
 /**
- * What the preview's drag surfaces share (`BackgroundDragSurface`, `PlacementDragSurface`):
- * arrow keys, drags measured from where they started, the dashed frame with its badge, and snap
- * guides.
- */
-
-/**
  * The dashed frame of a drag surface. It and the badge show on hover, focus and while dragging, so
  * the banner reads clean otherwise. Forced colors would show the transparent frame all the time.
  */
@@ -88,15 +82,9 @@ export function DragBadge({ children }: PropsWithChildren) {
   );
 }
 
-/** The preview's scale: screen pixels per banner pixel. */
-export type PreviewScale = number;
-
-/** Arrow keys move this many percent, or more with Shift. */
-const PERCENT_STEPS = { step: 2, shiftStep: 10 };
-
-/** The arrow key's direction times its step, or null for other keys. */
+/** The arrow key's direction times its step (2%, or 10% with Shift), or null for other keys. */
 export function arrowStep(event: KeyboardEvent): { x: number; y: number } | null {
-  const step = event.shiftKey ? PERCENT_STEPS.shiftStep : PERCENT_STEPS.step;
+  const step = event.shiftKey ? 10 : 2;
   return (
     {
       ArrowLeft: { x: -step, y: 0 },
@@ -118,7 +106,7 @@ export function useMoveOncePerFrame(onMove: (position: Position) => void) {
     pending.current = next;
     moveFrame.current ??= requestAnimationFrame(() => {
       moveFrame.current = null;
-      if (pending.current) onMove(pending.current);
+      onMove(pending.current!);
     });
   };
 }
@@ -134,7 +122,8 @@ export function usePointerDrag<T>({
   move,
   end,
 }: {
-  scale: PreviewScale;
+  /** Screen pixels per banner pixel. */
+  scale: number;
   begin: () => T | null;
   move: (start: T, delta: { x: number; y: number }) => void;
   end?: () => void;

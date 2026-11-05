@@ -26,9 +26,7 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
 
 /** "Loading profile and contributions…", from the GitHub data the banner draws. */
 export function previewLoadingMessage(githubData: readonly GithubDataKind[]): string {
-  return githubData.length > 0
-    ? `Loading ${githubData.map((kind) => DATA_NAMES[kind]).join(" and ")}…`
-    : "Loading…";
+  return `Loading ${githubData.map((kind) => DATA_NAMES[kind]).join(" and ")}…`;
 }
 
 /**
@@ -36,20 +34,16 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
  * quote, the only other required setting. The action opens the username dialog, or puts the
  * cursor in that setting's field.
  */
-export function previewEmptyCopy(missingSetting: string): {
-  title: string;
-  hint: string;
-  action: { label: string; setting: string };
-} {
+export function previewEmptyCopy(missingSetting: string) {
   return missingSetting === "username"
     ? {
         title: "Choose a GitHub username",
         hint: "Enter a username to load this banner's data.",
-        action: { label: "Choose username", setting: "username" },
+        actionLabel: "Choose username",
       }
     : {
         title: "Add your quote",
         hint: "Enter quote text in the sidebar to see it here.",
-        action: { label: "Add quote", setting: missingSetting },
+        actionLabel: "Add quote",
       };
 }

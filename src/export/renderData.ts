@@ -1,6 +1,6 @@
 import "server-only";
 import { Effect } from "effect";
-import { GITHUB_LOADERS } from "@/src/github/client";
+import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
 import { contributionYear } from "@/src/lib/contributionYear";
@@ -17,12 +17,12 @@ export function loadRenderData(templateId: TemplateId, state: Record<string, unk
   const none = Effect.succeed(undefined);
   return Effect.all(
     {
-      user: needs.has("user") ? GITHUB_LOADERS.user(username) : none,
+      user: needs.has("user") ? getUserSummary(username) : none,
       contributions: needs.has("contributions")
-        ? GITHUB_LOADERS.contributions(username, contributionYear(state.year))
+        ? getContributions(username, contributionYear(state.year))
         : none,
       repos: needs.has("repos")
-        ? GITHUB_LOADERS.repos(username).pipe(
+        ? getRepoLists(username).pipe(
             Effect.map((lists) => reposForBanner(lists, state.mode, selectedReposOf(state))),
           )
         : none,

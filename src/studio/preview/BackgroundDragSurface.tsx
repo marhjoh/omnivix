@@ -3,8 +3,8 @@ import {
   backgroundPanRange,
   dragBackgroundPosition,
   nudgeBackgroundPosition,
-  type BackgroundPosition,
 } from "@/src/banner/background";
+import type { Position } from "@/src/banner/position";
 import { BANNER_BACKGROUND_ATTRIBUTE } from "@/src/banner/placement";
 import {
   arrowStep,
@@ -14,7 +14,6 @@ import {
   PositionStatus,
   useMoveOncePerFrame,
   usePointerDrag,
-  type PreviewScale,
 } from "@/src/studio/preview/dragSurface";
 import type { BannerBox } from "@/src/lib/sizes";
 
@@ -30,11 +29,11 @@ export function BackgroundDragSurface({
   scale,
   onMove,
 }: {
-  position: BackgroundPosition;
+  position: Position;
   zoom: number;
   frame: BannerBox;
-  scale: PreviewScale;
-  onMove: (position: BackgroundPosition) => void;
+  scale: number;
+  onMove: (position: Position) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const scheduleMove = useMoveOncePerFrame(onMove);

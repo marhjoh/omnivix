@@ -2,20 +2,6 @@ import type { RepoNormalized } from "@/src/github/types";
 import { ELLIPSIS, lineClamp } from "@/src/banner/textStyle";
 import type { BannerUiChrome } from "@/src/theme/theme";
 
-/** Single scale tuned for banner grid cells (readable, even rhythm). */
-const CARD = {
-  title: 15,
-  /** One-line teaser so cards stay short when description is on. */
-  body: 11,
-  footer: 11,
-  padX: 14,
-  padY: 10,
-  radius: 10,
-  gapTitle: 4,
-  gapFooter: 6,
-  footerItemGap: 8,
-} as const;
-
 interface RepoCardProps {
   repo: RepoNormalized;
   showDescription: boolean;
@@ -43,8 +29,8 @@ export function RepoCard({
     <article
       style={{
         border: `1px solid ${chrome.cardBorder}`,
-        borderRadius: CARD.radius,
-        padding: `${CARD.padY}px ${CARD.padX}px`,
+        borderRadius: 10,
+        padding: "10px 14px",
         background: chrome.cardBg,
         color: chrome.cardText,
         minWidth: 0,
@@ -57,14 +43,12 @@ export function RepoCard({
       {/* Not a heading: the preview is one image to screen readers. */}
       <p
         style={{
-          fontSize: CARD.title,
+          fontSize: 15,
           margin: 0,
-          marginBottom: showDescription || hasFooter ? CARD.gapTitle : 0,
-          color: chrome.cardText,
+          marginBottom: showDescription || hasFooter ? 4 : 0,
           fontWeight: 600,
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
-          minWidth: 0,
           ...ELLIPSIS,
         }}
       >
@@ -74,7 +58,7 @@ export function RepoCard({
       {showDescription && (
         <p
           style={{
-            fontSize: CARD.body,
+            fontSize: 11,
             color: chrome.cardTextMuted,
             margin: 0,
             ...lineClamp(1),
@@ -90,12 +74,11 @@ export function RepoCard({
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
             flexWrap: "wrap",
-            gap: CARD.footerItemGap,
-            fontSize: CARD.footer,
+            gap: 8,
+            fontSize: 11,
             color: chrome.cardTextMuted,
-            marginTop: showDescription ? CARD.gapFooter : CARD.gapTitle,
+            marginTop: showDescription ? 6 : 4,
             alignItems: "center",
             lineHeight: 1.35,
           }}

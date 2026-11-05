@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { setSidebarCollapsedCookieClient } from "@/src/studio/studioCookies";
+import { setCookieClient } from "@/src/lib/cookies";
+import { SIDEBAR_COOKIE } from "@/src/studio/studioCookies";
 import { PHONE_QUERY } from "@/src/studio/layout";
 
 /** A bit longer than the sidebar's transition (`--sidebar-transition` in studio.module.css). */
@@ -37,7 +38,7 @@ export function useStudioSidebar(initialCollapsed: boolean) {
 
   // The cookie lets the server render the desktop sidebar in the right state on the next load.
   useEffect(() => {
-    setSidebarCollapsedCookieClient(sidebarCollapsed);
+    setCookieClient(SIDEBAR_COOKIE.name, sidebarCollapsed ? "collapsed" : "expanded");
   }, [sidebarCollapsed]);
 
   // The sidebar only animates for user actions (toggle, backdrop, Escape). Without this, crossing
