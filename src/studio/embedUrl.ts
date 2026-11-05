@@ -25,6 +25,7 @@ export function linkQuery(
     ...schema.map((field) => field.key),
     ...POSITION_KEYS,
     "backgroundZoom",
+    "backgroundOpacity",
   ];
   const query = new URLSearchParams();
   for (const key of keys) {

@@ -27,24 +27,30 @@ describe("isSavableImage", () => {
 describe("applySavedSettings backgrounds", () => {
   const defaults = { ...templateRegistry["quote-banner"].initialState };
 
-  it("restores a saved preset with its position and zoom", () => {
+  it("restores a saved preset with its position, zoom and opacity", () => {
     const saved = {
       backgroundImage: "/backgrounds/seoul.avif",
       backgroundPosition: { x: 20, y: 70 },
       backgroundZoom: 1.2,
+      backgroundOpacity: 60,
     };
     expect(applySavedSettings(defaults, "quote-banner", saved, null)).toMatchObject(saved);
   });
 
-  it("drops a background that can't be saved, with its position and zoom", () => {
+  it("drops a background that can't be saved with its position, and keeps its zoom", () => {
     const state = applySavedSettings(
       defaults,
       "quote-banner",
-      { backgroundImage: "data:image/png;base64,AAAA", backgroundZoom: 1.2 },
+      {
+        backgroundImage: "data:image/png;base64,AAAA",
+        backgroundPosition: { x: 20, y: 70 },
+        backgroundZoom: 1.2,
+      },
       null,
     );
     expect(state.backgroundImage).toBeUndefined();
-    expect(state.backgroundZoom).toBeUndefined();
+    expect(state.backgroundPosition).toBeUndefined();
+    expect(state.backgroundZoom).toBe(1.2);
   });
 });
 

@@ -11,11 +11,12 @@ import { clampPosition, isPosition } from "@/src/banner/position";
 import { isHttpsUrl } from "@/src/lib/imageSource";
 
 /**
- * Each image setting with the settings that belong to that image. A background's position and zoom
- * go when the background changes. The logo's position and size stay for the next logo.
+ * Each image setting with the settings that belong to that image. A background's position goes
+ * when the background changes. Its zoom and opacity, and the logo's position and size, stay for the
+ * next image.
  */
 export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
-  backgroundImage: ["backgroundPosition", "backgroundZoom"],
+  backgroundImage: ["backgroundPosition"],
   logoImage: [],
 };
 

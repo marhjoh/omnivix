@@ -107,7 +107,7 @@ describe("withLink", () => {
     });
   });
 
-  it("doesn't move a linked background to the saved one's position and zoom", () => {
+  it("doesn't move a linked background to the saved one's position, but keeps the zoom", () => {
     const result = withLink(saved, {
       settings: { backgroundImage: "/backgrounds/sydney.avif" },
       username: null,
@@ -115,6 +115,7 @@ describe("withLink", () => {
     expect(result.settings).toEqual({
       alignment: "right",
       backgroundImage: "/backgrounds/sydney.avif",
+      backgroundZoom: 1.25,
     });
     expect(result.username).toBe("saved-user");
   });
@@ -128,6 +129,7 @@ describe("withLink", () => {
       alignment: "right",
       backgroundImage: "/backgrounds/sydney.avif",
       backgroundPosition: { x: 0, y: 0 },
+      backgroundZoom: 1.25,
     });
   });
 
