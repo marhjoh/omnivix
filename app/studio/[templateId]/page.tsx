@@ -4,6 +4,7 @@ import { SITE_NAME, SITE_OPEN_GRAPH, SITE_PLATFORMS } from "@/src/lib/site";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
+import { StudioQueryProvider } from "@/src/studio/StudioQueryProvider";
 import { applySavedSettings } from "@/src/studio/savedSettings";
 import { parseLinkSettings, withLink } from "@/src/studio/linkSettings";
 import { loadInitialGithubData } from "@/src/studio/initialGithubData";
@@ -79,22 +80,24 @@ export default async function StudioPage({
   return (
     // The banner preview picks its colors in JavaScript, so the theme must be right on the server.
     <ThemeProvider initialTheme={parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value)}>
-      <StudioShell
-        key={templateId}
-        templateId={templateId}
-        initialSidebarCollapsed={parseSidebarCollapsedCookie(
-          cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
-        )}
-        initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
-        initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
-        initialPreviewView={parsePreviewViewCookie(
-          cookieStore.get(PREVIEW_VIEW_COOKIE_NAME)?.value,
-        )}
-        savedSettings={savedSettings}
-        savedUsername={savedUsername}
-        link={link}
-        initialGithubData={initialGithubData}
-      />
+      <StudioQueryProvider>
+        <StudioShell
+          key={templateId}
+          templateId={templateId}
+          initialSidebarCollapsed={parseSidebarCollapsedCookie(
+            cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
+          )}
+          initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
+          initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
+          initialPreviewView={parsePreviewViewCookie(
+            cookieStore.get(PREVIEW_VIEW_COOKIE_NAME)?.value,
+          )}
+          savedSettings={savedSettings}
+          savedUsername={savedUsername}
+          link={link}
+          initialGithubData={initialGithubData}
+        />
+      </StudioQueryProvider>
     </ThemeProvider>
   );
 }

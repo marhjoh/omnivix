@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { preload } from "react-dom";
 import type {
   ContributionsNormalized,
@@ -13,7 +13,7 @@ import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
 import { fetchProblem, noReposProblem } from "@/src/studio/preview/computePreviewContentState";
 import type { PreviewProblem } from "@/src/studio/preview/types";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import { initialData, useFetchJson } from "@/src/studio/useFetchJson";
+import { initialData, useApiQuery } from "@/src/studio/useApiQuery";
 import type { RenderData } from "@/src/templates/renderers/types";
 import { templateRegistry } from "@/src/templates/registry";
 import type { GithubDataKind, TemplateId } from "@/src/types/template";
@@ -56,8 +56,6 @@ export function useGithubBannerData({
   initialGithubData: Record<string, unknown>;
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
-  // One per request, so a retry asks again only for what failed.
-  const [retryNonces, setRetryNonces] = useState({ user: 0, contributions: 0, repos: 0 });
 
   const repoMode = String(state.mode ?? "pinned");
   const selectedRepos = String(state.selectedRepos ?? "");
@@ -71,15 +69,11 @@ export function useGithubBannerData({
   });
 
   const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
-  const userFetch = useFetchJson<GithubUserNormalized>(
-    urls.user,
-    retryNonces.user,
-    GITHUB_FETCH_FALLBACK,
-    { initial: initialUser },
-  );
-  const contributionsFetch = useFetchJson<ContributionsNormalized>(
+  const userFetch = useApiQuery<GithubUserNormalized>(urls.user, GITHUB_FETCH_FALLBACK, {
+    initial: initialUser,
+  });
+  const contributionsFetch = useApiQuery<ContributionsNormalized>(
     urls.contributions,
-    retryNonces.contributions,
     GITHUB_FETCH_FALLBACK,
     {
       // Another year keeps the current grid until it arrives, instead of flashing "Loading".
@@ -87,12 +81,9 @@ export function useGithubBannerData({
       initial: initialData<ContributionsNormalized>(initialGithubData, urls.contributions),
     },
   );
-  const repoListsFetch = useFetchJson<RepoLists>(
-    urls.repos,
-    retryNonces.repos,
-    GITHUB_FETCH_FALLBACK,
-    { initial: initialData<RepoLists>(initialGithubData, urls.repos) },
-  );
+  const repoListsFetch = useApiQuery<RepoLists>(urls.repos, GITHUB_FETCH_FALLBACK, {
+    initial: initialData<RepoLists>(initialGithubData, urls.repos),
+  });
   const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
 
   const user = userFetch.error ? undefined : userFetch.data;
@@ -132,7 +123,6 @@ export function useGithubBannerData({
     (githubData.every((kind) => data[kind] !== undefined) &&
       (!githubData.includes("user") || avatarReady));
 
-  // Errors from a previous retry nonce are not reported, so a retry clears them immediately.
   const failedFetch = failedFetchFor(githubData, {
     user: userFetch,
     // A failed refetch of the same year keeps its grid; a year that never loaded shows the error.
@@ -158,16 +148,12 @@ export function useGithubBannerData({
     return null;
   }, [failedError, failedLimit, failedNotFound, username, noRepos, repoMode, selectedRepos]);
 
-  const retry = useCallback(() => {
-    setRetryNonces((n) => ({
-      user: userFetch.error ? n.user + 1 : n.user,
-      contributions: contributionsFetch.error ? n.contributions + 1 : n.contributions,
-      repos: repoListsFetch.error ? n.repos + 1 : n.repos,
-    }));
-  }, [userFetch.error, contributionsFetch.error, repoListsFetch.error]);
-  const retryRepos = useCallback(() => {
-    setRetryNonces((n) => ({ ...n, repos: n.repos + 1 }));
-  }, []);
+  // Asks again only for what failed.
+  function retry() {
+    for (const query of [userFetch, contributionsFetch, repoListsFetch]) {
+      if (query.error) void query.refetch();
+    }
+  }
 
   const repoLimit = repoListsFetch.limit;
   return {
@@ -187,7 +173,7 @@ export function useGithubBannerData({
       loading: repoListsFetch.loading && !repoListsFetch.data,
       error: repoLimit ? limitMessage(repoLimit, REQUEST_LIMIT_MESSAGE) : repoListsFetch.error,
       retryAt: limitResetAt(repoLimit),
-      retry: retryRepos,
+      retry: () => void repoListsFetch.refetch(),
     },
   };
 }
