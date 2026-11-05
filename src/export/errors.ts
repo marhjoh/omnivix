@@ -1,3 +1,4 @@
+import "server-only";
 import { Schema } from "effect";
 
 // Why an export failed, after its request was checked. The route turns each into its response

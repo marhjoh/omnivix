@@ -1,3 +1,4 @@
+import "server-only";
 import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import type { GithubError } from "@/src/github/errors";

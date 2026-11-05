@@ -1,3 +1,4 @@
+import "server-only";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { reposForBanner } from "@/src/lib/repoSelection";

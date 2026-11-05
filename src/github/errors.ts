@@ -1,3 +1,4 @@
+import "server-only";
 import { Schema } from "effect";
 
 // Why a GitHub request failed. The routes turn each into its response (see githubRoute), and the

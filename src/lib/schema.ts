@@ -1,3 +1,4 @@
+import "server-only";
 import { Schema, SchemaIssue } from "effect";
 
 // Server only: Effect stays out of the browser (see AGENTS.md).

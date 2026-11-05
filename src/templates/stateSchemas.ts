@@ -1,3 +1,4 @@
+import "server-only";
 import { Result, Schema } from "effect";
 import { isContributionYear } from "@/src/lib/utcContributionRange";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";

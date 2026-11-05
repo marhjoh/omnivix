@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getTemplates } from "@/src/templates/registry";
 import { EXAMPLE_LINK, EXAMPLE_REQUEST, exportApiDocs } from "./apiDocs";
-import { parseLinkSettings } from "@/src/studio/linkSettings";
+import { parseLinkSettings } from "@/src/studio/parseLinkSettings";
 import { parseExportRequest } from "./payload";
 
 const docs = exportApiDocs(new URL("https://omnivix.example")).join("\n");

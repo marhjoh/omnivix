@@ -1,3 +1,4 @@
+import "server-only";
 import { type ExportRequest, TEMPLATE_IDS } from "@/src/types/template";
 import { THEMES } from "@/src/theme/theme";
 import { Result, Schema } from "effect";

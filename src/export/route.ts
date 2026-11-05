@@ -1,3 +1,4 @@
+import "server-only";
 import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";

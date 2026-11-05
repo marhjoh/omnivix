@@ -1,3 +1,4 @@
+import "server-only";
 import { Effect } from "effect";
 import type { ExportRequest } from "@/src/types/template";
 import { UnusableImage } from "@/src/export/errors";

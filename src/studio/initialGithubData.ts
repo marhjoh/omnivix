@@ -1,3 +1,4 @@
+import "server-only";
 import { Effect } from "effect";
 import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 import { isContributionYear } from "@/src/lib/utcContributionRange";

@@ -21,7 +21,6 @@ Your training data is older than this stack. Check the current docs before using
 | Next.js 16 (App Router)     | `node_modules/next/dist/docs/` (matches the installed version)                 |
 | React 19                    | [react.dev/llms.txt](https://react.dev/llms.txt)                               |
 | Tailwind CSS 4              | [tailwindcss.com/docs](https://tailwindcss.com/docs)                           |
-| zod 4                       | [zod.dev/llms.txt](https://zod.dev/llms.txt)                                   |
 | Effect 4 (server only)      | `node_modules/effect/AGENTS.md` and `ai-docs/` (matches the installed version) |
 | Vitest 5                    | [vitest.dev/llms.txt](https://vitest.dev/llms.txt)                             |
 | Playwright                  | [playwright.dev/docs](https://playwright.dev/docs/intro)                       |
@@ -56,12 +55,13 @@ The studio preview and the export render the same `BannerRenderer`. `POST /api/e
 
 ### Effect
 
-The export API (`src/export/`) runs on Effect 4; the rest of the server moves to it with #205.
+The server runs on Effect 4: the export API (`src/export/`), the GitHub client and routes (`src/github/`), and the settings schemas (`src/templates/stateSchemas.ts`, `src/lib/schema.ts`).
 
-- Server only. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and zod.
+- Server only: every module that imports `effect` starts with `import "server-only"`, so a browser import fails the build. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and checks nothing itself: its controls keep settings valid, and the export API checks them.
 - Most examples online and most AI output are Effect 3. Work from the installed docs: `Effect.catchAll` is now `Effect.catch`, `Effect.either` is `Effect.result`, and errors are `Schema.TaggedError` classes.
 - Check a module's `@stability` tag before using it; unstable ones can change in a minor release, which is why the version is pinned.
 - Route handlers stay plain Next.js: build one Effect and run it with `Effect.runPromise` at the edge, turning each tagged error into its response there with `Effect.catchTags` (see `src/export/route.ts`).
+- Validate untrusted input (requests, GitHub responses, links) with `Schema`. Give each field its own message (`src/lib/schema.ts`), so an issue never repeats the value that failed.
 - Resources that must close, like Chromium, use `Effect.acquireRelease` inside `Effect.scoped`, so a timeout or failure still closes them (see `captureBanner`).
 
 ### UI

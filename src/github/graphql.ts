@@ -1,3 +1,4 @@
+import "server-only";
 import { Effect, Schedule, Schema } from "effect";
 import { GithubRateLimited, GithubRequestFailed, GithubUserNotFound } from "@/src/github/errors";
 import { guardRateLimit, rateLimitResetAt, warnIfQuotaLow } from "@/src/github/rateLimit";

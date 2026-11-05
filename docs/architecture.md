@@ -78,13 +78,13 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 ### `src/export/`
 
-Server-side export: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export, on Effect: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`), the Playwright capture (`playwright.ts`) and the errors each becomes a response for (`errors.ts`). A whole export has a 45-second deadline; Chromium is a scoped resource, so the deadline or a failure closes it. `apiDocs.ts` generates the export API section of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
 ### `src/github/`
 
-GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
+GitHub data, on Effect. `graphql.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
 
 ### `src/landing/`, `src/og/`
 

@@ -1,3 +1,4 @@
+import "server-only";
 import { Cache, Duration, Effect, Exit, Schema } from "effect";
 import type {
   ContributionDayNormalized,

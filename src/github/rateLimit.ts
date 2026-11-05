@@ -1,3 +1,4 @@
+import "server-only";
 import { Effect } from "effect";
 import { GithubRateLimited } from "@/src/github/errors";
 
