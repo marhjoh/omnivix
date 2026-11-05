@@ -71,6 +71,7 @@ export function ExportControls({
 }) {
   const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
+  const copyTitleId = useId();
   const shownFormat = exportFormatFor(bannerFormat, format);
   const formatLabel = EXPORT_FORMAT_DETAILS[shownFormat].label;
   const shownPixelRatio = exportPixelRatioFor(bannerFormat, shownFormat, pixelRatio);
@@ -171,7 +172,10 @@ export function ExportControls({
               {(option) => <ChoiceTile {...option} />}
             </TileGroup>
           </div>
-          <div className={controls.panelActions}>
+          <div role="group" aria-labelledby={copyTitleId} className={controls.panelActions}>
+            <p id={copyTitleId} className="field-label px-2 pt-1 pb-1">
+              Copy
+            </p>
             <button
               type="button"
               onClick={() => {

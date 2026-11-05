@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { Code, FileText, Link, type LucideIcon } from "lucide-react";
 import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
 import { bannerImageUrl, linkQuery } from "@/src/studio/embedUrl";
@@ -51,7 +50,6 @@ export function EmbedLinks({
   /** `name` goes in the confirmation, e.g. "Markdown copied." */
   onCopy: (text: string, name: string) => void;
 }) {
-  const labelId = useId();
   const query = linkQuery(templateId, state);
   const url = query
     ? bannerImageUrl(window.location.origin, templateId, query, { format, pixelRatio, uiTheme })
@@ -60,10 +58,7 @@ export function EmbedLinks({
   const alt = needsUsername ? `${title} by @${state.username}` : title;
 
   return (
-    <div role="group" aria-labelledby={labelId} className="mt-2">
-      <p id={labelId} className="px-2 pt-1 pb-1 text-xs text-muted">
-        <span className="font-semibold text-text">Embed</span> · updates daily, up to 2×
-      </p>
+    <>
       {url === null && (
         <p className="px-2 pb-1 text-xs text-muted">
           Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
@@ -81,6 +76,6 @@ export function EmbedLinks({
           {label}
         </button>
       ))}
-    </div>
+    </>
   );
 }
