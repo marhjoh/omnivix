@@ -113,8 +113,14 @@ export function StudioShell({
       backgroundImage: backgroundImage.usableSrc,
       backgroundPosition: state.backgroundPosition,
       backgroundZoom: state.backgroundZoom,
+      backgroundOpacity: state.backgroundOpacity,
     }),
-    [backgroundImage.usableSrc, state.backgroundPosition, state.backgroundZoom],
+    [
+      backgroundImage.usableSrc,
+      state.backgroundPosition,
+      state.backgroundZoom,
+      state.backgroundOpacity,
+    ],
   );
   // Keep the old background until the new one has loaded, so the banner is never left without
   // one.

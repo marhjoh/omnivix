@@ -4,7 +4,7 @@ import {
   backgroundFromState,
   backgroundImageStyle,
   backgroundPanRange,
-  isDefaultBackgroundFraming,
+  isDefaultBackgroundPosition,
   dragBackgroundPosition,
   nudgeBackgroundPosition,
 } from "./background";
@@ -24,17 +24,20 @@ describe("backgroundFromState", () => {
       src: "https://example.com/a.jpg",
       position: { x: 50, y: 50 },
       zoom: 1,
+      opacity: 28,
     });
   });
 
-  it("prefers a saved position and zoom", () => {
+  it("prefers a saved position, zoom and opacity", () => {
     const background = backgroundFromState({
       backgroundImage: "/backgrounds/london.avif",
       backgroundPosition: { x: 10, y: 20 },
       backgroundZoom: 1.25,
+      backgroundOpacity: 0,
     });
     expect(background?.position).toEqual({ x: 10, y: 20 });
     expect(background?.zoom).toBe(1.25);
+    expect(background?.opacity).toBe(0);
   });
 
   it("clamps or ignores bad values", () => {
@@ -42,44 +45,50 @@ describe("backgroundFromState", () => {
       backgroundImage: "/x.jpg",
       backgroundPosition: { x: -20, y: 400 },
       backgroundZoom: 9,
+      backgroundOpacity: 140,
     });
     expect(background?.position).toEqual({ x: 0, y: 100 });
     expect(background?.zoom).toBe(MAX_BACKGROUND_ZOOM);
+    expect(background?.opacity).toBe(100);
     expect(
       backgroundFromState({
         backgroundImage: "/x.jpg",
         backgroundPosition: "top",
         backgroundZoom: NaN,
+        backgroundOpacity: "50",
       }),
-    ).toMatchObject({ position: { x: 50, y: 50 }, zoom: 1 });
+    ).toMatchObject({ position: { x: 50, y: 50 }, zoom: 1, opacity: 28 });
   });
 });
 
-describe("isDefaultBackgroundFraming", () => {
+describe("isDefaultBackgroundPosition", () => {
   const london = "/backgrounds/london.avif";
 
-  it("is true when position and zoom are back at their defaults", () => {
+  it("is true at the preset's focus, whatever the zoom and opacity", () => {
     const state = {
       backgroundImage: london,
       backgroundPosition: { x: 30, y: 85 },
-      backgroundZoom: 1,
+      backgroundZoom: 1.2,
+      backgroundOpacity: 60,
     };
-    expect(isDefaultBackgroundFraming(backgroundFromState(state)!)).toBe(true);
+    expect(isDefaultBackgroundPosition(backgroundFromState(state)!)).toBe(true);
   });
 
-  it("is false once moved or zoomed", () => {
+  it("is false once moved", () => {
     const moved = { backgroundImage: london, backgroundPosition: { x: 30, y: 70 } };
-    const zoomed = { backgroundImage: london, backgroundZoom: 1.2 };
-    expect(isDefaultBackgroundFraming(backgroundFromState(moved)!)).toBe(false);
-    expect(isDefaultBackgroundFraming(backgroundFromState(zoomed)!)).toBe(false);
+    expect(isDefaultBackgroundPosition(backgroundFromState(moved)!)).toBe(false);
   });
 });
 
 describe("backgroundImageStyle", () => {
   it("only scales when zoomed", () => {
-    const base = { src: "/x.jpg", position: { x: 30, y: 85 } };
-    expect(backgroundImageStyle({ ...base, zoom: 1 })).toEqual({ objectPosition: "30% 85%" });
+    const base = { src: "/x.jpg", position: { x: 30, y: 85 }, opacity: 40 };
+    expect(backgroundImageStyle({ ...base, zoom: 1 })).toEqual({
+      opacity: 0.4,
+      objectPosition: "30% 85%",
+    });
     expect(backgroundImageStyle({ ...base, zoom: 1.5 })).toEqual({
+      opacity: 0.4,
       objectPosition: "30% 85%",
       transform: "scale(1.5)",
       transformOrigin: "30% 85%",

@@ -22,6 +22,7 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
   if (meta.needsUsername) fieldTypes.set("username", "text");
   for (const key of POSITION_KEYS) fieldTypes.set(key, "position");
   fieldTypes.set("backgroundZoom", "range");
+  fieldTypes.set("backgroundOpacity", "range");
 
   const candidate: Record<string, unknown> = {};
   for (const [key, raw] of Object.entries(query)) {

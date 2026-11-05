@@ -12,11 +12,14 @@ import type { Box } from "@/src/lib/sizes";
 
 export const MIN_BACKGROUND_ZOOM = 1;
 export const MAX_BACKGROUND_ZOOM = 1.5;
+/** In percent. The default keeps the content readable on most photos. */
+export const DEFAULT_BACKGROUND_OPACITY = 28;
 
 export interface BannerBackground {
   src: string;
   position: Position;
   zoom: number;
+  opacity: number;
 }
 
 const CENTER: Position = { x: 50, y: 50 };
@@ -25,30 +28,37 @@ function defaultBackgroundPosition(src: string): Position {
   return presetBySrc(src)?.focus ?? CENTER;
 }
 
-/** Reads the background image, position and zoom from banner state. Bad values get defaults. */
+function finiteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+/** Reads the background image, position, zoom and opacity from banner state. Bad values get defaults. */
 export function backgroundFromState(state: Record<string, unknown>): BannerBackground | undefined {
   const src = state.backgroundImage;
   if (typeof src !== "string" || !src) return undefined;
   const position = positionOr(state.backgroundPosition, defaultBackgroundPosition(src));
-  const zoom =
-    typeof state.backgroundZoom === "number" && Number.isFinite(state.backgroundZoom)
-      ? clamp(state.backgroundZoom, MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)
-      : MIN_BACKGROUND_ZOOM;
-  return { src, position, zoom };
+  const zoom = finiteNumber(state.backgroundZoom)
+    ? clamp(state.backgroundZoom, MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)
+    : MIN_BACKGROUND_ZOOM;
+  const opacity = finiteNumber(state.backgroundOpacity)
+    ? clampPercent(state.backgroundOpacity)
+    : DEFAULT_BACKGROUND_OPACITY;
+  return { src, position, zoom, opacity };
 }
 
-/** True when the background is at its default position and zoom, so there's nothing to reset. */
-export function isDefaultBackgroundFraming({ src, position, zoom }: BannerBackground): boolean {
-  return zoom === MIN_BACKGROUND_ZOOM && samePosition(position, defaultBackgroundPosition(src));
+/** True when the background hasn't been moved, so there's nothing to reset. */
+export function isDefaultBackgroundPosition({ src, position }: BannerBackground): boolean {
+  return samePosition(position, defaultBackgroundPosition(src));
 }
 
 /**
  * Styles for the background `<img>`. Zoom scales around the `object-position` point. That keeps an
  * edge aligned at 0% and 100%, so no gap shows at any zoom.
  */
-export function backgroundImageStyle({ position, zoom }: BannerBackground): CSSProperties {
+export function backgroundImageStyle({ position, zoom, opacity }: BannerBackground): CSSProperties {
   const point = `${position.x}% ${position.y}%`;
   return {
+    opacity: opacity / 100,
     objectPosition: point,
     ...(zoom > MIN_BACKGROUND_ZOOM && { transform: `scale(${zoom})`, transformOrigin: point }),
   };

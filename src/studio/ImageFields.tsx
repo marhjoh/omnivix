@@ -1,6 +1,6 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import {
-  isDefaultBackgroundFraming,
+  isDefaultBackgroundPosition,
   MAX_BACKGROUND_ZOOM,
   MIN_BACKGROUND_ZOOM,
   type BannerBackground,
@@ -70,8 +70,8 @@ export function LogoField({
 }
 
 /**
- * The background picker. Its zoom slider shows inside it once the background can be adjusted. The
- * image is moved by dragging it in the preview (BackgroundDragSurface).
+ * The background picker. Its zoom and opacity sliders show inside it once the background can be
+ * adjusted. The image is moved by dragging it in the preview (BackgroundDragSurface).
  */
 export function BackgroundField({
   background,
@@ -90,29 +90,34 @@ export function BackgroundField({
       onError={props.onError}
       onErrorResolved={props.onErrorResolved}
       labelAction={
-        // Only once the image has been moved or zoomed in the preview.
-        background && !isDefaultBackgroundFraming(background) ? (
-          <ResetButton
-            label="Reset position and zoom"
-            onClick={() => {
-              onChange("backgroundPosition", undefined);
-              onChange("backgroundZoom", undefined);
-            }}
-          />
+        // Only once the image has been moved in the preview.
+        background && !isDefaultBackgroundPosition(background) ? (
+          <ResetButton label="Reset" onClick={() => onChange("backgroundPosition", undefined)} />
         ) : null
       }
     >
       {background ? (
-        <RangeField
-          id={`${field.key}-zoom`}
-          label="Zoom"
-          min={MIN_BACKGROUND_ZOOM}
-          max={MAX_BACKGROUND_ZOOM}
-          step={ZOOM_STEP}
-          value={background.zoom}
-          valueText={`${Math.round(background.zoom * 100)}%`}
-          onChange={(zoom) => onChange("backgroundZoom", zoom)}
-        />
+        <>
+          <RangeField
+            id={`${field.key}-zoom`}
+            label="Zoom"
+            min={MIN_BACKGROUND_ZOOM}
+            max={MAX_BACKGROUND_ZOOM}
+            step={ZOOM_STEP}
+            value={background.zoom}
+            valueText={`${Math.round(background.zoom * 100)}%`}
+            onChange={(zoom) => onChange("backgroundZoom", zoom)}
+          />
+          <RangeField
+            id={`${field.key}-opacity`}
+            label="Opacity"
+            min={0}
+            max={100}
+            value={background.opacity}
+            valueText={`${background.opacity}%`}
+            onChange={(opacity) => onChange("backgroundOpacity", opacity)}
+          />
+        </>
       ) : null}
     </ImagePicker>
   );

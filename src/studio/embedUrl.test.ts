@@ -35,6 +35,7 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
 const DRAGGED = {
   backgroundPosition: { x: 25.5, y: 80 },
   backgroundZoom: 1.25,
+  backgroundOpacity: 60,
   contentPosition: { x: 100, y: 0 },
   logoPosition: { x: 0, y: 0 },
 };

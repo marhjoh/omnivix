@@ -32,7 +32,7 @@ The studio reads the same settings from the URL, so a link can open a banner tha
 https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset
 ```
 
-Values that aren't valid are ignored. Uploaded backgrounds and logos can't be linked. Positions are `x,y` in percent (`contentPosition=100,0`), and `backgroundZoom` is a number from 1 to 1.5.
+Values that aren't valid are ignored. Uploaded backgrounds and logos can't be linked. Positions are `x,y` in percent (`contentPosition=100,0`), `backgroundZoom` is a number from 1 to 1.5, and `backgroundOpacity` is a percent from 0 to 100.
 
 ## Image URL
 

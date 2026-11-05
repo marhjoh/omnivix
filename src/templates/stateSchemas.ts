@@ -45,6 +45,7 @@ const bannerFields = {
   backgroundImage: Schema.optional(text),
   backgroundPosition: Schema.optional(position),
   backgroundZoom: Schema.optional(numberBetween(MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)),
+  backgroundOpacity: Schema.optional(percent),
   /** Set by dragging the content in the preview. */
   contentPosition: Schema.optional(position),
   logoImage: Schema.optional(text),
