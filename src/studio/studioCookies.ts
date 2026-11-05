@@ -5,10 +5,10 @@ import { setCookieClient } from "@/src/lib/cookies";
 import { BANNER_VIEWS, type BannerView } from "@/src/lib/sizes";
 import { oneOfOr } from "@/src/lib/isOneOf";
 import {
-  EXPORT_PIXEL_RATIO,
+  DEFAULT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
-  EXPORT_FORMAT,
+  DEFAULT_EXPORT_FORMAT,
   EXPORT_FORMATS,
   type ExportFormat,
 } from "@/src/export/format";
@@ -66,9 +66,9 @@ export const PIXEL_RATIO_COOKIE_NAME = "omnivix-pixel-ratio";
 export const FORMAT_COOKIE_NAME = "omnivix-format";
 
 export function parsePixelRatioCookie(value: string | undefined): ExportPixelRatio {
-  return EXPORT_PIXEL_RATIOS.find((ratio) => String(ratio) === value) ?? EXPORT_PIXEL_RATIO;
+  return EXPORT_PIXEL_RATIOS.find((ratio) => String(ratio) === value) ?? DEFAULT_PIXEL_RATIO;
 }
 
 export function parseFormatCookie(value: string | undefined): ExportFormat {
-  return oneOfOr(EXPORT_FORMATS, value, EXPORT_FORMAT);
+  return oneOfOr(EXPORT_FORMATS, value, DEFAULT_EXPORT_FORMAT);
 }

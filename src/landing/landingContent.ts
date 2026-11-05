@@ -3,7 +3,7 @@ import { BACKGROUND_UPLOAD, MAX_IMAGE_FILE_BYTES, uploadFormats } from "@/src/li
 import { formatNames } from "@/src/lib/imageSource";
 import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
 import { listText, megabytes } from "@/src/lib/text";
-import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
+import { DEFAULT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
 import { SITE_LICENSE, SITE_LINKS } from "@/src/lib/site";
 import { HOUR_MS, MINUTE_MS, TTL_LONG, TTL_SHORT } from "@/src/github/cacheTimes";
 
@@ -91,7 +91,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "What file formats and resolutions can I download?",
-    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution (${oneTimesOnlyPlatforms()}: 1×, as their banners are already large). 1× is the platform's exact size, and ${EXPORT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
+    answer: `PNG or JPEG, at ${pixelRatiosSummary()} resolution (${oneTimesOnlyPlatforms()}: 1×, as their banners are already large). 1× is the platform's exact size, and ${DEFAULT_PIXEL_RATIO}× (the default) stays sharp on high-resolution screens. JPEG files are much smaller, for platforms with upload limits.`,
   },
   {
     topic: "Banners",

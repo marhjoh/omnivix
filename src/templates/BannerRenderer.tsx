@@ -6,12 +6,11 @@ import { useTheme } from "@/src/theme/ThemeProvider";
 import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { logoFromState } from "@/src/banner/logo";
-import type { TemplateId } from "@/src/types/template";
 import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/Renderer";
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
 import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
-import type { RenderData, RendererProps } from "@/src/templates/renderers/types";
+import type { RenderData, RendererProps, TemplateId } from "@/src/templates/types";
 
 const RENDERERS: Record<TemplateId, ComponentType<RendererProps>> = {
   "github-banner": GithubBannerRenderer,

@@ -1,8 +1,9 @@
 import { MAX_REPOS, parseRepoSelection, selectedReposOf } from "@/src/lib/repoSelection";
-import { normalizeBannerSize } from "@/src/lib/sizes";
+import { normalizeBannerSize, type BannerSize } from "@/src/lib/sizes";
 import { templateRegistry } from "@/src/templates/registry";
-import type { BannerSize, TemplateId } from "@/src/types/template";
-import { THEME_PRESETS } from "@/src/types/theme";
+import type { TemplateId } from "@/src/templates/types";
+import { DEFAULT_GRID_COLORS_ID, GRID_COLOR_IDS } from "@/src/banner/gridColors";
+import { oneOfOr } from "@/src/lib/isOneOf";
 import { presetBySrc } from "@/src/backgrounds/presets";
 import { alignmentAt } from "@/src/banner/contentPosition";
 import { isQuoteColor } from "@/src/banner/quoteStyle";
@@ -78,9 +79,9 @@ export function applySavedSettings(
   if (isPosition(merged.contentPosition) && "alignment" in prev) {
     merged.alignment = alignmentAt(merged.contentPosition.x) ?? merged.alignment;
   }
-  const themeIds = new Set(THEME_PRESETS.map((p) => p.id));
-  if (typeof merged.themeId !== "string" || !themeIds.has(merged.themeId)) {
-    merged.themeId = "default";
+  // The grid colors' field has no options to check against, as its picker draws the presets.
+  if ("themeId" in prev) {
+    merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, DEFAULT_GRID_COLORS_ID);
   }
   return clampSelectedRepos(templateId, merged);
 }

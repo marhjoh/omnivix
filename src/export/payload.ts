@@ -1,5 +1,6 @@
 import "server-only";
-import { type ExportRequest, TEMPLATE_IDS } from "@/src/types/template";
+import type { ExportRequest } from "@/src/export/request";
+import { TEMPLATE_IDS } from "@/src/templates/types";
 import { THEMES } from "@/src/theme/theme";
 import { Result, Schema } from "effect";
 import { fieldIssues, oneOf, type FieldIssue } from "@/src/lib/schema";

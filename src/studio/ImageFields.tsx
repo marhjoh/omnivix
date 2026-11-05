@@ -8,7 +8,7 @@ import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { ImagePicker } from "@/src/studio/ImagePicker";
 import { ResetButton } from "@/src/studio/ResetButton";
 import { fieldLabel } from "@/src/studio/settingGroups";
-import type { EditorFieldSchema } from "@/src/types/template";
+import type { EditorFieldSchema } from "@/src/templates/types";
 import { Select } from "@/src/ui/Dropdown";
 
 /** What both image settings need besides their own value. */

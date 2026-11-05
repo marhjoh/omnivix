@@ -1,5 +1,10 @@
 import sharp from "sharp";
-import { JPEG_QUALITY } from "@/src/export/format";
+
+/**
+ * A 3:1 photo banner at 3× is at most about 1.2 MB as JPEG instead of 6 MB as PNG, without visible
+ * artifacts.
+ */
+const JPEG_QUALITY = 90;
 
 /** The lowest quality tried to fit an upload limit, in steps of QUALITY_STEP from JPEG_QUALITY. */
 const MIN_JPEG_QUALITY = 60;

@@ -8,7 +8,7 @@ import sharp, { type Sharp, type WebpOptions } from "sharp";
 import { presetSrcById } from "@/src/backgrounds/presets";
 import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
 import { settingsCookieName, USERNAME_COOKIE } from "@/src/studio/studioCookies";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
 import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
 

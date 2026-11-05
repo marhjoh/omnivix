@@ -1,4 +1,4 @@
-import type { EditorFieldSchema } from "@/src/types/template";
+import type { EditorFieldSchema } from "@/src/templates/types";
 
 /** Sidebar names for settings whose schema label is unclear there. */
 const LABELS: Record<string, string> = {

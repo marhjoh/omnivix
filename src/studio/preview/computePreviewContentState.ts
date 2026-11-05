@@ -1,4 +1,4 @@
-import type { GithubDataKind } from "@/src/types/template";
+import type { GithubDataKind } from "@/src/templates/types";
 import type { PreviewContentState, PreviewProblem } from "./types";
 import type { ApiLimit } from "@/src/lib/apiError";
 import { LIMIT_TITLES, TRY_AGAIN_SOON, tryAgainAt } from "@/src/lib/rateLimitMessage";

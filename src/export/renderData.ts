@@ -5,7 +5,7 @@ import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
 import { contributionYear } from "@/src/lib/contributionYear";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /**
  * The GitHub data the render page draws: only what this banner needs, loaded in parallel. The

@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD, MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
 import {
-  BACKGROUND_UPLOAD,
   isGifMagicBytes,
-  LOGO_UPLOAD,
-  MAX_IMAGE_FILE_BYTES,
   readFileHead,
   shouldDecodeHeicWithHeic2any,
   supportedFormatsMessage,

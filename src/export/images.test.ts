@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
-import type { ExportRequest } from "@/src/types/template";
+import type { ExportRequest } from "@/src/export/request";
 import { resolveExportImages as resolveImages } from "./images";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 

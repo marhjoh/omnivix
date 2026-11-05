@@ -2,9 +2,9 @@
 // formats, so they stay in step with what the API and the studio accept.
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import {
-  EXPORT_FORMAT,
+  DEFAULT_EXPORT_FORMAT,
   EXPORT_FORMATS,
-  EXPORT_PIXEL_RATIO,
+  DEFAULT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
 } from "@/src/export/format";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
@@ -17,14 +17,14 @@ import {
 } from "@/src/lib/sizes";
 import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
-import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
+import type { EditorFieldSchema, TemplateId } from "@/src/templates/types";
 import { listText } from "@/src/lib/text";
 import type { TimedLimit } from "@/src/lib/apiError";
 import { LIMIT_TITLES } from "@/src/lib/rateLimitMessage";
 import { studioPath } from "@/src/lib/site";
 import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { linkFormatsOf } from "@/src/export/images";
-import { THEME_PRESETS } from "@/src/types/theme";
+import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 
 /** The example request in the docs; a test checks that the API accepts it. */
 export const EXAMPLE_REQUEST = {
@@ -49,7 +49,7 @@ function oneOf(values: readonly unknown[]): string {
 /** What a setting accepts, in words. */
 function accepts(field: EditorFieldSchema): string {
   if (field.key === "themeId") {
-    return `the contribution grid's colors, ${oneOf(THEME_PRESETS.map((preset) => preset.id))}`;
+    return `the contribution grid's colors, ${oneOf(GRID_COLOR_IDS)}`;
   }
   if (field.key === "year") {
     return `${code(LATEST_YEAR)} (the last 365 days) or a year, e.g. ${code(String(currentYear()))}`;
@@ -121,8 +121,8 @@ export function exportApiDocs(siteUrl: URL): string[] {
     `| \`templateId\` | ${oneOf(getTemplates().map(({ meta }) => meta.id))} |`,
     `| \`size\` | ${sizes.join(", ")} |`,
     "| `state` | The template's settings (below). Any you leave out use the default; unknown ones are ignored. |",
-    `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(EXPORT_PIXEL_RATIO)}${ratioLimits}: the image is the size above times this |`,
-    `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(EXPORT_FORMAT)}${formatNotes} |`,
+    `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(DEFAULT_PIXEL_RATIO)}${ratioLimits}: the image is the size above times this |`,
+    `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(DEFAULT_EXPORT_FORMAT)}${formatNotes} |`,
     `| \`uiTheme\` | ${oneOf(THEMES)}, default ${code(DEFAULT_THEME)}: whether the banner's cards and text are light or dark |`,
     "",
     "Example:",
@@ -169,7 +169,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
       return [
         `### ${meta.title} (\`${meta.id}\`)`,
         "",
-        `${meta.description} Default size: ${code(meta.defaultSize)}.`,
+        `${meta.description} Default size: ${code(defaults.size)}.`,
         "",
         "| Setting | Accepts | Default |",
         "| --- | --- | --- |",

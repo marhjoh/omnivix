@@ -69,7 +69,7 @@ Routes only: pages, API handlers and metadata files, listed in [api.md](api.md#r
 
 ### `src/templates/`
 
-One folder per template with its `Renderer.tsx`. Settings and defaults are in `definitions.ts`, and `registry.ts` lists all templates.
+One folder per template with its `Renderer.tsx`. Settings and defaults are in `definitions.ts`, their rules in `stateSchemas.ts`, the shared types in `types.ts`, and `registry.ts` lists all templates.
 
 ### `src/banner/`
 
@@ -81,7 +81,7 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 ### `src/export/`
 
-Server-side export, on Effect: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`), the Playwright capture (`playwright.ts`) and the errors each becomes a response for (`errors.ts`). A whole export has a 45-second deadline; Chromium is a scoped resource, so the deadline or a failure closes it. `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export, on Effect: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`exportToken.ts`), the Playwright capture (`playwright.ts`) and the errors each becomes a response for (`errors.ts`). A whole export has a 45-second deadline; Chromium is a scoped resource, so the deadline or a failure closes it. `apiDocs.ts` generates the export API section of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
@@ -97,9 +97,9 @@ The landing page, the site header and footer (`SiteShell.tsx`), and the link-pre
 
 What `app/not-found.tsx`, `error.tsx` and `global-error.tsx` render.
 
-### `src/lib/`, `src/types/`, `src/ui/`, `src/theme/`
+### `src/lib/`, `src/ui/`, `src/theme/`
 
-Shared helpers (banner sizes and platforms in `sizes.ts`), types, generic UI pieces and the light/dark theme.
+Shared helpers (banner sizes and platforms in `sizes.ts`), generic UI pieces and the light/dark theme.
 
 ### `public/`, `scripts/`
 

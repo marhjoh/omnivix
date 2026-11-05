@@ -1,6 +1,6 @@
 import "server-only";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { isGithubUsername } from "@/src/lib/githubUsername";
 import { IMAGE_SETTINGS, isSavableImage, POSITION_KEYS } from "@/src/studio/savedSettings";
 import { parsePositionText } from "@/src/banner/position";

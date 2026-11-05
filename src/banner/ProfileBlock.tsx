@@ -1,24 +1,36 @@
 import type { ReactNode } from "react";
-import type { GithubUserNormalized } from "@/src/github/normalize";
+import type { GithubUserNormalized } from "@/src/github/types";
 import { usernameOf } from "@/src/lib/githubUsername";
+import { FitContent } from "@/src/banner/FitContent";
+import { contentFit } from "@/src/banner/contentPosition";
+import { normalizeContentSize } from "@/src/banner/contentSize";
 import { profilePositionOf } from "@/src/banner/profilePosition";
-import type { bannerUiChrome } from "@/src/theme/theme";
+import { ELLIPSIS } from "@/src/banner/textStyle";
+import type { BannerUiChrome } from "@/src/theme/theme";
 
 /** Natural sizes; `FitContent` scales the profile together with the rest of the banner. */
 const SIZING = { avatar: 28, name: 13, handle: 12 };
 
-/** The GitHub and repos banners' content: the profile as the banner's state shows it, above `children`. */
-export function ProfileColumn({
-  state,
-  user,
-  chrome,
-  children,
-}: {
+/**
+ * The GitHub and repos banners' content: the profile as the banner's state shows it, above
+ * `children`, placed and scaled to the Content size setting.
+ */
+export function ProfileBanner(props: ProfileColumnProps) {
+  return (
+    <FitContent {...contentFit(props.state)} size={normalizeContentSize(props.state.contentSize)}>
+      <ProfileColumn {...props} />
+    </FitContent>
+  );
+}
+
+interface ProfileColumnProps {
   state: Record<string, unknown>;
   user: GithubUserNormalized | undefined;
-  chrome: ReturnType<typeof bannerUiChrome>;
+  chrome: BannerUiChrome;
   children: ReactNode;
-}) {
+}
+
+function ProfileColumn({ state, user, chrome, children }: ProfileColumnProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <ProfileBlock
@@ -45,7 +57,7 @@ function ProfileBlock({
 }: {
   user: GithubUserNormalized | undefined;
   username: string;
-  chrome: ReturnType<typeof bannerUiChrome>;
+  chrome: BannerUiChrome;
   showAvatar: boolean;
   showDisplayName: boolean;
   /** Profile position: on the right edge of the content instead of the left. */
@@ -87,9 +99,7 @@ function ProfileBlock({
                   fontWeight: 700,
                   lineHeight: 1.15,
                   letterSpacing: "-0.02em",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  ...ELLIPSIS,
                 }}
               >
                 {displayName}

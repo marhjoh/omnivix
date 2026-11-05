@@ -1,9 +1,9 @@
 import { oneOfOr } from "@/src/lib/isOneOf";
 import {
-  EXPORT_FORMAT,
+  DEFAULT_EXPORT_FORMAT,
   EXPORT_FORMATS,
   type ExportFormat,
-  EXPORT_PIXEL_RATIO,
+  DEFAULT_PIXEL_RATIO,
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
 } from "@/src/export/format";
@@ -219,7 +219,7 @@ export function exportFormats(format: BannerFormat): readonly ExportFormat[] {
 /** `file`, or the banner format's first file format if it doesn't take `file`. */
 export function exportFormatFor(
   format: BannerFormat,
-  file: ExportFormat = EXPORT_FORMAT,
+  file: ExportFormat = DEFAULT_EXPORT_FORMAT,
 ): ExportFormat {
   const formats = exportFormats(format);
   return formats.includes(file) ? file : formats[0];
@@ -238,7 +238,7 @@ export function exportPixelRatios(
 export function exportPixelRatioFor(
   format: BannerFormat,
   file: ExportFormat,
-  ratio: ExportPixelRatio = EXPORT_PIXEL_RATIO,
+  ratio: ExportPixelRatio = DEFAULT_PIXEL_RATIO,
 ): ExportPixelRatio {
   const max = format.maxPixelRatio?.[file];
   return max !== undefined && max < ratio ? max : ratio;

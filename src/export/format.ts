@@ -3,13 +3,7 @@ export const EXPORT_FORMATS = ["png", "jpeg"] as const;
 
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
-export const EXPORT_FORMAT: ExportFormat = "png";
-
-/**
- * A 3:1 photo banner at 3× is at most about 1.2 MB as JPEG instead of 6 MB as PNG, without visible
- * artifacts.
- */
-export const JPEG_QUALITY = 90;
+export const DEFAULT_EXPORT_FORMAT: ExportFormat = "png";
 
 export const EXPORT_FORMAT_DETAILS: Record<
   ExportFormat,
@@ -25,4 +19,4 @@ export const EXPORT_PIXEL_RATIOS = [1, 2, 3] as const;
 export type ExportPixelRatio = (typeof EXPORT_PIXEL_RATIOS)[number];
 
 /** Default pixel ratio, for the studio and the export API; the landing FAQ quotes it. */
-export const EXPORT_PIXEL_RATIO: ExportPixelRatio = 3;
+export const DEFAULT_PIXEL_RATIO: ExportPixelRatio = 3;

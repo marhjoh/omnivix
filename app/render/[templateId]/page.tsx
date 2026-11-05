@@ -4,12 +4,12 @@ import { isTemplateId } from "@/src/templates/registry";
 import { BANNER_SIZES } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { DEFAULT_THEME } from "@/src/theme/theme";
-import { verifyExportToken } from "@/src/export/export-token";
+import { verifyExportToken } from "@/src/export/exportToken";
 import { Effect, Result } from "effect";
 import { loadRenderData } from "@/src/export/renderData";
 import type { GithubError } from "@/src/github/errors";
 import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
-import type { RenderData } from "@/src/templates/renderers/types";
+import type { RenderData } from "@/src/templates/types";
 
 /** No banner without the data: a marker tells the export why (see renderProblem.ts). */
 function problemMarker(error: GithubError) {

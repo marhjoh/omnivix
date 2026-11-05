@@ -1,5 +1,6 @@
-import { RepoNormalized } from "@/src/github/normalize";
-import type { Theme } from "@/src/theme/theme";
+import type { RepoNormalized } from "@/src/github/types";
+import { ELLIPSIS, lineClamp } from "@/src/banner/textStyle";
+import type { BannerUiChrome } from "@/src/theme/theme";
 
 /** Single scale tuned for banner grid cells (readable, even rhythm). */
 const CARD = {
@@ -21,7 +22,7 @@ interface RepoCardProps {
   showLanguage: boolean;
   showStars: boolean;
   showForks: boolean;
-  uiTheme: Theme;
+  chrome: BannerUiChrome;
 }
 
 const STAR_COLOR = "#f2cc60";
@@ -33,42 +34,24 @@ export function RepoCard({
   showLanguage,
   showStars,
   showForks,
-  uiTheme,
+  chrome,
 }: RepoCardProps) {
   const hasFooter = showLanguage || showStars || showForks;
-  const cardChrome =
-    uiTheme === "light"
-      ? {
-          bg: "rgba(255, 255, 255, 0.94)",
-          border: "rgba(31, 35, 40, 0.12)",
-          title: "#1f2328",
-          body: "#656d76",
-          pillBg: "rgba(31, 35, 40, 0.06)",
-          shadow: "0 8px 24px rgba(31, 35, 40, 0.08)",
-        }
-      : {
-          bg: "rgba(21, 28, 40, 0.82)",
-          border: "rgba(255, 255, 255, 0.12)",
-          title: "rgba(255,255,255,0.94)",
-          body: "rgba(255,255,255,0.68)",
-          pillBg: "rgba(255, 255, 255, 0.08)",
-          shadow: "0 10px 26px rgba(2, 6, 23, 0.34)",
-        };
-  const pill = { padding: "2px 7px", borderRadius: 999, background: cardChrome.pillBg };
+  const pill = { padding: "2px 7px", borderRadius: 999, background: chrome.pillBg };
 
   return (
     <article
       style={{
-        border: `1px solid ${cardChrome.border}`,
+        border: `1px solid ${chrome.cardBorder}`,
         borderRadius: CARD.radius,
         padding: `${CARD.padY}px ${CARD.padX}px`,
-        background: cardChrome.bg,
-        color: cardChrome.title,
+        background: chrome.cardBg,
+        color: chrome.cardText,
         minWidth: 0,
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        boxShadow: cardChrome.shadow,
+        boxShadow: chrome.cardShadow,
       }}
     >
       {/* Not a heading: the preview is one image to screen readers. */}
@@ -77,14 +60,12 @@ export function RepoCard({
           fontSize: CARD.title,
           margin: 0,
           marginBottom: showDescription || hasFooter ? CARD.gapTitle : 0,
-          color: cardChrome.title,
+          color: chrome.cardText,
           fontWeight: 600,
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
           minWidth: 0,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          ...ELLIPSIS,
         }}
       >
         {repo.name}
@@ -94,12 +75,9 @@ export function RepoCard({
         <p
           style={{
             fontSize: CARD.body,
-            color: cardChrome.body,
+            color: chrome.cardTextMuted,
             margin: 0,
-            display: "-webkit-box",
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
+            ...lineClamp(1),
             lineHeight: 1.28,
             wordBreak: "break-word",
           }}
@@ -116,7 +94,7 @@ export function RepoCard({
             flexWrap: "wrap",
             gap: CARD.footerItemGap,
             fontSize: CARD.footer,
-            color: cardChrome.body,
+            color: chrome.cardTextMuted,
             marginTop: showDescription ? CARD.gapFooter : CARD.gapTitle,
             alignItems: "center",
             lineHeight: 1.35,

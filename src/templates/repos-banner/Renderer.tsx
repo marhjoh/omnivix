@@ -1,10 +1,7 @@
-import { FitContent } from "@/src/banner/FitContent";
-import { normalizeContentSize } from "@/src/banner/contentSize";
-import { contentFit } from "@/src/banner/contentPosition";
 import { RepoCard } from "@/src/banner/RepoCard";
-import { ProfileColumn } from "@/src/banner/ProfileBlock";
+import { ProfileBanner } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome } from "@/src/theme/theme";
-import type { RendererProps } from "@/src/templates/renderers/types";
+import type { RendererProps } from "@/src/templates/types";
 import { repoModeOf, reposShown } from "@/src/lib/repoSelection";
 
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
@@ -31,29 +28,27 @@ export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const showForks = state.showForks !== false;
 
   return (
-    <FitContent {...contentFit(state)} size={normalizeContentSize(state.contentSize)}>
-      <ProfileColumn state={state} user={data.user} chrome={chrome}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${cols}, ${REPO_CARD_COLUMN_PX}px)`,
-            gap: REPO_GRID_GAP_PX,
-            alignItems: "start",
-          }}
-        >
-          {repos.map((repo) => (
-            <RepoCard
-              key={repo.id}
-              repo={repo}
-              uiTheme={uiTheme}
-              showDescription={showDescription}
-              showLanguage={showLanguage}
-              showStars={showStars}
-              showForks={showForks}
-            />
-          ))}
-        </div>
-      </ProfileColumn>
-    </FitContent>
+    <ProfileBanner state={state} user={data.user} chrome={chrome}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, ${REPO_CARD_COLUMN_PX}px)`,
+          gap: REPO_GRID_GAP_PX,
+          alignItems: "start",
+        }}
+      >
+        {repos.map((repo) => (
+          <RepoCard
+            key={repo.id}
+            repo={repo}
+            chrome={chrome}
+            showDescription={showDescription}
+            showLanguage={showLanguage}
+            showStars={showStars}
+            showForks={showForks}
+          />
+        ))}
+      </div>
+    </ProfileBanner>
   );
 }

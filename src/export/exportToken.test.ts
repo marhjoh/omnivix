@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createExportToken, verifyExportToken } from "./export-token";
+import { createExportToken, verifyExportToken } from "./exportToken";
 
 const samplePayload = {
   templateId: "quote-banner" as const,

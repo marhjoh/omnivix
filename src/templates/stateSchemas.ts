@@ -2,25 +2,23 @@ import "server-only";
 import { Result, Schema } from "effect";
 import { isContributionYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
-import { CONTENT_ALIGNS } from "@/src/banner/contentAlign";
+import { CONTENT_ALIGNS } from "@/src/banner/contentPosition";
 import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
-import { THEME_PRESETS } from "@/src/types/theme";
+import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
+import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import {
+  AUTHOR_MAX_LENGTH,
   AUTHOR_PREFIXES,
   isQuoteColor,
   QUOTE_FONT_STYLES,
   QUOTE_FONTS,
   QUOTE_MARKS,
-} from "@/src/banner/quoteStyle";
-import {
-  AUTHOR_MAX_LENGTH,
-  CONTRIBUTION_CELL_SHAPES,
   QUOTE_MAX_LENGTH,
-} from "@/src/templates/definitions";
-import type { TemplateId } from "@/src/types/template";
+} from "@/src/banner/quoteStyle";
+import type { TemplateId } from "@/src/templates/types";
 import {
   fieldIssues,
   flag,
@@ -43,9 +41,8 @@ const position = Schema.Struct({ x: percent, y: percent }).annotate({
 });
 
 /** Settings every banner has. */
-const baseFields = {
+const bannerFields = {
   size: oneOf(BANNER_SIZE_KEYS),
-  themeId: oneOf(THEME_PRESETS.map((preset) => preset.id)),
   backgroundImage: Schema.optional(text),
   backgroundPosition: Schema.optional(position),
   backgroundZoom: Schema.optional(numberBetween(MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)),
@@ -59,35 +56,41 @@ const baseFields = {
 
 /** GitHub username, for the banners that load GitHub data. */
 const username = requiredText;
-const year = textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`);
 const alignment = oneOf(CONTENT_ALIGNS);
-const profilePosition = oneOf(PROFILE_POSITIONS);
 const contentSize = oneOf(CONTENT_SIZES);
-const cellShape = oneOf(CONTRIBUTION_CELL_SHAPES);
+
+/** The contribution grid's settings (GitHub and contribution banners). */
+const contributionGridFields = {
+  year: textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`),
+  themeId: oneOf(GRID_COLOR_IDS),
+  cellShape: oneOf(CONTRIBUTION_CELL_SHAPES),
+};
+
+/** The GitHub profile above the content (GitHub and repos banners). */
+const profileFields = {
+  username,
+  showAvatar: flag,
+  showDisplayName: flag,
+  profilePosition: oneOf(PROFILE_POSITIONS),
+};
+
 /** The quote banner's colors: a named one or a hex code (src/banner/quoteStyle.ts). */
 const quoteColor = textWhere(isQuoteColor, "Unknown color");
 
 const STATE_SCHEMAS = {
   "github-banner": Schema.Struct({
-    ...baseFields,
-    username,
-    year,
+    ...bannerFields,
+    ...contributionGridFields,
+    ...profileFields,
     showMonthLabels: flag,
     showDayLabels: flag,
     showTotal: flag,
-    showAvatar: flag,
-    showDisplayName: flag,
-    profilePosition,
     alignment,
     contentSize,
-    cellShape,
   }),
   "repos-banner": Schema.Struct({
-    ...baseFields,
-    username,
-    showAvatar: flag,
-    showDisplayName: flag,
-    profilePosition,
+    ...bannerFields,
+    ...profileFields,
     alignment,
     mode: oneOf(REPO_MODES),
     selectedRepos: text,
@@ -99,15 +102,14 @@ const STATE_SCHEMAS = {
     contentSize,
   }),
   "contribution-banner": Schema.Struct({
-    ...baseFields,
+    ...bannerFields,
+    ...contributionGridFields,
     username,
     alignment,
     contentSize: oneOf(CONTENT_SIZES_OR_FILL),
-    year,
-    cellShape,
   }),
   "quote-banner": Schema.Struct({
-    ...baseFields,
+    ...bannerFields,
     quote: requiredText.check(textUpTo(QUOTE_MAX_LENGTH)),
     author: text.check(textUpTo(AUTHOR_MAX_LENGTH)),
     alignment,

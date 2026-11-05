@@ -3,15 +3,14 @@ import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
 import { resolveExportImages } from "@/src/export/images";
-import { createExportToken } from "@/src/export/export-token";
-import { renderUrl } from "@/src/export/render-url";
+import { createExportToken } from "@/src/export/exportToken";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { DailyExportLimitReached, ExportTimedOut, SettingsTooLong } from "@/src/export/errors";
 import { dailyExportLimit } from "@/src/lib/requestLimits";
 import { errorResponse, githubErrorResponses, tooManyRequests } from "@/src/lib/apiResponse";
 import { usernameOf } from "@/src/lib/githubUsername";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
@@ -27,6 +26,25 @@ const EXPORT_DEADLINE = "45 seconds";
 const INVALID_REQUEST = "Couldn't export this banner. Reload the page and try again.";
 
 const EXPORT_FAILED = "Couldn't export the banner. Try again.";
+
+/** The render page Playwright opens for this export. */
+function renderUrl(request: NextRequest, templateId: string, token: string): string {
+  return `${publicOrigin(request)}/render/${templateId}?token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Origin Playwright opens the render page on. On Vercel, the forwarded headers are set by the
+ * platform and name the public URL users use (right deployment, cookies, auth bypass rules);
+ * `nextUrl` can be an internal host there. Elsewhere those headers could come from the client, so
+ * the server's own origin is used.
+ */
+function publicOrigin(request: NextRequest): string {
+  if (!process.env.VERCEL) return request.nextUrl.origin;
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  if (host) return `https://${host}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return request.nextUrl.origin;
+}
 
 function imageResponse(image: Buffer, format: ExportFormat, templateId: TemplateId) {
   const { contentType, extension } = EXPORT_FORMAT_DETAILS[format];

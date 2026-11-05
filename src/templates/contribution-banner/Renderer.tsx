@@ -1,11 +1,9 @@
-import { ContributionGrid } from "@/src/banner/ContributionGrid";
+import { ContributionGrid, contributionGridStyle } from "@/src/banner/ContributionGrid";
 import { FitContent } from "@/src/banner/FitContent";
 import { normalizeContentSizeOrFill } from "@/src/banner/contentSize";
 import { contentFit } from "@/src/banner/contentPosition";
-import { contributionCellShapeFromState } from "@/src/templates/definitions";
 import { bannerFormatOf, viewRect } from "@/src/lib/sizes";
-import type { RendererProps } from "@/src/templates/renderers/types";
-import { themePresetById } from "@/src/types/theme";
+import type { RendererProps } from "@/src/templates/types";
 
 /** Natural cell size; `FitContent` scales the grid to the chosen size and banner format. */
 const GRID = { cell: 12, gap: 3 };
@@ -17,9 +15,8 @@ const GRID = { cell: 12, gap: 3 };
 const FILL_GRID = { cell: 22, gap: 4 };
 
 export function ContributionBannerRenderer({ state, data }: RendererProps) {
-  const theme = themePresetById(state.themeId);
+  const gridStyle = contributionGridStyle(state);
   const contentSize = normalizeContentSizeOrFill(state.contentSize);
-  const cellShape = contributionCellShapeFromState(state.cellShape);
 
   if (!data.contributions) return null;
   if (contentSize === "fill") {
@@ -27,13 +24,10 @@ export function ContributionBannerRenderer({ state, data }: RendererProps) {
       <div style={{ position: "absolute", ...viewRect(bannerFormatOf(state.size), "desktop") }}>
         <ContributionGrid
           contributions={data.contributions}
-          theme={theme}
+          {...gridStyle}
           cellSize={FILL_GRID.cell}
           gap={FILL_GRID.gap}
           fill
-          renderPaddingDays
-          cellOutline={false}
-          cellShape={cellShape}
         />
       </div>
     );
@@ -42,10 +36,9 @@ export function ContributionBannerRenderer({ state, data }: RendererProps) {
     <FitContent {...contentFit(state)} size={contentSize}>
       <ContributionGrid
         contributions={data.contributions}
-        theme={theme}
+        {...gridStyle}
         cellSize={GRID.cell}
         gap={GRID.gap}
-        cellShape={cellShape}
       />
     </FitContent>
   );

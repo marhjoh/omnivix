@@ -1,8 +1,16 @@
 import { useMemo } from "react";
-import type { ContributionCellShape } from "@/src/templates/definitions";
-import { ContributionsNormalized } from "@/src/github/normalize";
-import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/lib/contributionCalendarLayout";
-import { ThemePreset } from "@/src/types/theme";
+import type { ContributionsNormalized } from "@/src/github/types";
+import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/banner/contributionCalendarLayout";
+import { contributionCellShapeFromState, type ContributionCellShape } from "@/src/banner/cellShape";
+import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
+
+/** The grid's look from banner state: its Grid colors and Cell shape settings. */
+export function contributionGridStyle(state: Record<string, unknown>) {
+  return {
+    colors: gridColorsById(state.themeId),
+    cellShape: contributionCellShapeFromState(state.cellShape),
+  };
+}
 
 function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number; ry: number } {
   if (shape === "square") return { rx: 0, ry: 0 };
@@ -18,7 +26,8 @@ function cellRadii(shape: ContributionCellShape, cellSize: number): { rx: number
 
 interface ContributionGridProps {
   contributions: ContributionsNormalized;
-  theme: ThemePreset;
+  colors: GridColorPreset;
+  cellShape: ContributionCellShape;
   cellSize: number;
   gap: number;
   showMonthLabels?: boolean;
@@ -28,27 +37,25 @@ interface ContributionGridProps {
    */
   showDayLabels?: boolean;
   showTotal?: boolean;
-  /** Fill empty weekday slots in the first/last week with out-of-range cells. */
-  renderPaddingDays?: boolean;
-  /** Stretch SVG to fill its container (CSS only, no layout change). */
+  /**
+   * Cover the container: the SVG is stretched to it (CSS only, no layout change), the first and
+   * last weeks' empty weekday slots get out-of-range cells, and cells have no outline.
+   */
   fill?: boolean;
-  cellOutline?: boolean;
-  cellShape?: ContributionCellShape;
 }
 
 export function ContributionGrid({
   contributions,
-  theme,
+  colors,
+  cellShape,
   cellSize,
   gap,
   showMonthLabels = false,
   showDayLabels = false,
   showTotal = false,
-  renderPaddingDays = false,
   fill = false,
-  cellOutline = true,
-  cellShape = "rounded",
 }: ContributionGridProps) {
+  const cellOutline = !fill;
   const { rx, ry } = cellRadii(cellShape, cellSize);
   // About 370 cells; worth keeping while the banner re-renders (e.g. dragging the background).
   const { placedDays, monthLabels, columnCount } = useMemo(
@@ -57,9 +64,9 @@ export function ContributionGrid({
         weeks: contributions.weeks,
         months: contributions.months,
         rangeEndYmd: contributions.rangeEndYmd,
-        renderPaddingDays,
+        renderPaddingDays: fill,
       }),
-    [contributions, renderPaddingDays],
+    [contributions, fill],
   );
 
   if (!contributions.weeks.length) {
@@ -144,7 +151,7 @@ export function ContributionGrid({
             height={cellSize}
             rx={rx}
             ry={ry}
-            fill={theme.gridLevels[level]}
+            fill={colors.gridLevels[level]}
             stroke={cellOutline ? "rgba(255,255,255,0.14)" : undefined}
             strokeWidth={cellOutline ? 0.6 : 0}
             opacity={isOutOfRange ? 0.3 : 1}

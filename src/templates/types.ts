@@ -1,6 +1,9 @@
-import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
-import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
+import type {
+  ContributionsNormalized,
+  GithubUserNormalized,
+  RepoNormalized,
+} from "@/src/github/types";
 
 export const TEMPLATE_IDS = [
   "github-banner",
@@ -10,8 +13,6 @@ export const TEMPLATE_IDS = [
 ] as const;
 
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
-
-export type { BannerSize };
 
 export type EditorFieldType =
   | "text"
@@ -42,7 +43,6 @@ interface TemplateMeta {
   id: TemplateId;
   title: string;
   description: string;
-  defaultSize: BannerSize;
   needsUsername: boolean;
   /** GitHub data the banner itself draws; the export fetches only these. */
   githubData: GithubDataKind[];
@@ -56,13 +56,15 @@ export interface TemplateDefinition<TState extends Record<string, unknown>> {
   initialState: TState;
 }
 
-export interface ExportRequest {
-  templateId: TemplateId;
-  size: BannerSize;
+export interface RenderData {
+  user?: GithubUserNormalized;
+  contributions?: ContributionsNormalized;
+  repos?: RepoNormalized[];
+}
+
+/** What every template's renderer gets. It draws the content; BannerRenderer adds the frame. */
+export interface RendererProps {
   state: Record<string, unknown>;
-  pixelRatio?: ExportPixelRatio;
-  /** PNG when left out, or the size's first format if it doesn't take PNG. */
-  format?: ExportFormat;
-  /** Matches the studio's theme, so the export looks like the preview. */
-  uiTheme?: Theme;
+  data: RenderData;
+  uiTheme: Theme;
 }
