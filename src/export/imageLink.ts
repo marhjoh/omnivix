@@ -2,22 +2,12 @@ import { lookup as dnsLookup } from "node:dns";
 import type { IncomingMessage } from "node:http";
 import { request } from "node:https";
 import { isIP, type LookupFunction } from "node:net";
-import { listText } from "@/src/lib/text";
+import { formatNames, type LinkImageType } from "@/src/lib/imageSource";
+import { megabytes } from "@/src/lib/text";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
 const MAX_LINKED_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
-
-/** Image formats a link can be, by content type. No GIF: it would animate only in the preview. */
-const LINK_IMAGE_FORMATS = {
-  "image/png": "PNG",
-  "image/jpeg": "JPEG",
-  "image/webp": "WebP",
-  "image/avif": "AVIF",
-  "image/svg+xml": "SVG",
-} as const;
-
-export type LinkImageType = keyof typeof LINK_IMAGE_FORMATS;
 
 /** A downloaded image, served to the render page in place of its link. */
 export interface ImageBytes {
@@ -27,11 +17,6 @@ export interface ImageBytes {
 
 /** A link the export won't use; `message` is shown to the user. */
 export class ImageLinkError extends Error {}
-
-/** "PNG, JPEG or WebP" */
-export function formatNames(types: readonly LinkImageType[]): string {
-  return listText(types.map((type) => LINK_IMAGE_FORMATS[type]));
-}
 
 const NOT_ALLOWED = "That image link isn't allowed. Use a public https:// image.";
 
@@ -57,7 +42,7 @@ function toLinkError(error: NodeJS.ErrnoException): ImageLinkError {
   return new ImageLinkError("Couldn't load the image link.");
 }
 
-const TOO_LARGE = `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1024 * 1024)} MB.`;
+const TOO_LARGE = `The linked image is larger than ${megabytes(MAX_LINKED_IMAGE_BYTES)}.`;
 
 /**
  * Downloads an image link for export: https only, public addresses only, one of `types`, at most

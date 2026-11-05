@@ -19,6 +19,10 @@ import { getTemplates } from "@/src/templates/registry";
 import { DEFAULT_THEME, THEMES } from "@/src/theme/theme";
 import type { EditorFieldSchema, TemplateId } from "@/src/types/template";
 import { listText } from "@/src/lib/text";
+import type { TimedLimit } from "@/src/lib/apiError";
+import { LIMIT_TITLES } from "@/src/lib/rateLimitMessage";
+import { studioPath } from "@/src/lib/site";
+import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { linkFormatsOf } from "@/src/export/images";
 import { THEME_PRESETS } from "@/src/types/theme";
 
@@ -48,7 +52,7 @@ function accepts(field: EditorFieldSchema): string {
     return `the contribution grid's colors, ${oneOf(THEME_PRESETS.map((preset) => preset.id))}`;
   }
   if (field.key === "year") {
-    return `${code("latest")} (the last 365 days) or a year, e.g. ${code(String(new Date().getFullYear()))}`;
+    return `${code(LATEST_YEAR)} (the last 365 days) or a year, e.g. ${code(String(currentYear()))}`;
   }
   switch (field.type) {
     case "select":
@@ -71,6 +75,11 @@ function accepts(field: EditorFieldSchema): string {
     default:
       return "";
   }
+}
+
+/** A timed 429's body as the API sends it (src/lib/apiResponse.ts). */
+function limitBody(limit: TimedLimit): string {
+  return `\`{ "error": ${JSON.stringify(`${LIMIT_TITLES[limit]}.`)}, "limit": "${limit}", "resetAt": "<ISO time>" }\``;
 }
 
 /** The default as written; the year default is set at build time, so it says "this year". */
@@ -131,14 +140,14 @@ export function exportApiDocs(siteUrl: URL): string[] {
     '- `400`: `{ "error": "…", "issues": [{ "path": "state.username", "message": "Required" }] }`, one issue per field that failed. An image that can\'t be used is a `400` with only an `error`.',
     '- `404`: the GitHub user doesn\'t exist, with `issues: [{ "path": "state.username", … }]`.',
     "- `413`: the settings are too long to export, such as a very long quote.",
-    '- `429`: a rate limit. GitHub\'s, on banners with GitHub data: `{ "error": "GitHub\'s limit is reached.", "limit": "github", "resetAt": "<ISO time>" }`. The daily export quota per IP address: `{ "error": "Daily export limit reached.", "limit": "daily-exports", "resetAt": "<ISO time>" }`. Or the burst limit, 30 per 10 minutes per IP address, with no `resetAt`.',
+    `- \`429\`: a rate limit. GitHub's, on banners with GitHub data: ${limitBody("github")}. The daily export quota per IP address: ${limitBody("daily-exports")}. Or the burst limit, 30 per 10 minutes per IP address, with no \`resetAt\`.`,
     "- `500`: the export failed; trying again may work.",
     "",
     "## Studio links",
     "",
     "To give a user a banner they can still adjust, link to the studio with the same settings as query parameters:",
     "",
-    `${new URL(`/studio/${EXAMPLE_LINK.templateId}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
+    `${new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
     "",
     "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",

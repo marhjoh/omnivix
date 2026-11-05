@@ -37,11 +37,7 @@ import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
-
-/** Loads quicker than this go straight to the new preview, without showing the loading screen. */
-const LOADING_SCREEN_DELAY_MS = 300;
-/** Once shown, the loading screen stays at least this long, so it doesn't just blink. */
-const LOADING_SCREEN_MIN_MS = 400;
+import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/studio/useDelayedFlag";
 
 /** Only a finished preview is held during a load; an empty or error state goes straight to it. */
 function isReadyPreview(preview: { previewState: PreviewContentState }): boolean {
@@ -181,8 +177,8 @@ export function StudioShell({
     [previewState, github.problem, previewBannerState, github.data],
   );
   const shownPreview = useHoldDuringLoad(livePreview, previewState === "loading", {
-    delayMs: LOADING_SCREEN_DELAY_MS,
-    minShowMs: LOADING_SCREEN_MIN_MS,
+    delayMs: PENDING_DELAY_MS,
+    minShowMs: PENDING_MIN_SHOW_MS,
     canHold: isReadyPreview,
   });
   const exportBlocked = isExportBlocked({

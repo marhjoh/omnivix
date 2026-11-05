@@ -1,4 +1,5 @@
 import { CONTENT_ALIGN_OPTIONS, type ContentAlign } from "@/src/banner/contentAlign";
+import { PROFILE_POSITION_OPTIONS, type ProfilePosition } from "@/src/banner/profilePosition";
 import {
   CONTENT_SIZE_OPTIONS,
   DEFAULT_CONTENT_SIZE,
@@ -8,7 +9,8 @@ import {
 import { oneOfOr } from "@/src/lib/isOneOf";
 import { DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
-import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { MAX_REPOS, REPO_MODES, type RepoMode } from "@/src/lib/repoSelection";
+import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 import {
   DEFAULT_QUOTE_STYLE,
@@ -77,10 +79,7 @@ const profilePositionField: EditorFieldSchema = {
   key: "profilePosition",
   label: "Profile position",
   type: "select",
-  options: [
-    { label: "Left", value: "left" },
-    { label: "Right", value: "right" },
-  ],
+  options: PROFILE_POSITION_OPTIONS,
 };
 
 /** See `src/banner/contentSize.ts`. */
@@ -99,8 +98,6 @@ const cellShapeField: EditorFieldSchema = {
   options: CONTRIBUTION_CELL_SHAPE_OPTIONS,
 };
 
-const CURRENT_YEAR = String(new Date().getFullYear());
-
 export const githubBannerDefinition: TemplateDefinition<
   {
     username: string;
@@ -110,7 +107,7 @@ export const githubBannerDefinition: TemplateDefinition<
     showTotal: boolean;
     showAvatar: boolean;
     showDisplayName: boolean;
-    profilePosition: "left" | "right";
+    profilePosition: ProfilePosition;
     alignment: ContentAlign;
     contentSize: ContentSize;
     cellShape: ContributionCellShape;
@@ -148,7 +145,7 @@ export const githubBannerDefinition: TemplateDefinition<
     username: "",
     themeId: "default",
     size: DEFAULT_BANNER_SIZE,
-    year: CURRENT_YEAR,
+    year: String(currentYear()),
     showMonthLabels: true,
     showDayLabels: true,
     showTotal: true,
@@ -166,9 +163,9 @@ export const reposBannerDefinition: TemplateDefinition<
     username: string;
     showAvatar: boolean;
     showDisplayName: boolean;
-    profilePosition: "left" | "right";
+    profilePosition: ProfilePosition;
     alignment: ContentAlign;
-    mode: "pinned" | "selected";
+    mode: RepoMode;
     selectedRepos: string;
     maxRepos: number;
     showDescription: boolean;
@@ -201,10 +198,10 @@ export const reposBannerDefinition: TemplateDefinition<
       key: "mode",
       label: "Mode",
       type: "select",
-      options: [
-        { label: "Pinned", value: "pinned" },
-        { label: "Selected", value: "selected" },
-      ],
+      options: REPO_MODES.map((value) => ({
+        label: value[0].toUpperCase() + value.slice(1),
+        value,
+      })),
     },
     { key: "selectedRepos", label: "Repositories", type: "repoMultiSelect" },
     { key: "maxRepos", label: "Amount", type: "range", min: 1, max: MAX_REPOS, step: 1 },
@@ -272,7 +269,7 @@ export const contributionBannerDefinition: TemplateDefinition<
     cellShape: "rounded",
     themeId: "default",
     size: DEFAULT_BANNER_SIZE,
-    year: CURRENT_YEAR,
+    year: String(currentYear()),
   },
 };
 

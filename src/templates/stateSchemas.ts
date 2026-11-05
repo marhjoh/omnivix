@@ -1,11 +1,12 @@
 import "server-only";
 import { Result, Schema } from "effect";
-import { isContributionYear } from "@/src/lib/utcContributionRange";
+import { isContributionYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 import { CONTENT_ALIGNS } from "@/src/banner/contentAlign";
+import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
-import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { THEME_PRESETS } from "@/src/types/theme";
 import {
   AUTHOR_PREFIXES,
@@ -58,9 +59,9 @@ const baseFields = {
 
 /** GitHub username, for the banners that load GitHub data. */
 const username = requiredText;
-const year = textWhere(isContributionYear, 'Must be a four-digit year or "latest"');
+const year = textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`);
 const alignment = oneOf(CONTENT_ALIGNS);
-const profilePosition = oneOf(["left", "right"]);
+const profilePosition = oneOf(PROFILE_POSITIONS);
 const contentSize = oneOf(CONTENT_SIZES);
 const cellShape = oneOf(CONTRIBUTION_CELL_SHAPES);
 /** The quote banner's colors: a named one or a hex code (src/banner/quoteStyle.ts). */
@@ -88,7 +89,7 @@ const STATE_SCHEMAS = {
     showDisplayName: flag,
     profilePosition,
     alignment,
-    mode: oneOf(["pinned", "selected"]),
+    mode: oneOf(REPO_MODES),
     selectedRepos: text,
     maxRepos: numberBetween(1, MAX_REPOS),
     showDescription: flag,

@@ -2,8 +2,8 @@ import "server-only";
 import { Effect } from "effect";
 import { GITHUB_LOADERS } from "@/src/github/client";
 import { usernameOf } from "@/src/lib/githubUsername";
-import { reposForBanner } from "@/src/lib/repoSelection";
-import { contributionYear } from "@/src/studio/githubUrls";
+import { reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
+import { contributionYear } from "@/src/lib/contributionYear";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
 
@@ -23,9 +23,7 @@ export function loadRenderData(templateId: TemplateId, state: Record<string, unk
         : none,
       repos: needs.has("repos")
         ? GITHUB_LOADERS.repos(username).pipe(
-            Effect.map((lists) =>
-              reposForBanner(lists, state.mode, String(state.selectedRepos ?? "")),
-            ),
+            Effect.map((lists) => reposForBanner(lists, state.mode, selectedReposOf(state))),
           )
         : none,
     },

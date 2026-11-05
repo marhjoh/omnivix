@@ -8,8 +8,9 @@ import type {
 } from "@/src/github/normalize";
 import { type ApiLimit, limitResetAt } from "@/src/lib/apiError";
 import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
-import { reposForBanner } from "@/src/lib/repoSelection";
-import { contributionYear, githubDataUrls } from "@/src/studio/githubUrls";
+import { repoModeOf, reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
+import { githubDataUrls } from "@/src/studio/githubUrls";
+import { contributionYear } from "@/src/lib/contributionYear";
 import { fetchProblem, noReposProblem } from "@/src/studio/preview/computePreviewContentState";
 import type { PreviewProblem } from "@/src/studio/preview/types";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
@@ -57,8 +58,8 @@ export function useGithubBannerData({
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
 
-  const repoMode = String(state.mode ?? "pinned");
-  const selectedRepos = String(state.selectedRepos ?? "");
+  const repoMode = repoModeOf(state.mode);
+  const selectedRepos = selectedReposOf(state);
   // Both repository lists come in one request per user: picking repositories and switching
   // between pinned and selected need nothing more from GitHub.
   const urls = githubDataUrls({
@@ -165,7 +166,7 @@ export function useGithubBannerData({
     /** Another year's grid is showing while this year's loads. */
     contributionsStale: contributionsFetch.stale,
     avatarFailed,
-    accountCreatedYear: user?.createdAt ? new Date(user.createdAt).getFullYear() : null,
+    accountCreatedYear: user?.createdAt ? new Date(user.createdAt).getUTCFullYear() : null,
     /** The owner's repositories, for the picker. */
     repoCatalog: {
       repos: repoLists?.owned ?? NO_REPOS,

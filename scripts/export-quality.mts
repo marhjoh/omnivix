@@ -14,11 +14,13 @@ import { presetSrcById } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS } from "@/src/export/format";
 import { BANNER_SIZES, exportPixelRatios, type BannerSize } from "@/src/lib/sizes";
 import { TEMPLATE_IDS, type TemplateId } from "@/src/types/template";
+import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
+import { BANNER_ROOT_CLASS } from "@/src/banner/placement";
+import { studioPath } from "@/src/lib/site";
+import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 const LABEL = process.argv[2] ?? "latest";
 const OUT_DIR = join(tmpdir(), "omnivix-export-quality", LABEL);
-const USERNAME = "marhjoh";
 const BACKGROUND = "sydney";
 /** LinkedIn and X, the platforms the issue tests uploads on. */
 const SIZES: BannerSize[] = ["wide", "header"];
@@ -111,7 +113,6 @@ async function sideBySide(png: Buffer, jpeg: Buffer, region: Region): Promise<Bu
     .toBuffer();
 }
 
-const kb = (bytes: number) => `${Math.round(bytes / 1024)} KB`;
 const db = (value: number) => (value === Infinity ? "∞" : `${value.toFixed(1)} dB`);
 
 async function measureExports(): Promise<string[]> {
@@ -163,19 +164,20 @@ async function measureAvatars(): Promise<string[]> {
   ];
   const browser = await chromium.launch();
   try {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const page = await browser.newPage({ viewport: DESKTOP_VIEWPORT });
     for (const templateId of AVATAR_TEMPLATES) {
       for (const size of Object.keys(BANNER_SIZES) as BannerSize[]) {
         const query = new URLSearchParams({ username: USERNAME, size, contentSize: "xl" });
-        await page.goto(`${BASE_URL}/studio/${templateId}?${query}`);
+        await page.goto(`${BASE_URL}${studioPath(templateId)}?${query}`);
         const avatar = page.locator('.omnivix-artboard img[src*="avatars.githubusercontent.com"]');
         await avatar.waitFor({ state: "visible", timeout: 60_000 });
         await page.waitForFunction(
-          () => !document.querySelector('.omnivix-artboard [data-banner-fit="pending"]'),
+          (attribute) => !document.querySelector(`.omnivix-artboard [${attribute}="pending"]`),
+          FIT_STATUS_ATTRIBUTE,
         );
         const [avatarBox, bannerBox] = await Promise.all([
           avatar.boundingBox(),
-          page.locator(".omnivix-artboard .banner-export-root").boundingBox(),
+          page.locator(`.omnivix-artboard .${BANNER_ROOT_CLASS}`).boundingBox(),
         ]);
         if (!avatarBox || !bannerBox) throw new Error(`No avatar in ${templateId} ${size}`);
         const format = BANNER_SIZES[size];

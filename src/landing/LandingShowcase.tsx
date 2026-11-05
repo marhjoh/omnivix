@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { TemplateId } from "@/src/types/template";
 import { templateRegistry } from "@/src/templates/registry";
+import { studioPath } from "@/src/lib/site";
 import { BANNER_SIZES, aspectRatioOf } from "@/src/lib/sizes";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
@@ -15,7 +16,7 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
   // No fade-in: cards are visible in the server HTML, so the grid never looks empty while JS loads.
   return (
     <Link
-      href={`/studio/${templateId}`}
+      href={studioPath(templateId)}
       className={`group min-w-0 focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
     >
       <div

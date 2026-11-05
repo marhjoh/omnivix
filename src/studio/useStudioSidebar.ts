@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { setSidebarCollapsedCookieClient } from "@/src/studio/studioCookies";
+import { PHONE_QUERY } from "@/src/studio/layout";
 
-/** A bit longer than the sidebar's 0.2s transition in studio.module.css. */
+/** A bit longer than the sidebar's transition (`--sidebar-transition` in studio.module.css). */
 const SIDEBAR_ANIMATION_MS = 300;
-
-/** Keep in sync with the drawer breakpoint in studio.module.css. */
-const PHONE_QUERY = "(max-width: 767px)";
 
 function subscribePhone(onChange: () => void) {
   const mq = window.matchMedia(PHONE_QUERY);

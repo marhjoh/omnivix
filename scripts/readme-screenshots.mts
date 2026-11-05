@@ -9,10 +9,10 @@ import { presetSrcById } from "@/src/backgrounds/presets";
 import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
 import { settingsCookieName, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import type { TemplateId } from "@/src/types/template";
+import { studioPath } from "@/src/lib/site";
+import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 const OUT_DIR = join(process.cwd(), "docs/images");
-const USERNAME = "marhjoh";
 const WEBP = { quality: 90, smartSubsample: true } as const;
 /** How long each template shows in the animated demo. */
 const DEMO_FRAME_MS = 2200;
@@ -37,7 +37,7 @@ async function studio(page: Page, templateId: TemplateId, background: string): P
       url: BASE_URL,
     },
   ]);
-  await page.goto(`${BASE_URL}/studio/${templateId}`);
+  await page.goto(`${BASE_URL}${studioPath(templateId)}`);
   // Download is enabled once the preview, its GitHub data and the background have loaded.
   await page.waitForFunction(
     () => {
@@ -55,19 +55,19 @@ async function studio(page: Page, templateId: TemplateId, background: string): P
 async function save(name: string, image: Sharp, options: WebpOptions = {}) {
   const path = join(OUT_DIR, name);
   const { size } = await image.webp({ ...WEBP, ...options }).toFile(path);
-  console.log(`Wrote ${path} (${Math.round(size / 1024)} KB)`);
+  console.log(`Wrote ${path} (${kb(size)})`);
 }
 
 try {
   // Landing page, dark mode
-  const landing = await newPage({ width: 1440, height: 900 }, "dark");
+  const landing = await newPage(DESKTOP_VIEWPORT, "dark");
   await landing.goto(BASE_URL);
   await landing.waitForLoadState("networkidle");
   await landing.waitForTimeout(1500);
   await save("landing.webp", sharp(await landing.screenshot()));
 
   // Studio, light mode
-  const light = await newPage({ width: 1440, height: 900 }, "light");
+  const light = await newPage(DESKTOP_VIEWPORT, "light");
   await save("studio-light.webp", sharp(await studio(light, "github-banner", "sydney")));
 
   // Animated demo, dark mode: one frame per template

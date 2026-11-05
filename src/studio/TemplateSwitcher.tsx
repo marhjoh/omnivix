@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { getTemplates, templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/types/template";
+import { studioPath } from "@/src/lib/site";
 import {
   DropdownChevron,
   DropdownList,
@@ -57,7 +58,7 @@ export function TemplateSwitcher({ templateId }: { templateId: TemplateId }) {
             selected={meta.id === templateId}
             onSelect={() => {
               dropdown.close();
-              if (meta.id !== templateId) startSwitch(() => router.push(`/studio/${meta.id}`));
+              if (meta.id !== templateId) startSwitch(() => router.push(studioPath(meta.id)));
             }}
           >
             <span className="whitespace-nowrap">{meta.title}</span>

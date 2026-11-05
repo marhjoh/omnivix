@@ -11,6 +11,14 @@ import type { BannerBox, Box } from "@/src/lib/sizes";
 /** Mark the items the banner places, so the studio preview can find them to drag. */
 export const BANNER_CONTENT_ATTRIBUTE = "data-banner-content";
 export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
+/** Marks the background image, whose natural size the preview needs to pan it. */
+export const BANNER_BACKGROUND_ATTRIBUTE = "data-banner-background";
+
+/**
+ * The banner's root element (`Frame`): what the export screenshots and the studio hides until the
+ * content is fitted (studio.module.css repeats it, as CSS can't import it).
+ */
+export const BANNER_ROOT_CLASS = "banner-export-root";
 
 /** Where an item snaps while dragged: an edge or the middle of the box, on each axis. */
 const SNAP_POINTS = [0, 50, 100];

@@ -5,6 +5,7 @@ import {
   type BackgroundPosition,
 } from "@/src/banner/background";
 import { clampPercent, roundPercent } from "@/src/banner/position";
+import { BANNER_BACKGROUND_ATTRIBUTE } from "@/src/banner/placement";
 import {
   arrowStep,
   DRAG_FRAME_CLASS,
@@ -45,7 +46,7 @@ export function BackgroundDragSurface({
 
   function panRange() {
     const img = ref.current?.parentElement?.querySelector<HTMLImageElement>(
-      "img[data-banner-background]",
+      `img[${BANNER_BACKGROUND_ATTRIBUTE}]`,
     );
     if (!img?.naturalWidth) return null;
     return backgroundPanRange(frame, { width: img.naturalWidth, height: img.naturalHeight }, zoom);

@@ -1,9 +1,11 @@
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { MAX_IMAGE_FILE_BYTES } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, MAX_IMAGE_FILE_BYTES, uploadFormats } from "@/src/lib/imageUpload";
+import { formatNames } from "@/src/lib/imageSource";
 import { BANNER_SIZES, exportFormats, exportPixelRatios, platformNames } from "@/src/lib/sizes";
-import { listText } from "@/src/lib/text";
+import { listText, megabytes } from "@/src/lib/text";
 import { EXPORT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
 import { SITE_LICENSE, SITE_LINKS } from "@/src/lib/site";
+import { HOUR_MS, MINUTE_MS, TTL_LONG, TTL_SHORT } from "@/src/github/cacheTimes";
 
 // Single source for the landing page's "How it works" and FAQ, the FAQPage JSON-LD and /llms.txt.
 // Keep each answer self-contained: AI answers and search snippets quote single passages.
@@ -28,6 +30,13 @@ function oneTimesOnlyPlatforms() {
     formats.flatMap((format) => format.platforms.map((platform) => platform.name)),
     "and",
   );
+}
+
+const NUMBER_WORDS = "zero one two three four five six seven eight nine".split(" ");
+
+/** "six": a number under ten in words, as the FAQ writes the long cache time. */
+function inWords(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n);
 }
 
 export const HOW_IT_WORKS = [
@@ -87,7 +96,7 @@ export const FAQ = [
   {
     topic: "Banners",
     question: "Can I use my own background image?",
-    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own PNG, JPEG, WebP, AVIF or HEIC image (up to ${MAX_IMAGE_FILE_BYTES / (1024 * 1024)} MB). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
+    answer: `Yes. Pick one of the ${BACKGROUND_PRESETS.length} built-in backgrounds, link to an https image, or upload your own ${formatNames(uploadFormats(BACKGROUND_UPLOAD))} image (up to ${megabytes(MAX_IMAGE_FILE_BYTES)}). Uploads are processed in your browser and only sent to the server while your banner is exported.`,
   },
   {
     topic: "Banners",
@@ -98,14 +107,12 @@ export const FAQ = [
   {
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
-    answer:
-      "Only public data: your name, avatar, contributions and repositories with their languages, stars and forks. GitHub data is cached briefly (up to six hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address.",
+    answer: `Only public data: your name, avatar, contributions and repositories with their languages, stars and forks. GitHub data is cached briefly (up to ${inWords(TTL_LONG / HOUR_MS)} hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address.`,
   },
   {
     topic: "Your GitHub data",
     question: "Why are some of my contributions missing?",
-    answer:
-      "Omnivix shows the same contributions as your GitHub profile. Private work only counts once you turn on “Include private contributions on my profile” at https://github.com/settings/profile. Commits from another account or service, an email address not linked to your account, or a non-default branch never count. New contributions can take up to 3 minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.",
+    answer: `Omnivix shows the same contributions as your GitHub profile. Private work only counts once you turn on “Include private contributions on my profile” at https://github.com/settings/profile. Commits from another account or service, an email address not linked to your account, or a non-default branch never count. New contributions can take up to ${TTL_SHORT / MINUTE_MS} minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.`,
   },
 ] as const satisfies readonly {
   topic: (typeof FAQ_TOPICS)[number];

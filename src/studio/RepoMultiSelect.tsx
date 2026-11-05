@@ -8,8 +8,6 @@ import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import { LabeledGroup } from "@/src/ui/FieldLabel";
 
-/** Shown while the repository list loads slowly; quicker loads go straight to the list. */
-const REPO_LIST_SKELETON_DELAY_MS = 300;
 const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
 
 /** The repositories to show, picked from the user's public ones, up to `maxPick`. */
@@ -38,7 +36,10 @@ export function RepoMultiSelect({
   // The picks from when the list opened come first, so they show (checked) while the rest
   // loads and don't move when it arrives. Clicking later doesn't reorder anything.
   const [initialPicks] = useState(selected);
-  const showSkeleton = useDelayedFlag(loading, REPO_LIST_SKELETON_DELAY_MS);
+  // A skeleton while the list loads slowly, kept for its minimum time once shown; quicker loads go
+  // straight to the list.
+  const showSkeleton = useDelayedFlag(loading);
+  const pending = loading || showSkeleton;
 
   const toggle = (name: string) => {
     const i = selected.indexOf(name);
@@ -85,7 +86,7 @@ export function RepoMultiSelect({
         </span>
       }
     >
-      <CheckList scroll busy={loading}>
+      <CheckList scroll busy={pending}>
         {error ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
             <p className="text-sm text-danger" role="alert">
@@ -100,7 +101,7 @@ export function RepoMultiSelect({
               Try again
             </button>
           </div>
-        ) : loading ? (
+        ) : pending ? (
           <>
             {initialPicks.map((name) => row(name, name))}
             {showSkeleton

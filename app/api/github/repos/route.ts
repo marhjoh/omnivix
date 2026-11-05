@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { getRepoLists, TTL_SHORT } from "@/src/github/client";
+import { TTL_SHORT } from "@/src/github/cacheTimes";
+import { getRepoLists } from "@/src/github/client";
 import { githubRoute } from "@/src/github/route";
 
 /** Pinned and owned public repositories together; the studio picks from them itself. */

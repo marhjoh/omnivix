@@ -5,7 +5,7 @@ import { RepoCard } from "@/src/banner/RepoCard";
 import { ProfileColumn } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/renderers/types";
-import { reposShown } from "@/src/lib/repoSelection";
+import { repoModeOf, reposShown } from "@/src/lib/repoSelection";
 
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
 const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
@@ -19,7 +19,7 @@ const REPO_CARD_COLUMN_PX = 250;
 
 export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
   const chrome = bannerUiChrome(uiTheme);
-  const mode = state.mode === "selected" ? "selected" : "pinned";
+  const mode = repoModeOf(state.mode);
   const shown = reposShown(mode, state.maxRepos);
   const repos = data.repos?.slice(0, shown) ?? [];
   // Selected mode lays out what was picked; pinned mode keeps the chosen amount's layout.

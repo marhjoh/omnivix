@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { GithubUserNormalized } from "@/src/github/normalize";
 import { usernameOf } from "@/src/lib/githubUsername";
+import { profilePositionOf } from "@/src/banner/profilePosition";
 import type { bannerUiChrome } from "@/src/theme/theme";
 
 /** Natural sizes; `FitContent` scales the profile together with the rest of the banner. */
@@ -26,7 +27,7 @@ export function ProfileColumn({
         chrome={chrome}
         showAvatar={state.showAvatar !== false}
         showDisplayName={state.showDisplayName === true}
-        right={state.profilePosition === "right"}
+        right={profilePositionOf(state.profilePosition) === "right"}
       />
       {children}
     </div>

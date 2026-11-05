@@ -1,4 +1,11 @@
-import { getSiteUrl, SITE_DESCRIPTION, SITE_LICENSE, SITE_NAME, SITE_LINKS } from "@/src/lib/site";
+import {
+  getSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_LICENSE,
+  SITE_NAME,
+  SITE_LINKS,
+  studioPath,
+} from "@/src/lib/site";
 import { getTemplates } from "@/src/templates/registry";
 import { FAQ, HOW_IT_WORKS } from "@/src/landing/landingContent";
 import { exportApiDocs } from "@/src/export/apiDocs";
@@ -18,7 +25,7 @@ export function GET() {
     "## Templates",
     "",
     ...getTemplates().map(
-      ({ meta }) => `- [${meta.title}](${link(`/studio/${meta.id}`)}): ${meta.description}`,
+      ({ meta }) => `- [${meta.title}](${link(studioPath(meta.id))}): ${meta.description}`,
     ),
     "",
     "## How it works",

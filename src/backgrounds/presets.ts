@@ -167,9 +167,6 @@ export function presetSrcById(id: string): string {
  */
 export const PREVIEW_PHOTO_WIDTHS = [1200, 2400] as const;
 
-/** The preview's width in the layout, for `sizes`: the whole screen on phones, beside the sidebar. */
-export const PREVIEW_PHOTO_SIZES = "(max-width: 767px) 100vw, calc(100vw - 300px)";
-
 export function previewPhotoPath(src: string, width: number): string {
   return src.replace(/\.avif$/, `-${width}.avif`);
 }

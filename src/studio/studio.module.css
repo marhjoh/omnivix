@@ -3,6 +3,10 @@
      is resized. The phone drawer and its backdrop start below it. */
   --topbar-height: 60px;
   --topbar-padding: 16px;
+  /* Keep in sync with SIDEBAR_WIDTH_PX (src/studio/layout.ts). */
+  --sidebar-width: 300px;
+  /* useStudioSidebar's SIDEBAR_ANIMATION_MS waits a bit longer than this. */
+  --sidebar-transition: 0.2s;
   height: 100vh;
   /* Dynamic viewport: excludes mobile browser toolbars. */
   height: 100dvh;
@@ -32,23 +36,23 @@
 }
 
 /*
- * Desktop: the aside animates its width; the inner panel keeps 300px so controls don't reflow.
+ * Desktop: the aside animates its width; the inner panel keeps its width so controls don't reflow.
  * Phones: the aside is a drawer that slides over the preview.
  * `visibility` hides closed panels from keyboard focus once the transition ends.
  */
 .sidebar {
-  width: 300px;
+  width: var(--sidebar-width);
   flex-shrink: 0;
   overflow: hidden;
   border-right: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
   background: var(--bg);
   transition:
-    width 0.2s ease,
+    width var(--sidebar-transition) ease,
     visibility 0s;
 }
 
 .sidebarInner {
-  width: 300px;
+  width: var(--sidebar-width);
   height: 100%;
   padding: 24px 20px 40px;
   overflow-y: auto;
@@ -58,15 +62,16 @@
   display: none;
 }
 
+/* The phone breakpoint: keep in sync with PHONE_QUERY (src/studio/layout.ts). */
 @media (min-width: 768px) {
   .content[data-sidebar-collapsed="true"] .sidebar {
     width: 0;
     border-right-width: 0;
     visibility: hidden;
     transition:
-      width 0.2s ease,
-      border-right-width 0s 0.2s,
-      visibility 0s 0.2s;
+      width var(--sidebar-transition) ease,
+      border-right-width 0s var(--sidebar-transition),
+      visibility 0s var(--sidebar-transition);
   }
 }
 
@@ -78,13 +83,13 @@
     left: 0;
     z-index: 30;
     /* Matches the desktop panel width (capped at 85vw on narrow phones). */
-    width: min(300px, 85vw);
+    width: min(var(--sidebar-width), 85vw);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     transform: translateX(-100%);
     visibility: hidden;
     transition:
-      transform 0.2s ease,
-      visibility 0s 0.2s;
+      transform var(--sidebar-transition) ease,
+      visibility 0s var(--sidebar-transition);
   }
 
   /* Swipes past the drawer's top/bottom would otherwise chain to the page behind it. */
@@ -97,7 +102,7 @@
     transform: none;
     visibility: visible;
     transition:
-      transform 0.2s ease,
+      transform var(--sidebar-transition) ease,
       visibility 0s;
   }
 
@@ -167,7 +172,7 @@
 
 /* The banner stays hidden until its content is fitted (FitContent sets data-banner-fit), so the
    background and the content appear together; before the page's JavaScript runs, the background
-   would show alone. */
+   would show alone. Keep in sync with BANNER_ROOT_CLASS and FIT_STATUS_ATTRIBUTE (src/banner/). */
 :global(.omnivix-artboard:has([data-banner-fit="pending"]) .banner-export-root) {
   visibility: hidden;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/studio/useDelayedFlag";
 
 /**
  * What the preview says while an export runs, from when each step starts. Exports take about
@@ -6,17 +7,15 @@ import { useEffect, useState } from "react";
  * studio's loading screen) keeps quick exports from flashing it.
  */
 const EXPORT_STEPS = [
-  { afterMs: 300, text: "Rendering your banner…" },
+  { afterMs: PENDING_DELAY_MS, text: "Rendering your banner…" },
   { afterMs: 5000, text: "Almost there…" },
   { afterMs: 12000, text: "Taking a bit longer than usual…" },
 ] as const;
 
-/** Once shown, the progress stays at least this long, so it doesn't just blink. */
-const MIN_SHOW_MS = 400;
-
 /**
- * The status text to show while `running`, or null: none for the first 300 ms, then a text that
- * changes with the elapsed time. Explicit state: a transition can't express the delays.
+ * The status text to show while `running`, or null: none for the first `PENDING_DELAY_MS`, then a
+ * text that changes with the elapsed time. Once shown, it stays at least `PENDING_MIN_SHOW_MS`.
+ * Explicit state: a transition can't express the delays.
  */
 export function useExportProgress(running: boolean): string | null {
   const [shown, setShown] = useState<{ step: number; since: number } | null>(null);
@@ -40,7 +39,7 @@ export function useExportProgress(running: boolean): string | null {
     if (running || !shown) return;
     const timer = setTimeout(
       () => setShown(null),
-      Math.max(0, shown.since + MIN_SHOW_MS - Date.now()),
+      Math.max(0, shown.since + PENDING_MIN_SHOW_MS - Date.now()),
     );
     return () => clearTimeout(timer);
   }, [running, shown]);

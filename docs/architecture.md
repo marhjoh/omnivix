@@ -87,7 +87,7 @@ Server-side export, on Effect: the API route (`route.ts`), validation (`payload.
 
 ### `src/github/`
 
-GitHub data, on Effect. `graphql.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
+GitHub data, on Effect. `graphql.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups, for the times in `cacheTimes.ts` (browser-safe, as the landing FAQ quotes them). The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
 
 ### `src/landing/`, `src/og/`
 

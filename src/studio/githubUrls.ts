@@ -1,10 +1,5 @@
 import type { GithubDataKind } from "@/src/types/template";
 
-/** The contributions year a banner shows: its Year setting, or the current year. */
-export function contributionYear(year: unknown): string {
-  return year != null && String(year).length > 0 ? String(year) : String(new Date().getFullYear());
-}
-
 /**
  * The studio's GitHub API urls for a banner; null for data it doesn't need, or before there's a
  * username. The studio page loads the same urls on the server, so they must match exactly.

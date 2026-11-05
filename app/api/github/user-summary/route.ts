@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { getUserSummary, TTL_SHORT } from "@/src/github/client";
+import { TTL_SHORT } from "@/src/github/cacheTimes";
+import { getUserSummary } from "@/src/github/client";
 import { githubRoute } from "@/src/github/route";
 
 export function GET(request: NextRequest) {

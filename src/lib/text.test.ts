@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { linkText, listText, truncateMiddle } from "./text";
+import { linkText, listText, megabytes, truncateMiddle } from "./text";
 
 describe("listText", () => {
   it.each([
@@ -13,6 +13,12 @@ describe("listText", () => {
 
   it("can join with and", () => {
     expect(listText(["YouTube", "Reddit"], "and")).toBe("YouTube and Reddit");
+  });
+});
+
+describe("megabytes", () => {
+  it("writes bytes as MB", () => {
+    expect(megabytes(12 * 1024 * 1024)).toBe("12 MB");
   });
 });
 

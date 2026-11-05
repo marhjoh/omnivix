@@ -2,17 +2,19 @@ import "server-only";
 import { Effect } from "effect";
 import type { ExportRequest } from "@/src/types/template";
 import { UnusableImage } from "@/src/export/errors";
-import {
-  fetchImageLink,
-  formatNames,
-  ImageLinkError,
-  type ImageBytes,
-  type LinkImageType,
-} from "@/src/export/imageLink";
+import { fetchImageLink, ImageLinkError, type ImageBytes } from "@/src/export/imageLink";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
-import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageSource";
+import {
+  formatNames,
+  isDataUrl,
+  isHttpImageUrl,
+  linkImageTypes,
+  type LinkImageType,
+} from "@/src/lib/imageSource";
+import { isOneOf } from "@/src/lib/isOneOf";
 
-const RASTER_TYPES = ["image/png", "image/jpeg", "image/webp", "image/avif"] as const;
+/** Raster images the export draws as they are: uploads (once processed) and background links. */
+const RASTER_TYPES = linkImageTypes({ svg: false });
 
 type ImageSettingKey = "backgroundImage" | "logoImage";
 
@@ -46,7 +48,7 @@ const EXPORT_IMAGES: ReadonlyArray<{
     path: "/__export/logo",
     maxUploadBytes: LOGO_UPLOAD.maxBytes,
     // Most logos are SVG. The render page shows it as an image, which can't run scripts.
-    linkTypes: [...RASTER_TYPES, "image/svg+xml"],
+    linkTypes: linkImageTypes({ svg: true }),
   },
 ];
 
@@ -55,8 +57,11 @@ export function linkFormatsOf(key: ImageSettingKey): string {
   return formatNames(EXPORT_IMAGES.find((image) => image.key === key)!.linkTypes);
 }
 
-/** Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); AVIF is accepted too. */
-const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|webp|avif));base64,([A-Za-z0-9+/]+={0,2})$/;
+/**
+ * A base64 data URL. Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); any of
+ * RASTER_TYPES is accepted.
+ */
+const DATA_URL_PATTERN = /^data:([^;,]+);base64,([A-Za-z0-9+/]+={0,2})$/;
 
 /** An uploaded or linked image, and where the render page loads it from. */
 export interface ExportImage extends ImageBytes {
@@ -103,7 +108,7 @@ const resolveImage = Effect.fnUntraced(function* (
 
   if (isDataUrl(value)) {
     const match = DATA_URL_PATTERN.exec(value);
-    if (!match) {
+    if (!match || !isOneOf(RASTER_TYPES, match[1])) {
       return yield* new UnusableImage({ message: `The uploaded ${name} isn't a supported image.` });
     }
     const body = Buffer.from(match[2], "base64");
