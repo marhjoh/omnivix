@@ -163,7 +163,7 @@ export function StudioShell({
 
   return (
     <div className={styles.shell}>
-      <Toast toast={toast} onDismiss={dismissToast} />
+      <Toast toast={toast} onDismiss={dismissToast} className={styles.toast} />
       <UsernameModal
         open={showUsernameModal}
         currentUsername={username}

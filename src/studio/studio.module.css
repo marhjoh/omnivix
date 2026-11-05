@@ -175,3 +175,10 @@
 :global(.omnivix-artboard:not([data-state="ready"])) {
   min-height: min(220px, 100%);
 }
+
+/* With the sidebar open on desktop, center toasts on the preview instead of the whole window. */
+@media (min-width: 768px) {
+  .shell:has(.content[data-sidebar-collapsed="false"]) .toast {
+    left: var(--sidebar-width);
+  }
+}
