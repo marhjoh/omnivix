@@ -42,7 +42,7 @@ Values that aren't valid are ignored. Uploaded backgrounds and logos can't be li
 ![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)
 ```
 
-In the studio, "Embed in a README or site" in the export panel builds it for you.
+In the studio, the export panel's Copy link, Copy Markdown and Copy HTML copy it.
 
 - **Settings:** values that aren't valid use the defaults. Uploaded images can't go in a URL. Images stop at 2×, which is sharp on any screen and keeps photo banners small.
 - **Caching:** an image is cached for a day (`s-maxage=86400`). After that, the old image is served while a new one renders (`stale-while-revalidate=604800`), so a README never waits on a render. Errors are cached for 5 minutes.

@@ -34,7 +34,16 @@ export function useToast() {
 }
 
 /** A toast at the bottom of the screen for one-off problems and confirmations. */
-export function Toast({ toast, onDismiss }: { toast: ToastMessage | null; onDismiss: () => void }) {
+export function Toast({
+  toast,
+  onDismiss,
+  className = "",
+}: {
+  toast: ToastMessage | null;
+  onDismiss: () => void;
+  /** For the page to center the toast on part of the screen. */
+  className?: string;
+}) {
   const reduceMotion = useReducedMotion();
   const success = toast?.tone === "success";
   const Icon = success ? CheckCircle2 : AlertCircle;
@@ -46,7 +55,9 @@ export function Toast({ toast, onDismiss }: { toast: ToastMessage | null; onDism
   }, [toast, onDismiss]);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-50 flex justify-center px-4">
+    <div
+      className={`pointer-events-none fixed inset-x-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-50 flex justify-center px-4 ${className}`}
+    >
       <AnimatePresence>
         {toast && (
           <motion.div
