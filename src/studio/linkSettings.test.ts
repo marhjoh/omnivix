@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseLinkSettings, withLink } from "./linkSettings";
+import { withLink } from "./linkSettings";
+import { parseLinkSettings } from "./parseLinkSettings";
 
 describe("parseLinkSettings", () => {
   it("reads settings with the export API's keys", () => {

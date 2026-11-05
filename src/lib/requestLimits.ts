@@ -1,9 +1,6 @@
 import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
 import { Ratelimit, type RatelimitConfig } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import type { TimedLimit } from "@/src/lib/apiError";
-import { LIMIT_TITLES } from "@/src/lib/rateLimitMessage";
 
 // Omnivix's own per-IP limits, counted in Upstash Redis so every server instance shares them.
 // The export's burst limit is a Vercel Firewall rule instead (see docs/deployment.md).
@@ -52,12 +49,11 @@ function requestLimit(prefix: string, algorithm: RatelimitConfig["limiter"]) {
 function createLimiter(prefix: string, algorithm: RatelimitConfig["limiter"]): Ratelimit | null {
   const redis = redisFromEnv();
   if (!redis) return null;
+  // Each environment counts on its own, so previews and local runs never use production's quota.
   const environment = process.env.VERCEL_ENV || "development";
-  // Keep existing production counters; previews and local runs use separate namespaces.
-  const namespace = environment === "production" ? "omnivix" : `omnivix:${environment}`;
   return new Ratelimit({
     redis,
-    prefix: `${namespace}:${prefix}`,
+    prefix: `omnivix:${environment}:${prefix}`,
     limiter: algorithm,
     timeout: CHECK_TIMEOUT_MS,
   });
@@ -74,13 +70,4 @@ function redisFromEnv(): Redis | null {
 function clientKey(request: Request): string {
   const ip = request.headers.get("x-real-ip") ?? "unknown";
   return createHash("sha256").update(ip).digest("hex");
-}
-
-/** A limit's 429: `limit` names it and `resetAt` says when to try again, in the visitor's time. */
-export function tooManyRequests(limit: TimedLimit, resetAt: Date) {
-  const seconds = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
-  return NextResponse.json(
-    { error: `${LIMIT_TITLES[limit]}.`, limit, resetAt: resetAt.toISOString() },
-    { status: 429, headers: { "Retry-After": String(seconds) } },
-  );
 }

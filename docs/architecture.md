@@ -31,13 +31,16 @@ sequenceDiagram
   participant Render as /render/[templateId]
 
   Studio->>API: template, size, settings, pixel ratio, format
-  alt invalid settings or unknown GitHub user
-    API-->>Studio: 400 or 404
+  alt invalid settings, daily quota used up, or an unusable image
+    API-->>Studio: 400 or 429
   end
-  API->>API: sign settings into a token (HMAC, expires in 2 minutes)
+  API->>API: download linked images, sign settings into a token (HMAC, expires in 2 minutes)
   API->>Browser: open the render URL at the banner's size and pixel ratio
   Browser->>Render: GET ?token=…
-  Render-->>Browser: banner
+  Render-->>Browser: banner, or a marker for an unknown GitHub user or GitHub's limit
+  alt marker
+    API-->>Studio: 404 or 429
+  end
   Browser->>Browser: wait for fonts, images and content sizing
   Browser-->>API: screenshot of .banner-export-root
   API-->>Studio: PNG, or JPEG at 90% quality (lower to fit a platform's upload limit)
@@ -78,13 +81,13 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 ### `src/export/`
 
-Server-side export: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`) and the Playwright capture (`playwright.ts`). `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export, on Effect: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`export-token.ts`), the Playwright capture (`playwright.ts`) and the errors each becomes a response for (`errors.ts`). A whole export has a 45-second deadline; Chromium is a scoped resource, so the deadline or a failure closes it. `apiDocs.ts` generates the export API section of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
 ### `src/github/`
 
-GitHub GraphQL client (`client.ts`), normalization into stable types, and a short in-memory cache. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets.
+GitHub data, on Effect. `graphql.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups. The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
 
 ### `src/landing/`, `src/og/`
 

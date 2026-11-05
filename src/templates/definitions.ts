@@ -1,45 +1,30 @@
-import { z } from "zod";
-import { isContributionYear } from "@/src/lib/utcContributionRange";
-import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
-import {
-  CONTENT_ALIGN_OPTIONS,
-  CONTENT_ALIGNS,
-  type ContentAlign,
-} from "@/src/banner/contentAlign";
+import { CONTENT_ALIGN_OPTIONS, type ContentAlign } from "@/src/banner/contentAlign";
 import {
   CONTENT_SIZE_OPTIONS,
-  CONTENT_SIZES,
-  CONTENT_SIZES_OR_FILL,
   DEFAULT_CONTENT_SIZE,
   type ContentSize,
   type ContentSizeOrFill,
 } from "@/src/banner/contentSize";
 import { oneOfOr } from "@/src/lib/isOneOf";
-import { BANNER_SIZE_KEYS, DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
+import { DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import { BannerSize, EditorFieldSchema, TemplateDefinition } from "@/src/types/template";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
-import { THEME_PRESETS } from "@/src/types/theme";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 import {
   DEFAULT_QUOTE_STYLE,
   QUOTE_COLOR_OPTIONS,
   AUTHOR_PREFIX_OPTIONS,
-  AUTHOR_PREFIXES,
   type AuthorPrefix,
-  isQuoteColor,
   QUOTE_FONT_OPTIONS,
   QUOTE_FONT_STYLE_OPTIONS,
-  QUOTE_FONT_STYLES,
-  QUOTE_FONTS,
-  QUOTE_MARKS,
   QUOTE_MARKS_OPTIONS,
   type QuoteFont,
   type QuoteFontStyle,
   type QuoteMarks,
 } from "@/src/banner/quoteStyle";
 
-/** GitHub + contribution banner: schema, sidebar options, Zod, and ContributionGrid. */
-const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
+/** GitHub + contribution banner: sidebar options and ContributionGrid. Settings rules: stateSchemas.ts. */
+export const CONTRIBUTION_CELL_SHAPES = ["rounded", "square", "circle"] as const;
 
 export type ContributionCellShape = (typeof CONTRIBUTION_CELL_SHAPES)[number];
 
@@ -61,25 +46,9 @@ export function contributionCellShapeFromState(raw: unknown): ContributionCellSh
   return oneOfOr(CONTRIBUTION_CELL_SHAPES, raw, "rounded");
 }
 
-const percent = z.number().min(0).max(100);
-
 /** A post's length: still readable on the 4:1 banner at the smallest text size. */
-const QUOTE_MAX_LENGTH = 280;
-const AUTHOR_MAX_LENGTH = 60;
-
-const baseState = z.object({
-  size: z.enum(BANNER_SIZE_KEYS),
-  themeId: z.enum(THEME_PRESETS.map((preset) => preset.id)),
-  backgroundImage: z.string().optional(),
-  backgroundPosition: z.object({ x: percent, y: percent }).optional(),
-  backgroundZoom: z.number().min(MIN_BACKGROUND_ZOOM).max(MAX_BACKGROUND_ZOOM).optional(),
-  /** Set by dragging the content in the preview; see `src/banner/contentPosition.ts`. */
-  contentPosition: z.object({ x: percent, y: percent }).optional(),
-  logoImage: z.string().optional(),
-  logoSize: z.enum(CONTENT_SIZES).default(DEFAULT_LOGO_SIZE),
-  /** Set by dragging the logo in the preview; see `src/banner/logo.ts`. */
-  logoPosition: z.object({ x: percent, y: percent }).optional(),
-});
+export const QUOTE_MAX_LENGTH = 280;
+export const AUTHOR_MAX_LENGTH = 60;
 
 /** Every banner can have a logo; see `src/banner/logo.ts`. */
 const logoFields: EditorFieldSchema[] = [
@@ -95,9 +64,6 @@ type LogoState = {
 
 const logoInitialState: LogoState = { logoSize: DEFAULT_LOGO_SIZE };
 
-/** GitHub username, for the banners that load GitHub data. */
-const usernameState = z.string().min(1, "Required");
-
 /** Horizontal placement of the content (its x in `contentPosition`). */
 const alignmentField: EditorFieldSchema = {
   key: "alignment",
@@ -105,8 +71,6 @@ const alignmentField: EditorFieldSchema = {
   type: "select",
   options: CONTENT_ALIGN_OPTIONS,
 };
-
-const alignmentState = z.enum(CONTENT_ALIGNS).default("center");
 
 /** Which side of the content the avatar and name sit on (GitHub and repos banners). */
 const profilePositionField: EditorFieldSchema = {
@@ -119,8 +83,6 @@ const profilePositionField: EditorFieldSchema = {
   ],
 };
 
-const profilePositionState = z.enum(["left", "right"]).default("left");
-
 /** See `src/banner/contentSize.ts`. */
 const contentSizeField: EditorFieldSchema = {
   key: "contentSize",
@@ -129,11 +91,6 @@ const contentSizeField: EditorFieldSchema = {
   options: CONTENT_SIZE_OPTIONS,
 };
 
-const contentSizeState = z.enum(CONTENT_SIZES);
-
-/** The quote banner's colors: a named one or a hex code (src/banner/quoteStyle.ts). */
-const quoteColorState = z.string().refine(isQuoteColor, "Unknown color");
-
 /** GitHub and contribution banners: the contribution grid's cells. */
 const cellShapeField: EditorFieldSchema = {
   key: "cellShape",
@@ -141,14 +98,8 @@ const cellShapeField: EditorFieldSchema = {
   type: "select",
   options: CONTRIBUTION_CELL_SHAPE_OPTIONS,
 };
-const cellShapeState = z.enum(CONTRIBUTION_CELL_SHAPES).default("rounded");
 
 const CURRENT_YEAR = String(new Date().getFullYear());
-
-const yearState = z
-  .string()
-  .refine(isContributionYear, 'Must be a four-digit year or "latest"')
-  .default(CURRENT_YEAR);
 
 export const githubBannerDefinition: TemplateDefinition<
   {
@@ -192,19 +143,6 @@ export const githubBannerDefinition: TemplateDefinition<
     { key: "showTotal", label: "Contributions", type: "toggle" },
     ...logoFields,
   ],
-  stateSchema: baseState.extend({
-    username: usernameState,
-    year: yearState,
-    showMonthLabels: z.boolean().default(true),
-    showDayLabels: z.boolean().default(true),
-    showTotal: z.boolean().default(true),
-    showAvatar: z.boolean().default(true),
-    showDisplayName: z.boolean().default(false),
-    profilePosition: profilePositionState,
-    alignment: alignmentState,
-    contentSize: contentSizeState,
-    cellShape: cellShapeState,
-  }),
   initialState: {
     ...logoInitialState,
     username: "",
@@ -276,21 +214,6 @@ export const reposBannerDefinition: TemplateDefinition<
     { key: "showForks", label: "Forks", type: "toggle" },
     ...logoFields,
   ],
-  stateSchema: baseState.extend({
-    username: usernameState,
-    showAvatar: z.boolean().default(true),
-    showDisplayName: z.boolean().default(false),
-    profilePosition: profilePositionState,
-    alignment: alignmentState,
-    mode: z.enum(["pinned", "selected"]),
-    selectedRepos: z.string().default(""),
-    maxRepos: z.number().min(1).max(MAX_REPOS).default(MAX_REPOS),
-    showDescription: z.boolean().default(true),
-    showLanguage: z.boolean().default(true),
-    showStars: z.boolean().default(true),
-    showForks: z.boolean().default(true),
-    contentSize: contentSizeState,
-  }),
   initialState: {
     ...logoInitialState,
     username: "",
@@ -341,13 +264,6 @@ export const contributionBannerDefinition: TemplateDefinition<
     cellShapeField,
     ...logoFields,
   ],
-  stateSchema: baseState.extend({
-    username: usernameState,
-    alignment: alignmentState,
-    contentSize: z.enum(CONTENT_SIZES_OR_FILL),
-    year: yearState,
-    cellShape: cellShapeState,
-  }),
   initialState: {
     ...logoInitialState,
     username: "",
@@ -416,20 +332,6 @@ export const quoteBannerDefinition: TemplateDefinition<
     { key: "authorSize", label: "Author size", type: "select", options: CONTENT_SIZE_OPTIONS },
     ...logoFields,
   ],
-  stateSchema: baseState.extend({
-    quote: z.string().min(1, "Required").max(QUOTE_MAX_LENGTH),
-    author: z.string().max(AUTHOR_MAX_LENGTH).default(""),
-    alignment: alignmentState,
-    contentSize: contentSizeState,
-    font: z.enum(QUOTE_FONTS).default(DEFAULT_QUOTE_STYLE.font),
-    fontStyle: z.enum(QUOTE_FONT_STYLES).default(DEFAULT_QUOTE_STYLE.fontStyle),
-    quoteMarks: z.enum(QUOTE_MARKS).default(DEFAULT_QUOTE_STYLE.quoteMarks),
-    quoteColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.quoteColor),
-    markColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.markColor),
-    authorColor: quoteColorState.default(DEFAULT_QUOTE_STYLE.authorColor),
-    authorPrefix: z.enum(AUTHOR_PREFIXES).default(DEFAULT_QUOTE_STYLE.authorPrefix),
-    authorSize: contentSizeState.default("m"),
-  }),
   initialState: {
     ...logoInitialState,
     ...DEFAULT_QUOTE_STYLE,

@@ -1,4 +1,7 @@
+import "server-only";
+import { Effect } from "effect";
 import type { ExportRequest } from "@/src/types/template";
+import { UnusableImage } from "@/src/export/errors";
 import {
   fetchImageLink,
   formatNames,
@@ -60,61 +63,81 @@ export interface ExportImage extends ImageBytes {
   path: string;
 }
 
-type ExportImagesResult<T> =
-  { ok: true; payload: T; images: ExportImage[] } | { ok: false; error: string };
+type ImageSlot = (typeof EXPORT_IMAGES)[number];
 
-/** One image setting: unchanged, served as bytes, or a problem to report. */
-type Resolved = { keep: true } | { image: ExportImage } | { error: string };
+/** How long a link may take to download, redirects included. */
+const LINK_TIMEOUT = "5 seconds";
 
-async function resolveImage(
+/**
+ * A link downloaded under `fetchImageLink`'s rules, within LINK_TIMEOUT. A timeout, or the
+ * export's deadline, stops the download.
+ */
+function downloadLink(link: string, types: readonly LinkImageType[]) {
+  return Effect.tryPromise({
+    try: (signal) => fetchImageLink(link, types, signal),
+    catch: (cause) => cause,
+  }).pipe(
+    Effect.catch((cause) =>
+      cause instanceof ImageLinkError
+        ? Effect.fail(new UnusableImage({ message: cause.message }))
+        : Effect.die(cause),
+    ),
+    Effect.timeoutOrElse({
+      duration: LINK_TIMEOUT,
+      orElse: () =>
+        Effect.fail(new UnusableImage({ message: "The image link took too long to load." })),
+    }),
+  );
+}
+
+/** One image setting: null to keep it as it is, or the image to serve at its `path`. */
+const resolveImage = Effect.fnUntraced(function* (
   value: unknown,
-  { name, path, maxUploadBytes, linkTypes, presets }: (typeof EXPORT_IMAGES)[number],
-): Promise<Resolved> {
-  if (value === undefined || value === "") return { keep: true };
-  if (typeof value !== "string") return { error: `Unsupported ${name} image.` };
-  if (presets?.test(value)) return { keep: true };
+  { name, path, maxUploadBytes, linkTypes, presets }: ImageSlot,
+): Effect.fn.Return<ExportImage | null, UnusableImage> {
+  if (value === undefined || value === "") return null;
+  if (typeof value !== "string") {
+    return yield* new UnusableImage({ message: `Unsupported ${name} image.` });
+  }
+  if (presets?.test(value)) return null;
 
   if (isDataUrl(value)) {
     const match = DATA_URL_PATTERN.exec(value);
-    if (!match) return { error: `The uploaded ${name} isn't a supported image.` };
+    if (!match) {
+      return yield* new UnusableImage({ message: `The uploaded ${name} isn't a supported image.` });
+    }
     const body = Buffer.from(match[2], "base64");
     if (body.length > maxUploadBytes) {
-      return { error: `The uploaded ${name} is too large. Try a smaller image.` };
+      return yield* new UnusableImage({
+        message: `The uploaded ${name} is too large. Try a smaller image.`,
+      });
     }
-    return { image: { path, contentType: match[1], body } };
+    return { path, contentType: match[1], body };
   }
 
-  if (isHttpImageUrl(value)) {
-    try {
-      return { image: { path, ...(await fetchImageLink(value, linkTypes)) } };
-    } catch (error) {
-      if (error instanceof ImageLinkError) return { error: error.message };
-      throw error;
-    }
-  }
+  if (isHttpImageUrl(value)) return { path, ...(yield* downloadLink(value, linkTypes)) };
 
-  return { error: `Unsupported ${name} image.` };
-}
+  return yield* new UnusableImage({ message: `Unsupported ${name} image.` });
+});
 
 /**
  * Prepares the payload's images for export. Uploads and links are returned as bytes, with their
  * `path` left in the payload in their place; links are downloaded here under `fetchImageLink`'s
- * rules. Presets stay as they are. Anything else is rejected.
+ * rules. Presets stay as they are. Anything else fails with `UnusableImage`.
  */
-export async function resolveExportImages<T extends ExportRequest>(
+export const resolveExportImages = Effect.fnUntraced(function* <T extends ExportRequest>(
   payload: T,
-): Promise<ExportImagesResult<T>> {
-  const resolved = await Promise.all(
+): Effect.fn.Return<{ payload: T; images: ExportImage[] }, UnusableImage> {
+  const resolved = yield* Effect.all(
     EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key], slot)),
+    { concurrency: "unbounded" },
   );
   const state = { ...payload.state };
   const images: ExportImage[] = [];
-  for (const [index, result] of resolved.entries()) {
-    if ("error" in result) return { ok: false, error: result.error };
-    if ("image" in result) {
-      state[EXPORT_IMAGES[index].key] = result.image.path;
-      images.push(result.image);
-    }
+  for (const [index, image] of resolved.entries()) {
+    if (!image) continue;
+    state[EXPORT_IMAGES[index].key] = image.path;
+    images.push(image);
   }
-  return { ok: true, payload: images.length ? { ...payload, state } : payload, images };
-}
+  return { payload: images.length ? { ...payload, state } : payload, images };
+});

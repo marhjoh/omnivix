@@ -1,3 +1,5 @@
+import "server-only";
+import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
 import { resolveExportImages } from "@/src/export/images";
@@ -5,60 +7,26 @@ import { createExportToken } from "@/src/export/export-token";
 import { renderUrl } from "@/src/export/render-url";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
-import { GithubUserNotFoundError } from "@/src/export/renderProblem";
-import { GithubRateLimitError } from "@/src/github/rateLimit";
-import { githubUserNotFound } from "@/src/github/route";
-import { dailyExportLimit, tooManyRequests } from "@/src/lib/requestLimits";
-import type { ExportRequest, TemplateId } from "@/src/types/template";
+import { DailyExportLimitReached, ExportTimedOut, SettingsTooLong } from "@/src/export/errors";
+import { dailyExportLimit } from "@/src/lib/requestLimits";
+import { errorResponse, githubErrorResponses, tooManyRequests } from "@/src/lib/apiResponse";
+import { usernameOf } from "@/src/lib/githubUsername";
+import type { TemplateId } from "@/src/types/template";
 
 /** Stay under common proxy URL limits; stateless tokens grow with payload size. */
 const MAX_RENDER_URL_LENGTH = 7500;
 
+/**
+ * The longest a whole export may take, from the quota check to the image. Exports take 6–14 s on
+ * Vercel; a stuck one is stopped here, which closes Chromium, instead of running until Vercel
+ * ends the function.
+ */
+const EXPORT_DEADLINE = "45 seconds";
+
 /** The studio only sends an invalid request when its state is stale; others read `issues`. */
 const INVALID_REQUEST = "Couldn't export this banner. Reload the page and try again.";
 
-function error(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
-}
-
-/**
- * The export API: checks the request and the visitor's daily quota, then renders the banner in a
- * headless browser and returns it as an image.
- */
-export async function exportRoute(request: NextRequest) {
-  const parsed = parseExportRequest(await request.json().catch(() => null));
-  if (!parsed.ok) {
-    return NextResponse.json({ error: INVALID_REQUEST, issues: parsed.issues }, { status: 400 });
-  }
-  const limitedUntil = await dailyExportLimit(request);
-  if (limitedUntil) return tooManyRequests("daily-exports", limitedUntil);
-
-  try {
-    return await renderExport(request, parsed.request);
-  } catch (exportError) {
-    return exportFailure(exportError, parsed.request);
-  }
-}
-
-async function renderExport(request: NextRequest, exportRequest: ParsedExportRequest) {
-  const resolved = await resolveExportImages(exportRequest);
-  if (!resolved.ok) return error(resolved.error, 400);
-  const { payload, images } = resolved;
-
-  const token = createExportToken(payload);
-  const url = renderUrl(request, payload.templateId, token);
-  if (url.length > MAX_RENDER_URL_LENGTH) {
-    return error("Banner settings are too long to export. Shorten the text.", 413);
-  }
-  const image = await captureBanner({
-    url,
-    size: payload.size,
-    pixelRatio: payload.pixelRatio,
-    format: payload.format,
-    images,
-  });
-  return imageResponse(image, payload.format, payload.templateId);
-}
+const EXPORT_FAILED = "Couldn't export the banner. Try again.";
 
 function imageResponse(image: Buffer, format: ExportFormat, templateId: TemplateId) {
   const { contentType, extension } = EXPORT_FORMAT_DETAILS[format];
@@ -71,14 +39,60 @@ function imageResponse(image: Buffer, format: ExportFormat, templateId: Template
   });
 }
 
-/** The render page loads GitHub data, so its GitHub problems reach the export too. */
-function exportFailure(exportError: unknown, exportRequest: ExportRequest) {
-  if (exportError instanceof GithubRateLimitError) {
-    return tooManyRequests("github", exportError.resetAt);
+/** Checks the daily quota, then renders the banner in a headless browser. */
+const exportBanner = Effect.fnUntraced(function* (
+  request: NextRequest,
+  exportRequest: ParsedExportRequest,
+) {
+  const limitedUntil = yield* Effect.promise(() => dailyExportLimit(request));
+  if (limitedUntil) return yield* new DailyExportLimitReached({ resetAt: limitedUntil });
+
+  const { payload, images } = yield* resolveExportImages(exportRequest);
+  const url = renderUrl(request, payload.templateId, createExportToken(payload));
+  if (url.length > MAX_RENDER_URL_LENGTH) return yield* new SettingsTooLong();
+  const image = yield* captureBanner({
+    url,
+    size: payload.size,
+    pixelRatio: payload.pixelRatio,
+    format: payload.format,
+    images,
+  });
+  return imageResponse(image, payload.format, payload.templateId);
+});
+
+/**
+ * The export API: checks the request and the visitor's daily quota, then renders the banner in a
+ * headless browser and returns it as an image. Each failure becomes its response here; anything
+ * unexpected is logged and answers 500.
+ */
+export async function exportRoute(request: NextRequest): Promise<Response> {
+  const parsed = parseExportRequest(await request.json().catch(() => null));
+  if (!parsed.ok) {
+    return errorResponse(INVALID_REQUEST, 400, { issues: parsed.issues });
   }
-  if (exportError instanceof GithubUserNotFoundError) {
-    return githubUserNotFound(String(exportRequest.state.username ?? ""));
-  }
-  console.error("Export failed", exportError);
-  return error("Couldn't export the banner. Try again.", 500);
+  return Effect.runPromise(
+    exportBanner(request, parsed.request).pipe(
+      Effect.timeoutOrElse({
+        duration: EXPORT_DEADLINE,
+        orElse: () => Effect.fail(new ExportTimedOut()),
+      }),
+      Effect.catchTags({
+        DailyExportLimitReached: ({ resetAt }) =>
+          Effect.succeed(tooManyRequests("daily-exports", resetAt)),
+        UnusableImage: ({ message }) => Effect.succeed(errorResponse(message, 400)),
+        SettingsTooLong: () =>
+          Effect.succeed(
+            errorResponse("Banner settings are too long to export. Shorten the text.", 413),
+          ),
+        // The render page loads GitHub data, so its GitHub problems reach the export too.
+        ...githubErrorResponses(usernameOf(parsed.request.state)),
+      }),
+      Effect.catchCause((cause) =>
+        Effect.sync(() => {
+          console.error("Export failed", Cause.pretty(cause));
+          return errorResponse(EXPORT_FAILED, 500);
+        }),
+      ),
+    ),
+  );
 }

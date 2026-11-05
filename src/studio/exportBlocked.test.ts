@@ -4,7 +4,6 @@ import { isExportBlocked } from "./exportBlocked";
 describe("isExportBlocked", () => {
   const ready = {
     previewState: "ready" as const,
-    stateValid: true,
     imageUnusable: false,
     previewPending: false,
   };
@@ -15,10 +14,6 @@ describe("isExportBlocked", () => {
 
   it.each(["loading", "empty", "error"] as const)("blocks while the preview is %s", (state) => {
     expect(isExportBlocked({ ...ready, previewState: state })).toBe(true);
-  });
-
-  it("blocks when state is invalid", () => {
-    expect(isExportBlocked({ ...ready, stateValid: false })).toBe(true);
   });
 
   it("blocks when the background or the logo can't be used", () => {

@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { Effect } from "effect";
 import { NextRequest } from "next/server";
 import { exportRoute } from "./route";
 
 const { dailyExportLimit, captureBanner } = vi.hoisted(() => ({
   dailyExportLimit: vi.fn(async (): Promise<Date | null> => null),
-  captureBanner: vi.fn(async () => Buffer.from("png")),
+  captureBanner: vi.fn((): Effect.Effect<Buffer> => Effect.succeed(Buffer.from("png"))),
 }));
 
 vi.mock("@/src/lib/requestLimits", async (importOriginal) => ({
@@ -20,7 +21,10 @@ const post = (body: unknown) =>
 
 const banner = { templateId: "quote-banner", size: "wide", state: {} };
 
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.useRealTimers();
+});
 
 describe("exportRoute", () => {
   it("returns the image", async () => {
@@ -46,5 +50,16 @@ describe("exportRoute", () => {
     const response = await post({ ...banner, size: "nope" });
     expect(response.status).toBe(400);
     expect(dailyExportLimit).not.toHaveBeenCalled();
+  });
+
+  it("gives up on an export that takes longer than its deadline", async () => {
+    vi.useFakeTimers();
+    captureBanner.mockReturnValueOnce(Effect.never);
+    const response = post(banner);
+    await vi.advanceTimersByTimeAsync(45_000);
+    expect((await response).status).toBe(500);
+    expect(await (await response).json()).toEqual({
+      error: "Couldn't export the banner. Try again.",
+    });
   });
 });

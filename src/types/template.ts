@@ -1,4 +1,3 @@
-import { z } from "zod";
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
 import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
@@ -54,7 +53,6 @@ export type GithubDataKind = "user" | "contributions" | "repos";
 export interface TemplateDefinition<TState extends Record<string, unknown>> {
   meta: TemplateMeta;
   schema: EditorFieldSchema[];
-  stateSchema: z.ZodType<TState>;
   initialState: TState;
 }
 

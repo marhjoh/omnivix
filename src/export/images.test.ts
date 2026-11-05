@@ -1,7 +1,29 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Effect } from "effect";
 import type { ExportRequest } from "@/src/types/template";
-import { resolveExportImages } from "./images";
+import { resolveExportImages as resolveImages } from "./images";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+
+// The real download, unless a test replaces it.
+const fetchImageLink = vi.hoisted(() => vi.fn());
+vi.mock("./imageLink", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./imageLink")>();
+  fetchImageLink.mockImplementation(original.fetchImageLink);
+  return { ...original, fetchImageLink };
+});
+
+afterEach(() => vi.useRealTimers());
+
+/** The result as data: the payload and images, or the message shown to the user. */
+const resolveExportImages = (request: ExportRequest) =>
+  Effect.runPromise(
+    resolveImages(request).pipe(
+      Effect.match({
+        onSuccess: (resolved) => ({ ok: true as const, ...resolved }),
+        onFailure: (error) => ({ ok: false as const, error: error.message }),
+      }),
+    ),
+  );
 
 const MAX_UPLOADED_BACKGROUND_BYTES = BACKGROUND_UPLOAD.maxBytes;
 
@@ -112,5 +134,15 @@ describe("resolveExportImages with a logo", () => {
       ok: false,
       error: "Unsupported logo image.",
     });
+  });
+});
+
+describe("resolveExportImages with a slow link", () => {
+  it("gives up after 5 seconds", async () => {
+    vi.useFakeTimers();
+    fetchImageLink.mockImplementationOnce(() => new Promise(() => {}));
+    const result = resolveExportImages(payload("https://example.com/slow.png"));
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(await result).toEqual({ ok: false, error: "The image link took too long to load." });
   });
 });

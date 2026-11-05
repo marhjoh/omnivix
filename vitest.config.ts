@@ -3,7 +3,13 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   // Same `@/` alias as tsconfig.json.
-  resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+      // Tests run outside React Server Components, where "server-only" would throw.
+      "server-only": fileURLToPath(new URL("node_modules/server-only/empty.js", import.meta.url)),
+    },
+  },
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],

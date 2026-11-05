@@ -16,17 +16,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Your training data is older than this stack. Check the current docs before using an API from memory; exact versions are in `package.json`.
 
-| Library                     | Docs                                                           |
-| --------------------------- | -------------------------------------------------------------- |
-| Next.js 16 (App Router)     | `node_modules/next/dist/docs/` (matches the installed version) |
-| React 19                    | [react.dev/llms.txt](https://react.dev/llms.txt)               |
-| Tailwind CSS 4              | [tailwindcss.com/docs](https://tailwindcss.com/docs)           |
-| zod 4                       | [zod.dev/llms.txt](https://zod.dev/llms.txt)                   |
-| Vitest 5                    | [vitest.dev/llms.txt](https://vitest.dev/llms.txt)             |
-| Playwright                  | [playwright.dev/docs](https://playwright.dev/docs/intro)       |
-| Upstash Redis and Ratelimit | [upstash.com/docs/llms.txt](https://upstash.com/docs/llms.txt) |
-| framer-motion               | [motion.dev/llms.txt](https://motion.dev/llms.txt)             |
-| lucide-react                | [lucide.dev/llms.txt](https://lucide.dev/llms.txt)             |
+| Library                     | Docs                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| Next.js 16 (App Router)     | `node_modules/next/dist/docs/` (matches the installed version)                 |
+| React 19                    | [react.dev/llms.txt](https://react.dev/llms.txt)                               |
+| Tailwind CSS 4              | [tailwindcss.com/docs](https://tailwindcss.com/docs)                           |
+| Effect 4 (server only)      | `node_modules/effect/AGENTS.md` and `ai-docs/` (matches the installed version) |
+| Vitest 5                    | [vitest.dev/llms.txt](https://vitest.dev/llms.txt)                             |
+| Playwright                  | [playwright.dev/docs](https://playwright.dev/docs/intro)                       |
+| Upstash Redis and Ratelimit | [upstash.com/docs/llms.txt](https://upstash.com/docs/llms.txt)                 |
+| framer-motion               | [motion.dev/llms.txt](https://motion.dev/llms.txt)                             |
+| lucide-react                | [lucide.dev/llms.txt](https://lucide.dev/llms.txt)                             |
 
 TypeScript 6 and Node 24. Use `pnpm` only; `pnpm-lock.yaml` is the source of truth. Bump Node in `engines.node`, `.github/workflows/ci.yml` and `@types/node` together.
 
@@ -52,6 +52,17 @@ The studio preview and the export render the same `BannerRenderer`. `POST /api/e
 - `@sparticuz/chromium` must match the Chromium major that `playwright` targets (`playwright-core/browsers.json`); upgrade both in one PR. Files the export loads at runtime need an `outputFileTracingIncludes` entry in `next.config.ts`.
 - New template: follow the steps in [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-template).
 - Secrets live in `.env.local` locally and in Vercel environment variables (Production and Preview). Never commit them.
+
+### Effect
+
+The server runs on Effect 4: the export API (`src/export/`), the GitHub client and routes (`src/github/`), and the settings schemas (`src/templates/stateSchemas.ts`, `src/lib/schema.ts`).
+
+- Server only: every module that imports `effect` starts with `import "server-only"`, so a browser import fails the build. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and checks nothing itself: its controls keep settings valid, and the export API checks them.
+- Most examples online and most AI output are Effect 3. Work from the installed docs: `Effect.catchAll` is now `Effect.catch`, `Effect.either` is `Effect.result`, and errors are `Schema.TaggedError` classes.
+- Check a module's `@stability` tag before using it; unstable ones can change in a minor release, which is why the version is pinned.
+- Route handlers stay plain Next.js: build one Effect and run it with `Effect.runPromise` at the edge, turning each tagged error into its response there with `Effect.catchTags` (see `src/export/route.ts`).
+- Validate untrusted input (requests, GitHub responses, links) with `Schema`. Give each field its own message (`src/lib/schema.ts`), so an issue never repeats the value that failed.
+- Resources that must close, like Chromium, use `Effect.acquireRelease` inside `Effect.scoped`, so a timeout or failure still closes them (see `captureBanner`).
 
 ### UI
 

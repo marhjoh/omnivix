@@ -140,10 +140,6 @@ export function StudioShell({
     dataReady: github.dataReady,
   });
 
-  const stateValid = useMemo(
-    () => definition.stateSchema.safeParse(state).success,
-    [definition.stateSchema, state],
-  );
   const background = backgroundFromState(state);
   const moveBackground = useCallback(
     (position: BackgroundPosition) => updateState("backgroundPosition", position),
@@ -191,7 +187,6 @@ export function StudioShell({
   });
   const exportBlocked = isExportBlocked({
     previewState: shownPreview.previewState,
-    stateValid,
     imageUnusable: backgroundImage.status === "failed" || logoImage.status === "failed",
     previewPending:
       shownPreview !== livePreview ||

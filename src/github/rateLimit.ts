@@ -1,45 +1,35 @@
+import "server-only";
+import { Effect } from "effect";
+import { GithubRateLimited } from "@/src/github/errors";
+import type { GithubQuota } from "@/src/github/graphql";
+
 /** Used when GitHub reports a limit without saying when it resets. */
 const DEFAULT_WAIT_MS = 60_000;
 
-/** GitHub's rate limit for the app's token is reached; requests work again at `resetAt`. */
-export class GithubRateLimitError extends Error {
-  constructor(readonly resetAt: Date) {
-    super(`GitHub rate limit reached; resets at ${resetAt.toISOString()}`);
-    this.name = "GithubRateLimitError";
-  }
-}
-
-type Headers = Record<string, string | number | undefined>;
-
 /** When the limit resets, from `retry-after` (seconds from now) or `x-ratelimit-reset` (epoch seconds). */
-function resetTime(headers: Headers | undefined, now: number): Date {
-  const retryAfter = Number(headers?.["retry-after"]);
+function resetTime(headers: Headers, now: number): Date {
+  const retryAfter = Number(headers.get("retry-after"));
   if (retryAfter > 0) return new Date(now + retryAfter * 1000);
-  const reset = Number(headers?.["x-ratelimit-reset"]);
+  const reset = Number(headers.get("x-ratelimit-reset"));
   if (reset > 0) return new Date(reset * 1000);
   return new Date(now + DEFAULT_WAIT_MS);
 }
 
 /**
- * When the limit resets, if `error` is GitHub's rate limit: a GraphQL `RATE_LIMITED` error, or an
- * HTTP 429, or a 403 with no requests left or a `retry-after` (GitHub's secondary limits).
+ * When the limit resets, if a GitHub response is its rate limit: a GraphQL `RATE_LIMITED` error,
+ * an HTTP 429, or a 403 with no requests left or a `retry-after` (GitHub's secondary limits).
  */
-export function rateLimitResetAt(error: unknown, now = Date.now()): Date | null {
-  const e = error as {
-    errors?: Array<{ type?: string }>;
-    headers?: Headers;
-    status?: number;
-    response?: { headers?: Headers };
-  } | null;
-  if (Array.isArray(e?.errors) && e.errors.some((err) => err.type === "RATE_LIMITED")) {
-    return resetTime(e.headers, now);
-  }
-  const headers = e?.response?.headers;
+export function rateLimitResetAt(
+  response: { status: number; headers: Headers },
+  errors: ReadonlyArray<{ readonly type?: string | undefined }> = [],
+  now = Date.now(),
+): Date | null {
+  const { status, headers } = response;
   const limited =
-    e?.status === 429 ||
-    (e?.status === 403 &&
-      (String(headers?.["x-ratelimit-remaining"]) === "0" ||
-        headers?.["retry-after"] !== undefined));
+    errors.some((error) => error.type === "RATE_LIMITED") ||
+    status === 429 ||
+    (status === 403 &&
+      (headers.get("x-ratelimit-remaining") === "0" || headers.has("retry-after")));
   return limited ? resetTime(headers, now) : null;
 }
 
@@ -47,25 +37,24 @@ export function rateLimitResetAt(error: unknown, now = Date.now()): Date | null 
 let limitedUntil = 0;
 
 /**
- * Runs a GitHub request, turning a rate limit into a GithubRateLimitError. Until the limit
- * resets, requests fail right away instead of spending more of it, and the hit is logged once.
+ * Runs a GitHub request. Once it hits the rate limit, requests fail right away until the limit
+ * resets instead of spending more of it, and the hit is logged once.
  */
-export async function guardRateLimit<T>(request: () => Promise<T>): Promise<T> {
-  if (Date.now() < limitedUntil) throw new GithubRateLimitError(new Date(limitedUntil));
-  try {
-    return await request();
-  } catch (error) {
-    const resetAt = rateLimitResetAt(error);
-    if (!resetAt) throw error;
-    limitedUntil = resetAt.getTime();
-    const rateLimited = new GithubRateLimitError(resetAt);
-    console.warn(rateLimited.message);
-    throw rateLimited;
-  }
+export function guardRateLimit<A, E>(request: Effect.Effect<A, E | GithubRateLimited>) {
+  return Effect.suspend(() =>
+    Date.now() < limitedUntil
+      ? Effect.fail(new GithubRateLimited({ resetAt: new Date(limitedUntil) }))
+      : request.pipe(
+          Effect.tapError((error) =>
+            Effect.sync(() => {
+              if (!(error instanceof GithubRateLimited)) return;
+              limitedUntil = error.resetAt.getTime();
+              console.warn(`GitHub rate limit reached; resets at ${error.resetAt.toISOString()}`);
+            }),
+          ),
+        ),
+  );
 }
-
-/** The token's quota, as GitHub's GraphQL `rateLimit` field reports it. */
-export type GithubQuota = { limit: number; remaining: number; resetAt: string };
 
 const LOW_QUOTA_SHARE = 0.1;
 
