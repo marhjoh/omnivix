@@ -1,0 +1,86 @@
+import { useId } from "react";
+import { Code, FileText, Link, type LucideIcon } from "lucide-react";
+import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
+import { bannerImageUrl, linkQuery } from "@/src/studio/embedUrl";
+import { templateRegistry } from "@/src/templates/registry";
+import type { TemplateId } from "@/src/templates/types";
+import type { Theme } from "@/src/theme/theme";
+import controls from "@/src/studio/controls.module.css";
+
+const SNIPPETS: ReadonlyArray<{
+  name: string;
+  label: string;
+  Icon: LucideIcon;
+  write: (url: string, alt: string) => string;
+}> = [
+  { name: "Link", label: "Copy link", Icon: Link, write: (url) => url },
+  {
+    name: "Markdown",
+    label: "Copy Markdown",
+    Icon: FileText,
+    write: (url, alt) => `![${alt}](${url})`,
+  },
+  {
+    name: "HTML",
+    label: "Copy HTML",
+    Icon: Code,
+    write: (url, alt) => `<img src="${url.replaceAll("&", "&amp;")}" alt="${alt}">`,
+  },
+];
+
+/**
+ * The export panel's embed rows: the banner's image URL, copied as a link, Markdown or HTML. The
+ * URL follows the panel's resolution and format.
+ */
+export function EmbedLinks({
+  templateId,
+  state,
+  uiTheme,
+  format,
+  pixelRatio,
+  disabled,
+  onCopy,
+}: {
+  templateId: TemplateId;
+  state: Record<string, unknown>;
+  uiTheme: Theme;
+  format: ExportFormat;
+  pixelRatio: ExportPixelRatio;
+  /** Disabled like Copy image while there's nothing to export. */
+  disabled: boolean;
+  /** `name` goes in the confirmation, e.g. "Markdown copied." */
+  onCopy: (text: string, name: string) => void;
+}) {
+  const labelId = useId();
+  const query = linkQuery(templateId, state);
+  const url = query
+    ? bannerImageUrl(window.location.origin, templateId, query, { format, pixelRatio, uiTheme })
+    : null;
+  const { title, needsUsername } = templateRegistry[templateId].meta;
+  const alt = needsUsername ? `${title} by @${state.username}` : title;
+
+  return (
+    <div role="group" aria-labelledby={labelId} className="mt-2">
+      <p id={labelId} className="px-2 pt-1 pb-1 text-xs text-muted">
+        <span className="font-semibold text-text">Embed</span> · updates daily, up to 2×
+      </p>
+      {url === null && (
+        <p className="px-2 pb-1 text-xs text-muted">
+          Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
+        </p>
+      )}
+      {SNIPPETS.map(({ name, label, Icon, write }) => (
+        <button
+          key={name}
+          type="button"
+          disabled={disabled || url === null}
+          onClick={() => url && onCopy(write(url, alt), name)}
+          className={controls.panelAction}
+        >
+          <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}

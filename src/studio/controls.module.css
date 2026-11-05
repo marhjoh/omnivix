@@ -469,32 +469,3 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
 }
-
-/* The part that opens under "Embed in a README or site". Grid rows going from 0fr to 1fr animate
-   the height. It's hidden while closed, which keeps its controls out of the tab order. */
-.embedBody {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  visibility: hidden;
-}
-
-.embedBody[data-open="true"] {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  visibility: visible;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .embedBody {
-    transition:
-      grid-template-rows 0.2s ease-out,
-      opacity 0.2s ease-out,
-      visibility 0.2s;
-  }
-}
-
-.embedBody > * {
-  min-height: 0;
-  overflow: hidden;
-}

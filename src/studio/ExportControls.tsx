@@ -18,7 +18,7 @@ import { DropdownChevron } from "@/src/ui/Dropdown";
 import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import { TileGroup } from "@/src/studio/TileGroup";
-import { EmbedDisclosure } from "@/src/studio/EmbedDisclosure";
+import { EmbedLinks } from "@/src/studio/EmbedLinks";
 import type { ExportKind } from "@/src/studio/useBannerExport";
 import type { TemplateId } from "@/src/templates/types";
 import type { Theme } from "@/src/theme/theme";
@@ -184,7 +184,7 @@ export function ExportControls({
               <Copy className="h-4 w-4 shrink-0 text-muted" aria-hidden />
               Copy image
             </button>
-            <EmbedDisclosure
+            <EmbedLinks
               {...banner}
               format={shownFormat}
               pixelRatio={shownPixelRatio}
