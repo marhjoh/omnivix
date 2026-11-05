@@ -5,10 +5,13 @@ const TOKEN_TTL_SECONDS = 120;
 
 /**
  * Without `EXPORT_TOKEN_SECRET`, a random secret per server process: tokens can't be forged, but
- * only that process can verify them. Vercel runs the export and the render page in separate
- * functions, so it needs the shared secret.
+ * only that process can verify them. Kept on `globalThis` because Next bundles the export route
+ * and the render page separately, each with its own copy of this module. Vercel runs them in
+ * separate functions, so it needs the shared secret.
  */
-const processSecret = randomBytes(32).toString("base64url");
+const shared = globalThis as { omnivixExportSecret?: string };
+shared.omnivixExportSecret ??= randomBytes(32).toString("base64url");
+const processSecret = shared.omnivixExportSecret;
 
 function getSecret(): string {
   const secret = process.env.EXPORT_TOKEN_SECRET;

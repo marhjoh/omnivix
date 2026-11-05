@@ -3,8 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 
 /**
- * Smoke tests against a production build (`pnpm build` first). The server runs without a GitHub
- * token or Redis, like CI: tests fake GitHub's data in the browser, and the rate limits are off.
+ * Smoke tests against a production build (`pnpm build` first). The server runs without secrets,
+ * like CI: tests fake GitHub's data in the browser, the rate limits are off, and export tokens use
+ * the per-process secret.
  */
 export default defineConfig({
   testDir: "e2e",
@@ -23,6 +24,7 @@ export default defineConfig({
     // Empty values win over .env.local (Next only fills variables that aren't set).
     env: {
       GITHUB_TOKEN: "",
+      EXPORT_TOKEN_SECRET: "",
       UPSTASH_REDIS_REST_URL: "",
       UPSTASH_REDIS_REST_TOKEN: "",
       KV_REST_API_URL: "",
