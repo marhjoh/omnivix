@@ -51,6 +51,7 @@ CI runs these on every pull request, and all must pass before merging. Run them 
 | Types       | `pnpm typecheck`    |                                                           |
 | Tests       | `pnpm test`         | `pnpm test:watch` reruns as you edit                      |
 | Build       | `pnpm build`        | Works without `.env.local`                                |
+| Smoke tests | `pnpm test:e2e`     | Runs against the build; needs no GitHub token             |
 
 CodeQL also scans each pull request for security problems; its findings show on the PR.
 

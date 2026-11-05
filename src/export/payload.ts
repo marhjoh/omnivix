@@ -16,7 +16,7 @@ import { EXPORT_PIXEL_RATIOS, EXPORT_FORMATS, type ExportFormat } from "@/src/ex
 import { templateRegistry } from "@/src/templates/registry";
 
 /** The request's own fields; `state` is checked by the template's schema (stateSchemas.ts). */
-export const exportRequestSchema = Schema.Struct({
+const exportRequestSchema = Schema.Struct({
   templateId: oneOf(TEMPLATE_IDS),
   size: oneOf(BANNER_SIZE_KEYS),
   state: Schema.Record(Schema.String, Schema.Unknown).annotate({ message: "Must be an object" }),

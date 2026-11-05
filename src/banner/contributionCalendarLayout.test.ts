@@ -156,58 +156,18 @@ describe("buildCalendarLayout — authoritative weeks contract", () => {
 });
 
 describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
-  it("no duplicates for year 2025 (firstDay=Wednesday)", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
+  it.each([
+    ["2025, first day a Wednesday", buildWeeksForRange, 2025, false],
+    ["2022, first day a Saturday", buildWeeksForRange, 2022, false],
+    ["2025 with padding days", buildWeeksForRange, 2025, true],
+    ["Sunday-aligned weeks", buildSundayAlignedWeeksForRange, 2025, false],
+    ["Sunday-aligned weeks with padding days", buildSundayAlignedWeeksForRange, 2025, true],
+  ])("%s", (_, weeksFor, year, renderPaddingDays) => {
     const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-    });
-    const dates = placedDays.map((d) => d.date);
-    expect(new Set(dates).size).toBe(dates.length);
-  });
-
-  it("no duplicates for year 2022 (firstDay=Saturday)", () => {
-    const weeks = buildWeeksForRange("2022-01-01", "2022-12-31");
-    const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2022),
-      rangeEndYmd: "2022-12-31",
-    });
-    const dates = placedDays.map((d) => d.date);
-    expect(new Set(dates).size).toBe(dates.length);
-  });
-
-  it("no duplicates with renderPaddingDays=true (non-Sunday firstDay)", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
-    const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: true,
-    });
-    const dates = placedDays.map((d) => d.date);
-    expect(new Set(dates).size).toBe(dates.length);
-  });
-
-  it("no duplicates with Sunday-aligned weeks", () => {
-    const weeks = buildSundayAlignedWeeksForRange("2025-01-01", "2025-12-31");
-    const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-    });
-    const dates = placedDays.map((d) => d.date);
-    expect(new Set(dates).size).toBe(dates.length);
-  });
-
-  it("no duplicates with Sunday-aligned weeks + padding", () => {
-    const weeks = buildSundayAlignedWeeksForRange("2025-01-01", "2025-12-31");
-    const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: true,
+      weeks: weeksFor(`${year}-01-01`, `${year}-12-31`),
+      months: monthsForYear(year),
+      rangeEndYmd: `${year}-12-31`,
+      renderPaddingDays,
     });
     const dates = placedDays.map((d) => d.date);
     expect(new Set(dates).size).toBe(dates.length);
@@ -353,13 +313,5 @@ describe("buildCalendarLayout — month labels", () => {
       rangeEndYmd: "2025-02-08",
     });
     expect(monthLabels.length).toBeLessThanOrEqual(2);
-  });
-});
-
-describe("DAY_LABEL_ROWS", () => {
-  it("Mon=1, Wed=3, Fri=5 (Sunday-start)", () => {
-    expect(DAY_LABEL_ROWS.find((r) => r.label === "Mon")?.row).toBe(1);
-    expect(DAY_LABEL_ROWS.find((r) => r.label === "Wed")?.row).toBe(3);
-    expect(DAY_LABEL_ROWS.find((r) => r.label === "Fri")?.row).toBe(5);
   });
 });

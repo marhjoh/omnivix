@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "knip": "knip",
     "doctor": "pnpm dlx react-doctor@latest --no-telemetry",
     "social-preview": "tsx scripts/social-preview.mts",
@@ -43,6 +44,7 @@
     "simple-icons": "^16.36.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.19.2",
     "@types/react": "^19",

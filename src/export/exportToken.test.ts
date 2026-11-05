@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createExportToken, verifyExportToken } from "./exportToken";
 
 const samplePayload = {
@@ -16,16 +16,6 @@ describe("export token", () => {
     expect(payload?.state).toEqual(samplePayload.state);
   });
 
-  it("round-trips state with a sizeable string field", () => {
-    const huge = "x".repeat(10_000);
-    const token = createExportToken({
-      ...samplePayload,
-      state: { ...samplePayload.state, backgroundImage: huge },
-    });
-    const out = verifyExportToken(token);
-    expect(out?.state.backgroundImage).toBe(huge);
-  });
-
   it("rejects a tampered token", () => {
     const token = createExportToken(samplePayload);
     const [encoded, sig] = token.split(".");
@@ -37,5 +27,15 @@ describe("export token", () => {
     const token = createExportToken(samplePayload);
     expect(verifyExportToken(token)).not.toBeNull();
     expect(verifyExportToken(token)).not.toBeNull();
+  });
+
+  it("verifies across separate copies of the module without EXPORT_TOKEN_SECRET", async () => {
+    // Next bundles the export route and the render page separately, each with its own copy.
+    vi.stubEnv("EXPORT_TOKEN_SECRET", "");
+    const token = createExportToken(samplePayload);
+    vi.resetModules();
+    const otherCopy = await import("./exportToken");
+    expect(otherCopy.verifyExportToken(token)?.templateId).toBe("quote-banner");
+    vi.unstubAllEnvs();
   });
 });

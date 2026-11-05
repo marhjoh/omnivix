@@ -52,6 +52,34 @@ jobs:
         run: pnpm test --coverage
 
       # Runs without secrets: GitHub data and export tokens are only needed at request time.
-      - name: Build
+      - id: build
+        name: Build
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm build
+
+      # Keyed on Playwright's version, which pins the Chromium it downloads.
+      - id: playwright
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      # The export renders in this Chromium too (outside Vercel, see src/export/playwright.ts).
+      - name: Install Chromium
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Smoke tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ failure() && steps.build.outcome == 'success' }}
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
