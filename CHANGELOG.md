@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/marhjoh/omnivix/compare/v1.25.0...v1.26.0) (2026-11-05)
+
+
+### Features
+
+* adjust the background's opacity ([#242](https://github.com/marhjoh/omnivix/issues/242)) ([037cf28](https://github.com/marhjoh/omnivix/commit/037cf28fbbf5f5ebcc9c75aa3786e07cac184684))
+
 ## [1.25.0](https://github.com/marhjoh/omnivix/compare/v1.24.0...v1.25.0) (2026-11-05)
 
 
