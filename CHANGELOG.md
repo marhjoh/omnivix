@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.25.0](https://github.com/marhjoh/omnivix/compare/v1.24.0...v1.25.0) (2026-11-05)
+
+
+### Features
+
+* copy the embed as a link, Markdown or HTML in one click ([468061a](https://github.com/marhjoh/omnivix/commit/468061a2cc023e83b63450c166686f0bc18ebb26))
+
+
+### Bug Fixes
+
+* center toasts on the studio preview ([468061a](https://github.com/marhjoh/omnivix/commit/468061a2cc023e83b63450c166686f0bc18ebb26))
+* show the studio's banner background first and fade its content in ([468061a](https://github.com/marhjoh/omnivix/commit/468061a2cc023e83b63450c166686f0bc18ebb26))
+
 ## [1.24.0](https://github.com/marhjoh/omnivix/compare/v1.23.3...v1.24.0) (2026-11-05)
 
 
