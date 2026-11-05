@@ -60,7 +60,8 @@ export function BackgroundDragSurface({
     const step = arrowStep(event);
     if (!step) return;
     event.preventDefault();
-    onMove(nudgeBackgroundPosition(position, step));
+    const range = panRange();
+    if (range) onMove(nudgeBackgroundPosition(position, step, range));
   }
 
   return (

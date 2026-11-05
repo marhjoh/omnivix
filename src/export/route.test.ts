@@ -62,4 +62,11 @@ describe("exportRoute", () => {
       error: "Couldn't export the banner. Try again.",
     });
   });
+
+  it("refuses settings too long to export before counting them against the quota", async () => {
+    const response = await post({ ...banner, state: { note: "x".repeat(8000) } });
+    expect(response.status).toBe(413);
+    expect(dailyExportLimit).not.toHaveBeenCalled();
+    expect(captureBanner).not.toHaveBeenCalled();
+  });
 });

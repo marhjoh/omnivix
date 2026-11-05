@@ -178,7 +178,13 @@ export async function normalizeImageFile(
   const metaErr = validateImageUploadMeta(file, policy);
   if (metaErr) return { ok: false, error: metaErr };
 
-  const head = await readFileHead(file, 6);
+  let head: Uint8Array;
+  try {
+    head = await readFileHead(file, 6);
+  } catch {
+    // The file changed or went away after it was picked (or is a cloud placeholder).
+    return { ok: false, error: UNREADABLE_MESSAGE };
+  }
   if (isGifMagicBytes(head)) {
     return { ok: false, error: supportedFormatsMessage(policy) };
   }

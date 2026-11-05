@@ -152,6 +152,9 @@ export function usePointerDrag<T>({
     dragging,
     handlers: {
       onPointerDown(event: PointerEvent<HTMLElement>) {
+        // Only the primary button: a right-click's menu can swallow the pointerup, leaving a drag
+        // that follows the mouse with no button pressed.
+        if (event.button !== 0) return;
         const start = begin();
         if (start === null) return;
         event.currentTarget.setPointerCapture(event.pointerId);
