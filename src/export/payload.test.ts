@@ -1,25 +1,28 @@
 import { describe, expect, it } from "vitest";
+import { Schema } from "effect";
 import { exportRequestSchema, parseExportRequest } from "./payload";
+
+const isExportRequest = Schema.is(exportRequestSchema);
 
 const request = { templateId: "quote-banner", size: "wide", state: {} };
 
 describe("exportRequestSchema pixelRatio", () => {
   it.each([1, 2, 3, undefined])("accepts %s", (pixelRatio) => {
-    expect(exportRequestSchema.safeParse({ ...request, pixelRatio }).success).toBe(true);
+    expect(isExportRequest({ ...request, pixelRatio })).toBe(true);
   });
 
   it.each([0, 4, 2.5, "2"])("rejects %s", (pixelRatio) => {
-    expect(exportRequestSchema.safeParse({ ...request, pixelRatio }).success).toBe(false);
+    expect(isExportRequest({ ...request, pixelRatio })).toBe(false);
   });
 });
 
 describe("exportRequestSchema format", () => {
   it.each(["png", "jpeg", undefined])("accepts %s", (format) => {
-    expect(exportRequestSchema.safeParse({ ...request, format }).success).toBe(true);
+    expect(isExportRequest({ ...request, format })).toBe(true);
   });
 
   it.each(["jpg", "webp", "PNG", 1])("rejects %s", (format) => {
-    expect(exportRequestSchema.safeParse({ ...request, format }).success).toBe(false);
+    expect(isExportRequest({ ...request, format })).toBe(false);
   });
 });
 

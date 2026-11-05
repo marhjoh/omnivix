@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { Effect } from "effect";
 import type { ExportRequest } from "@/src/types/template";
-import { resolveExportImages } from "./images";
+import { resolveExportImages as resolveImages } from "./images";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+
+/** The result as data: the payload and images, or the message shown to the user. */
+const resolveExportImages = (request: ExportRequest) =>
+  Effect.runPromise(
+    resolveImages(request).pipe(
+      Effect.match({
+        onSuccess: (resolved) => ({ ok: true as const, ...resolved }),
+        onFailure: (error) => ({ ok: false as const, error: error.message }),
+      }),
+    ),
+  );
 
 const MAX_UPLOADED_BACKGROUND_BYTES = BACKGROUND_UPLOAD.maxBytes;
 

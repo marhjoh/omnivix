@@ -119,7 +119,7 @@ describe("fetchImageLink", () => {
   it("reports a timeout while the body downloads as a timeout", async () => {
     responses.set("https://example.com/slow.png", { ...png(), reset: true });
     const timedOut = AbortSignal.abort(new DOMException("timed out", "TimeoutError"));
-    await expect(fetchImageLink("https://example.com/slow.png", PNG, 3, timedOut)).rejects.toThrow(
+    await expect(fetchImageLink("https://example.com/slow.png", PNG, timedOut)).rejects.toThrow(
       "took too long",
     );
   });

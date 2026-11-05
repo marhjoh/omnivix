@@ -1,6 +1,7 @@
 import { access, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Effect } from "effect";
 import { type Page, chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
@@ -9,12 +10,8 @@ import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import type { ExportImage } from "@/src/export/images";
-import { GithubRateLimitError } from "@/src/github/rateLimit";
-import {
-  GITHUB_LIMIT_ATTRIBUTE,
-  GITHUB_USER_MISSING_ATTRIBUTE,
-  GithubUserNotFoundError,
-} from "@/src/export/renderProblem";
+import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
+import { GithubLimitReached, GithubUserMissing, RenderFailed } from "@/src/export/errors";
 
 /**
  * A script that starts `executable` with core dumps off. Chromium crashes as it closes on Vercel,
@@ -33,7 +30,7 @@ async function withoutCoreDumps(executable: string): Promise<string> {
   return script;
 }
 
-/** How long each step of a render may take: loading the page, the banner, fonts and images. */
+/** How long each Playwright step may take; the whole export has its own deadline (exportRoute). */
 const RENDER_TIMEOUT_MS = 25_000;
 
 /** Hosts the render page may load from besides its own origin (GitHub profile photos). */
@@ -116,31 +113,53 @@ async function restrictRequests(page: Page, origin: string, images: ExportImage[
   }
 }
 
-/** Loads the render page, failing if it didn't render: an HTTP error or a Vercel login. */
-async function openRenderPage(page: Page, url: string) {
-  const response = await page.goto(url, { waitUntil: "load" });
-  const status = response?.status() ?? 0;
-  if (status >= 400) throw new Error(`Render page returned HTTP ${status}`);
-  if (page.url().includes("vercel.com/login")) {
-    throw new Error("Render page blocked by Vercel Deployment Protection");
-  }
+/** A step in Chromium; its failures are render failures. */
+function step<A>(run: () => Promise<A>) {
+  return Effect.tryPromise({ try: run, catch: (cause) => new RenderFailed({ cause }) });
 }
 
-/** The render page marks GitHub problems instead of a banner; they're thrown as their errors. */
-async function throwIfRenderProblem(page: Page) {
-  const problem = await page.evaluate(
-    ([limit, missing]) => ({
-      limitUntil: document.querySelector(`[${limit}]`)?.getAttribute(limit) ?? null,
-      userMissing: document.querySelector(`[${missing}]`) !== null,
-    }),
-    [GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE] as const,
+/**
+ * Chromium for one export, closed when the export's scope ends: after the screenshot, after a
+ * failure, and when the deadline stops the export mid-step.
+ */
+const scopedBrowser = Effect.acquireRelease(step(launchBrowser), (browser) =>
+  // Chromium can crash as it closes on Vercel; the export is done by then.
+  Effect.promise(() => browser.close().catch(() => undefined)),
+);
+
+/** Loads the render page, failing if it didn't render: an HTTP error or a Vercel login. */
+const openRenderPage = Effect.fnUntraced(function* (page: Page, url: string) {
+  const response = yield* step(() => page.goto(url, { waitUntil: "load" }));
+  const status = response?.status() ?? 0;
+  if (status >= 400) {
+    return yield* new RenderFailed({ cause: new Error(`Render page returned HTTP ${status}`) });
+  }
+  if (page.url().includes("vercel.com/login")) {
+    return yield* new RenderFailed({
+      cause: new Error("Render page blocked by Vercel Deployment Protection"),
+    });
+  }
+});
+
+/** The render page marks GitHub problems instead of a banner; they fail as their errors. */
+const failOnRenderProblem = Effect.fnUntraced(function* (page: Page) {
+  const problem = yield* step(() =>
+    page.evaluate(
+      ([limit, missing]) => ({
+        limitUntil: document.querySelector(`[${limit}]`)?.getAttribute(limit) ?? null,
+        userMissing: document.querySelector(`[${missing}]`) !== null,
+      }),
+      [GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE] as const,
+    ),
   );
-  if (problem.limitUntil) throw new GithubRateLimitError(new Date(problem.limitUntil));
-  if (problem.userMissing) throw new GithubUserNotFoundError();
-}
+  if (problem.limitUntil) {
+    return yield* new GithubLimitReached({ resetAt: new Date(problem.limitUntil) });
+  }
+  if (problem.userMissing) return yield* new GithubUserMissing();
+});
 
 /** Opens the render page at the banner's size and pixel ratio and screenshots the banner. */
-export async function captureBanner({
+export const captureBanner = Effect.fnUntraced(function* ({
   url,
   size,
   pixelRatio,
@@ -155,26 +174,26 @@ export async function captureBanner({
   images?: ExportImage[];
 }) {
   const banner = BANNER_SIZES[size];
-  const browser = await launchBrowser();
-  try {
+  const browser = yield* scopedBrowser;
+  const page = yield* step(async () => {
     const context = await browser.newContext({
       viewport: { width: banner.width, height: banner.height },
       // The default when unset, capped for the banner format (YouTube PNGs are 1× only).
       deviceScaleFactor: exportPixelRatioFor(banner, format, pixelRatio),
     });
-    const page = await context.newPage();
-    page.setDefaultTimeout(RENDER_TIMEOUT_MS);
-    await restrictRequests(page, new URL(url).origin, images);
-    await openRenderPage(page, url);
-    await throwIfRenderProblem(page);
+    return context.newPage();
+  });
+  page.setDefaultTimeout(RENDER_TIMEOUT_MS);
+  yield* step(() => restrictRequests(page, new URL(url).origin, images));
+  yield* openRenderPage(page, url);
+  yield* failOnRenderProblem(page);
 
-    const target = page.locator(".banner-export-root");
-    await target.waitFor({ state: "visible" });
-    await waitForRasterReady(page);
-    await waitForContentFit(page);
-    const png = await target.screenshot({ type: "png", animations: "disabled", scale: "device" });
-    return format === "jpeg" ? await toJpeg(png, banner.uploadLimit) : png;
-  } finally {
-    await browser.close();
-  }
-}
+  const target = page.locator(".banner-export-root");
+  yield* step(() => target.waitFor({ state: "visible" }));
+  yield* step(() => waitForRasterReady(page));
+  yield* step(() => waitForContentFit(page));
+  const png = yield* step(() =>
+    target.screenshot({ type: "png", animations: "disabled", scale: "device" }),
+  );
+  return format === "jpeg" ? yield* step(() => toJpeg(png, banner.uploadLimit)) : png;
+}, Effect.scoped);

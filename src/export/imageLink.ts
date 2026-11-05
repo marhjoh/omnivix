@@ -66,13 +66,22 @@ const TOO_LARGE = `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1
 /**
  * Downloads an image link for export: https only, public addresses only, one of `types`, at most
  * `MAX_LINKED_IMAGE_BYTES`, within `TIMEOUT_MS` including redirects. Throws `ImageLinkError` when
- * the link can't be used.
+ * the link can't be used. `abort` stops it sooner (the export's deadline).
  */
-export async function fetchImageLink(
+export function fetchImageLink(
   link: string,
   types: readonly LinkImageType[],
-  redirectsLeft = MAX_REDIRECTS,
-  signal = AbortSignal.timeout(TIMEOUT_MS),
+  abort?: AbortSignal,
+): Promise<ImageBytes> {
+  const timeout = AbortSignal.timeout(TIMEOUT_MS);
+  return download(link, types, MAX_REDIRECTS, abort ? AbortSignal.any([abort, timeout]) : timeout);
+}
+
+async function download(
+  link: string,
+  types: readonly LinkImageType[],
+  redirectsLeft: number,
+  signal: AbortSignal,
 ): Promise<ImageBytes> {
   const url = checkedUrl(link);
   const res = await openResponse(url, types, signal);
@@ -80,7 +89,7 @@ export async function fetchImageLink(
   if (status >= 300 && status < 400 && res.headers.location) {
     res.resume();
     const next = redirectTarget(res.headers.location, url, redirectsLeft);
-    return fetchImageLink(next, types, redirectsLeft - 1, signal);
+    return download(next, types, redirectsLeft - 1, signal);
   }
   if (status !== 200) {
     res.resume();
