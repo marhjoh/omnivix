@@ -17,11 +17,13 @@ const MAX_NAME_LENGTH = 30;
 
 /**
  * Counts a visit to the landing page or a studio page, without cookies. Only full page loads count:
- * moving between pages inside the app doesn't load a document. Bots aren't counted.
+ * moving between pages inside the app doesn't load a document. Bots and headless browsers, like
+ * Vercel's deployment screenshots, aren't counted.
  */
 export function countPageView(request: NextRequest): void {
   const page = pageOf(request.nextUrl.pathname);
-  if (!page || !isPageLoad(request) || userAgent(request).isBot) return;
+  const agent = userAgent(request);
+  if (!page || !isPageLoad(request) || agent.isBot || agent.ua.includes("Headless")) return;
   countStats(pageViewFields(request, page), {
     id: visitorId(request),
     steps: page === "/" ? ["site"] : ["site", "studio"],
