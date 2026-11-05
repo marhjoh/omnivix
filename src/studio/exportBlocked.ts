@@ -6,7 +6,6 @@ import type { PreviewContentState } from "./preview/types";
  */
 export function isExportBlocked(params: {
   previewState: PreviewContentState;
-  stateValid: boolean;
   /** The background or the logo failed to load. */
   imageUnusable: boolean;
   /**
@@ -16,10 +15,5 @@ export function isExportBlocked(params: {
    */
   previewPending: boolean;
 }): boolean {
-  return (
-    params.previewState !== "ready" ||
-    !params.stateValid ||
-    params.imageUnusable ||
-    params.previewPending
-  );
+  return params.previewState !== "ready" || params.imageUnusable || params.previewPending;
 }

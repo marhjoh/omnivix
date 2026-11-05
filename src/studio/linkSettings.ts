@@ -8,6 +8,7 @@ import {
   removeImage,
 } from "@/src/studio/savedSettings";
 import { parsePositionText } from "@/src/banner/position";
+import { checkTemplateState } from "@/src/templates/stateSchemas";
 
 /** Settings from a studio link, with the username apart (it's saved for every template). */
 export interface LinkSettings {
@@ -21,10 +22,10 @@ type Query = Record<string, string | string[] | undefined>;
  * Reads a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the export
  * API's `size` and `state` keys, as text, with positions as `x,y` (`contentPosition=100,0`).
  * Values that aren't valid are left out, so the studio uses the saved setting or the default
- * instead.
+ * instead. Server only: the template's schema runs on Effect.
  */
 export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSettings | null {
-  const { schema, stateSchema, initialState, meta } = templateRegistry[templateId];
+  const { schema, initialState, meta } = templateRegistry[templateId];
   const fieldTypes = new Map<string, string>(schema.map((field) => [field.key, field.type]));
   if (meta.needsUsername) fieldTypes.set("username", "text");
   for (const key of POSITION_KEYS) fieldTypes.set(key, "position");
@@ -53,9 +54,14 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
 
   // Drop the values the template's rules reject. A placeholder username keeps a link without one
   // from failing on it.
-  const result = stateSchema.safeParse({ ...initialState, username: "user", ...candidate });
-  if (!result.success) {
-    for (const issue of result.error.issues) delete candidate[String(issue.path[0])];
+  const checked = checkTemplateState(templateId, {
+    ...initialState,
+    username: "user",
+    ...candidate,
+  });
+  if (!checked.ok) {
+    // Paths are `state.<key>…`.
+    for (const issue of checked.issues) delete candidate[issue.path.split(".")[1]];
   }
   const { username, ...settings } = candidate;
   return { settings, username: typeof username === "string" ? username : null };
