@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/marhjoh/omnivix/compare/v1.23.3...v1.24.0) (2026-11-05)
+
+
+### Features
+
+* embed banners with an image URL that stays up to date ([4f8c825](https://github.com/marhjoh/omnivix/commit/4f8c8257ac4323fa2e1d1a013bcb65c76309de6f))
+
 ## [1.23.3](https://github.com/marhjoh/omnivix/compare/v1.23.2...v1.23.3) (2026-11-05)
 
 
