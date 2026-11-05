@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import landingStyles from "@/src/landing/landing.module.css";
 
-/** A section's big headline, in the brand gradient (wipes in on scroll, see landing.module.css). */
+/** A section's big headline, in the brand gradient (wipes in on scroll, see app/globals.css). */
 export function SectionHeading({
   id,
   children,
@@ -13,10 +12,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <h2
-      id={id}
-      className={`${landingStyles.gradientText} ${landingStyles.sectionHeading} ${className}`}
-    >
+    <h2 id={id} className={`gradient-text section-heading ${className}`}>
       {children}
     </h2>
   );

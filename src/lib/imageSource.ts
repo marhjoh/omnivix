@@ -5,9 +5,12 @@ export function isDataUrl(value: string): boolean {
   return value.startsWith("data:");
 }
 
-/** An http(s):// image link (as opposed to a preset path or an uploaded data URL). */
-export function isHttpImageUrl(value: string): boolean {
-  return /^https?:\/\//i.test(value.trim());
+/**
+ * An https:// image link (as opposed to a preset path or an uploaded data URL). Only https: the
+ * studio's link field adds it, and the export loads nothing else (src/export/imageLink.ts).
+ */
+export function isHttpsUrl(value: string): boolean {
+  return /^https:\/\//i.test(value.trim());
 }
 
 interface ImageFormat {

@@ -2,9 +2,9 @@ import { useRef, type KeyboardEvent } from "react";
 import {
   backgroundPanRange,
   dragBackgroundPosition,
+  nudgeBackgroundPosition,
   type BackgroundPosition,
 } from "@/src/banner/background";
-import { clampPercent, roundPercent } from "@/src/banner/position";
 import { BANNER_BACKGROUND_ATTRIBUTE } from "@/src/banner/placement";
 import {
   arrowStep,
@@ -17,11 +17,6 @@ import {
   type PreviewScale,
 } from "@/src/studio/preview/dragSurface";
 import type { BannerBox } from "@/src/lib/sizes";
-
-const roundPosition = ({ x, y }: BackgroundPosition) => ({
-  x: roundPercent(x),
-  y: roundPercent(y),
-});
 
 /**
  * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
@@ -57,7 +52,7 @@ export function BackgroundDragSurface({
     begin: () => position,
     move: (from, delta) => {
       const range = panRange();
-      if (range) scheduleMove(roundPosition(dragBackgroundPosition(from, delta, range)));
+      if (range) scheduleMove(dragBackgroundPosition(from, delta, range));
     },
   });
 
@@ -65,10 +60,7 @@ export function BackgroundDragSurface({
     const step = arrowStep(event);
     if (!step) return;
     event.preventDefault();
-    // Arrows move the image, matching a drag: → shows more of the left side.
-    onMove(
-      roundPosition({ x: clampPercent(position.x - step.x), y: clampPercent(position.y - step.y) }),
-    );
+    onMove(nudgeBackgroundPosition(position, step));
   }
 
   return (

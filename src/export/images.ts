@@ -4,13 +4,7 @@ import type { ExportRequest } from "@/src/export/request";
 import { UnusableImage } from "@/src/export/errors";
 import { fetchImageLink, ImageLinkError, type ImageBytes } from "@/src/export/imageLink";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
-import {
-  formatNames,
-  isDataUrl,
-  isHttpImageUrl,
-  linkImageTypes,
-  type LinkImageType,
-} from "@/src/lib/imageSource";
+import { formatNames, isDataUrl, linkImageTypes, type LinkImageType } from "@/src/lib/imageSource";
 import { isOneOf } from "@/src/lib/isOneOf";
 
 /** Raster images the export draws as they are: uploads (once processed) and background links. */
@@ -120,7 +114,10 @@ const resolveImage = Effect.fnUntraced(function* (
     return { path, contentType: match[1], body };
   }
 
-  if (isHttpImageUrl(value)) return { path, ...(yield* downloadLink(value, linkTypes)) };
+  // Plain http links go to the download too, which says why they can't be used (https only).
+  if (/^https?:\/\//i.test(value.trim())) {
+    return { path, ...(yield* downloadLink(value, linkTypes)) };
+  }
 
   return yield* new UnusableImage({ message: `Unsupported ${name} image.` });
 });

@@ -18,7 +18,7 @@
 .topbar {
   height: var(--topbar-height);
   flex-shrink: 0;
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  border-bottom: 1px solid var(--divider);
   background: var(--bg);
   display: flex;
   align-items: center;
@@ -44,7 +44,7 @@
   width: var(--sidebar-width);
   flex-shrink: 0;
   overflow: hidden;
-  border-right: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  border-right: 1px solid var(--divider);
   background: var(--bg);
   transition:
     width var(--sidebar-transition) ease,

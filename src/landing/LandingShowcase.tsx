@@ -17,7 +17,7 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
   return (
     <Link
       href={studioPath(templateId)}
-      className={`group min-w-0 focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
+      className={`group min-w-0 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
     >
       <div
         className={landingStyles.showcasePreview}

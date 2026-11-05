@@ -20,6 +20,11 @@ export function samePosition(a: Position, b: Position): boolean {
 /** Rounds a percentage to 0.1, which is finer than a pixel at any banner size. */
 export const roundPercent = (value: number) => Math.round(value * 10) / 10;
 
+/** A position rounded to 0.1 on each axis (roundPercent), as dragged positions are saved. */
+export function roundPosition({ x, y }: Position): Position {
+  return { x: roundPercent(x), y: roundPercent(y) };
+}
+
 export function isPosition(raw: unknown): raw is Position {
   return (
     typeof raw === "object" &&

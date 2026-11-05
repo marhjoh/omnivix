@@ -1,12 +1,10 @@
-import { PreviewFrame } from "@/src/studio/preview/PreviewFrame";
-import { PreviewLoadingState } from "@/src/studio/preview/PreviewLoadingState";
-import { PreviewMessage } from "@/src/studio/preview/PreviewMessage";
+import { PreviewLoading, PreviewMessage } from "@/src/studio/preview/PreviewMessage";
 import {
   previewEmptyCopy,
   previewLoadingMessage,
 } from "@/src/studio/preview/computePreviewContentState";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
-import { useTimeReached } from "@/src/studio/preview/useTimeReached";
+import { useTimeReached } from "@/src/ui/useTimeReached";
 import previewStyles from "@/src/studio/preview/preview.module.css";
 import type { GithubDataKind } from "@/src/templates/types";
 
@@ -21,34 +19,33 @@ interface StatusActions {
 export function PreviewStatus({
   previewState,
   problem,
-  needsUsername,
+  missingSetting,
   githubData,
   ...actions
 }: StatusActions & {
   previewState: Exclude<PreviewContentState, "ready">;
   problem: PreviewProblem | null;
-  needsUsername: boolean;
+  /** What an empty preview asks for: "username", or a required setting's key. */
+  missingSetting: string | undefined;
   githubData: readonly GithubDataKind[];
 }) {
   return (
-    <PreviewFrame>
-      <div className={previewStyles.stateCenter}>
-        <StatusContent
-          previewState={previewState}
-          problem={problem}
-          needsUsername={needsUsername}
-          githubData={githubData}
-          {...actions}
-        />
-      </div>
-    </PreviewFrame>
+    <div className={previewStyles.stateFrame}>
+      <StatusContent
+        previewState={previewState}
+        problem={problem}
+        missingSetting={missingSetting}
+        githubData={githubData}
+        {...actions}
+      />
+    </div>
   );
 }
 
 function StatusContent({
   previewState,
   problem,
-  needsUsername,
+  missingSetting,
   githubData,
   onRetry,
   onChangeUsername,
@@ -57,15 +54,16 @@ function StatusContent({
   const retryReached = useTimeReached(problem?.retryAt);
 
   if (previewState === "loading") {
-    return <PreviewLoadingState message={previewLoadingMessage(githubData)} />;
+    return <PreviewLoading message={previewLoadingMessage(githubData)} />;
   }
   if (previewState === "empty") {
-    const copy = previewEmptyCopy(needsUsername);
+    if (missingSetting === undefined) return null;
+    const copy = previewEmptyCopy(missingSetting);
     const { setting } = copy.action;
     return (
       <PreviewMessage
         title={copy.title}
-        hint={copy.description}
+        hint={copy.hint}
         action={{
           label: copy.action.label,
           onClick: setting === "username" ? onChangeUsername : () => onEditSetting(setting),

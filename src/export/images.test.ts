@@ -146,3 +146,12 @@ describe("resolveExportImages with a slow link", () => {
     expect(await result).toEqual({ ok: false, error: "The image link took too long to load." });
   });
 });
+
+describe("resolveExportImages with an http link", () => {
+  it("says links must be https", async () => {
+    expect(await resolveExportImages(payload("http://example.com/a.png"))).toEqual({
+      ok: false,
+      error: "Image links must start with https://.",
+    });
+  });
+});

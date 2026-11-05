@@ -1,6 +1,6 @@
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/src/ui/Spinner";
 import { useExportProgress } from "@/src/studio/preview/useExportProgress";
-import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
+import { useKeepWhile } from "@/src/ui/useKeepWhile";
 import styles from "@/src/studio/preview/preview.module.css";
 
 /**
@@ -15,7 +15,7 @@ export function ExportProgress({ running }: { running: boolean }) {
     <>
       <div className={styles.exportOverlay} data-shown={text !== null} aria-hidden>
         <div className={styles.exportStatus}>
-          <Loader2 className="h-4 w-4 shrink-0 motion-safe:animate-spin" />
+          <Spinner />
           <span className={styles.exportStatusText}>{shownText}</span>
         </div>
       </div>

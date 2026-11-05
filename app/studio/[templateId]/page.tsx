@@ -5,25 +5,17 @@ import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
 import { StudioQueryProvider } from "@/src/studio/StudioQueryProvider";
-import { applySavedSettings } from "@/src/studio/savedSettings";
-import { withLink } from "@/src/studio/linkSettings";
+import { startingSettings } from "@/src/studio/linkSettings";
 import { parseLinkSettings } from "@/src/studio/parseLinkSettings";
 import { loadInitialGithubData } from "@/src/studio/initialGithubData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import {
-  parseSidebarCollapsedCookie,
-  SIDEBAR_COOKIE_NAME,
-  parseSettingsCookie,
-  parseUsernameCookie,
-  settingsCookieName,
-  USERNAME_COOKIE,
-  parsePreviewViewCookie,
-  PREVIEW_VIEW_COOKIE_NAME,
-  FORMAT_COOKIE_NAME,
-  parseFormatCookie,
-  parsePixelRatioCookie,
-  PIXEL_RATIO_COOKIE_NAME,
+  FORMAT_COOKIE,
+  PIXEL_RATIO_COOKIE,
+  PREVIEW_VIEW_COOKIE,
+  SIDEBAR_COOKIE,
+  type StudioCookie,
 } from "@/src/studio/studioCookies";
 
 export async function generateMetadata({
@@ -65,36 +57,25 @@ export default async function StudioPage({
     notFound();
   }
   const cookieStore = await cookies();
-  const savedSettings = parseSettingsCookie(cookieStore.get(settingsCookieName(templateId))?.value);
-  const savedUsername = parseUsernameCookie(cookieStore.get(USERNAME_COOKIE)?.value);
+  const readCookie = (name: string) => cookieStore.get(name)?.value;
+  const read = <T,>(cookie: StudioCookie<T>) => cookie.parse(readCookie(cookie.name));
   // A studio link's settings win over the saved ones (see linkSettings.ts).
   const link = parseLinkSettings(templateId, await searchParams);
-  const start = withLink({ settings: savedSettings, username: savedUsername }, link);
-  // The same settings the studio starts from, so the GitHub data matches what it shows.
-  const initialState = applySavedSettings(
-    { ...templateRegistry[templateId].initialState },
-    templateId,
-    start.settings,
-    start.username,
-  );
-  const initialGithubData = await loadInitialGithubData(templateId, initialState);
+  const start = startingSettings(templateId, readCookie, link);
+  // The settings the studio starts from, so the GitHub data matches what it shows.
+  const initialGithubData = await loadInitialGithubData(templateId, start.state);
   return (
     // The banner preview picks its colors in JavaScript, so the theme must be right on the server.
-    <ThemeProvider initialTheme={parseThemeCookie(cookieStore.get(THEME_COOKIE_NAME)?.value)}>
+    <ThemeProvider initialTheme={parseThemeCookie(readCookie(THEME_COOKIE_NAME))}>
       <StudioQueryProvider>
         <StudioShell
           key={templateId}
           templateId={templateId}
-          initialSidebarCollapsed={parseSidebarCollapsedCookie(
-            cookieStore.get(SIDEBAR_COOKIE_NAME)?.value,
-          )}
-          initialPixelRatio={parsePixelRatioCookie(cookieStore.get(PIXEL_RATIO_COOKIE_NAME)?.value)}
-          initialFormat={parseFormatCookie(cookieStore.get(FORMAT_COOKIE_NAME)?.value)}
-          initialPreviewView={parsePreviewViewCookie(
-            cookieStore.get(PREVIEW_VIEW_COOKIE_NAME)?.value,
-          )}
-          savedSettings={savedSettings}
-          savedUsername={savedUsername}
+          initialSidebarCollapsed={read(SIDEBAR_COOKIE)}
+          initialPixelRatio={read(PIXEL_RATIO_COOKIE)}
+          initialFormat={read(FORMAT_COOKIE)}
+          initialPreviewView={read(PREVIEW_VIEW_COOKIE)}
+          start={start}
           link={link}
           initialGithubData={initialGithubData}
         />

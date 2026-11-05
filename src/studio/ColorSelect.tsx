@@ -6,7 +6,7 @@ import { HexColorInput, HexColorPicker } from "react-colorful";
 import { colorValue, isCustomColor } from "@/src/banner/quoteStyle";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { FieldButton, OptionLabel } from "@/src/ui/Dropdown";
-import { FieldLabel } from "@/src/ui/FieldLabel";
+import { FieldWrapper } from "@/src/ui/FieldLabel";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import controls from "@/src/studio/controls.module.css";
 
@@ -58,14 +58,13 @@ export function ColorSelect({
 }) {
   const triggerId = useId();
   const panelId = useId();
-  const { open, setOpen, rootRef, toggleRef, onBlur } = useDisclosure();
+  const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const custom = isCustomColor(value) ? value : undefined;
   const named = options.find((option) => option.value === value);
   const shown = custom ?? colorValue(named?.value, uiTheme) ?? defaultColor;
 
   return (
-    <div className="space-y-1.5">
-      <FieldLabel htmlFor={triggerId}>{label}</FieldLabel>
+    <FieldWrapper label={label} htmlFor={triggerId}>
       <div ref={rootRef} onBlur={onBlur} className="relative">
         <FieldButton
           ref={toggleRef}
@@ -93,7 +92,7 @@ export function ColorSelect({
             id={panelId}
             role="group"
             aria-label={`${label} options`}
-            className={`popover absolute top-full right-0 left-0 z-50 -mt-px rounded-b-lg border-(--control-border) ${controls.colorPanel}`}
+            className={`popover popover-attached ${controls.colorPanel}`}
           >
             <div className={controls.swatches}>
               {options.map((option) => {
@@ -106,8 +105,7 @@ export function ColorSelect({
                     aria-pressed={selected}
                     onClick={() => {
                       onChange(option.value);
-                      setOpen(false);
-                      toggleRef.current?.focus();
+                      close();
                     }}
                     className={controls.swatch}
                     style={swatchStyle(colorValue(option.value, uiTheme) ?? defaultColor)}
@@ -142,6 +140,6 @@ export function ColorSelect({
           </div>
         ) : null}
       </div>
-    </div>
+    </FieldWrapper>
   );
 }

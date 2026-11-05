@@ -3,92 +3,29 @@
 import {
   type ComponentProps,
   type CSSProperties,
-  KeyboardEvent,
-  PropsWithChildren,
-  ReactNode,
+  type PropsWithChildren,
+  type ReactNode,
   useId,
-  useLayoutEffect,
-  useState,
 } from "react";
-import { Check, ChevronDown, Loader2 } from "lucide-react";
-import { FieldLabel, fieldLabelId } from "@/src/ui/FieldLabel";
-import { useDismiss } from "@/src/ui/useDismiss";
-
-const ROOT_ATTRIBUTE = "data-dropdown";
-
-function optionsIn(listId: string): HTMLElement[] {
-  const list = document.getElementById(listId);
-  return list ? Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')) : [];
-}
+import { Check, ChevronDown } from "lucide-react";
+import { FieldWrapper, fieldLabelId } from "@/src/ui/FieldLabel";
+import { Spinner } from "@/src/ui/Spinner";
+import { type Dropdown, DROPDOWN_ROOT_ATTRIBUTE, useDropdown } from "@/src/ui/useDropdown";
 
 /**
- * Open state, focus handling and keyboard support for a button-triggered listbox. The selected (or
- * first) option gets focus on open; choosing an option or pressing Escape closes the list and
- * returns focus to the trigger, while Tab and outside clicks close it and leave focus where it went.
- * The trigger's label toggles the list like the trigger. Elements are found by id, so nothing here
- * is a ref.
+ * The down arrow on a button that opens a list or panel; it turns over while that's open. While
+ * `busy` (something the button started is still running), a spinner takes its place.
  */
-export function useDropdown(triggerId: string) {
-  const listId = useId();
-  const [open, setOpen] = useState(false);
-
-  const close = () => {
-    setOpen(false);
-    document.getElementById(triggerId)?.focus();
-  };
-
-  // Before the first paint, so a list opens already scrolled to its selected option.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const options = optionsIn(listId);
-    const selected =
-      options.find((el) => el.getAttribute("aria-selected") === "true") ?? options[0];
-    selected?.focus();
-  }, [open, listId]);
-
-  useDismiss({
-    open,
-    // A press on the trigger's label isn't outside: the label passes its click on to the trigger,
-    // which closes the list, so closing here too would open it again.
-    isInside: (target) =>
-      target.closest(`[${ROOT_ATTRIBUTE}]`)?.getAttribute(ROOT_ATTRIBUTE) === listId ||
-      target.closest("label")?.htmlFor === triggerId,
-    onDismiss: (reason) => (reason === "escape" ? close() : setOpen(false)),
-  });
-
-  const onListKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const options = optionsIn(listId);
-    const current = options.indexOf(document.activeElement as HTMLElement);
-    const focusAt = (index: number) => {
-      e.preventDefault();
-      options[index]?.focus();
-    };
-    switch (e.key) {
-      case "ArrowDown":
-        focusAt(current < options.length - 1 ? current + 1 : 0);
-        break;
-      case "ArrowUp":
-        focusAt(current > 0 ? current - 1 : options.length - 1);
-        break;
-      case "Home":
-        focusAt(0);
-        break;
-      case "End":
-        focusAt(options.length - 1);
-        break;
-      case "Tab":
-        setOpen(false);
-        break;
-    }
-  };
-
-  return { open, setOpen, close, listId, triggerId, onListKeyDown };
-}
-
-type Dropdown = ReturnType<typeof useDropdown>;
-
-/** The down arrow on a button that opens a list or panel; it turns over while that's open. */
-export function DropdownChevron({ open, className = "" }: { open: boolean; className?: string }) {
+export function DropdownChevron({
+  open,
+  busy = false,
+  className = "",
+}: {
+  open: boolean;
+  busy?: boolean;
+  className?: string;
+}) {
+  if (busy) return <Spinner className={className} />;
   return (
     <ChevronDown
       className={`h-4 w-4 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none ${open ? "rotate-180" : ""} ${className}`}
@@ -104,7 +41,7 @@ export function DropdownRoot({
   children,
 }: PropsWithChildren<{ dropdown: Dropdown; className?: string }>) {
   return (
-    <div {...{ [ROOT_ATTRIBUTE]: dropdown.listId }} className={className}>
+    <div {...{ [DROPDOWN_ROOT_ATTRIBUTE]: dropdown.listId }} className={className}>
       {children}
     </div>
   );
@@ -135,11 +72,7 @@ export function FieldButton({
       <span id={`${id}-value`} className="min-w-0 flex-1 truncate">
         {children}
       </span>
-      {busy ? (
-        <Loader2 className="h-4 w-4 shrink-0 animate-spin self-center text-muted" aria-hidden />
-      ) : (
-        <DropdownChevron open={open} className="self-center text-muted" />
-      )}
+      <DropdownChevron open={open} busy={busy} className="self-center text-muted" />
     </button>
   );
 }
@@ -191,17 +124,17 @@ export function DropdownList({
 }>) {
   const { open, listId, onListKeyDown } = dropdown;
   if (!open) return null;
-  // The frame is .popover (app/globals.css); an attached list takes the trigger's border color.
+  // The frame is .popover, and .popover-attached joins it to the trigger (app/globals.css).
   const placement = floating
-    ? "left-0 mt-1.5 w-max rounded-lg"
-    : "right-0 left-0 -mt-px rounded-b-lg border-(--control-border)";
+    ? "absolute top-full left-0 z-50 mt-1.5 w-max rounded-lg"
+    : "popover-attached";
   return (
     <div
       id={listId}
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className={`popover absolute top-full z-50 max-h-72 overflow-y-auto p-1 ${placement}`}
+      className={`popover max-h-72 overflow-y-auto p-1 ${placement}`}
     >
       {children}
     </div>
@@ -221,7 +154,7 @@ export function DropdownOption({
       role="option"
       tabIndex={-1}
       aria-selected={selected}
-      className="flex w-full items-center gap-2 rounded-md px-2.5 py-[7px] text-left text-sm font-medium text-text hover:bg-surface-2 focus:bg-surface-2 focus:outline-hidden"
+      className="flex w-full items-center gap-2 rounded-md px-2.5 py-[7px] text-left text-sm font-medium text-text transition-colors duration-(--hover-fade) hover:bg-surface-2 focus:bg-surface-2 focus:outline-hidden"
       onClick={onSelect}
     >
       {selected ? (
@@ -307,10 +240,7 @@ export function Select({
       : [{ label: value, value }, ...options];
   const current = shown.find((option) => option.value === value);
   return (
-    <div className="space-y-1.5">
-      <FieldLabel htmlFor={id} end={labelAction}>
-        {label}
-      </FieldLabel>
+    <FieldWrapper label={label} htmlFor={id} end={labelAction}>
       <DropdownRoot dropdown={dropdown} className="relative">
         <DropdownTrigger dropdown={dropdown} disabled={disabled}>
           {current ? <OptionLabel {...current} /> : placeholder}
@@ -330,6 +260,6 @@ export function Select({
           ))}
         </DropdownList>
       </DropdownRoot>
-    </div>
+    </FieldWrapper>
   );
 }

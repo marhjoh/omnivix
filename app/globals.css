@@ -11,6 +11,9 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-fill: var(--accent-fill);
   --color-danger: var(--danger);
+  --color-focus-ring: var(--focus-ring);
+  --color-divider: var(--divider);
+  --color-divider-strong: var(--divider-strong);
 }
 
 /* App chrome tokens: THEME_INIT_SCRIPT (src/theme/theme.ts) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
@@ -83,7 +86,7 @@ body {
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium;
     cursor: pointer;
-    transition-property: background-color, border-color, box-shadow, color;
+    transition-property: var(--fade-colors);
     transition-duration: var(--hover-fade);
   }
 
@@ -113,7 +116,7 @@ body {
     color: #fff;
   }
 
-  .btn-primary:hover:not(:disabled) {
+  .btn-primary:where(:hover:not(:disabled)) {
     background: var(--accent-fill-hover);
     border-color: var(--accent-fill-hover);
     box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 25%, transparent);
@@ -126,7 +129,7 @@ body {
   }
 
   /* Hover: a faint blue border, like the fields and the studio's tiles. */
-  .btn-secondary:hover:not(:disabled) {
+  .btn-secondary:where(:hover:not(:disabled)) {
     border-color: var(--control-border-hover);
   }
 
@@ -136,19 +139,109 @@ body {
     color: var(--muted);
   }
 
-  .btn-ghost:hover:not(:disabled) {
+  .btn-ghost:where(:hover:not(:disabled)) {
     color: var(--text);
     background: var(--surface);
   }
 }
 
 @layer components {
-  /* The frame of floating popups: the dropdown lists (src/ui/Dropdown.tsx) and the studio's
-     export options panel. Utilities still override it, such as an attached list's border. */
+  /* The frame of floating popups: the dropdown lists (src/ui/Dropdown.tsx), the color panel and
+     the studio's export options panel. Utilities still override it. */
   .popover {
     border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
     background: var(--surface);
     box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Joined under a field, sharing its bottom border, so the two read as one frame: a field's list
+     or panel (.popover-attached), or the image picker's frame for the chosen image's controls. */
+  .popover-attached,
+  .field-attached {
+    margin-top: -1px;
+    border-color: var(--control-border);
+    border-end-start-radius: 0.5rem;
+    border-end-end-radius: 0.5rem;
+  }
+
+  /* A .popover joined under its field, as wide as the field, over what's below it. */
+  .popover-attached {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 50;
+  }
+
+  .field-attached {
+    border-width: 1px;
+    border-style: solid;
+    background: var(--surface);
+  }
+
+  /* The brand gradient on big type: the landing page's hero name and section headings, the error
+     pages' titles and the studio's section titles. */
+  .gradient-text {
+    color: transparent;
+    background-image: linear-gradient(
+      118deg,
+      var(--text) 8%,
+      color-mix(in oklab, var(--text) 55%, var(--accent)) 42%,
+      var(--accent-hover) 92%
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* Room below the line box, so the gradient also paints descenders (the p in Templates). */
+    padding-bottom: 0.12em;
+  }
+
+  /* Section headings in the brand gradient (with .gradient-text) that wipe in: on the landing page
+     as they scroll into view (where animation-timeline works), on the error pages on load, as those
+     don't scroll, after their calendar. Without motion they show finished. */
+  .section-heading,
+  .heading-on-load {
+    display: block;
+    font-size: clamp(2.75rem, 1.4rem + 6vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+    -webkit-text-stroke: 1.5px transparent;
+    paint-order: stroke fill;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .section-heading {
+        animation: heading-wipe linear both;
+        animation-timeline: view();
+        animation-range: entry 30% cover 40%;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .heading-on-load {
+      animation: heading-wipe 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s both;
+    }
+  }
+}
+
+/* A .gradient-text heading wiping in: the gradient grows from the left while an outline fades. */
+@keyframes heading-wipe {
+  from {
+    background-size: 0% 100%;
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  }
+
+  70% {
+    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 40%, transparent);
+  }
+
+  to {
+    background-size: 100% 100%;
+    -webkit-text-stroke-color: transparent;
   }
 }
 
@@ -159,8 +252,15 @@ body {
   /* Text and icons of disabled controls, which keep their frame instead of fading out. */
   --disabled-text: color-mix(in oklab, var(--muted) 60%, var(--bg));
   /* How long a control's colors fade: on hover and focus, and when it's selected or disabled.
-     Each rule's `transition-property` lists which colors. */
+     Each rule's `transition-property` lists which colors; --fade-colors is all of them. */
   --hover-fade: 0.15s;
+  --fade-colors: background-color, border-color, box-shadow, color;
+  /* The focus outline of tiles, rows and links (Tailwind: ring-focus-ring). */
+  --focus-ring: color-mix(in oklab, var(--accent) 45%, transparent);
+  /* Rules between areas (the studio's header and sidebar, the landing header), and the stronger
+     ones under titles and between groups (Tailwind: border-divider, border-divider-strong). */
+  --divider: color-mix(in oklab, var(--border) 30%, transparent);
+  --divider-strong: color-mix(in oklab, var(--border) 60%, transparent);
 }
 
 /*
@@ -189,7 +289,7 @@ body {
     font-size: 0.875rem;
     line-height: 1.25rem;
     color: var(--text);
-    transition-property: background-color, border-color, box-shadow, color;
+    transition-property: var(--fade-colors);
     transition-duration: var(--hover-fade);
   }
 

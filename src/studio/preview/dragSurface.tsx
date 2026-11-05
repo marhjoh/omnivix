@@ -21,7 +21,7 @@ import type { Rect } from "@/src/lib/sizes";
  * the banner reads clean otherwise. Forced colors would show the transparent frame all the time.
  */
 export const DRAG_FRAME_CLASS =
-  "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-150 hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
+  "forced-color-adjust-none group absolute cursor-grab touch-none border-2 border-dashed border-transparent transition-colors duration-(--hover-fade) hover:border-accent focus-visible:border-accent focus-visible:outline-none active:cursor-grabbing active:border-accent";
 
 /** An item snaps to a guide within this many screen pixels. */
 export const SNAP_DISTANCE = 6;
@@ -82,7 +82,7 @@ export function SnapGuide({ axis, at }: { axis: "x" | "y"; at: number }) {
 /** Says what dragging moves, in the frame's top left corner. */
 export function DragBadge({ children }: PropsWithChildren) {
   return (
-    <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent-fill px-2 py-0.5 text-[0.6875rem] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
+    <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-accent-fill px-2 py-0.5 text-[0.6875rem] font-medium whitespace-nowrap text-white opacity-0 transition-opacity duration-(--hover-fade) group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
       {children}
     </span>
   );

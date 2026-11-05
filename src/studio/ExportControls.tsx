@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Copy, Download, Link, Loader2 } from "lucide-react";
+import { Copy, Download, Link } from "lucide-react";
 import {
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
@@ -14,45 +14,20 @@ import {
   exportPixelRatios,
   type BannerFormat,
 } from "@/src/lib/sizes";
-import { LabeledGroup } from "@/src/ui/FieldLabel";
 import { DropdownChevron } from "@/src/ui/Dropdown";
+import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
+import { TileGroup } from "@/src/studio/TileGroup";
 import type { ExportKind } from "@/src/studio/useBannerExport";
 import controls from "@/src/studio/controls.module.css";
 
-/** One choice as a row of tiles: the value, and a muted hint below it. */
-function ChoiceTiles<T extends string | number>({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: ReadonlyArray<{ value: T; label: string; hint: string; disabled?: boolean }>;
-  value: T;
-  onChange: (value: T) => void;
-}) {
+/** A tile's value, and a muted hint below it. */
+function ChoiceTile({ label, hint }: { label: string; hint: string }) {
   return (
-    <LabeledGroup label={label}>
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
-      >
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={option.value === value}
-            disabled={option.disabled}
-            onClick={() => onChange(option.value)}
-            className={`${controls.tile} ${controls.panelTile}`}
-          >
-            <span className="font-semibold">{option.label}</span>
-            <span className={controls.tileHint}>{option.hint}</span>
-          </button>
-        ))}
-      </div>
-    </LabeledGroup>
+    <>
+      <span className="font-semibold">{label}</span>
+      <span className={controls.tileHint}>{hint}</span>
+    </>
   );
 }
 
@@ -87,7 +62,7 @@ export function ExportControls({
   /** The chosen banner format: its size at 1×, for the pixel sizes, and what it takes. */
   bannerFormat: BannerFormat;
 }) {
-  const { open, setOpen, rootRef, toggleRef, onBlur } = useDisclosure();
+  const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
   const shownFormat = exportFormatFor(bannerFormat, format);
   const formatLabel = EXPORT_FORMAT_DETAILS[shownFormat].label;
@@ -112,11 +87,7 @@ export function ExportControls({
           aria-busy={isDownloading}
           className={controls.splitMain}
         >
-          {isDownloading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
+          {isDownloading ? <Spinner /> : <Download className="h-4 w-4" />}
           {/* Both labels in one cell, so the button keeps one width while exporting. */}
           <span className="hidden justify-items-center sm:grid" aria-hidden>
             <span className={`col-start-1 row-start-1 ${isDownloading ? "invisible" : ""}`}>
@@ -144,11 +115,7 @@ export function ExportControls({
           className={controls.splitToggle}
         >
           {/* The panel closes when Copy image starts, so the toggle shows that it's copying. */}
-          {isCopying ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <DropdownChevron open={open} />
-          )}
+          <DropdownChevron open={open} busy={isCopying} />
         </button>
       </div>
       {open && (
@@ -162,8 +129,10 @@ export function ExportControls({
         >
           <div className="space-y-4">
             {/* Resolution applies to Copy and Download; format only to Download (Copy is a PNG). */}
-            <ChoiceTiles
+            <TileGroup
               label="Resolution"
+              columns={EXPORT_PIXEL_RATIOS.length}
+              tileClassName={controls.panelTile}
               options={EXPORT_PIXEL_RATIOS.map((ratio) => ({
                 value: ratio,
                 label: `${ratio}×`,
@@ -174,9 +143,13 @@ export function ExportControls({
               }))}
               value={shownPixelRatio}
               onChange={onPixelRatioChange}
-            />
-            <ChoiceTiles
+            >
+              {(option) => <ChoiceTile {...option} />}
+            </TileGroup>
+            <TileGroup
               label="Download format"
+              columns={EXPORT_FORMATS.length}
+              tileClassName={controls.panelTile}
               options={EXPORT_FORMATS.map((option) => ({
                 value: option,
                 label: EXPORT_FORMAT_DETAILS[option].label,
@@ -186,15 +159,15 @@ export function ExportControls({
               }))}
               value={shownFormat}
               onChange={onFormatChange}
-            />
+            >
+              {(option) => <ChoiceTile {...option} />}
+            </TileGroup>
           </div>
           <div className={controls.panelActions}>
             <button
               type="button"
               onClick={() => {
-                // The panel closes, so focus goes back to the toggle instead of the page start.
-                toggleRef.current?.focus();
-                setOpen(false);
+                close();
                 onCopy();
               }}
               disabled={exportBlocked}

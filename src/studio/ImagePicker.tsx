@@ -1,24 +1,23 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { ImagePlus, Link2 } from "lucide-react";
 import { groupPresets } from "@/src/backgrounds/presets";
-import { useImageStatus } from "@/src/studio/preview/useImageStatus";
-import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
-import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
+import { useDelayedFlag } from "@/src/ui/useDelayedFlag";
+import { isDataUrl } from "@/src/lib/imageSource";
 import type { ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { normalizeImageFile, uploadAccept } from "@/src/studio/imageUpload";
+import { HTTPS, useImageLinkField } from "@/src/studio/useImageLinkField";
 import { truncateMiddle } from "@/src/lib/text";
-import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import {
   DropdownGroupLabel,
   DropdownRoot,
   DropdownList,
   DropdownOption,
   DropdownTrigger,
-  useDropdown,
 } from "@/src/ui/Dropdown";
-import { FieldLabel } from "@/src/ui/FieldLabel";
+import { useDropdown } from "@/src/ui/useDropdown";
+import { FieldWrapper } from "@/src/ui/FieldLabel";
 import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
 /** A built-in image, listed in the menu under its group. */
@@ -30,17 +29,6 @@ interface ImagePreset {
 }
 
 const TRIGGER_LABEL_MAX = 44;
-
-/** How long the link field must be idle before a link that can't be used is reported. */
-const LINK_SETTLE_MS = 1000;
-
-/** The link field starts with this, fixed: the export only loads https images. */
-const HTTPS = "https://";
-
-/** What the link field holds after its fixed "https://": a pasted link loses its scheme. */
-function withoutScheme(link: string): string {
-  return link.replace(/^\s*https?:\/\//i, "");
-}
 
 function triggerLabel(
   value: string | undefined,
@@ -95,8 +83,6 @@ export function ImagePicker({
   const dropdown = useDropdown(id);
   const groupedPresets = groupPresets(presets);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const urlInputRef = useRef<HTMLInputElement>(null);
-  const [urlEditorOpen, setUrlEditorOpen] = useState(false);
   /** The upload's file name, when this picker made it (the parent only has the data URL). */
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
@@ -109,55 +95,15 @@ export function ImagePicker({
   const [processingFile, setProcessingFile] = useState<File | null>(null);
   /** The latest chosen file, so a slower earlier upload can't replace it. */
   const latestUploadRef = useRef<File | null>(null);
-  /** What's typed after "https://"; `undefined` shows the current link (`value`) instead. */
-  const [urlDraft, setUrlDraft] = useState<string | undefined>(undefined);
-  /** The link once the user stops typing (idle, Enter or leaving the field); only it's reported. */
-  const [settledLink, setSettledLink] = useState<string | undefined>(undefined);
-  /** The link a toast is showing for, so each link is reported once and its toast can be hidden. */
-  const reportedRef = useRef<{ link: string; toastId: number } | null>(null);
-
-  /** The current image when it's a link. */
-  const linkValue = typeof value === "string" && isHttpImageUrl(value) ? value.trim() : undefined;
-  const showUrlField = urlEditorOpen || linkValue !== undefined;
-  const joined = showUrlField || Boolean(children);
-  const linkStatus = useImageStatus(linkValue);
-  // A link the browser can't load is left out of the preview (see StudioShell) and reported once
-  // the user has stopped typing it.
-  const linkProblem =
-    settledLink && settledLink === linkValue && linkStatus === "failed"
-      ? "Couldn't load this image link."
-      : null;
-
-  // A settled link that isn't the image yet. It becomes the image once the browser has loaded it
-  // or it has failed; until then the banner keeps the image it has, so typing never makes it
-  // flicker.
-  const pendingLink = settledLink && settledLink !== linkValue ? settledLink : undefined;
-  const pendingStatus = useImageStatus(pendingLink);
-  useEffect(() => {
-    if (pendingLink && (pendingStatus === "loaded" || pendingStatus === "failed")) {
-      onChange(pendingLink);
-    }
-  }, [pendingLink, pendingStatus, onChange]);
-
-  useEffect(() => {
-    const reported = reportedRef.current;
-    // The reported link was changed, or works now: its toast is out of date.
-    if (reported && (reported.link !== settledLink || !linkProblem)) {
-      onErrorResolved(reported.toastId);
-      reportedRef.current = null;
-    }
-    if (linkProblem && settledLink && !reportedRef.current) {
-      reportedRef.current = { link: settledLink, toastId: onError(linkProblem) };
-    }
-  }, [linkProblem, settledLink, onError, onErrorResolved]);
-
-  const urlInputValue = urlDraft ?? (linkValue ? withoutScheme(linkValue) : "");
-
-  useEffect(() => {
-    if (urlEditorOpen && urlInputRef.current) {
-      requestAnimationFrame(() => urlInputRef.current?.focus());
-    }
-  }, [urlEditorOpen]);
+  const linkInputRef = useRef<HTMLInputElement>(null);
+  const link = useImageLinkField({
+    value,
+    onChange,
+    onError,
+    onErrorResolved,
+    inputRef: linkInputRef,
+  });
+  const joined = link.shown || Boolean(children);
 
   // The spinner can outlast the upload (useDelayedFlag's minimum show time); the label then
   // already shows the result.
@@ -168,54 +114,6 @@ export function ImagePicker({
   const uploadDisplayName =
     uploadSession && uploadSession.dataUrl === value ? uploadSession.fileName : null;
 
-  /**
-   * The user has stopped typing: a link is checked, and an emptied field removes the image if that
-   * was a link. A preset or upload stays when the field is opened and left empty.
-   */
-  const settle = (draft: string) => {
-    // Cleaned again once settled: a pasted "https:// x" or "https://https://x" still works.
-    const rest = withoutScheme(draft.trim());
-    const link = rest ? HTTPS + rest : "";
-    setSettledLink(link);
-    if (!link && linkValue) onChange(undefined);
-  };
-
-  const debouncedSettle = useDebouncedCallback(settle, LINK_SETTLE_MS);
-
-  const onUrlChange = (raw: string) => {
-    const draft = withoutScheme(raw);
-    setUrlDraft(draft);
-    debouncedSettle.schedule(draft);
-  };
-
-  /**
-   * The × button: the link and the image go, but the field stays open, ready for another link.
-   * Choosing something else in the menu closes it.
-   */
-  const removeLink = () => {
-    debouncedSettle.cancel();
-    setUrlDraft("");
-    setSettledLink(undefined);
-    onChange(undefined);
-  };
-
-  /**
-   * Enter or leaving the field: check the link now, without waiting for the pause. Leaving never
-   * closes the field (switching windows to copy a link would); another choice in the menu does.
-   */
-  const settleUrl = () => {
-    if (urlDraft === undefined) return;
-    debouncedSettle.cancel();
-    settle(urlDraft);
-  };
-
-  const leaveLinkEditor = () => {
-    debouncedSettle.cancel();
-    setSettledLink(undefined);
-    setUrlDraft(undefined);
-    setUrlEditorOpen(false);
-  };
-
   /** Another choice replaces an upload still being processed. */
   const cancelUpload = () => {
     latestUploadRef.current = null;
@@ -225,7 +123,7 @@ export function ImagePicker({
   /** A preset, or no image (`undefined`). */
   const select = (src: string | undefined) => {
     cancelUpload();
-    leaveLinkEditor();
+    link.close();
     setUploadSession(null);
     onChange(src);
     dropdown.close();
@@ -233,29 +131,18 @@ export function ImagePicker({
 
   const selectEnterUrl = () => {
     cancelUpload();
-    setUrlEditorOpen(true);
+    link.open();
     dropdown.close();
-    if (linkValue) {
-      setUrlDraft(undefined);
-      return;
-    }
-    // Start over with an empty field.
-    setUrlDraft("");
-    setSettledLink(undefined);
   };
 
   const selectUpload = () => {
-    leaveLinkEditor();
+    link.close();
     fileInputRef.current?.click();
     dropdown.close();
   };
 
   return (
-    <div className="space-y-1.5">
-      <FieldLabel htmlFor={id} end={labelAction}>
-        {label}
-      </FieldLabel>
-
+    <FieldWrapper label={label} htmlFor={id} end={labelAction}>
       <div>
         <DropdownRoot dropdown={dropdown} className="relative">
           <DropdownTrigger dropdown={dropdown} joinedBelow={joined} busy={showUploading}>
@@ -287,7 +174,7 @@ export function ImagePicker({
             <div className="my-1 border-t border-border" />
 
             <DropdownOption
-              selected={linkValue !== undefined}
+              selected={link.linkValue !== undefined}
               icon={<Link2 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
               onSelect={selectEnterUrl}
             >
@@ -332,29 +219,28 @@ export function ImagePicker({
         {joined ? (
           // Shares the trigger's bottom border, so the picker, its link field and the image's
           // controls read as one frame. The open list covers it.
-          <div className="-mt-px space-y-3 rounded-b-lg border border-(--control-border) bg-surface p-3">
-            {showUrlField ? (
-              <div className="space-y-1.5">
-                <FieldLabel htmlFor={`${id}-url`}>Image URL</FieldLabel>
+          <div className="field-attached space-y-3 p-3">
+            {link.shown ? (
+              <FieldWrapper label="Image URL" htmlFor={`${id}-url`}>
                 <PrefixedInput
-                  ref={urlInputRef}
+                  ref={linkInputRef}
                   id={`${id}-url`}
                   prefix={HTTPS}
                   inputMode="url"
                   autoComplete="url"
-                  value={urlInputValue}
-                  onChange={(e) => onUrlChange(e.target.value)}
-                  onBlur={settleUrl}
-                  onKeyDown={(e) => e.key === "Enter" && settleUrl()}
+                  value={link.inputProps.value}
+                  onChange={(e) => link.inputProps.onChange(e.target.value)}
+                  onBlur={link.inputProps.onBlur}
+                  onKeyDown={(e) => e.key === "Enter" && link.inputProps.onEnter()}
                   clearLabel="Remove image link"
-                  onClear={removeLink}
+                  onClear={link.inputProps.onClear}
                 />
-              </div>
+              </FieldWrapper>
             ) : null}
             {children}
           </div>
         ) : null}
       </div>
-    </div>
+    </FieldWrapper>
   );
 }

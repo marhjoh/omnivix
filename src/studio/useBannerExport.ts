@@ -42,7 +42,7 @@ export function useBannerExport({
   /** Everything but the format, which Download chooses and Copy can't (the clipboard takes PNG). */
   request: Omit<ExportRequest, "format">;
   format: ExportFormat;
-  /** Nothing to export yet, or a problem with it (see isExportBlocked). */
+  /** Nothing to export yet, or a problem with it (see StudioShell's exportBlocked). */
   blocked: boolean;
   showError: (message: string) => void;
   showSuccess: (message: string) => void;

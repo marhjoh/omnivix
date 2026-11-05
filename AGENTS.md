@@ -47,7 +47,7 @@ The studio preview and the export render the same `BannerRenderer`. `POST /api/e
 
 ## Conventions
 
-- Derive values during render. Don't copy props into state with `useEffect` + `setState`, and don't call `setState` synchronously in an effect (see `src/studio/useDelayedFlag.ts`). Data from our API routes goes through TanStack Query (`src/studio/useApiQuery.ts`)..
+- Derive values during render. Don't copy props into state with `useEffect` + `setState`, and don't call `setState` synchronously in an effect (see `src/ui/useDelayedFlag.ts`). Data from our API routes goes through TanStack Query (`src/studio/useApiQuery.ts`)..
 - When a feature is removed or changed, remove it completely: no migration or fallback code for old cookies, links or API values.
 - `@sparticuz/chromium` must match the Chromium major that `playwright` targets (`playwright-core/browsers.json`); upgrade both in one PR. Files the export loads at runtime need an `outputFileTracingIncludes` entry in `next.config.ts`.
 - New template: follow the steps in [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-template).

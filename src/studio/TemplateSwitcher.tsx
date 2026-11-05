@@ -2,17 +2,11 @@
 
 import { useId, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { getTemplates, templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
-import {
-  DropdownChevron,
-  DropdownList,
-  DropdownOption,
-  DropdownRoot,
-  useDropdown,
-} from "@/src/ui/Dropdown";
+import { DropdownChevron, DropdownList, DropdownOption, DropdownRoot } from "@/src/ui/Dropdown";
+import { useDropdown } from "@/src/ui/useDropdown";
 import { highlightFocusClass } from "@/src/ui/classNames";
 
 /** "GitHub Banner" → "GitHub": the header has room for the short names at every width. */
@@ -45,11 +39,7 @@ export function TemplateSwitcher({ templateId }: { templateId: TemplateId }) {
       >
         {/* Less right padding, as the chevron has its own blank space. Truncates on narrow phones. */}
         <span className="truncate">{shortTitle(title)}</span>
-        {switching ? (
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" aria-hidden />
-        ) : (
-          <DropdownChevron open={open} className="text-muted" />
-        )}
+        <DropdownChevron open={open} busy={switching} className="text-muted" />
       </button>
       <DropdownList dropdown={dropdown} label="Templates" floating>
         {templates.map(({ meta }) => (
