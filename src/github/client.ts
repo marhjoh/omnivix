@@ -7,18 +7,12 @@ import type {
   RepoLists,
   RepoNormalized,
 } from "@/src/github/normalize";
-import { contributionRange, isContributionYear } from "@/src/lib/utcContributionRange";
+import { contributionRange } from "@/src/github/contributionRange";
+import { isContributionYear } from "@/src/lib/contributionYear";
+import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
 import type { GithubDataKind } from "@/src/types/template";
 import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
-
-/**
- * TTL: latest/current year data changes within the day. Historical years are stable. The API
- * routes also send them as `s-maxage`, so Vercel's CDN keeps responses as long as the server does.
- */
-// The landing FAQ (src/landing/landingContent.ts) states these durations; update it if they change.
-export const TTL_SHORT = 1000 * 60 * 3; // 3 min
-const TTL_LONG = 1000 * 60 * 60 * 6; // 6 hours
 
 /** Entries each cache keeps at most; the oldest are dropped first. */
 const CACHE_CAPACITY = 500;
@@ -26,12 +20,6 @@ const CACHE_CAPACITY = 500;
 /** Repositories are listed 100 per page; this caps the picker at 1,000 of the most recently updated. */
 const REPO_PAGE_SIZE = 100;
 const MAX_REPO_PAGES = 10;
-
-/** How long a year's contributions are cached: past years are stable, the current one isn't. */
-export function contributionsTtlMs(year: string): number {
-  const isHistorical = year !== "latest" && Number(year) < new Date().getUTCFullYear();
-  return isHistorical ? TTL_LONG : TTL_SHORT;
-}
 
 /**
  * A cache for one kind of GitHub data. Concurrent requests for a key share one GitHub call;
@@ -121,8 +109,8 @@ const ContributionCalendar = Schema.Struct({
 });
 
 /**
- * Keys are `login year from to`. The range is in the key, so "latest" (which moves every day) gets
- * a new key each day, and a lookup always asks for exactly the range its key names.
+ * Keys are `login year from to`. The range is in the key, so `LATEST_YEAR` (which moves every day)
+ * gets a new key each day, and a lookup always asks for exactly the range its key names.
  */
 const contributions = githubCache(
   (key) => {
@@ -178,7 +166,7 @@ const contributions = githubCache(
   (key) => contributionsTtlMs(key.split(" ")[1]),
 );
 
-/** Contributions for a calendar year, or for the last 365 days when `year` is "latest". */
+/** Contributions for a calendar year, or for the last 365 days when `year` is `LATEST_YEAR`. */
 export function getContributions(
   username: string,
   year: string,

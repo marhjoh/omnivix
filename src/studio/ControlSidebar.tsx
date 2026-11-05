@@ -40,17 +40,15 @@ import {
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
 import { THEME_PRESETS } from "@/src/types/theme";
-import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { MAX_REPOS, selectedReposOf } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
 import controls from "@/src/studio/controls.module.css";
 import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
-import { contributionYear } from "@/src/studio/githubUrls";
+import { contributionYear, currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
-
-const currentYear = new Date().getFullYear();
 
 /** How long text fields wait after the last keystroke before updating the banner. */
 const INPUT_DEBOUNCE_MS = 400;
@@ -314,7 +312,7 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
       {...textProps(field, ctx)}
       value={contributionYear(ctx.state.year)}
       options={[
-        { value: "latest", label: "Last 365 days" },
+        { value: LATEST_YEAR, label: "Last 365 days" },
         ...ctx.years.map((year) => ({ value: year, label: year })),
       ]}
     />
@@ -437,7 +435,7 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
       error={repoCatalog.error}
       retryAt={repoCatalog.retryAt}
       onRetry={repoCatalog.retry}
-      valueCsv={String(state.selectedRepos ?? "")}
+      valueCsv={selectedReposOf(state)}
       maxPick={MAX_REPOS}
       onChange={(csv) => onChange("selectedRepos", csv)}
     />
@@ -483,14 +481,15 @@ export function ControlSidebar({
   profile?: { username: string; onChangeUsername: () => void };
 }) {
   const { theme: uiTheme } = useTheme();
-  const startYear = accountCreatedYear ?? currentYear - 9;
+  const thisYear = currentYear();
+  const startYear = accountCreatedYear ?? thisYear - 9;
   const ctx: FieldContext = {
     schema,
     state,
     onChange,
     disabledFields,
     uiTheme,
-    years: Array.from({ length: currentYear - startYear + 1 }, (_, i) => String(currentYear - i)),
+    years: Array.from({ length: thisYear - startYear + 1 }, (_, i) => String(thisYear - i)),
     repoCatalog,
     background: adjustableBackground,
     onError,

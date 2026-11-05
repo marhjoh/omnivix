@@ -1,4 +1,4 @@
-import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
+import { MAX_REPOS, parseRepoSelection, selectedReposOf } from "@/src/lib/repoSelection";
 import { normalizeBannerSize } from "@/src/lib/sizes";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSize, TemplateId } from "@/src/types/template";
@@ -95,7 +95,7 @@ export function clampSelectedRepos(
 ): Record<string, unknown> {
   if (!templateRegistry[templateId].meta.githubData.includes("repos")) return state;
   if (state.mode !== "selected") return state;
-  const parts = parseRepoSelection(String(state.selectedRepos ?? ""));
+  const parts = parseRepoSelection(selectedReposOf(state));
   if (parts.length <= MAX_REPOS) return state;
   return { ...state, selectedRepos: parts.slice(0, MAX_REPOS).join(", ") };
 }

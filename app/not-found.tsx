@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTemplates } from "@/src/templates/registry";
+import { studioPath } from "@/src/lib/site";
 import { ErrorScreen } from "@/src/error-pages/ErrorScreen";
 import { LazySiteShell } from "@/src/landing/LazySiteShell";
 
@@ -21,7 +22,7 @@ export default function NotFound() {
             <Link href="/" className="btn-primary">
               Back to home
             </Link>
-            <Link href={`/studio/${getTemplates()[0].meta.id}`} className="btn-secondary">
+            <Link href={studioPath(getTemplates()[0].meta.id)} className="btn-secondary">
               Open the studio
             </Link>
           </>

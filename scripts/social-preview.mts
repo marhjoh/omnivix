@@ -4,6 +4,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { OG_SIZE, renderSiteOgImage } from "@/src/og/ogImage";
+import { kb } from "./shared.mjs";
 
 const outPath = join(process.cwd(), "docs/images/social-preview.jpg");
 
@@ -12,4 +13,4 @@ const image = Buffer.from(await response.arrayBuffer());
 await writeFile(outPath, image);
 
 const { width, height } = OG_SIZE;
-console.log(`Wrote ${outPath} (${width}×${height}, ${Math.round(image.length / 1024)} KB)`);
+console.log(`Wrote ${outPath} (${width}×${height}, ${kb(image.length)})`);

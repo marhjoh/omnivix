@@ -4,6 +4,11 @@ export function listText(items: readonly string[], conjunction: "or" | "and" = "
   return `${items.slice(0, -1).join(", ")} ${conjunction} ${items.at(-1)}`;
 }
 
+/** "12 MB": a byte count in binary megabytes, as file size limits are written. */
+export function megabytes(bytes: number): string {
+  return `${bytes / (1024 * 1024)} MB`;
+}
+
 /** `text` cut to `maxChars` with "…" in the middle, keeping its start and end. */
 export function truncateMiddle(text: string, maxChars: number): string {
   if (text.length <= maxChars) return text;

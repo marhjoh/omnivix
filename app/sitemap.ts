@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/src/lib/site";
-import { templateRegistry } from "@/src/templates/registry";
+import { getSiteUrl, studioPath } from "@/src/lib/site";
+import { TEMPLATE_IDS } from "@/src/types/template";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
   return [
     { url: siteUrl.toString(), changeFrequency: "monthly", priority: 1 },
-    ...Object.keys(templateRegistry).map((templateId) => ({
-      url: new URL(`/studio/${templateId}`, siteUrl).toString(),
+    ...TEMPLATE_IDS.map((templateId) => ({
+      url: new URL(studioPath(templateId), siteUrl).toString(),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),

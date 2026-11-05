@@ -1,3 +1,5 @@
+import type { TemplateId } from "@/src/types/template";
+
 /** Site-wide name, copy and URL used for metadata and link previews. */
 export const SITE_NAME = "Omnivix";
 
@@ -34,6 +36,11 @@ export function getSiteUrl(): URL {
     return new URL(`https://${productionHost}`);
   }
   return new URL(`http://localhost:${process.env.PORT ?? 3000}`);
+}
+
+/** The studio page for a template, e.g. `/studio/github-banner`. */
+export function studioPath(templateId: TemplateId): string {
+  return `/studio/${templateId}`;
 }
 
 /** Shared outbound links for attribution and support (single source of truth). */

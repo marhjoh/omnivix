@@ -10,6 +10,7 @@ import {
   PREVIEW_PHOTO_WIDTHS,
   previewPhotoPath,
 } from "@/src/backgrounds/presets";
+import { kb } from "./shared.mjs";
 
 const WIDTH = 4800;
 /**
@@ -47,13 +48,13 @@ for (const preset of photos) {
     .toFile(outPath);
 
   const { size } = await stat(outPath);
-  console.log(`Wrote ${outPath} (${Math.round(size / 1024)} KB)`);
+  console.log(`Wrote ${outPath} (${kb(size)})`);
 
   // Smaller copies for the studio preview, from the full-size photo.
   for (const previewWidth of PREVIEW_PHOTO_WIDTHS) {
     const previewPath = join(process.cwd(), "public", previewPhotoPath(preset.src, previewWidth));
     await sharp(outPath).resize(previewWidth).avif({ quality: QUALITY }).toFile(previewPath);
     const { size: previewSize } = await stat(previewPath);
-    console.log(`Wrote ${previewPath} (${Math.round(previewSize / 1024)} KB)`);
+    console.log(`Wrote ${previewPath} (${kb(previewSize)})`);
   }
 }

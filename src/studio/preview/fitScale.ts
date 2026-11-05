@@ -1,4 +1,5 @@
 import { fitScale as contentFitScale } from "@/src/banner/fit";
+import { clamp } from "@/src/lib/math";
 
 /**
  * Scale that fits a banner of `content` size inside `available` space without upscaling.
@@ -9,7 +10,7 @@ export function fitScale(
   available: { width: number; height: number },
   content: { width: number; height: number },
 ): number {
-  return Math.max(Math.min(contentFitScale(available, content), 1), 0);
+  return clamp(contentFitScale(available, content), 0, 1);
 }
 
 /**

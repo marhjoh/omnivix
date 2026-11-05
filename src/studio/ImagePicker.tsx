@@ -6,7 +6,7 @@ import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
-import { normalizeImageFile, type ImageUploadPolicy } from "@/src/lib/imageUpload";
+import { normalizeImageFile, uploadAccept, type ImageUploadPolicy } from "@/src/lib/imageUpload";
 import { truncateMiddle } from "@/src/lib/text";
 import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import {
@@ -20,13 +20,6 @@ import {
 import { FieldLabel } from "@/src/ui/FieldLabel";
 import { PrefixedInput } from "@/src/ui/PrefixedInput";
 
-/** `accept` hint only — validation runs in `normalizeImageFile`. */
-function fileAccept(policy: ImageUploadPolicy): string {
-  const raster =
-    "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.avif,.heic,.heif";
-  return policy.svg ? `${raster},image/svg+xml,.svg` : raster;
-}
-
 /** A built-in image, listed in the menu under its group. */
 interface ImagePreset {
   id: string;
@@ -36,9 +29,6 @@ interface ImagePreset {
 }
 
 const TRIGGER_LABEL_MAX = 44;
-
-/** Uploads quicker than this apply without the trigger flashing a spinner. */
-const UPLOAD_PENDING_DELAY_MS = 300;
 
 /** How long the link field must be idle before a link that can't be used is reported. */
 const LINK_SETTLE_MS = 1000;
@@ -168,7 +158,9 @@ export function ImagePicker({
     }
   }, [urlEditorOpen]);
 
-  const showUploading = useDelayedFlag(processingFile !== null, UPLOAD_PENDING_DELAY_MS);
+  // The spinner can outlast the upload (useDelayedFlag's minimum show time); the label then
+  // already shows the result.
+  const showUploading = useDelayedFlag(processingFile !== null);
   const uploadingName = showUploading ? (processingFile?.name ?? null) : null;
 
   // uploadSession only ever holds a data URL, so a match means the image is that upload.
@@ -265,7 +257,7 @@ export function ImagePicker({
 
       <div>
         <DropdownRoot dropdown={dropdown} className="relative">
-          <DropdownTrigger dropdown={dropdown} joinedBelow={joined} busy={uploadingName !== null}>
+          <DropdownTrigger dropdown={dropdown} joinedBelow={joined} busy={showUploading}>
             {uploadingName !== null
               ? truncateMiddle(uploadingName, TRIGGER_LABEL_MAX)
               : triggerLabel(value, uploadDisplayName, presets)}
@@ -316,7 +308,7 @@ export function ImagePicker({
           <input
             ref={fileInputRef}
             type="file"
-            accept={fileAccept(policy)}
+            accept={uploadAccept(policy)}
             className="hidden"
             onChange={async (e) => {
               const file = e.target.files?.[0];

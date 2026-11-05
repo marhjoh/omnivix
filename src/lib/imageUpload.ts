@@ -1,4 +1,14 @@
 import { isOneOf } from "@/src/lib/isOneOf";
+import {
+  formatExtensions,
+  formatNames,
+  HEIC_TYPES,
+  hasFormatExtension,
+  SVG_TYPES,
+  uploadImageTypes,
+  type ImageType,
+} from "@/src/lib/imageSource";
+import { megabytes } from "@/src/lib/text";
 
 /**
  * Client-side image uploads (the background and the logo): static images only (no GIF /
@@ -7,16 +17,8 @@ import { isOneOf } from "@/src/lib/isOneOf";
  * validate here.
  */
 
-const RASTER_MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/avif",
-  "image/heic",
-  "image/heif",
-] as const;
-
-const SVG_MIME_TYPE = "image/svg+xml";
+/** Every upload format but SVG, HEIC included. */
+const RASTER_TYPES = uploadImageTypes({ svg: false });
 
 /** Raw file size limit before decode (bytes). */
 export const MAX_IMAGE_FILE_BYTES = 12 * 1024 * 1024;
@@ -58,11 +60,20 @@ export const LOGO_UPLOAD: ImageUploadPolicy = {
   svg: true,
 };
 
+/** The formats an upload under `policy` can be. */
+export function uploadFormats(policy: ImageUploadPolicy): ImageType[] {
+  return uploadImageTypes({ svg: policy.svg });
+}
+
+/** The file input's `accept`: MIME types and extensions. A hint only; uploads are checked here. */
+export function uploadAccept(policy: ImageUploadPolicy): string {
+  const types = uploadFormats(policy);
+  return [...types, ...formatExtensions(types).map((extension) => `.${extension}`)].join(",");
+}
+
 /** User-facing line when a file type isn't allowed (including GIFs, which are animated). */
 export function supportedFormatsMessage(policy: ImageUploadPolicy): string {
-  return policy.svg
-    ? "Only PNG, JPEG, WebP, AVIF, HEIC and SVG are supported."
-    : "Only PNG, JPEG, WebP, AVIF and HEIC are supported.";
+  return `Only ${formatNames(uploadFormats(policy), "and")} are supported.`;
 }
 
 /** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
@@ -92,7 +103,7 @@ function mimeOf(file: File): string {
 
 function isSvgFile(file: File): boolean {
   const type = mimeOf(file);
-  return type === SVG_MIME_TYPE || (!type && /\.svg$/i.test(file.name));
+  return isOneOf(SVG_TYPES, type) || (!type && hasFormatExtension(file.name, SVG_TYPES));
 }
 
 /**
@@ -101,7 +112,7 @@ function isSvgFile(file: File): boolean {
  */
 export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): string | null {
   if (file.size > MAX_IMAGE_FILE_BYTES) {
-    return `Image must be ${MAX_IMAGE_FILE_BYTES / (1024 * 1024)} MB or smaller.`;
+    return `Image must be ${megabytes(MAX_IMAGE_FILE_BYTES)} or smaller.`;
   }
   const unsupported = supportedFormatsMessage(policy);
 
@@ -117,19 +128,17 @@ export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): 
   // octet-stream; then its extension is trusted.
   const type = mimeOf(file);
   if (type) {
-    return isOneOf(RASTER_MIME_TYPES, type) || shouldDecodeHeicWithHeic2any(file)
-      ? null
-      : unsupported;
+    return isOneOf(RASTER_TYPES, type) || shouldDecodeHeicWithHeic2any(file) ? null : unsupported;
   }
-  return /\.(png|jpe?g|webp|avif|heic|heif)$/i.test(file.name) ? null : unsupported;
+  return hasFormatExtension(file.name, RASTER_TYPES) ? null : unsupported;
 }
 
 /** Prefer MIME when present so a PNG named `.heic` is not sent through HEIC conversion. */
 export function shouldDecodeHeicWithHeic2any(file: File): boolean {
   const t = mimeOf(file);
-  if (t === "image/heic" || t === "image/heif") return true;
+  if (isOneOf(HEIC_TYPES, t)) return true;
   if (t && t !== "application/octet-stream") return false;
-  return /\.(heic|heif)$/i.test(file.name);
+  return hasFormatExtension(file.name, HEIC_TYPES);
 }
 
 /** `toBlob` encodes off the main thread; `toDataURL` blocks it for seconds on a large photo. */

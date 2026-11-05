@@ -1,3 +1,5 @@
+import { clamp } from "@/src/lib/math";
+
 /**
  * A point in percent: 0 is the left/top, 100 the right/bottom. The background uses it as CSS
  * `object-position`; the content and the logo as their place in the room left around them
@@ -7,9 +9,6 @@ export interface Position {
   x: number;
   y: number;
 }
-
-export const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value));
 
 /** Keeps a percentage between 0 and 100. */
 export const clampPercent = (value: number) => clamp(value, 0, 100);

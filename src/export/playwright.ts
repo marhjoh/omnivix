@@ -10,6 +10,7 @@ import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { toJpeg } from "@/src/export/jpeg";
 import { BANNER_SIZES, exportPixelRatioFor } from "@/src/lib/sizes";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
+import { BANNER_ROOT_CLASS } from "@/src/banner/placement";
 import type { ExportImage } from "@/src/export/images";
 import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
 import { RenderFailed } from "@/src/export/errors";
@@ -193,7 +194,7 @@ export const captureBanner = Effect.fnUntraced(function* ({
   yield* openRenderPage(page, url);
   yield* failOnRenderProblem(page);
 
-  const target = page.locator(".banner-export-root");
+  const target = page.locator(`.${BANNER_ROOT_CLASS}`);
   yield* step(() => target.waitFor({ state: "visible" }));
   yield* step(() => waitForRasterReady(page));
   yield* step(() => waitForContentFit(page));

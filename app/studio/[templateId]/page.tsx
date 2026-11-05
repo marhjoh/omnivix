@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { SITE_NAME, SITE_OPEN_GRAPH, SITE_PLATFORMS } from "@/src/lib/site";
+import { SITE_NAME, SITE_OPEN_GRAPH, SITE_PLATFORMS, studioPath } from "@/src/lib/site";
 import { notFound } from "next/navigation";
 import { isTemplateId, templateRegistry } from "@/src/templates/registry";
 import { StudioShell } from "@/src/studio/StudioShell";
@@ -37,7 +37,7 @@ export async function generateMetadata({
   }
   const { meta } = templateRegistry[templateId];
   const description = `${meta.description} Create a ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
-  const url = `/studio/${templateId}`;
+  const url = studioPath(templateId);
   const title = `${meta.title} · ${SITE_NAME}`;
   // twitter replaces the layout's object rather than merging, so set every field.
   return {

@@ -1,9 +1,15 @@
 import { createContext, PropsWithChildren, useContext } from "react";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { backgroundImageStyle, type BannerBackground } from "@/src/banner/background";
-import { PREVIEW_PHOTO_SIZES, previewPhotoSrcSet } from "@/src/backgrounds/presets";
+import { previewPhotoSrcSet } from "@/src/backgrounds/presets";
+import { PREVIEW_PHOTO_SIZES } from "@/src/studio/layout";
 import type { BannerLogo } from "@/src/banner/logo";
-import { BANNER_LOGO_ATTRIBUTE, placementStyle } from "@/src/banner/placement";
+import {
+  BANNER_BACKGROUND_ATTRIBUTE,
+  BANNER_LOGO_ATTRIBUTE,
+  BANNER_ROOT_CLASS,
+  placementStyle,
+} from "@/src/banner/placement";
 
 /**
  * Set by the studio preview: a photo preset then loads one of its smaller copies, sized for the
@@ -32,7 +38,7 @@ export function Frame({
   const srcSet = previewPhotos && background ? previewPhotoSrcSet(background.src) : undefined;
   return (
     <div
-      className="banner-export-root"
+      className={BANNER_ROOT_CLASS}
       style={{
         width: "100%",
         height: "100%",
@@ -51,7 +57,7 @@ export function Frame({
           srcSet={srcSet}
           sizes={srcSet ? PREVIEW_PHOTO_SIZES : undefined}
           alt=""
-          data-banner-background=""
+          {...{ [BANNER_BACKGROUND_ATTRIBUTE]: "" }}
           style={{
             position: "absolute",
             inset: 0,

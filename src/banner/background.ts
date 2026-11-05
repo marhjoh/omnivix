@@ -1,12 +1,7 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
-import {
-  clamp,
-  clampPercent,
-  positionOr,
-  samePosition,
-  type Position,
-} from "@/src/banner/position";
+import { clampPercent, positionOr, samePosition, type Position } from "@/src/banner/position";
+import { clamp } from "@/src/lib/math";
 import type { Box } from "@/src/lib/sizes";
 
 export const MIN_BACKGROUND_ZOOM = 1;
