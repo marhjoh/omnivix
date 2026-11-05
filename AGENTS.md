@@ -34,6 +34,7 @@ TypeScript 6 and Node 24. Use `pnpm` only; `pnpm-lock.yaml` is the source of tru
 
 - `pnpm dev`: dev server at http://localhost:3000 (needs `GITHUB_TOKEN` in `.env.local`)
 - `pnpm test`: Vitest; tests sit next to the code as `src/**/*.test.ts`
+- `pnpm test:e2e`: Playwright smoke tests in `e2e/` against a production build (`pnpm build` first); they fake GitHub's data, so they need no token
 - `pnpm lint`, `pnpm typecheck`, `pnpm knip`, `pnpm format`
 
 ## Layout
@@ -82,10 +83,11 @@ American English everywhere: code, comments, UI copy, docs, commits and PRs (cus
 
 ## Checks
 
-CI runs `pnpm format:check`, `pnpm lint`, `pnpm knip`, `pnpm typecheck`, `pnpm test` and `pnpm build` on every PR.
+CI runs `pnpm format:check`, `pnpm lint`, `pnpm knip`, `pnpm typecheck`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on every PR.
 
 Run them once, when a change is finished and before suggesting a commit, not after every edit:
 
 1. `pnpm format`
 2. `pnpm lint`, `pnpm knip`, `pnpm typecheck` and `pnpm test`
 3. `pnpm build`, only when the change touches routes, components, `app/` or config. Skip it for docs-only or test-only changes. It needs no `.env.local`.
+4. `pnpm test:e2e` after a build, when the change touches the studio, the export or `app/`.

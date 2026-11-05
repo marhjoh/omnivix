@@ -1,0 +1,32 @@
+import { defineConfig, devices } from "@playwright/test";
+
+const PORT = 3100;
+
+/**
+ * Smoke tests against a production build (`pnpm build` first). The server runs without a GitHub
+ * token or Redis, like CI: tests fake GitHub's data in the browser, and the rate limits are off.
+ */
+export default defineConfig({
+  testDir: "e2e",
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? "github" : "list",
+  use: {
+    baseURL: `http://localhost:${PORT}`,
+    trace: "retain-on-failure",
+  },
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  webServer: {
+    command: `pnpm start --port ${PORT}`,
+    url: `http://localhost:${PORT}`,
+    reuseExistingServer: !process.env.CI,
+    // Empty values win over .env.local (Next only fills variables that aren't set).
+    env: {
+      GITHUB_TOKEN: "",
+      UPSTASH_REDIS_REST_URL: "",
+      UPSTASH_REDIS_REST_TOKEN: "",
+      KV_REST_API_URL: "",
+      KV_REST_API_TOKEN: "",
+    },
+  },
+});

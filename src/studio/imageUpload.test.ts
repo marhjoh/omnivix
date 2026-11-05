@@ -11,70 +11,34 @@ const validateBackgroundUploadMeta = (file: File) =>
   validateImageUploadMeta(file, BACKGROUND_UPLOAD);
 
 describe("validateImageUploadMeta for backgrounds", () => {
-  it("accepts png under size limit", () => {
-    const f = new File([], "photo.png", { type: "image/png" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
+  it.each([
+    ["photo.png", "image/png"],
+    ["x.webp", ""],
+    ["photo.avif", "image/avif"],
+    ["photo.avif", ""],
+    ["IMG.HEIC", "image/heic"],
+    ["x.heif", "image/heif"],
+    ["photo.heic", ""],
+    ["photo.heic", "application/octet-stream"],
+  ])("accepts %s as %j", (name, type) => {
+    expect(validateBackgroundUploadMeta(new File([], name, { type }))).toBeNull();
+  });
+
+  it.each([
+    ["x.gif", "image/gif"],
+    ["x.gif", ""],
+    ["x.bmp", "image/bmp"],
+    ["x.bin", ""],
+  ])("rejects %s as %j, naming the formats", (name, type) => {
+    expect(validateBackgroundUploadMeta(new File([], name, { type }))).toBe(
+      SUPPORTED_BACKGROUND_FORMATS_MESSAGE,
+    );
   });
 
   it("rejects oversize files", () => {
     const f = new File([], "big.png", { type: "image/png" });
     Object.defineProperty(f, "size", { value: MAX_IMAGE_FILE_BYTES + 1 });
     expect(validateBackgroundUploadMeta(f)).toMatch(/MB or smaller/);
-  });
-
-  it("rejects gif by mime", () => {
-    const f = new File([], "x.gif", { type: "image/gif" });
-    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
-  });
-
-  it("rejects gif by extension", () => {
-    const f = new File([], "x.gif", { type: "" });
-    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
-  });
-
-  it("rejects unsupported mime", () => {
-    const f = new File([], "x.bmp", { type: "image/bmp" });
-    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
-  });
-
-  it("allows empty mime with valid extension", () => {
-    const f = new File([], "x.webp", { type: "" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("rejects empty mime with bad extension", () => {
-    const f = new File([], "x.bin", { type: "" });
-    expect(validateBackgroundUploadMeta(f)).toBe(SUPPORTED_BACKGROUND_FORMATS_MESSAGE);
-  });
-
-  it("accepts avif by mime", () => {
-    const f = new File([], "photo.avif", { type: "image/avif" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("allows empty mime with .avif extension", () => {
-    const f = new File([], "photo.avif", { type: "" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("accepts heic by mime", () => {
-    const f = new File([], "IMG.HEIC", { type: "image/heic" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("accepts heif by mime", () => {
-    const f = new File([], "x.heif", { type: "image/heif" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("accepts empty mime with .heic extension", () => {
-    const f = new File([], "photo.heic", { type: "" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
-  });
-
-  it("allows application/octet-stream when name is .heic", () => {
-    const f = new File([], "photo.heic", { type: "application/octet-stream" });
-    expect(validateBackgroundUploadMeta(f)).toBeNull();
   });
 });
 
@@ -96,23 +60,12 @@ describe("validateImageUploadMeta for logos", () => {
 });
 
 describe("shouldDecodeHeicWithHeic2any", () => {
-  it("is true for image/heic", () => {
-    const f = new File([], "x.bin", { type: "image/heic" });
-    expect(shouldDecodeHeicWithHeic2any(f)).toBe(true);
-  });
-
-  it("is true for octet-stream and .heic name", () => {
-    const f = new File([], "p.heic", { type: "application/octet-stream" });
-    expect(shouldDecodeHeicWithHeic2any(f)).toBe(true);
-  });
-
-  it("is false when MIME is PNG even if name ends with .heic", () => {
-    const f = new File([], "wrong.heic", { type: "image/png" });
-    expect(shouldDecodeHeicWithHeic2any(f)).toBe(false);
-  });
-
-  it("is false for JPEG mime", () => {
-    const f = new File([], "x.jpg", { type: "image/jpeg" });
-    expect(shouldDecodeHeicWithHeic2any(f)).toBe(false);
+  it.each([
+    ["x.bin", "image/heic", true],
+    ["p.heic", "application/octet-stream", true],
+    ["wrong.heic", "image/png", false],
+    ["x.jpg", "image/jpeg", false],
+  ])("is %s as %j: %s", (name, type, expected) => {
+    expect(shouldDecodeHeicWithHeic2any(new File([], name, { type }))).toBe(expected);
   });
 });

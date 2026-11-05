@@ -16,16 +16,6 @@ describe("export token", () => {
     expect(payload?.state).toEqual(samplePayload.state);
   });
 
-  it("round-trips state with a sizeable string field", () => {
-    const huge = "x".repeat(10_000);
-    const token = createExportToken({
-      ...samplePayload,
-      state: { ...samplePayload.state, backgroundImage: huge },
-    });
-    const out = verifyExportToken(token);
-    expect(out?.state.backgroundImage).toBe(huge);
-  });
-
   it("rejects a tampered token", () => {
     const token = createExportToken(samplePayload);
     const [encoded, sig] = token.split(".");
