@@ -1,10 +1,8 @@
-"use client";
-
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import styles from "./preview.module.css";
 
 /** The button row's space, for a state without a button, so every state is equally tall. */
-export function PreviewActionSpace() {
+function PreviewActionSpace() {
   return (
     <span className={`btn-secondary invisible ${styles.action}`} aria-hidden>
       {"\u00a0"}
@@ -42,6 +40,21 @@ export function PreviewMessage({
       ) : (
         <PreviewActionSpace />
       )}
+    </div>
+  );
+}
+
+/** In place of the banner while its data loads: the logo pulsing, and what's loading. */
+export function PreviewLoading({ message }: { message: string }) {
+  return (
+    <div className={styles.stateInner} role="status" aria-live="polite">
+      <ThemedIcon className={`${styles.stateLogo} ${styles.pulseLogo}`} size={56} />
+      <p className={styles.loadingText}>{message}</p>
+      <div className={`${styles.skeleton} ${styles.hintRow}`} aria-hidden>
+        <div className={styles.skeletonRow} />
+        <div className={`${styles.skeletonRow} ${styles.skeletonRowNarrow}`} />
+      </div>
+      <PreviewActionSpace />
     </div>
   );
 }

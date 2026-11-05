@@ -32,12 +32,11 @@
   overflow: hidden;
   background: color-mix(in oklab, var(--surface) 92%, transparent);
   border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
-  transition:
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
+  transition-property: box-shadow, border-color;
+  transition-duration: var(--hover-fade);
 }
 
-.showcaseTile:hover {
+.showcaseTile:where(:hover) {
   border-color: color-mix(in oklab, var(--border) 80%, transparent);
   box-shadow:
     0 20px 40px -16px rgba(0, 0, 0, 0.35),
@@ -69,7 +68,7 @@
   position: absolute;
   inset: 0;
   background: var(--bg);
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+  border-bottom: 1px solid var(--divider);
   transition: opacity 0.25s ease 0.15s;
 }
 
@@ -205,8 +204,7 @@ html[data-theme="light"] .navGlass {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marqueeColumn,
-  .marqueeColumn[data-reverse="true"] {
+  .marqueeColumn {
     animation: none;
   }
 }
@@ -217,7 +215,6 @@ html[data-theme="light"] .navGlass {
   width: 0.875rem;
   height: 0.875rem;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
 }
 
 .faqToggle::before,
@@ -237,12 +234,6 @@ html[data-theme="light"] .navGlass {
 
 details[open] .faqToggle {
   transform: rotate(45deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .faqToggle {
-    transition: none;
-  }
 }
 
 /* FAQ: answers slide open. ::details-content with interpolate-size animates the height where
@@ -280,29 +271,15 @@ details[open] .faqToggle {
   .faqToggle {
     transition:
       transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-      color 0.2s ease;
+      color var(--hover-fade);
   }
 }
 
-/* Big type: one scale (hero name > section headings > step words) and one gradient, the brand's,
-   for the hero name and the section headings. On scroll, headings wipe in and step words fill in
-   from an outline that then fades out. The scroll effects need animation-timeline (not in
-   Firefox yet) and skip reduced motion; both show the finished, still state instead. */
-.gradientText {
-  color: transparent;
-  background-image: linear-gradient(
-    118deg,
-    var(--text) 8%,
-    color-mix(in oklab, var(--text) 55%, var(--accent)) 42%,
-    var(--accent-hover) 92%
-  );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  /* Room below the line box, so the gradient also paints descenders (the p in Templates). */
-  padding-bottom: 0.12em;
-}
+/* Big type: one scale (hero name > section headings > step words) and one gradient, the brand's
+   (.gradient-text), for the hero name and the section headings (.section-heading); both are in
+   app/globals.css, which the error pages share. On scroll, headings wipe in and step words fill in
+   from an outline that then fades out. The scroll effects need animation-timeline (not in Firefox
+   yet) and skip reduced motion; both show the finished, still state instead. */
 
 /* No drop-shadow: .heroGlow gives the halo, and a shadow on a word this wide reaches the page
    edge on phones, where it gets cut off. */
@@ -356,36 +333,21 @@ html[data-theme="light"] .heroGlow {
   );
 }
 
-.sectionHeading,
-.stepWord,
-.headingOnLoad {
+/* Like the section headings (.section-heading, app/globals.css), one size below, so "How it
+   works." stays the larger. */
+.stepWord {
   display: block;
+  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 0.95;
+  color: var(--text);
   -webkit-text-stroke: 1.5px transparent;
   paint-order: stroke fill;
 }
 
-.sectionHeading,
-.headingOnLoad {
-  font-size: clamp(2.75rem, 1.4rem + 6vw, 6rem);
-}
-
-/* One size below the section headings, so "How it works." stays the larger. */
-.stepWord {
-  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
-  color: var(--text);
-}
-
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .sectionHeading {
-      animation: headingWipe linear both;
-      animation-timeline: view();
-      animation-range: entry 30% cover 40%;
-    }
-
     .stepWord {
       animation: stepWordFill linear both;
       animation-timeline: view();
@@ -397,22 +359,6 @@ html[data-theme="light"] .heroGlow {
       animation-timeline: view();
       animation-range: entry 60% cover 50%;
     }
-  }
-}
-
-@keyframes headingWipe {
-  from {
-    background-size: 0% 100%;
-    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
-  }
-
-  70% {
-    -webkit-text-stroke-color: color-mix(in oklab, var(--accent-hover) 40%, transparent);
-  }
-
-  to {
-    background-size: 100% 100%;
-    -webkit-text-stroke-color: transparent;
   }
 }
 
@@ -437,13 +383,5 @@ html[data-theme="light"] .heroGlow {
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-/* Section heading that wipes in on load instead of on scroll, for pages that don't scroll.
-   Starts after the error calendar. */
-@media (prefers-reduced-motion: no-preference) {
-  .headingOnLoad {
-    animation: headingWipe 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s both;
   }
 }

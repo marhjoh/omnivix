@@ -4,9 +4,9 @@ import { useState } from "react";
 import type { RepoNormalized } from "@/src/github/types";
 import { parseRepoSelection } from "@/src/lib/repoSelection";
 import { CheckList, CheckRow, CheckRowSkeleton } from "@/src/studio/CheckList";
-import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
-import { useTimeReached } from "@/src/studio/preview/useTimeReached";
-import { LabeledGroup } from "@/src/ui/FieldLabel";
+import { useDelayedFlag } from "@/src/ui/useDelayedFlag";
+import { useTimeReached } from "@/src/ui/useTimeReached";
+import { FieldValue, LabeledGroup } from "@/src/ui/FieldLabel";
 
 const SKELETON_ROW_WIDTHS = ["70%", "55%", "80%", "45%", "65%", "50%", "75%"];
 
@@ -81,9 +81,9 @@ export function RepoMultiSelect({
       label="Repositories"
       // Picked of the most allowed, so rows greyed out at the limit make sense.
       end={
-        <span className="field-label tabular-nums">
+        <FieldValue>
           {selected.length}/{maxPick}
-        </span>
+        </FieldValue>
       }
     >
       <CheckList scroll busy={pending}>

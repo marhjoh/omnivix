@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseFormatCookie,
-  parsePixelRatioCookie,
-  parsePreviewViewCookie,
-  parseSettingsCookie,
-  parseUsernameCookie,
-  settingsCookieName,
+  FORMAT_COOKIE,
+  PIXEL_RATIO_COOKIE,
+  PREVIEW_VIEW_COOKIE,
+  settingsCookie,
+  USERNAME_COOKIE,
 } from "./studioCookies";
 
-describe("parseSettingsCookie", () => {
+const parseSettingsCookie = settingsCookie("quote-banner").parse;
+
+describe("settingsCookie", () => {
   it("reads saved settings", () => {
     const value = encodeURIComponent(JSON.stringify({ alignment: "left", themeId: "ocean" }));
     expect(parseSettingsCookie(value)).toEqual({ alignment: "left", themeId: "ocean" });
@@ -26,10 +27,10 @@ describe("parseSettingsCookie", () => {
   });
 });
 
-describe("parseUsernameCookie", () => {
+describe("USERNAME_COOKIE", () => {
   it("reads a valid username", () => {
-    expect(parseUsernameCookie("marhjoh")).toBe("marhjoh");
-    expect(parseUsernameCookie("some-user")).toBe("some-user");
+    expect(USERNAME_COOKIE.parse("marhjoh")).toBe("marhjoh");
+    expect(USERNAME_COOKIE.parse("some-user")).toBe("some-user");
   });
 
   it.each([
@@ -42,46 +43,46 @@ describe("parseUsernameCookie", () => {
     "%3Cscript%3E",
     "%E0%A4%A",
   ])("rejects %s", (value) => {
-    expect(parseUsernameCookie(value)).toBeNull();
+    expect(USERNAME_COOKIE.parse(value)).toBeNull();
   });
 });
 
-describe("settingsCookieName", () => {
+describe("settingsCookie name", () => {
   it("is one cookie per template", () => {
-    expect(settingsCookieName("quote-banner")).toBe("omnivix-settings-quote-banner");
+    expect(settingsCookie("quote-banner").name).toBe("omnivix-settings-quote-banner");
   });
 });
 
-describe("parsePixelRatioCookie", () => {
+describe("PIXEL_RATIO_COOKIE", () => {
   it.each([
     ["1", 1],
     ["2", 2],
     ["3", 3],
   ])("reads %s", (value, ratio) => {
-    expect(parsePixelRatioCookie(value)).toBe(ratio);
+    expect(PIXEL_RATIO_COOKIE.parse(value)).toBe(ratio);
   });
 
   it.each([undefined, "", "4", "0", "2.5", "abc"])("falls back to 3× for %s", (value) => {
-    expect(parsePixelRatioCookie(value)).toBe(3);
+    expect(PIXEL_RATIO_COOKIE.parse(value)).toBe(3);
   });
 });
 
-describe("parseFormatCookie", () => {
+describe("FORMAT_COOKIE", () => {
   it.each(["png", "jpeg"])("reads %s", (value) => {
-    expect(parseFormatCookie(value)).toBe(value);
+    expect(FORMAT_COOKIE.parse(value)).toBe(value);
   });
 
   it.each([undefined, "", "jpg", "JPEG", "webp"])("falls back to PNG for %s", (value) => {
-    expect(parseFormatCookie(value)).toBe("png");
+    expect(FORMAT_COOKIE.parse(value)).toBe("png");
   });
 });
 
-describe("parsePreviewViewCookie", () => {
+describe("PREVIEW_VIEW_COOKIE", () => {
   it.each(["phone", "desktop", "tv"])("reads %s", (value) => {
-    expect(parsePreviewViewCookie(value)).toBe(value);
+    expect(PREVIEW_VIEW_COOKIE.parse(value)).toBe(value);
   });
 
   it.each([undefined, "", "TV", "tablet"])("falls back to phone for %s", (value) => {
-    expect(parsePreviewViewCookie(value)).toBe("phone");
+    expect(PREVIEW_VIEW_COOKIE.parse(value)).toBe("phone");
   });
 });

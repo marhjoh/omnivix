@@ -11,9 +11,9 @@ import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage"
 import { repoModeOf, reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
 import { githubDataUrls } from "@/src/studio/githubUrls";
 import { contributionYear } from "@/src/lib/contributionYear";
-import { fetchProblem, noReposProblem } from "@/src/studio/preview/computePreviewContentState";
+import { fetchProblem, noReposProblem } from "@/src/studio/preview/previewProblems";
 import type { PreviewProblem } from "@/src/studio/preview/types";
-import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { useImageStatus } from "@/src/studio/useImageStatus";
 import { initialData, useApiQuery } from "@/src/studio/useApiQuery";
 import { templateRegistry } from "@/src/templates/registry";
 import type { GithubDataKind, RenderData, TemplateId } from "@/src/templates/types";

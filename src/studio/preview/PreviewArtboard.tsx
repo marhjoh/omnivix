@@ -13,7 +13,7 @@ import type { RenderData, TemplateId } from "@/src/templates/types";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import { PreviewStatus } from "@/src/studio/preview/PreviewStatus";
 import previewStyles from "@/src/studio/preview/preview.module.css";
-import { cssFitWidth, fitScale } from "@/src/studio/preview/fitScale";
+import { cssFitWidth, previewScale } from "@/src/studio/preview/previewScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
@@ -41,6 +41,7 @@ export function PreviewArtboard({
   data,
   previewState,
   problem,
+  missingSetting,
   exporting,
   onRetry,
   onChangeUsername,
@@ -59,6 +60,8 @@ export function PreviewArtboard({
   previewState: PreviewContentState;
   /** Shown in place of the banner when `previewState` is "error". */
   problem: PreviewProblem | null;
+  /** What the banner waits for when `previewState` is "empty": "username", or a setting's key. */
+  missingSetting: string | undefined;
   /** An export runs: the preview shows its progress and can't be moved meanwhile. */
   exporting: boolean;
   onRetry: () => void;
@@ -89,7 +92,7 @@ export function PreviewArtboard({
   const activeView = shownView(dims, view);
   // The part of the banner the preview shows: all of it, unless devices crop the format.
   const shown = viewRect(dims, activeView);
-  const scale = available ? fitScale(available, shown) : null;
+  const scale = available ? previewScale(available, shown) : null;
 
   // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
   // the stage as a size container, so the banner shows at its final size from the first paint.
@@ -157,7 +160,7 @@ export function PreviewArtboard({
             <PreviewStatus
               previewState={previewState}
               problem={problem}
-              needsUsername={meta.needsUsername}
+              missingSetting={missingSetting}
               githubData={meta.githubData}
               onRetry={onRetry}
               onChangeUsername={onChangeUsername}

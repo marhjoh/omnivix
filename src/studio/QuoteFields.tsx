@@ -17,6 +17,8 @@ import { Select } from "@/src/ui/Dropdown";
 
 interface QuoteFieldProps {
   label: string;
+  /** The setting's value; `state` is for the settings its options are shown in (the font). */
+  value: string;
   state: Record<string, unknown>;
   onChange: (value: string) => void;
 }
@@ -26,7 +28,7 @@ interface QuoteFieldProps {
  * upright and italic faces start loading once the studio is idle, for both Font and Font style.
  * This reduces font swaps when either list opens; an early opening can still beat the warmup.
  */
-export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
+export function FontSelect({ label, value, onChange }: Omit<QuoteFieldProps, "state">) {
   useEffect(() => {
     const load = () => {
       // document.fonts.load can't read var(), so each family is read from its variable.
@@ -53,7 +55,7 @@ export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
   return (
     <Select
       label={label}
-      value={String(state.font ?? "")}
+      value={value}
       options={QUOTE_FONT_OPTIONS.map((option) => ({
         ...option,
         style: { fontFamily: fontFamily(option.value) },
@@ -64,11 +66,11 @@ export function FontSelect({ label, state, onChange }: QuoteFieldProps) {
 }
 
 /** Only the styles the font has (some have no italics), each in its own weight and slant. */
-export function FontStyleSelect({ label, state, onChange }: QuoteFieldProps) {
+export function FontStyleSelect({ label, value, state, onChange }: QuoteFieldProps) {
   return (
     <Select
       label={label}
-      value={fontStyleShown(state.font, state.fontStyle)}
+      value={fontStyleShown(state.font, value)}
       options={fontStyleOptions(state.font).map((option) => ({
         ...option,
         style: fontStyleCss(state.font, option.value),
@@ -79,12 +81,12 @@ export function FontStyleSelect({ label, state, onChange }: QuoteFieldProps) {
 }
 
 /** Each style shown on a sample in the quote's font. */
-export function QuoteMarksSelect({ label, state, onChange }: QuoteFieldProps) {
+export function QuoteMarksSelect({ label, value, state, onChange }: QuoteFieldProps) {
   const sample = fontStyleCss(state.font, fontStyleShown(state.font, state.fontStyle));
   return (
     <Select
       label={label}
-      value={String(state.quoteMarks ?? "")}
+      value={value}
       options={QUOTE_MARKS_OPTIONS.map((option) => ({
         ...option,
         preview: <QuoteMarksPreview marks={option.value} style={sample} />,
@@ -95,12 +97,12 @@ export function QuoteMarksSelect({ label, state, onChange }: QuoteFieldProps) {
 }
 
 /** Each prefix shown in the author's font. */
-export function AuthorPrefixSelect({ label, state, onChange }: QuoteFieldProps) {
+export function AuthorPrefixSelect({ label, value, state, onChange }: QuoteFieldProps) {
   const sample = fontStyleCss(state.font, "regular");
   return (
     <Select
       label={label}
-      value={String(state.authorPrefix ?? "")}
+      value={value}
       options={AUTHOR_PREFIX_OPTIONS.map(({ symbol, ...option }) => ({
         ...option,
         preview: (

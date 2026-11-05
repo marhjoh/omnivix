@@ -3,21 +3,19 @@ import { alignmentAt, type ContentPosition } from "@/src/banner/contentPosition"
 import { fitsInCookie, readCookieClient, setCookieClient } from "@/src/lib/cookies";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { sizeOfPlatform } from "@/src/lib/sizes";
-import { type LinkSettings, withLink } from "@/src/studio/linkSettings";
 import {
-  applySavedSettings,
+  type LinkSettings,
+  type StartingSettings,
+  startingSettings,
+} from "@/src/studio/linkSettings";
+import {
   clampSelectedRepos,
   IMAGE_SETTINGS,
   removeImage,
   removeImageSettings,
   removeUnsavableImages,
 } from "@/src/studio/savedSettings";
-import {
-  parseSettingsCookie,
-  parseUsernameCookie,
-  settingsCookieName,
-  USERNAME_COOKIE,
-} from "@/src/studio/studioCookies";
+import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 
@@ -41,36 +39,25 @@ function storedStateJson(state: Record<string, unknown>, needsUsername: boolean)
  */
 export function useBannerSettings({
   templateId,
-  savedSettings,
-  savedUsername,
+  start: serverStart,
   link,
 }: {
   templateId: TemplateId;
-  savedSettings: Record<string, unknown> | null;
-  savedUsername: string | null;
+  /** What the server rendered from: the saved settings with the link applied. */
+  start: StartingSettings;
   link: LinkSettings | null;
 }) {
-  const definition = templateRegistry[templateId];
-  const needsUsername = definition.meta.needsUsername;
+  const needsUsername = templateRegistry[templateId].meta.needsUsername;
 
   // Saved settings come from cookies, so the server renders them and nothing switches after load.
   // The browser reads the cookies again when the studio is opened by navigating (Back, Forward, a
   // link): Next.js may reuse the page from an earlier visit then, with props holding older settings.
-  // A studio link is applied over them (withLink).
-  const [saved] = useState(() =>
-    withLink(
-      typeof document === "undefined"
-        ? { settings: savedSettings, username: savedUsername }
-        : {
-            settings: parseSettingsCookie(readCookieClient(settingsCookieName(templateId))),
-            username: parseUsernameCookie(readCookieClient(USERNAME_COOKIE)),
-          },
-      link,
-    ),
+  const [start] = useState(() =>
+    typeof document === "undefined"
+      ? serverStart
+      : startingSettings(templateId, readCookieClient, link),
   );
-  const [state, setState] = useState<Record<string, unknown>>(() =>
-    applySavedSettings({ ...definition.initialState }, templateId, saved.settings, saved.username),
-  );
+  const [state, setState] = useState<Record<string, unknown>>(start.state);
   // The link is applied once: drop it from the address bar, so a reload keeps later changes
   // (saved in cookies like any other).
   useEffect(() => {
@@ -107,10 +94,10 @@ export function useBannerSettings({
   // Saved as cookies, and only when the saved part changes (not on every background drag).
   const storedJson = useMemo(() => storedStateJson(state, needsUsername), [state, needsUsername]);
   useEffect(() => {
-    setCookieClient(settingsCookieName(templateId), storedJson);
+    setCookieClient(settingsCookie(templateId).name, storedJson);
   }, [templateId, storedJson]);
   useEffect(() => {
-    if (needsUsername && username) setCookieClient(USERNAME_COOKIE, username);
+    if (needsUsername && username) setCookieClient(USERNAME_COOKIE.name, username);
   }, [needsUsername, username]);
 
   return {
@@ -119,6 +106,6 @@ export function useBannerSettings({
     updateState,
     moveContent,
     /** No username was saved or linked, so the studio asks for one. */
-    missingSavedUsername: needsUsername && !saved.username,
+    missingSavedUsername: needsUsername && !start.username,
   };
 }

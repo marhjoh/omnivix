@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/studio/useDelayedFlag";
+import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/ui/useDelayedFlag";
 
 /**
  * What the preview says while an export runs, from when each step starts. Exports take about

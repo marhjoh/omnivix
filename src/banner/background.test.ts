@@ -6,6 +6,7 @@ import {
   backgroundPanRange,
   isDefaultBackgroundFraming,
   dragBackgroundPosition,
+  nudgeBackgroundPosition,
 } from "./background";
 
 describe("backgroundFromState", () => {
@@ -116,6 +117,22 @@ describe("dragBackgroundPosition", () => {
     expect(dragBackgroundPosition({ x: 50, y: 60 }, { x: 999, y: -9999 }, range)).toEqual({
       x: 50,
       y: 100,
+    });
+  });
+});
+
+describe("nudgeBackgroundPosition", () => {
+  it("moves the image the arrow's way, so the position goes the other way", () => {
+    // → shows more of the left side: x drops.
+    expect(nudgeBackgroundPosition({ x: 50, y: 50 }, { x: 2, y: 0 })).toEqual({ x: 48, y: 50 });
+    expect(nudgeBackgroundPosition({ x: 50, y: 50 }, { x: 0, y: -10 })).toEqual({ x: 50, y: 60 });
+  });
+
+  it("stays within 0 to 100, rounded to 0.1", () => {
+    expect(nudgeBackgroundPosition({ x: 1, y: 95 }, { x: 2, y: -10 })).toEqual({ x: 0, y: 100 });
+    expect(nudgeBackgroundPosition({ x: 33.333, y: 50 }, { x: 2, y: 0 })).toEqual({
+      x: 31.3,
+      y: 50,
     });
   });
 });

@@ -7,7 +7,7 @@ import { chromium, type Page } from "playwright";
 import sharp, { type Sharp, type WebpOptions } from "sharp";
 import { presetSrcById } from "@/src/backgrounds/presets";
 import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
-import { settingsCookieName, USERNAME_COOKIE } from "@/src/studio/studioCookies";
+import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
 import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
@@ -23,7 +23,7 @@ async function newPage(viewport: { width: number; height: number }, theme: Theme
   const context = await browser.newContext({ viewport, deviceScaleFactor: 2 });
   await context.addCookies([
     { name: THEME_COOKIE_NAME, value: theme, url: BASE_URL },
-    { name: USERNAME_COOKIE, value: USERNAME, url: BASE_URL },
+    { name: USERNAME_COOKIE.name, value: USERNAME, url: BASE_URL },
   ]);
   return context.newPage();
 }
@@ -32,7 +32,7 @@ async function newPage(viewport: { width: number; height: number }, theme: Theme
 async function studio(page: Page, templateId: TemplateId, background: string): Promise<Buffer> {
   await page.context().addCookies([
     {
-      name: settingsCookieName(templateId),
+      name: settingsCookie(templateId).name,
       value: encodeURIComponent(JSON.stringify({ backgroundImage: presetSrcById(background) })),
       url: BASE_URL,
     },

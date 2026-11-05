@@ -8,6 +8,7 @@ import { presetBySrc } from "@/src/backgrounds/presets";
 import { alignmentAt } from "@/src/banner/contentPosition";
 import { isQuoteColor } from "@/src/banner/quoteStyle";
 import { clampPosition, isPosition } from "@/src/banner/position";
+import { isHttpsUrl } from "@/src/lib/imageSource";
 
 /**
  * The banner's image settings, each with the settings that belong to that one image: a background's
@@ -21,7 +22,7 @@ export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
 /** An image that can be saved and linked: an https link or a built-in background, not an upload. */
 export function isSavableImage(key: string, value: unknown): value is string {
   if (typeof value !== "string") return false;
-  return /^https:\/\//i.test(value) || (key === "backgroundImage" && !!presetBySrc(value));
+  return isHttpsUrl(value) || (key === "backgroundImage" && !!presetBySrc(value));
 }
 
 /** Removes the settings that belong to image setting `key`, such as a background's position. */

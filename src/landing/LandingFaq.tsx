@@ -45,15 +45,15 @@ export function LandingFaq() {
         <div className="space-y-8 md:space-y-10">
           {FAQ_TOPICS.map((topic) => (
             <div key={topic}>
-              <h3 className="border-b border-border/60 pb-3 text-xl font-bold tracking-tight text-text sm:text-2xl">
+              <h3 className="border-b border-divider-strong pb-3 text-xl font-bold tracking-tight text-text sm:text-2xl">
                 {topic}
               </h3>
               {FAQ.filter((item) => item.topic === topic).map(({ question, answer }) => (
                 <details
                   key={question}
-                  className={`group border-b border-border/60 ${landingStyles.faqItem}`}
+                  className={`group border-b border-divider-strong ${landingStyles.faqItem}`}
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 rounded-md py-4 font-medium text-text focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:outline-hidden [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 rounded-md py-4 font-medium text-text focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden [&::-webkit-details-marker]:hidden">
                     {question}
                     <span
                       className={`${landingStyles.faqToggle} text-muted group-open:text-accent-hover group-hover:text-accent-hover`}

@@ -37,7 +37,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "authorColor",
     ],
   },
-  // The logo's size shows inside its picker (ControlSidebar).
+  // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Everything else, in schema order: a new setting shows up here until it gets a place.

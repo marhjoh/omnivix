@@ -1,4 +1,4 @@
-import { fitScale as contentFitScale } from "@/src/banner/fit";
+import { fitScale } from "@/src/banner/fit";
 import { clamp } from "@/src/lib/math";
 
 /**
@@ -6,15 +6,15 @@ import { clamp } from "@/src/lib/math";
  * The preview renders the banner at its real export size and applies this as a transform,
  * so the preview is an exact miniature of the exported image.
  */
-export function fitScale(
+export function previewScale(
   available: { width: number; height: number },
   content: { width: number; height: number },
 ): number {
-  return clamp(contentFitScale(available, content), 0, 1);
+  return clamp(fitScale(available, content), 0, 1);
 }
 
 /**
- * fitScale's fit as CSS: the banner's width in the preview, for an element inside the preview
+ * previewScale's fit as CSS: the banner's width in the preview, for an element inside the preview
  * stage (a size container). Used until the stage is measured, so the first paint is right.
  */
 export function cssFitWidth(content: { width: number; height: number }): string {

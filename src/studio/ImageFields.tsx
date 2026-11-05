@@ -1,15 +1,21 @@
-"use client";
-
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
-import { isDefaultBackgroundFraming, type BannerBackground } from "@/src/banner/background";
+import {
+  isDefaultBackgroundFraming,
+  MAX_BACKGROUND_ZOOM,
+  MIN_BACKGROUND_ZOOM,
+  type BannerBackground,
+} from "@/src/banner/background";
 import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
-import { BackgroundZoomControl } from "@/src/studio/BackgroundZoomControl";
 import { ImagePicker } from "@/src/studio/ImagePicker";
 import { ResetButton } from "@/src/studio/ResetButton";
 import { fieldLabel } from "@/src/studio/settingGroups";
 import type { EditorFieldSchema } from "@/src/templates/types";
 import { Select } from "@/src/ui/Dropdown";
+import { RangeField } from "@/src/ui/RangeField";
+
+/** Zoom slider step: 5 percentage points. */
+const ZOOM_STEP = 0.05;
 
 /** What both image settings need besides their own value. */
 interface ImageFieldProps {
@@ -64,7 +70,10 @@ export function LogoField({
   );
 }
 
-/** The background, with its zoom inside the picker once it can be adjusted. */
+/**
+ * The background, with its zoom inside the picker once it can be adjusted. The image is moved by
+ * dragging the preview (BackgroundDragSurface).
+ */
 export function BackgroundField({
   background,
   ...props
@@ -95,10 +104,15 @@ export function BackgroundField({
       }
     >
       {background ? (
-        <BackgroundZoomControl
-          id={field.key}
-          zoom={background.zoom}
-          onZoomChange={(zoom) => onChange("backgroundZoom", zoom)}
+        <RangeField
+          id={`${field.key}-zoom`}
+          label="Zoom"
+          min={MIN_BACKGROUND_ZOOM}
+          max={MAX_BACKGROUND_ZOOM}
+          step={ZOOM_STEP}
+          value={background.zoom}
+          valueText={`${Math.round(background.zoom * 100)}%`}
+          onChange={(zoom) => onChange("backgroundZoom", zoom)}
         />
       ) : null}
     </ImagePicker>

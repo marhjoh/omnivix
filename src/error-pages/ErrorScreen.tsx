@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { ErrorCode } from "@/src/error-pages/calendarGlyphs";
 import { CodeCalendar } from "@/src/error-pages/CodeCalendar";
-import landingStyles from "@/src/landing/landing.module.css";
 
 /** Layout of the 404 and error pages. */
 export function ErrorScreen({
@@ -21,11 +20,7 @@ export function ErrorScreen({
         <div className="max-w-2xl">
           <CodeCalendar code={code} />
         </div>
-        <h1
-          className={`${landingStyles.gradientText} ${landingStyles.headingOnLoad} mt-10 md:mt-14`}
-        >
-          {title}
-        </h1>
+        <h1 className="gradient-text heading-on-load mt-10 md:mt-14">{title}</h1>
         <div className="mt-4 max-w-xl text-lg leading-relaxed text-pretty text-muted">
           {children}
         </div>

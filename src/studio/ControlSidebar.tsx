@@ -1,29 +1,12 @@
 "use client";
 
-import { Fragment, useId, useState, type ReactNode } from "react";
-import { Moon, Sun } from "lucide-react";
-import {
-  BANNER_SIZE_KEYS,
-  BANNER_SIZES,
-  bannerFormatOf,
-  platformOf,
-  type PlatformId,
-} from "@/src/lib/sizes";
-import {
-  DropdownGroupLabel,
-  DropdownList,
-  DropdownOption,
-  DropdownRoot,
-  DropdownTrigger,
-  Select,
-  useDropdown,
-} from "@/src/ui/Dropdown";
-import { PlatformIcon } from "@/src/ui/PlatformIcon";
+import { Fragment, type ReactNode } from "react";
+import { Select } from "@/src/ui/Dropdown";
+import { FieldWrapper } from "@/src/ui/FieldLabel";
+import { RangeField } from "@/src/ui/RangeField";
 import type { RepoNormalized } from "@/src/github/types";
-import { CheckList, CheckRow } from "@/src/studio/CheckList";
-import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
-import { FieldWrapper, LabeledGroup } from "@/src/ui/FieldLabel";
 import type { EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
+import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import {
   AuthorPrefixSelect,
@@ -33,241 +16,26 @@ import {
 } from "@/src/studio/QuoteFields";
 import { BackgroundField, LogoField } from "@/src/studio/ImageFields";
 import { ResetButton } from "@/src/studio/ResetButton";
+import {
+  AppearancePicker,
+  DebouncedInput,
+  GridColorsPicker,
+  PlatformPicker,
+  SettingsSection,
+  ShowList,
+} from "@/src/studio/SettingControls";
 import type { BannerBackground } from "@/src/banner/background";
 import {
   alignmentShown,
   contentPositionFromState,
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
-import { GRID_COLOR_PRESETS } from "@/src/banner/gridColors";
 import { MAX_REPOS, selectedReposOf } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
-import controls from "@/src/studio/controls.module.css";
-import landingStyles from "@/src/landing/landing.module.css";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { contributionYear, currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
-import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
-
-/** How long text fields wait after the last keystroke before updating the banner. */
-const INPUT_DEBOUNCE_MS = 400;
-
-function DebouncedInput({
-  id,
-  maxLength,
-  value: externalValue,
-  onChange,
-}: {
-  id: string;
-  maxLength?: number;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const [localValue, setLocalValue] = useState(externalValue);
-  const [prevExternalValue, setPrevExternalValue] = useState(externalValue);
-  const debounced = useDebouncedCallback(onChange, INPUT_DEBOUNCE_MS);
-
-  if (externalValue !== prevExternalValue) {
-    setPrevExternalValue(externalValue);
-    setLocalValue(externalValue);
-  }
-
-  return (
-    <input
-      id={id}
-      type="text"
-      className="field-input"
-      maxLength={maxLength}
-      value={localValue}
-      onChange={(e) => {
-        setLocalValue(e.target.value);
-        debounced.schedule(e.target.value);
-      }}
-      // Leaving the field saves a pending value now instead of after the debounce.
-      onBlur={debounced.flush}
-    />
-  );
-}
-
-function GridColorsPicker({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <LabeledGroup label={label}>
-      <div className="grid grid-cols-2 gap-2">
-        {GRID_COLOR_PRESETS.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            onClick={() => onChange(preset.id)}
-            aria-pressed={value === preset.id}
-            className={`${controls.tile} ${controls.colorTile}`}
-          >
-            <span className={controls.colorStrip} aria-hidden>
-              {preset.gridLevels.slice(1).map((color) => (
-                <span key={color} style={{ backgroundColor: color }} />
-              ))}
-            </span>
-            <span className="truncate text-left">{preset.label}</span>
-          </button>
-        ))}
-      </div>
-    </LabeledGroup>
-  );
-}
-
-const APPEARANCES: Array<{ theme: Theme; label: string; icon: typeof Sun }> = [
-  { theme: "light", label: "Light", icon: Sun },
-  { theme: "dark", label: "Dark", icon: Moon },
-];
-
-/**
- * Light or dark for the whole app, which the banner's text and panels follow too. Not a template
- * setting: it's saved in the theme cookie and shown in every template's Style group.
- */
-function AppearancePicker() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <LabeledGroup label="Appearance">
-      <div className="grid grid-cols-2 gap-2">
-        {APPEARANCES.map(({ theme: option, label, icon: Icon }) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setTheme(option)}
-            aria-pressed={theme === option}
-            data-appearance={option}
-            className={`${controls.tile} ${controls.appearanceTile}`}
-          >
-            <Icon className="h-[18px] w-[18px] text-muted" aria-hidden />
-            <span>{label}</span>
-          </button>
-        ))}
-      </div>
-    </LabeledGroup>
-  );
-}
-
-/**
- * The platform the banner is for, grouped by the format they share: every platform in a group gets
- * the same image.
- */
-function PlatformPicker({
-  label,
-  state,
-  onChange,
-}: {
-  label: string;
-  state: Record<string, unknown>;
-  onChange: (platform: PlatformId) => void;
-}) {
-  const id = useId();
-  const dropdown = useDropdown(id);
-  const current = platformOf(state);
-  return (
-    <FieldWrapper label={label} htmlFor={id}>
-      <DropdownRoot dropdown={dropdown} className="relative">
-        <DropdownTrigger dropdown={dropdown}>
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="text-muted">
-              <PlatformIcon icon={current.id} size={14} />
-            </span>
-            <span className="truncate">
-              {current.name} ({bannerFormatOf(state.size).label})
-            </span>
-          </span>
-        </DropdownTrigger>
-        <DropdownList dropdown={dropdown} label={label}>
-          {BANNER_SIZE_KEYS.map((key) => {
-            const format = BANNER_SIZES[key];
-            return (
-              <div key={key}>
-                <DropdownGroupLabel>
-                  {format.label}{" "}
-                  <span className="font-normal text-muted">
-                    ({format.width} × {format.height})
-                  </span>
-                </DropdownGroupLabel>
-                {format.platforms.map((platform) => (
-                  <DropdownOption
-                    key={platform.id}
-                    selected={platform.id === current.id}
-                    onSelect={() => {
-                      onChange(platform.id);
-                      dropdown.close();
-                    }}
-                  >
-                    {/* In the name, not the check's column, so the selected one keeps its icon. */}
-                    <span className="flex items-center gap-2">
-                      <span className="text-muted">
-                        <PlatformIcon icon={platform.id} />
-                      </span>
-                      {platform.name}
-                    </span>
-                  </DropdownOption>
-                ))}
-              </div>
-            );
-          })}
-        </DropdownList>
-      </DropdownRoot>
-    </FieldWrapper>
-  );
-}
-
-/** Show/hide settings as one list, a row per setting with a check on the right. */
-function ShowList({
-  fields,
-  state,
-  disabledFields,
-  onChange,
-}: {
-  fields: EditorFieldSchema[];
-  state: Record<string, unknown>;
-  disabledFields: ReadonlySet<string>;
-  onChange: (key: string, value: unknown) => void;
-}) {
-  return (
-    <LabeledGroup label="Show">
-      <CheckList>
-        {fields.map((field) => {
-          const disabled = disabledFields.has(field.key);
-          // Shown off while disabled, without changing the saved value.
-          const checked = !disabled && Boolean(state[field.key] ?? false);
-          return (
-            <CheckRow
-              key={field.key}
-              label={fieldLabel(field)}
-              on={checked}
-              disabled={disabled}
-              onClick={() => onChange(field.key, !checked)}
-            />
-          );
-        })}
-      </CheckList>
-    </LabeledGroup>
-  );
-}
-
-/** A sidebar section: its title with a rule below, then its settings. */
-function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section aria-labelledby={`settings-${title}`}>
-      <h2 id={`settings-${title}`} className={controls.groupTitle}>
-        {/* The landing page's heading gradient, on a span so it spans the word, not the row. */}
-        <span className={landingStyles.gradientText}>{title}</span>
-      </h2>
-      <div className="space-y-4">{children}</div>
-    </section>
-  );
-}
 
 /** The owner's repositories for the picker, and how loading them went. */
 interface RepoCatalog {
@@ -317,7 +85,7 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
       ]}
     />
   ),
-  font: (field, ctx) => <FontSelect {...textProps(field, ctx)} state={ctx.state} />,
+  font: (field, ctx) => <FontSelect {...textProps(field, ctx)} />,
   fontStyle: (field, ctx) => <FontStyleSelect {...textProps(field, ctx)} state={ctx.state} />,
   quoteMarks: (field, ctx) => <QuoteMarksSelect {...textProps(field, ctx)} state={ctx.state} />,
   authorPrefix: (field, ctx) => <AuthorPrefixSelect {...textProps(field, ctx)} state={ctx.state} />,
@@ -375,18 +143,16 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
   range: (field, ctx) => {
     const value = Number(ctx.state[field.key] ?? field.min ?? 1);
     return (
-      <FieldWrapper label={`${fieldLabel(field)}: ${value}`} htmlFor={field.key}>
-        <input
-          id={field.key}
-          type="range"
-          min={field.min}
-          max={field.max}
-          step={field.step}
-          value={value}
-          onChange={(e) => ctx.onChange(field.key, Number(e.target.value))}
-          className="w-full accent-accent"
-        />
-      </FieldWrapper>
+      // The value is in the label, which says what it counts ("Number of repos: 4").
+      <RangeField
+        id={field.key}
+        label={`${fieldLabel(field)}: ${value}`}
+        min={field.min}
+        max={field.max}
+        step={field.step}
+        value={value}
+        onChange={(next) => ctx.onChange(field.key, next)}
+      />
     );
   },
   colorPicker: (field, ctx) => (

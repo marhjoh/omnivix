@@ -19,9 +19,7 @@ export function LandingHero() {
         </p>
         <div className={landingStyles.heroGlow} aria-hidden />
         <h1 className="relative">
-          <span className={`${landingStyles.gradientText} ${landingStyles.heroName}`}>
-            {SITE_NAME}
-          </span>{" "}
+          <span className={`gradient-text ${landingStyles.heroName}`}>{SITE_NAME}</span>{" "}
           <span className={`${landingStyles.heroSubline} mt-1`}>a banner generator</span>
         </h1>
         <p className="mt-6 max-w-md text-lg leading-relaxed text-muted sm:mt-8">{SITE_TAGLINE}</p>

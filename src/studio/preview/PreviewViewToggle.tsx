@@ -1,6 +1,6 @@
-import { useId } from "react";
 import { Monitor, Smartphone, Tv } from "lucide-react";
 import type { BannerView } from "@/src/lib/sizes";
+import { TileGroup } from "@/src/studio/TileGroup";
 import controls from "@/src/studio/controls.module.css";
 import previewStyles from "@/src/studio/preview/preview.module.css";
 
@@ -24,29 +24,23 @@ export function PreviewViewToggle({
   view: BannerView;
   onChange: (view: BannerView) => void;
 }) {
-  const labelId = useId();
   return (
-    <div role="group" aria-labelledby={labelId} className={previewStyles.views}>
-      <span id={labelId} className={previewStyles.viewsLabel}>
-        Preview as
-      </span>
-      <div className={previewStyles.viewTiles}>
-        {views.map((option) => {
-          const { label, Icon } = VIEWS[option];
-          return (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={option === view}
-              onClick={() => onChange(option)}
-              className={`${controls.tile} ${controls.viewTile}`}
-            >
-              <Icon className="h-4 w-4 text-muted" aria-hidden />
-              {label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <TileGroup
+      label="Preview as"
+      className={previewStyles.views}
+      labelClassName={previewStyles.viewsLabel}
+      tilesClassName={previewStyles.viewTiles}
+      tileClassName={controls.viewTile}
+      options={views.map((option) => ({ value: option, ...VIEWS[option] }))}
+      value={view}
+      onChange={onChange}
+    >
+      {({ label, Icon }) => (
+        <>
+          <Icon className="h-4 w-4 text-muted" aria-hidden />
+          {label}
+        </>
+      )}
+    </TileGroup>
   );
 }

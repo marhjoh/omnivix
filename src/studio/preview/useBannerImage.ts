@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { preload } from "react-dom";
 import { previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { PREVIEW_PHOTO_SIZES } from "@/src/studio/layout";
-import { isDataUrl, isHttpImageUrl } from "@/src/lib/imageSource";
-import { useImageStatus } from "@/src/studio/preview/useImageStatus";
+import { isDataUrl, isHttpsUrl } from "@/src/lib/imageSource";
+import { useImageStatus } from "@/src/studio/useImageStatus";
 
 /**
  * An image setting (the background, the logo) as the preview loads it. One that failed is left out
@@ -30,7 +30,7 @@ export function useBannerImage(
 
   const reportedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!failed || !src || isHttpImageUrl(src)) return;
+    if (!failed || !src || isHttpsUrl(src)) return;
     if (reportedRef.current === src) return;
     reportedRef.current = src;
     showError(`Couldn't load this ${name}.`);

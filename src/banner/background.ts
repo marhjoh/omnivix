@@ -1,6 +1,12 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
-import { clampPercent, positionOr, samePosition, type Position } from "@/src/banner/position";
+import {
+  clampPercent,
+  positionOr,
+  roundPosition,
+  samePosition,
+  type Position,
+} from "@/src/banner/position";
 import { clamp } from "@/src/lib/math";
 import type { Box } from "@/src/lib/sizes";
 
@@ -62,8 +68,9 @@ export function backgroundPanRange(frame: Box, image: Box, zoom: number): Box {
 }
 
 /**
- * The position after dragging the image by `delta` banner pixels. Dragging right shows more of the
- * left side, which lowers `x`. Axes without room to move are left as they are.
+ * The position after dragging the image by `delta` banner pixels, rounded (roundPosition).
+ * Dragging right shows more of the left side, which lowers `x`. Axes without room to move are left
+ * as they are.
  */
 export function dragBackgroundPosition(
   position: BackgroundPosition,
@@ -72,5 +79,22 @@ export function dragBackgroundPosition(
 ): BackgroundPosition {
   const move = (value: number, by: number, room: number) =>
     room < 1 ? value : clampPercent(value - (by / room) * 100);
-  return { x: move(position.x, delta.x, range.width), y: move(position.y, delta.y, range.height) };
+  return roundPosition({
+    x: move(position.x, delta.x, range.width),
+    y: move(position.y, delta.y, range.height),
+  });
+}
+
+/**
+ * The position after an arrow key: `step` percent on each axis, rounded (roundPosition). Like a
+ * drag, the image moves the arrow's way: → shows more of the left side, which lowers `x`.
+ */
+export function nudgeBackgroundPosition(
+  position: BackgroundPosition,
+  step: { x: number; y: number },
+): BackgroundPosition {
+  return roundPosition({
+    x: clampPercent(position.x - step.x),
+    y: clampPercent(position.y - step.y),
+  });
 }

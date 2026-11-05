@@ -4,26 +4,18 @@ import { useCallback, useMemo, useState } from "react";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
-import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
+import { PreviewArtboard } from "@/src/studio/preview/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview/computePreviewContentState";
 import type { PreviewContentState } from "@/src/studio/preview/types";
-import { isExportBlocked } from "@/src/studio/exportBlocked";
 import { Toast, useToast } from "@/src/ui/Toast";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { logoPositionFromState } from "@/src/banner/logo";
 import type { Position } from "@/src/banner/position";
-import { useHoldDuringLoad } from "@/src/studio/preview/useHoldDuringLoad";
-import { useKeepWhile } from "@/src/studio/preview/useKeepWhile";
+import { useHoldDuringLoad } from "@/src/ui/useHoldDuringLoad";
+import { useKeepWhile } from "@/src/ui/useKeepWhile";
 import { backgroundFromState, type BackgroundPosition } from "@/src/banner/background";
 import { contentPositionFromState } from "@/src/banner/contentPosition";
-import {
-  FORMAT_COOKIE_NAME,
-  parseFormatCookie,
-  parsePixelRatioCookie,
-  parsePreviewViewCookie,
-  PIXEL_RATIO_COOKIE_NAME,
-  PREVIEW_VIEW_COOKIE_NAME,
-} from "@/src/studio/studioCookies";
+import { FORMAT_COOKIE, PIXEL_RATIO_COOKIE, PREVIEW_VIEW_COOKIE } from "@/src/studio/studioCookies";
 import { TopBar } from "@/src/studio/TopBar";
 import { ExportControls } from "@/src/studio/ExportControls";
 import { useBannerExport } from "@/src/studio/useBannerExport";
@@ -31,13 +23,13 @@ import { UsernameModal } from "@/src/studio/UsernameModal";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
-import type { LinkSettings } from "@/src/studio/linkSettings";
+import type { LinkSettings, StartingSettings } from "@/src/studio/linkSettings";
 import { BANNER_SIZES, type BannerSize, type BannerView } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
-import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/studio/useDelayedFlag";
+import { PENDING_DELAY_MS, PENDING_MIN_SHOW_MS } from "@/src/ui/useDelayedFlag";
 
 /** Only a finished preview is held during a load; an empty or error state goes straight to it. */
 function isReadyPreview(preview: { previewState: PreviewContentState }): boolean {
@@ -50,8 +42,7 @@ export function StudioShell({
   initialPixelRatio,
   initialFormat,
   initialPreviewView,
-  savedSettings,
-  savedUsername,
+  start,
   link,
   initialGithubData,
 }: {
@@ -63,10 +54,8 @@ export function StudioShell({
   initialFormat: ExportFormat;
   /** The preview's view of a format that devices crop, from its cookie (phone when none). */
   initialPreviewView: BannerView;
-  /** This template's settings from its cookie (null: none saved yet). */
-  savedSettings: Record<string, unknown> | null;
-  /** The GitHub username from its cookie (null: none saved yet). */
-  savedUsername: string | null;
+  /** The settings and username from their cookies, with the studio link applied. */
+  start: StartingSettings;
   /** Settings from a studio link (`?username=…&themeId=…`), applied over the saved ones. */
   link: LinkSettings | null;
   /** GitHub data the server already loaded, by the url the studio fetches it from. */
@@ -77,8 +66,7 @@ export function StudioShell({
   const needsUsername = definition.meta.needsUsername;
   const { state, username, updateState, moveContent, missingSavedUsername } = useBannerSettings({
     templateId,
-    savedSettings,
-    savedUsername,
+    start,
     link,
   });
   const github = useGithubBannerData({ templateId, state, username, initialGithubData });
@@ -86,21 +74,9 @@ export function StudioShell({
   const { toast, showError, showSuccess, dismissToast } = useToast();
 
   // Download resolution and format, remembered per browser.
-  const [pixelRatio, changePixelRatio] = useCookieChoice(
-    PIXEL_RATIO_COOKIE_NAME,
-    parsePixelRatioCookie,
-    initialPixelRatio,
-  );
-  const [format, changeFormat] = useCookieChoice(
-    FORMAT_COOKIE_NAME,
-    parseFormatCookie,
-    initialFormat,
-  );
-  const [previewView, changePreviewView] = useCookieChoice(
-    PREVIEW_VIEW_COOKIE_NAME,
-    parsePreviewViewCookie,
-    initialPreviewView,
-  );
+  const [pixelRatio, changePixelRatio] = useCookieChoice(PIXEL_RATIO_COOKIE, initialPixelRatio);
+  const [format, changeFormat] = useCookieChoice(FORMAT_COOKIE, initialFormat);
+  const [previewView, changePreviewView] = useCookieChoice(PREVIEW_VIEW_COOKIE, initialPreviewView);
 
   // GitHub banners ask for a username right away when none is saved or linked.
   const [showUsernameModal, setShowUsernameModal] = useState(missingSavedUsername);
@@ -115,40 +91,31 @@ export function StudioShell({
   const fill = state.contentSize === "fill";
   // A profile photo that failed to load can't be shown, Fill covers the whole banner, and without
   // quote marks there's nothing to color.
-  const noMarks = state.quoteMarks === "none";
-  const disabledFields = useMemo(() => {
-    const keys = new Set<string>();
-    if (github.avatarFailed) keys.add("showAvatar");
-    if (fill) keys.add("alignment");
-    if (noMarks) keys.add("markColor");
-    return keys;
-  }, [github.avatarFailed, fill, noMarks]);
+  const disabledFields = new Set<string>();
+  if (github.avatarFailed) disabledFields.add("showAvatar");
+  if (fill) disabledFields.add("alignment");
+  if (state.quoteMarks === "none") disabledFields.add("markColor");
 
-  // A required field such as the quote is empty (the username is handled on its own).
-  const missingContent = definition.schema.some(
-    (field) => field.required && field.key !== "username" && !String(state[field.key] ?? "").trim(),
-  );
+  // What the banner waits for: the username first, as nothing loads without it, then a required
+  // field such as the quote.
+  const missingSetting =
+    needsUsername && !username.trim()
+      ? "username"
+      : definition.schema.find(
+          (field) =>
+            field.required && field.key !== "username" && !String(state[field.key] ?? "").trim(),
+        )?.key;
   const previewState = computePreviewContentState({
-    needsUsername,
-    username,
-    missingContent,
-    dataError: github.problem?.title ?? null,
+    missingSetting,
+    hasProblem: github.problem !== null,
     dataReady: github.dataReady,
   });
 
   const background = backgroundFromState(state);
-  const moveBackground = useCallback(
-    (position: BackgroundPosition) => updateState("backgroundPosition", position),
-    [updateState],
-  );
   const backgroundImage = useBannerImage(state.backgroundImage, "background", showError);
   /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
   const adjustableBackground = backgroundImage.usableSrc ? background : undefined;
   const logoImage = useBannerImage(state.logoImage, "logo", showError);
-  const moveLogo = useCallback(
-    (position: Position) => updateState("logoPosition", position),
-    [updateState],
-  );
 
   const backgroundFields = useMemo(
     () => ({
@@ -181,15 +148,18 @@ export function StudioShell({
     minShowMs: PENDING_MIN_SHOW_MS,
     canHold: isReadyPreview,
   });
-  const exportBlocked = isExportBlocked({
-    previewState: shownPreview.previewState,
-    imageUnusable: backgroundImage.status === "failed" || logoImage.status === "failed",
-    previewPending:
-      shownPreview !== livePreview ||
-      github.contributionsStale ||
-      shownBackground !== backgroundFields ||
-      logoImage.status === "loading",
-  });
+  // Download and Copy have no message of their own: the preview shows why they're off (empty,
+  // loading or a problem), and an unusable image is reported with a toast. They're also off while
+  // the preview still shows an earlier version (a quick load being held, the previous year's grid,
+  // the previous background, or a logo still loading): a download now wouldn't match it.
+  const exportBlocked =
+    shownPreview.previewState !== "ready" ||
+    backgroundImage.status === "failed" ||
+    logoImage.status === "failed" ||
+    shownPreview !== livePreview ||
+    github.contributionsStale ||
+    shownBackground !== backgroundFields ||
+    logoImage.status === "loading";
 
   const bannerExport = useBannerExport({
     request: { templateId, size, state, pixelRatio, uiTheme: appTheme },
@@ -273,6 +243,7 @@ export function StudioShell({
             data={shownPreview.data}
             previewState={shownPreview.previewState}
             problem={shownPreview.problem}
+            missingSetting={missingSetting}
             exporting={bannerExport.exporting !== null}
             onRetry={github.retry}
             onChangeUsername={openUsernameModal}
@@ -282,7 +253,8 @@ export function StudioShell({
                 ? {
                     position: adjustableBackground.position,
                     zoom: adjustableBackground.zoom,
-                    onMove: moveBackground,
+                    onMove: (position: BackgroundPosition) =>
+                      updateState("backgroundPosition", position),
                   }
                 : undefined
             }
@@ -291,7 +263,10 @@ export function StudioShell({
             }
             logoAdjust={
               logoImage.usableSrc
-                ? { position: logoPositionFromState(state), onMove: moveLogo }
+                ? {
+                    position: logoPositionFromState(state),
+                    onMove: (position: Position) => updateState("logoPosition", position),
+                  }
                 : undefined
             }
           />

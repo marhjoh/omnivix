@@ -19,7 +19,7 @@
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  transition-property: background-color, border-color, box-shadow, color;
+  transition-property: var(--fade-colors);
   transition-duration: var(--hover-fade);
 }
 
@@ -45,7 +45,7 @@
 }
 
 .tile:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -149,7 +149,7 @@
 }
 
 .swatch:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
@@ -178,12 +178,12 @@
   transition-duration: var(--hover-fade);
 }
 
-.reset:hover {
+.reset:where(:hover) {
   border-color: var(--control-border-hover);
 }
 
 .reset:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -252,7 +252,7 @@
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
-  transition-property: background-color, border-color, box-shadow, color;
+  transition-property: var(--fade-colors);
   transition-duration: var(--hover-fade);
 }
 
@@ -261,7 +261,7 @@
 }
 
 /* Rows inside a frame: hover is a light background, like the dropdown options. */
-.checkRow:hover:not(:disabled) {
+.checkRow:where(:hover:not(:disabled)) {
   background: var(--surface-2);
 }
 
@@ -271,7 +271,7 @@
 }
 
 .checkRow:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
 }
 
@@ -285,7 +285,7 @@
   border-radius: 0.3rem;
   border: 1px solid var(--border);
   color: transparent;
-  transition-property: background-color, border-color, box-shadow, color;
+  transition-property: var(--fade-colors);
   transition-duration: var(--hover-fade);
 }
 
@@ -298,7 +298,7 @@
 /* Section titles in the sidebar, with a rule below. */
 .groupTitle {
   margin-bottom: 1rem;
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-bottom: 1px solid var(--divider-strong);
   padding-bottom: 0.5rem;
   font-size: 1.125rem;
   font-weight: 700;
@@ -351,8 +351,9 @@
   border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.splitMain:hover:not(:disabled, [aria-disabled="true"]),
-.splitToggle:hover:not([aria-disabled="true"]),
+/* Hover in :where, so the blocked pill's colors below always win over it. */
+.splitMain:where(:hover:not(:disabled, [aria-disabled="true"])),
+.splitToggle:where(:hover:not([aria-disabled="true"])),
 .splitToggle[aria-expanded="true"] {
   background: var(--accent-fill-hover);
 }
@@ -392,7 +393,7 @@
   color: var(--text);
 }
 
-.split[data-blocked="true"] .splitToggle:hover,
+.split[data-blocked="true"] .splitToggle:where(:hover),
 .split[data-blocked="true"] .splitToggle[aria-expanded="true"] {
   background: var(--surface-2);
 }
@@ -455,7 +456,7 @@
 /* Copy actions below the choices: rows like the dropdown options, a rule above them. */
 .panelActions {
   margin: 1rem -0.5rem 0;
-  border-top: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-top: 1px solid var(--divider-strong);
   padding-top: 0.5rem;
 }
 
@@ -475,7 +476,7 @@
   transition-duration: var(--hover-fade);
 }
 
-.panelAction:hover:not(:disabled) {
+.panelAction:where(:hover:not(:disabled)) {
   background: var(--surface-2);
 }
 
@@ -489,7 +490,7 @@
 }
 
 .panelAction:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
 }
 

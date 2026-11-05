@@ -13,62 +13,72 @@ import {
   type ExportFormat,
 } from "@/src/export/format";
 
-export const USERNAME_COOKIE = "omnivix-username";
-
-/** One cookie per template, holding that template's settings as JSON. */
-export function settingsCookieName(templateId: string): string {
-  return `omnivix-settings-${templateId}`;
+/** A studio cookie: its name, and how its value is read (a fallback when it's missing or invalid). */
+export interface StudioCookie<T> {
+  name: string;
+  parse: (value: string | undefined) => T;
 }
 
-export function parseUsernameCookie(value: string | undefined): string | null {
-  if (value === undefined) return null;
-  try {
-    const username = decodeURIComponent(value);
-    return isGithubUsername(username) ? username : null;
-  } catch {
-    return null;
-  }
+/** The GitHub username, saved for every template (null: none saved yet). */
+export const USERNAME_COOKIE: StudioCookie<string | null> = {
+  name: "omnivix-username",
+  parse: (value) => {
+    if (value === undefined) return null;
+    try {
+      const username = decodeURIComponent(value);
+      return isGithubUsername(username) ? username : null;
+    } catch {
+      return null;
+    }
+  },
+};
+
+/** One cookie per template, holding that template's settings as JSON (null: none saved yet). */
+export function settingsCookie(templateId: string): StudioCookie<Record<string, unknown> | null> {
+  return {
+    name: `omnivix-settings-${templateId}`,
+    parse: (value) => {
+      if (value === undefined) return null;
+      try {
+        const parsed: unknown = JSON.parse(decodeURIComponent(value));
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+          ? (parsed as Record<string, unknown>)
+          : null;
+      } catch {
+        return null;
+      }
+    },
+  };
 }
 
-export function parseSettingsCookie(value: string | undefined): Record<string, unknown> | null {
-  if (value === undefined) return null;
-  try {
-    const parsed: unknown = JSON.parse(decodeURIComponent(value));
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Desktop sidebar collapse, stored in a cookie so the server renders it correctly (no slide on load). */
-export const SIDEBAR_COOKIE_NAME = "omnivix-sidebar";
-
-export function parseSidebarCollapsedCookie(value: string | undefined): boolean {
-  return value === "collapsed";
-}
+/** Whether the desktop sidebar is collapsed, so the server renders it that way (no slide on load). */
+export const SIDEBAR_COOKIE: StudioCookie<boolean> = {
+  name: "omnivix-sidebar",
+  parse: (value) => value === "collapsed",
+};
 
 export function setSidebarCollapsedCookieClient(collapsed: boolean): void {
-  setCookieClient(SIDEBAR_COOKIE_NAME, collapsed ? "collapsed" : "expanded");
+  setCookieClient(SIDEBAR_COOKIE.name, collapsed ? "collapsed" : "expanded");
 }
 
-/** The preview's view (Phone, Desktop or TV), stored in a cookie so the server renders it. */
-export const PREVIEW_VIEW_COOKIE_NAME = "omnivix-preview-view";
+/**
+ * The preview's view (Phone, Desktop or TV), so the server renders it. Phones by default: most
+ * viewers see that, and it's the part the content fits.
+ */
+export const PREVIEW_VIEW_COOKIE: StudioCookie<BannerView> = {
+  name: "omnivix-preview-view",
+  parse: (value) => oneOfOr(BANNER_VIEWS, value, "phone"),
+};
 
-/** Phones by default: most viewers see that, and it's the part the content fits. */
-export function parsePreviewViewCookie(value: string | undefined): BannerView {
-  return oneOfOr(BANNER_VIEWS, value, "phone");
-}
+/** Download resolution, so the server renders the last choice. */
+export const PIXEL_RATIO_COOKIE: StudioCookie<ExportPixelRatio> = {
+  name: "omnivix-pixel-ratio",
+  parse: (value) =>
+    EXPORT_PIXEL_RATIOS.find((ratio) => String(ratio) === value) ?? DEFAULT_PIXEL_RATIO,
+};
 
-/** Download resolution and format, stored in cookies so the server renders the last choice. */
-export const PIXEL_RATIO_COOKIE_NAME = "omnivix-pixel-ratio";
-export const FORMAT_COOKIE_NAME = "omnivix-format";
-
-export function parsePixelRatioCookie(value: string | undefined): ExportPixelRatio {
-  return EXPORT_PIXEL_RATIOS.find((ratio) => String(ratio) === value) ?? DEFAULT_PIXEL_RATIO;
-}
-
-export function parseFormatCookie(value: string | undefined): ExportFormat {
-  return oneOfOr(EXPORT_FORMATS, value, DEFAULT_EXPORT_FORMAT);
-}
+/** Download format, so the server renders the last choice. */
+export const FORMAT_COOKIE: StudioCookie<ExportFormat> = {
+  name: "omnivix-format",
+  parse: (value) => oneOfOr(EXPORT_FORMATS, value, DEFAULT_EXPORT_FORMAT),
+};
