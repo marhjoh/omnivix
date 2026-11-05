@@ -93,7 +93,7 @@ export function BackgroundField({
         // Only once the image has been moved in the preview.
         background && !isDefaultBackgroundPosition(background) ? (
           <ResetButton
-            label="Reset position"
+            label="Reset"
             onClick={() => onChange("backgroundPosition", undefined)}
           />
         ) : null
