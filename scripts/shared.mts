@@ -1,7 +1,7 @@
 // Settings the scripts share.
 import { SITE_LINKS } from "@/src/lib/site";
 
-/** The running app the scripts talk to: `pnpm dev`, unless BASE_URL says otherwise. */
+/** The running app. Defaults to `pnpm dev` unless BASE_URL is set. */
 export const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 
 /** The GitHub user whose banners the scripts render. */

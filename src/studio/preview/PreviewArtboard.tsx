@@ -23,7 +23,7 @@ import { PreviewPhotosContext } from "@/src/banner/Frame";
 import { PreviewViewToggle } from "@/src/studio/preview/PreviewViewToggle";
 import { ExportProgress } from "@/src/studio/preview/ExportProgress";
 
-/** How the preview's label ends for each view of a format that devices crop. */
+/** The end of the preview's label for each device view. */
 const VIEW_LABELS: Record<BannerView, string> = {
   phone: "as phones show it",
   desktop: "as desktop shows it",
@@ -50,7 +50,7 @@ export function PreviewArtboard({
 }: {
   templateId: TemplateId;
   size: BannerSize;
-  /** What the preview shows of a format that devices crop (YouTube, Reddit); others show all. */
+  /** The device crop to show, for formats that devices crop. Others show the whole banner. */
   view: BannerView;
   onViewChange: (view: BannerView) => void;
   state: Record<string, unknown>;
@@ -60,13 +60,13 @@ export function PreviewArtboard({
   problem: PreviewProblem | null;
   /** What the banner waits for when `previewState` is "empty": "username", or a setting's key. */
   missingSetting: string | undefined;
-  /** An export runs: the preview shows its progress and can't be moved meanwhile. */
+  /** While true, the preview shows export progress and nothing can be dragged. */
   exporting: boolean;
   onRetry: () => void;
   onChangeUsername: () => void;
   /** Opens the settings with the cursor in this setting's field. */
   onEditSetting: (key: string) => void;
-  /** Set when the banner has a background that can be moved: the preview can then be dragged. */
+  /** Set when the banner has a background that can be moved. */
   backgroundAdjust?: {
     position: Position;
     zoom: number;
@@ -92,9 +92,9 @@ export function PreviewArtboard({
   const shown = viewRect(dims, activeView);
   const scale = available ? previewScale(available, shown) : null;
 
-  // Until the stage is measured (before the page's JavaScript runs), CSS does the same fit with
-  // the stage as a size container, so the banner shows at its final size from the first paint.
-  // tan(atan2(a, b)) is a / b as a plain number, which scale() needs.
+  // Until the stage is measured, CSS does the same fit using the stage as a size container. That
+  // way the banner has its final size from the first paint, before the page's JavaScript runs.
+  // tan(atan2(a, b)) turns a / b into a unitless number, which scale() needs.
   const fitWidth = cssFitWidth(shown);
   const artboardStyle: CSSProperties =
     scale === null
@@ -123,7 +123,7 @@ export function PreviewArtboard({
                   <BannerRenderer templateId={templateId} state={state} data={data} />
                 </PreviewPhotosContext>
               </div>
-              {/* No moving while an export runs: the file has the positions from the click. */}
+              {/* No dragging during an export. The file uses the positions from the click. */}
               {scale !== null && !exporting && (
                 <>
                   {backgroundAdjust && (
@@ -139,7 +139,7 @@ export function PreviewArtboard({
                       scale={scale}
                     />
                   )}
-                  {/* After the content's: the logo is on top where they meet. */}
+                  {/* After the content's surface, so the logo is on top where they overlap. */}
                   {logoAdjust && (
                     <PlacementDragSurface
                       {...logoAdjust}

@@ -19,9 +19,9 @@ import {
   QUOTE_MARKS_OPTIONS,
 } from "@/src/banner/quoteStyle";
 
-// The sidebar shows each template's fields in its `schema` order. Settings rules: stateSchemas.ts.
+// The sidebar shows fields in `schema` order. Validation is in stateSchemas.ts.
 
-/** Settings every banner has: its size, logo and alignment (the background has no default). */
+/** Defaults every banner shares. The background has none. */
 const bannerInitialState = {
   size: DEFAULT_BANNER_SIZE,
   logoSize: DEFAULT_LOGO_SIZE,
@@ -36,13 +36,11 @@ const backgroundField: EditorFieldSchema = {
   type: "backgroundPicker",
 };
 
-/** See `src/banner/logo.ts`. */
 const logoFields: EditorFieldSchema[] = [
   { key: "logoImage", label: "Logo", type: "logoPicker" },
   { key: "logoSize", label: "Logo size", type: "select", options: CONTENT_SIZE_OPTIONS },
 ];
 
-/** Horizontal placement of the content (its x in `contentPosition`). */
 const alignmentField: EditorFieldSchema = {
   key: "alignment",
   label: "Alignment",
@@ -50,7 +48,6 @@ const alignmentField: EditorFieldSchema = {
   options: CONTENT_ALIGN_OPTIONS,
 };
 
-/** See `src/banner/contentSize.ts`. */
 const contentSizeField: EditorFieldSchema = {
   key: "contentSize",
   label: "Content size",
@@ -58,14 +55,14 @@ const contentSizeField: EditorFieldSchema = {
   options: CONTENT_SIZE_OPTIONS,
 };
 
-/** The contribution grid's settings (GitHub and contribution banners). */
+/** Shared by the GitHub and contribution banners. */
 const contributionGridInitialState = {
   year: String(currentYear()),
   themeId: DEFAULT_GRID_COLORS_ID,
   cellShape: DEFAULT_CELL_SHAPE,
 };
 
-/** The grid colors; the sidebar calls them "Grid colors" (settingGroups.ts). */
+/** The sidebar labels this "Grid colors" (settingGroups.ts). */
 const gridColorsField: EditorFieldSchema = { key: "themeId", label: "Theme", type: "select" };
 
 const yearField: EditorFieldSchema = { key: "year", label: "Year", type: "select" };
@@ -77,7 +74,7 @@ const cellShapeField: EditorFieldSchema = {
   options: CONTRIBUTION_CELL_SHAPE_OPTIONS,
 };
 
-/** The GitHub profile above the content (GitHub and repos banners). */
+/** Shared by the GitHub and repos banners. */
 const profileInitialState = {
   username: "",
   showAvatar: true,
@@ -85,7 +82,6 @@ const profileInitialState = {
   profilePosition: "left",
 };
 
-/** Which side of the content the avatar and name sit on. */
 const profilePositionField: EditorFieldSchema = {
   key: "profilePosition",
   label: "Profile position",

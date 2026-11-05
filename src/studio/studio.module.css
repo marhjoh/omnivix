@@ -1,6 +1,6 @@
 .shell {
-  /* One height and side padding at every width, so nothing in the header moves when the window
-     is resized. The phone drawer and its backdrop start below it. */
+  /* The same height and side padding at every width, so nothing in the header moves on resize.
+     The phone drawer and its backdrop start below it. */
   --topbar-height: 60px;
   --topbar-padding: 16px;
   /* Keep in sync with SIDEBAR_WIDTH_PX (src/studio/layout.ts). */
@@ -32,9 +32,9 @@
 }
 
 /*
- * Desktop: the aside animates its width; the inner panel keeps its width so controls don't reflow.
- * Phones: the aside is a drawer that slides over the preview.
- * `visibility` hides closed panels from keyboard focus once the transition ends.
+ * On desktop the aside animates its width, and the inner panel keeps its width so controls don't
+ * reflow. On phones the aside is a drawer that slides over the preview. `visibility` keeps closed
+ * panels out of keyboard focus once the transition ends.
  */
 .sidebar {
   width: var(--sidebar-width);
@@ -58,7 +58,7 @@
   display: none;
 }
 
-/* The phone breakpoint: keep in sync with PHONE_QUERY (src/studio/layout.ts). */
+/* Phone breakpoint. Keep in sync with PHONE_QUERY (src/studio/layout.ts). */
 @media (min-width: 768px) {
   .content[data-sidebar-collapsed="true"] .sidebar {
     width: 0;
@@ -88,7 +88,7 @@
       visibility 0s var(--sidebar-transition);
   }
 
-  /* Swipes past the drawer's top/bottom would otherwise chain to the page behind it. */
+  /* Stops swipes past the drawer's top or bottom from scrolling the page behind it. */
   .sidebarInner {
     width: 100%;
     overscroll-behavior: contain;
@@ -110,13 +110,13 @@
     background: rgba(0, 0, 0, 0.45);
     border: 0;
     cursor: pointer;
-    /* Taps still close the drawer; swipes on it don't scroll the page. */
+    /* Taps still close the drawer, but swipes on the backdrop don't scroll the page. */
     touch-action: none;
   }
 }
 
-/* Animate only during user actions (StudioShell sets data-sidebar-animating); window resizes that
-   cross the breakpoint switch instantly. Must come after the rules above to win on source order. */
+/* Only animate during user actions (StudioShell sets data-sidebar-animating). A resize across the
+   breakpoint switches instantly. This must come after the rules above to win on source order. */
 .content:not([data-sidebar-animating="true"]) .sidebar {
   transition: none;
 }
@@ -149,9 +149,9 @@
   border-radius: 12px;
 }
 
-/* A 1px ring in the text color at 12%, so it shows on the preview's tinted background in both
-   themes, and a theme-aware shadow. The ring is a shadow, not a border, so it takes no space from
-   the scaled banner. */
+/* A 1px ring in the text color at 12% shows on the preview's tinted background in both themes,
+   plus a theme-aware shadow. The ring is a box-shadow, not a border, so it takes no space from the
+   scaled banner. */
 :global(html[data-theme="dark"] .omnivix-artboard) {
   box-shadow:
     0 0 0 1px color-mix(in oklab, var(--text) 12%, transparent),
@@ -164,9 +164,9 @@
     0 10px 32px rgba(31, 35, 40, 0.08);
 }
 
-/* The banner stays hidden until its content is fitted (FitContent sets data-banner-fit), so the
-   background and the content appear together; before the page's JavaScript runs, the background
-   would show alone. Keep in sync with BANNER_ROOT_CLASS and FIT_STATUS_ATTRIBUTE (src/banner/). */
+/* Hide the banner until its content is fitted (FitContent sets data-banner-fit). Otherwise the
+   background shows alone until the page's JavaScript runs. Keep in sync with BANNER_ROOT_CLASS and
+   FIT_STATUS_ATTRIBUTE (src/banner/). */
 :global(.omnivix-artboard:has([data-banner-fit="pending"]) .banner-export-root) {
   visibility: hidden;
 }

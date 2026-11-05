@@ -1,7 +1,7 @@
 import type { Page, Route } from "@playwright/test";
 import type { ContributionsNormalized, GithubUserNormalized, RepoLists } from "@/src/github/types";
 
-// Fake GitHub data for the studio, served in the browser: CI has no GitHub token.
+// Fake GitHub data for the studio, answered in the browser, because CI has no GitHub token.
 
 export const USERNAME = "octocat";
 

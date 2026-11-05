@@ -81,6 +81,15 @@ describe("request limits", () => {
     expect(key).not.toContain("203.0.113.7");
   });
 
+  it("count image URL renders by the caller's key, 30 a day", async () => {
+    limit.mockResolvedValue({ success: true, reset: 0 });
+    const { bannerImageLimit } = await load();
+    expect(await bannerImageLimit("user:octocat")).toBeNull();
+    expect(limit).toHaveBeenCalledWith("user:octocat");
+    expect(fixedWindow).toHaveBeenCalledWith(30, "1 d");
+    expect(configure.mock.lastCall?.[0].prefix).toBe("omnivix:development:banner-images");
+  });
+
   it("say when a refused request may try again", async () => {
     const reset = Date.UTC(2026, 9, 19);
     limit.mockResolvedValue({ success: false, reset });

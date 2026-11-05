@@ -8,17 +8,16 @@ import type { TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
 
 /**
- * How long the studio page waits for GitHub. Usually it's in the server's cache and takes
- * milliseconds; a slow GitHub shouldn't hold up the page, so the browser loads what's missing.
+ * How long the studio page waits for GitHub data. It's usually in the server cache and takes
+ * milliseconds. If GitHub is slow, the page renders without it and the browser loads the rest.
  */
 const WAIT_MS = 800;
 
 /**
- * The GitHub data the studio shows first, by the url the studio would fetch it from, so the
- * first paint already has the banner instead of a loading screen. What fails or takes longer
- * than WAIT_MS is left out (and loaded, or reported, by the studio as usual). Each load runs on its
- * own (`Effect.runPromise`), so one still running when the wait ends isn't stopped: it finishes
- * into the GitHub cache, where the studio's own request finds it.
+ * Loads the GitHub data the studio shows first, keyed by the URL the studio would fetch it from.
+ * This way the first paint shows the banner instead of a loading screen. Anything that fails or
+ * takes longer than WAIT_MS is left out, and the studio loads it as usual. A load that's still
+ * running isn't canceled. It finishes into the GitHub cache, where the studio's request finds it.
  */
 export async function loadInitialGithubData(
   templateId: TemplateId,

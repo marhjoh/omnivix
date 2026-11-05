@@ -1,13 +1,13 @@
 import { isOneOf } from "@/src/lib/isOneOf";
 
-/** Limits our API names in its 429 body, with the time they reset. */
-const TIMED_LIMITS = ["github", "requests", "daily-exports"] as const;
+/** Limits the API names in its 429 body, along with when they reset. */
+const TIMED_LIMITS = ["github", "requests", "daily-exports", "banner-images"] as const;
 
 export type TimedLimit = (typeof TIMED_LIMITS)[number];
 
 /**
- * Why a request was refused: a limit our API names (GitHub's, or one of Omnivix's own per-IP
- * limits), or the export's Vercel Firewall rule, whose bare 429 has no reset time.
+ * Why a request was refused. Either a limit the API names (GitHub's or one of Omnivix's own), or
+ * the export's Vercel Firewall rule. The firewall sends a bare 429 with no reset time.
  */
 export type ApiLimit = { kind: TimedLimit; resetAt: Date } | { kind: "firewall" };
 
@@ -16,9 +16,9 @@ export function limitResetAt(limit: ApiLimit | null): Date | null {
 }
 
 /**
- * Reads our API's error body: a message to show as is, and the limit that refused the request.
- * Platform errors (a timeout page, an HTML 500, Vercel's own JSON error with an object in
- * `error`) have no message, so the caller uses its own fallback.
+ * Reads the API's error body: the message to show and the limit that refused the request. Platform
+ * errors give no message. Those are a timeout page, an HTML 500, or Vercel's own JSON error, which
+ * has an object in `error`.
  */
 export async function readApiError(
   response: Response,

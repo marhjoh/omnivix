@@ -1,13 +1,12 @@
 import { useId, type ReactNode } from "react";
 
-/** The id of the FieldLabel for the control with this id. */
 export function fieldLabelId(controlId: string): string {
   return `${controlId}-label`;
 }
 
 /**
- * A setting's label, above its control. `end` sits at the other end of the row: a value (Zoom's
- * percentage), a count or a small action.
+ * A setting's label, shown above its control. `end` goes at the far end of the row, such as Zoom's
+ * percentage, a count or a small action.
  */
 export function FieldLabel({
   htmlFor,
@@ -16,7 +15,7 @@ export function FieldLabel({
   className = "field-label",
   children,
 }: {
-  /** The control it labels; without it the label is plain text, named via `id`. */
+  /** The control it labels. Without it, the label is a plain span with `id`. */
   htmlFor?: string;
   id?: string;
   end?: ReactNode;
@@ -41,14 +40,14 @@ export function FieldLabel({
   );
 }
 
-/** A value at the end of a label row, such as Zoom's percentage or a count, in even digits. */
+/** A value at the end of a label row, like Zoom's percentage, in tabular digits. */
 export function FieldValue({ children }: { children: ReactNode }) {
   return <span className="field-label tabular-nums">{children}</span>;
 }
 
 /**
- * A group of controls named by its visible label, for screen readers too. The classes are for a
- * group outside the sidebar (the preview's view toggle); the sidebar's groups keep the defaults.
+ * A group of controls that screen readers announce by its visible label. Only a group outside the
+ * sidebar, like the preview's view toggle, needs the class props.
  */
 export function LabeledGroup({
   label,

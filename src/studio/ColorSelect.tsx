@@ -27,15 +27,15 @@ function swatchStyle(color: string): CSSProperties {
   return { "--swatch": color, color: checkColor(color) } as CSSProperties;
 }
 
-/** "#f60" as "#ff6600": colors are kept as six-digit hex codes. */
+/** Expands "#f60" to "#ff6600", because colors are stored as six-digit hex. */
 function sixDigits(hex: string): string {
   const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(hex);
   return short ? `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}` : hex;
 }
 
 /**
- * A color setting: a field with the color and its name, opening a panel of swatches in the shades
- * this banner shows them in, and a custom color with a picker. Picking a named color closes it.
+ * A color setting. The field opens a panel with swatches, shown in the shades this banner uses, and
+ * a custom color picker. Picking a named color closes the panel.
  */
 export function ColorSelect({
   label,
@@ -53,7 +53,7 @@ export function ColorSelect({
   disabled?: boolean;
   /** The banner's theme, for the shade each color shows in. */
   uiTheme: Theme;
-  /** What Default looks like: the banner's text color unless the setting's default differs. */
+  /** The color shown for Default. Usually the banner's text color. */
   defaultColor?: string;
 }) {
   const triggerId = useId();

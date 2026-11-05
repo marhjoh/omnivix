@@ -5,8 +5,8 @@ import { SITE_LINKS } from "@/src/lib/site";
 import { textLinkClass } from "@/src/ui/classNames";
 import landingStyles from "@/src/landing/landing.module.css";
 
-// Answers stay plain strings for the JSON-LD and /llms.txt; URLs in them become links here.
-// The lookahead leaves sentence punctuation after a URL out of the link.
+// Answers are plain strings because the JSON-LD and /llms.txt use them too. URLs in them become
+// links here. The lookahead keeps a period or comma after a URL out of the link.
 const URL_PATTERN = /(https:\/\/\S+?)(?=[.,;:]?(?:\s|$))/;
 
 function AnswerText({ text }: { text: string }) {
@@ -40,8 +40,8 @@ export function LandingFaq() {
           </a>
           .
         </p>
-        {/* Topics sit between the step words and the questions in size; their rule marks where
-            each group starts. The same gap above every topic keeps the groups even. */}
+        {/* Topic headings are smaller than the step words and bigger than the questions. The
+            line under each one marks where its group starts. */}
         <div className="space-y-8 md:space-y-10">
           {FAQ_TOPICS.map((topic) => (
             <div key={topic}>

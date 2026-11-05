@@ -4,9 +4,8 @@ import { useLinkStatus } from "next/link";
 import { Spinner } from "@/src/ui/Spinner";
 
 /**
- * Inside a <Link>: a spinner while the page it opens is on its way. The studio is rendered on
- * demand (with the GitHub data, see initialGithubData), so the click would otherwise seem ignored
- * on a slow connection.
+ * Goes inside a <Link> and spins while the next page loads. The studio renders on demand with the
+ * GitHub data, so on a slow connection the click would otherwise seem ignored.
  */
 export function LinkPendingSpinner() {
   const { pending } = useLinkStatus();

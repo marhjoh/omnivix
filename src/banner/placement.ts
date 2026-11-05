@@ -3,9 +3,9 @@ import { clampPercent, roundPercent, type Position } from "@/src/banner/position
 import type { BannerBox, Box } from "@/src/lib/sizes";
 
 /**
- * Placing an item (the content, the logo) in the banner's padded box (`contentBox`). Its position
- * is a percentage of the room left around it: 0 is the left/top, 100 the right/bottom. Like the
- * background's position, it carries over when the format or the item's size changes.
+ * Places the content or the logo in the banner's padded box (`contentBox`). A position is a
+ * percentage of the room left around the item, from 0 (left or top) to 100 (right or bottom).
+ * Because it's relative, it carries over when the format or the item's size changes.
  */
 
 /** Mark the items the banner places, so the studio preview can find them to drag. */
@@ -15,15 +15,15 @@ export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
 export const BANNER_BACKGROUND_ATTRIBUTE = "data-banner-background";
 
 /**
- * The banner's root element (`Frame`): what the export screenshots and the studio hides until the
- * content is fitted (studio.module.css repeats it, as CSS can't import it).
+ * The class on Frame's root. The export screenshots this element, and the studio hides it until
+ * the content is fitted. Keep in sync with studio.module.css.
  */
 export const BANNER_ROOT_CLASS = "banner-export-root";
 
-/** Where an item snaps while dragged: an edge or the middle of the box, on each axis. */
+/** While dragging, items snap to the edges and the middle of the box. */
 const SNAP_POINTS = [0, 50, 100];
 
-/** CSS that places an item at `position` in the room inside its box, with no measuring. */
+/** CSS that places an item at `position` without measuring it. */
 export function placementStyle({ x, y }: Position) {
   return {
     position: "absolute",
@@ -43,9 +43,9 @@ export function placementRoom(banner: BannerBox, item: Box): Box {
 }
 
 /**
- * The position after dragging an item by `delta` banner pixels, so it follows the pointer. Within
- * `snapDistance` of an edge or the middle it snaps there; `snapped` names those points, for the
- * guide lines. Axes without room stay as they are.
+ * The position after dragging an item by `delta` banner pixels. Within `snapDistance` of an edge
+ * or the middle, it snaps there, and `snapped` lists those points for the guide lines. An axis
+ * with no room stays put.
  */
 export function dragPlacement(
   from: Position,
@@ -81,10 +81,7 @@ export function nudgePlacement(
   return { x: move(from.x, step.x, room.width), y: move(from.y, step.y, room.height) };
 }
 
-/**
- * A snap point's place in banner pixels, for its guide line: the box's left edge, middle or
- * right edge (top, middle or bottom for y), where the item's matching edge or middle sits.
- */
+/** Where a snap point's guide line goes, in banner pixels: the padded box's edge or middle. */
 export function snapLine(banner: BannerBox, axis: "x" | "y", point: number): number {
   const { left, top, width, height } = contentBox(banner);
   return axis === "x" ? left + (width * point) / 100 : top + (height * point) / 100;

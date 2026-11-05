@@ -1,5 +1,5 @@
-// The export API and studio link sections of /llms.txt, generated from the templates, sizes and
-// formats, so they stay in step with what the API and the studio accept.
+// Builds the export API, studio link and image URL sections of /llms.txt from the templates, sizes
+// and formats. This keeps the docs in step with what the API and the studio accept.
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import {
   DEFAULT_EXPORT_FORMAT,
@@ -25,15 +25,19 @@ import { studioPath } from "@/src/lib/site";
 import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 import { linkFormatsOf } from "@/src/export/images";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
+import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
 
-/** The example request in the docs; a test checks that the API accepts it. */
+/** The example request in the docs. A test checks that the API accepts it. */
 export const EXAMPLE_REQUEST = {
   templateId: "github-banner",
   size: "wide",
   state: { username: "marhjoh" },
 };
 
-/** The example studio link in the docs; a test checks that the studio reads all of it. */
+/**
+ * The example studio link in the docs, also shown as an image URL. A test checks that the studio
+ * reads all of it.
+ */
 export const EXAMPLE_LINK: { templateId: TemplateId; query: Record<string, string> } = {
   templateId: "contribution-banner",
   query: { username: "marhjoh", size: "header", themeId: "sunset" },
@@ -82,7 +86,7 @@ function limitBody(limit: TimedLimit): string {
   return `\`{ "error": ${JSON.stringify(`${LIMIT_TITLES[limit]}.`)}, "limit": "${limit}", "resetAt": "<ISO time>" }\``;
 }
 
-/** The default as written; the year default is set at build time, so it says "this year". */
+/** The year default is set at build time, so the docs say "this year" instead of a number. */
 function defaultOf(key: string, value: unknown): string {
   if (key === "year") return "this year";
   return value === undefined || value === "" ? "none" : code(value);
@@ -90,6 +94,8 @@ function defaultOf(key: string, value: unknown): string {
 
 export function exportApiDocs(siteUrl: URL): string[] {
   const endpoint = new URL("/api/export", siteUrl).toString();
+  const exampleQuery = new URLSearchParams(EXAMPLE_LINK.query);
+  const imageUrl = new URL(`/banner/${EXAMPLE_LINK.templateId}.png?${exampleQuery}`, siteUrl);
   const sizes = BANNER_SIZE_KEYS.map((key) => {
     const format = BANNER_SIZES[key];
     return `${code(key)} (${format.label}, ${format.width} × ${format.height}: ${platformNames(format)})`;
@@ -147,15 +153,27 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     "To give a user a banner they can still adjust, link to the studio with the same settings as query parameters:",
     "",
-    `${new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${new URLSearchParams(EXAMPLE_LINK.query)}`, siteUrl)}`,
+    `${new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${exampleQuery}`, siteUrl)}`,
     "",
     "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",
+    "## Image URLs",
+    "",
+    "To embed a banner in a README or website, use its image URL: `/banner/<templateId>.png` (or `.jpg`) with a studio link's query. It stays up to date as the GitHub data changes. To get a studio link's image URL, change its path:",
+    "",
+    `${imageUrl}`,
+    "",
+    `It also takes \`pixelRatio\` (\`1\` or \`2\`, default \`2\`) and \`uiTheme\`. Invalid values use the defaults. In Markdown: \`![My banner](${imageUrl})\`.`,
+    "",
+    `Images are cached for a day. Each GitHub username, or each banner without one, gets 30 renders a day. Over that, the answer is ${limitBody("banner-images")}. Errors are JSON, as in the export API.`,
+    "",
     "## Template settings",
     "",
-    "For the export API's `state`, and studio links.",
+    "For the export API's `state`, studio links and image URLs.",
     "",
     'Every template also takes `contentPosition`, `logoPosition` and `backgroundPosition`, which the studio sets when the preview is dragged: `{ "x": 0–100, "y": 0–100 }`, where 0 is the left or top and 100 the right or bottom. `contentPosition` and `logoPosition` place the content and the logo in the room left around them inside the banner\'s padding. By default the content follows `alignment` and is centered vertically, and the logo is at the top right. `backgroundPosition` places the background image; by default it\'s centered, or at a built-in background\'s focus.',
+    "",
+    `\`backgroundZoom\`, from ${code(MIN_BACKGROUND_ZOOM)} to ${code(MAX_BACKGROUND_ZOOM)}, zooms the background in; the default is ${code(MIN_BACKGROUND_ZOOM)}.`,
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
       const defaults = initialState as Record<string, unknown>;

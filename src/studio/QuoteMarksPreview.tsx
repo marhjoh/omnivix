@@ -19,8 +19,8 @@ function LargeMark({ size, style }: { size: number; style?: CSSProperties }) {
 }
 
 /**
- * A small sample of a quote marks style around "Aa", in the quote's font (`style`), for the
- * Quote marks menu. It fits the menu's preview slot and the field's line height.
+ * A sample of a quote marks style around "Aa" in the quote's font (`style`), for the Quote marks
+ * menu. Sized to fit the menu's preview slot and the field's line height.
  */
 export function QuoteMarksPreview({ marks, style }: { marks: QuoteMarks; style: CSSProperties }) {
   const text = textMarksOf(marks);

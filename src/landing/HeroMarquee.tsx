@@ -16,9 +16,8 @@ const columns = Array.from({ length: COLUMNS }, (_, col) =>
 );
 
 /**
- * Decorative wall of banner previews on a tilted 3D plane; columns drift slowly in alternating
- * directions (CSS animation, paused for prefers-reduced-motion) and fade out at the edges.
- * Hidden from assistive tech: the Templates grid below names every template.
+ * A decorative wall of tilted banner previews. The columns drift up and down and fade out at the
+ * edges. Screen readers skip it because the Templates grid below names every template.
  */
 export function HeroMarquee() {
   return (
@@ -36,8 +35,8 @@ export function HeroMarquee() {
           <div key={i} className={styles.marqueeColumn} data-reverse={i % 2 === 1}>
             {column.map((templateId, j) => (
               <div key={j} className={styles.marqueeCard}>
-                {/* Eager: only 4 distinct URLs (fetched once each), and cards drifting into view
-                    shouldn't pop in while they load. */}
+                {/* Eager loading costs little with only 4 distinct images, and cards drifting into
+                    view shouldn't pop in. */}
                 <Image
                   src={landingPreviewSrc(templateId)}
                   alt=""

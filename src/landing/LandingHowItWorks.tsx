@@ -10,7 +10,7 @@ export function LandingHowItWorks() {
     >
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="how-it-works-heading">How it works.</SectionHeading>
-        {/* The <ol> numbers the steps for screen readers; the big words are decoration. */}
+        {/* The <ol> numbers the steps for screen readers. The big words are hidden from them. */}
         <ol className="space-y-12 sm:space-y-16">
           {HOW_IT_WORKS.map((step, i) => (
             <li key={step.title} className={i % 2 === 1 ? "sm:text-right" : undefined}>

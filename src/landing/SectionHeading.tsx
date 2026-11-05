@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-/** A section's big headline, in the brand gradient (wipes in on scroll, see app/globals.css). */
+/** A section's big gradient headline. It wipes in on scroll (see app/globals.css). */
 export function SectionHeading({
   id,
   children,

@@ -13,8 +13,8 @@ export function usernameOf(state: Record<string, unknown>): string {
 const GITHUB_HOSTS = new Set(["github.com", "www.github.com"]);
 
 /**
- * Username from a pasted github.com profile link; other input is returned unchanged. Checks the
- * parsed host, so evil.example/github.com/octocat is not a match.
+ * Takes the username from a pasted github.com profile link and returns other input unchanged. It
+ * checks the parsed host, so evil.example/github.com/octocat doesn't match.
  */
 export function usernameFromProfileLink(input: string): string {
   if (!input.includes("/")) return input;

@@ -12,16 +12,15 @@ import {
 } from "@/src/banner/placement";
 
 /**
- * Set by the studio preview: a photo preset then loads one of its smaller copies, sized for the
- * preview. The export leaves it unset, so it always gets the full-size photo.
+ * True in the studio preview, where photo presets load a smaller copy. The export leaves it false
+ * and always gets the full-size photo.
  */
 export const PreviewPhotosContext = createContext(false);
 
 /**
- * Banner root, identical in preview and export: the app theme's banner color and text color,
- * with the background image (if any) at 28% on top, then the content, then the logo (if any). The
- * studio preview draws its own ring and rounded corners around it (`.omnivix-artboard`) so they
- * stay crisp when the banner is scaled.
+ * The banner's root, the same in the preview and the export. It stacks the background image, the
+ * content and the logo. The preview draws its ring and rounded corners outside it
+ * (`.omnivix-artboard`) so they stay crisp when the banner is scaled.
  */
 export function Frame({
   children,
@@ -46,7 +45,7 @@ export function Frame({
         position: "relative",
         background: chrome.baseBg,
         color: chrome.text,
-        // Keeps the export's colors in forced colors (Windows High Contrast).
+        // Keep the banner's own colors in Windows High Contrast mode.
         forcedColorAdjust: "none",
       }}
     >
@@ -73,7 +72,7 @@ export function Frame({
         {children}
       </div>
       {logo ? (
-        // The padded box the logo moves in. Placed with CSS, so it's right from the server render.
+        // The padded box the logo moves in. Plain CSS places it, so the server render is right.
         <div style={{ position: "absolute", ...logo.box, zIndex: 2 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

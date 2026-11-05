@@ -18,10 +18,9 @@ function measureRect(preview: Element, element: Element): Rect {
 
 /**
  * The box of the banner item marked with `target`, in screen pixels from the top left of the
- * preview that holds `surface`.
- * Measured after every render (the banner places its items in the same commit), and a frame after
- * the item or its parent resizes, once the banner has re-fitted: a font or image loads, or the
- * format changes.
+ * preview that holds `surface`. It's measured after every render, because the banner places its
+ * items in the same commit. It's measured again a frame after the item or its parent resizes, once
+ * the banner has re-fitted, e.g. when a font or image loads or the format changes.
  */
 export function useItemRect(surface: RefObject<HTMLElement | null>, target: string) {
   const [rect, setRect] = useState<Rect | null>(null);

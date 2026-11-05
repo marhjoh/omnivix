@@ -17,7 +17,6 @@ import { RangeField } from "@/src/ui/RangeField";
 /** Zoom slider step: 5 percentage points. */
 const ZOOM_STEP = 0.05;
 
-/** What both image settings need besides their own value. */
 interface ImageFieldProps {
   field: EditorFieldSchema;
   state: Record<string, unknown>;
@@ -31,7 +30,7 @@ function imageValue(state: Record<string, unknown>, key: string): string | undef
   return typeof value === "string" ? value : undefined;
 }
 
-/** The logo, with its size inside the picker once there's one. */
+/** The logo picker. Its size slider shows inside it once there's a logo. */
 export function LogoField({
   sizeField,
   ...props
@@ -71,8 +70,8 @@ export function LogoField({
 }
 
 /**
- * The background, with its zoom inside the picker once it can be adjusted. The image is moved by
- * dragging the preview (BackgroundDragSurface).
+ * The background picker. Its zoom slider shows inside it once the background can be adjusted. The
+ * image is moved by dragging it in the preview (BackgroundDragSurface).
  */
 export function BackgroundField({
   background,

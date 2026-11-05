@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-/** Waits quicker than this show no pending state (spinner, skeleton, loading screen) at all. */
+/** Loads faster than this show no spinner, skeleton or loading screen at all. */
 export const PENDING_DELAY_MS = 300;
 
 /** Once shown, a pending state stays at least this long, so it doesn't just blink. */
@@ -9,9 +9,9 @@ export const PENDING_MIN_SHOW_MS = 400;
 type Phase = "idle" | "waiting" | "shown";
 
 /**
- * True once `on` has stayed true for `PENDING_DELAY_MS`, so quick loads never turn it on; once on,
- * it stays on for at least `PENDING_MIN_SHOW_MS`, even if `on` turns false sooner. Explicit state: a transition can't
- * express the delay or the minimum show time.
+ * Turns true once `on` has been true for `PENDING_DELAY_MS`, then stays true for at least
+ * `PENDING_MIN_SHOW_MS`. A React transition can't do a delay or a minimum show time, hence the
+ * timers.
  */
 export function useDelayedFlag(on: boolean): boolean {
   const [phase, setPhase] = useState<Phase>("idle");

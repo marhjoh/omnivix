@@ -3,15 +3,15 @@ import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 
-/** Settings from a studio link, with the username apart (it's saved for every template). */
+/** Settings from a studio link. The username is separate because it's saved for all templates. */
 export interface LinkSettings {
   settings: Record<string, unknown>;
   username: string | null;
 }
 
 /**
- * Saved settings with a link's applied over them. A linked image replaces the saved settings that
- * belong to the saved image, such as a background's position and zoom.
+ * Applies a link's settings over the saved ones. A linked image also drops the settings that
+ * belong to the saved image, such as the background's position and zoom.
  */
 export function withLink(
   saved: { settings: Record<string, unknown> | null; username: string | null },
@@ -25,17 +25,16 @@ export function withLink(
   return { settings: { ...settings, ...link.settings }, username: link.username ?? saved.username };
 }
 
-/** What the studio starts from: the banner's settings, and the username saved or linked. */
 export interface StartingSettings {
   state: Record<string, unknown>;
-  /** Null when none was saved or linked, so the studio asks for one. */
+  /** Null if no username was saved or linked. The studio then asks for one. */
   username: string | null;
 }
 
 /**
- * The template's defaults with the saved settings and a studio link applied: what the server
- * renders (and loads GitHub data for) and what the browser starts from. `readCookie` reads a
- * cookie's raw value, on the server from the request and in the browser from `document.cookie`.
+ * The template defaults with the saved settings and the link applied on top. The server render and
+ * the browser both start from this. `readCookie` returns a cookie's raw value: from the request on
+ * the server, and from `document.cookie` in the browser.
  */
 export function startingSettings(
   templateId: TemplateId,

@@ -9,16 +9,16 @@ import { DropdownChevron, DropdownList, DropdownOption, DropdownRoot } from "@/s
 import { useDropdown } from "@/src/ui/useDropdown";
 import { highlightFocusClass } from "@/src/ui/classNames";
 
-/** "GitHub Banner" → "GitHub": the header has room for the short names at every width. */
+/** "GitHub Banner" becomes "GitHub" so the name fits the header at every width. */
 const shortTitle = (title: string) => title.replace(/ Banner$/, "");
 
 /**
- * The studio header's title as a template picker, with the sidebar's dropdown list. Picking one
- * opens that template, with its own saved settings. TopBar adds the sliding hover highlight.
+ * The studio header's title, which is also the template picker. Picking a template opens it with
+ * its own saved settings. TopBar adds the sliding hover highlight.
  */
 export function TemplateSwitcher({ templateId }: { templateId: TemplateId }) {
   const router = useRouter();
-  // The next template's page renders on the server; the spinner shows until it's there.
+  // The next template renders on the server. The spinner shows until it arrives.
   const [switching, startSwitch] = useTransition();
   const dropdown = useDropdown(useId());
   const { open, setOpen, listId, triggerId } = dropdown;
@@ -37,7 +37,7 @@ export function TemplateSwitcher({ templateId }: { templateId: TemplateId }) {
         onClick={() => setOpen((o) => !o)}
         className={`relative z-10 flex h-9 max-w-full min-w-0 items-center gap-1 rounded-full pr-1.5 pl-2.5 text-sm font-semibold text-text ${highlightFocusClass}`}
       >
-        {/* Less right padding, as the chevron has its own blank space. Truncates on narrow phones. */}
+        {/* Less right padding since the chevron has its own space. Truncates on narrow phones. */}
         <span className="truncate">{shortTitle(title)}</span>
         <DropdownChevron open={open} busy={switching} className="text-muted" />
       </button>

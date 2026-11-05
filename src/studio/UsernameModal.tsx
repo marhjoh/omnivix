@@ -17,7 +17,7 @@ export function UsernameModal({
   onCancel,
 }: {
   open: boolean;
-  /** Shown in the field when the dialog opens, so changing it starts from the current one. */
+  /** Prefills the field each time the dialog opens. */
   currentUsername: string;
   onSubmit: (username: string) => void;
   onCancel: () => void;
@@ -36,11 +36,11 @@ export function UsernameModal({
   // (e.g. the username button) when it closes.
   useEffect(() => {
     if (!open) return;
-    // Noted before focusing the input (not with autoFocus, which would run first).
+    // Read this before focusing the input. autoFocus would run first and lose it.
     const returnFocusTo = document.activeElement as HTMLElement | null;
     const input = inputRef.current;
     input?.focus();
-    // Cursor after the current username, ready to edit it.
+    // Put the cursor after the current username.
     input?.setSelectionRange(input.value.length, input.value.length);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -75,8 +75,8 @@ export function UsernameModal({
   }
 
   return (
-    // No fade for a dialog that's open on load (a first visit): it shows with the first paint
-    // instead of after the page's JavaScript. Opening it later still fades in.
+    // Skip the fade when the dialog is open on load (a first visit). It then shows with the first
+    // paint instead of waiting for JavaScript. Opening it later still fades in.
     <AnimatePresence initial={false}>
       {open && (
         // Scrolls when the dialog is taller than the window (short phones, landscape).

@@ -2,8 +2,8 @@ import type { GithubDataKind } from "@/src/templates/types";
 import type { PreviewContentState } from "./types";
 
 /**
- * What the preview shows: what's missing first (nothing loads without a username), then a problem,
- * then loading until the data is there.
+ * Picks what the preview shows. A missing setting comes first because nothing loads without a
+ * username. Then a problem, then loading until the data is there.
  */
 export function computePreviewContentState(params: {
   /** The setting the banner waits for: the username, or a required field such as the quote. */
@@ -30,9 +30,9 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 }
 
 /**
- * What an empty preview asks for: GitHub banners wait for a username; the quote banner for its
- * quote, the only other required setting. The action opens the username dialog, or puts the
- * cursor in that setting's field.
+ * Copy for an empty preview. GitHub banners wait for a username, and the quote banner waits for its
+ * quote, the only other required setting. The action opens the username dialog or puts the cursor
+ * in that setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
   return missingSetting === "username"

@@ -3,8 +3,8 @@
 import { THEME_INIT_SCRIPT } from "@/src/theme/theme";
 
 /**
- * THEME_INIT_SCRIPT for <head>. Rendered as text/plain in the browser, where it wouldn't run and
- * React warns about script tags; applyStoredTheme covers that case.
+ * Puts THEME_INIT_SCRIPT in <head>. In the browser it renders as text/plain, because the script
+ * wouldn't run there and React warns about script tags. applyStoredTheme covers that case.
  */
 export function ThemeScript() {
   return (

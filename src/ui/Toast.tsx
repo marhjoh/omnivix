@@ -4,14 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
-/** How long a toast stays before it fades out by itself. */
 const TOAST_DURATION_MS = 6000;
 
 export interface ToastMessage {
-  /** Changes for every toast, so the same message shown twice restarts the timer. */
+  /** New for every toast, so showing the same message again restarts the timer. */
   id: number;
   message: string;
-  /** Errors by default; success confirms something the user did (a copied image). */
+  /** Defaults to error. Use success to confirm an action, like copying an image. */
   tone?: "error" | "success";
 }
 
@@ -34,10 +33,7 @@ export function useToast() {
   return { toast, showError, showSuccess, dismissToast };
 }
 
-/**
- * Toast at the bottom of the screen, for one-off problems (an upload that was rejected, an export
- * that failed) and confirmations. It fades after a few seconds or when dismissed.
- */
+/** A toast at the bottom of the screen for one-off problems and confirmations. */
 export function Toast({ toast, onDismiss }: { toast: ToastMessage | null; onDismiss: () => void }) {
   const reduceMotion = useReducedMotion();
   const success = toast?.tone === "success";

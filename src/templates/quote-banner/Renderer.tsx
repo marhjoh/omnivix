@@ -18,7 +18,7 @@ const LONG_QUOTE_SCALE = 0.7;
 const MIN_QUOTE_PX = 24;
 const QUOTE_LINES = { short: 3, long: 5 };
 
-/** Fixed type sizes: the quote keeps its own scale rather than fitting to the banner. */
+/** Fixed type sizes. Unlike the other templates, the quote isn't scaled to fit the banner. */
 const QUOTE_SIZES: Record<ContentSize, number> = { xs: 28, s: 36, m: 48, l: 58, xl: 66 };
 
 /** The author's size as a share of the quote's, so the two keep in proportion. */
@@ -28,8 +28,8 @@ const AUTHOR_SCALE: Record<ContentSize, number> = { xs: 0.3, s: 0.35, m: 0.42, l
 const AUTHOR_GAP = 16;
 
 /**
- * The large marks, each a size (times the quote's font size) with the mark's own style and what it
- * needs of the quote's block. `fontSize` is the quote's.
+ * Styles for the large marks. `scale` is relative to the quote's font size, and `block` adds what
+ * the mark needs from the quote's block. `fontSize` is the quote's.
  */
 const LARGE_MARKS: Partial<
   Record<
@@ -46,7 +46,7 @@ const LARGE_MARKS: Partial<
     scale: 2.4,
     mark: (fontSize) => ({ display: "block", height: fontSize * 1.15 }),
   },
-  // In the room the block leaves above the text, behind it.
+  // Sits behind the text, in the padding the block adds above it.
   "large-behind": {
     scale: 6,
     mark: (fontSize) => ({
@@ -71,7 +71,7 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
   const quote = String(state.quote ?? "");
   const author = String(state.author ?? "");
   const quoteSize = QUOTE_SIZES[state.contentSize as ContentSize];
-  // In step with the quote's size setting, not with a long quote's smaller type.
+  // Follows the quote size setting, not the smaller type of a long quote.
   const authorFontSize = Math.round(quoteSize * AUTHOR_SCALE[state.authorSize as ContentSize]);
 
   const longText = quote.length > LONG_QUOTE_CHARS;
@@ -85,8 +85,8 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
     glyph ? <span style={{ color: style.markColor }}>{glyph}</span> : null;
 
   return (
-    // The padded box the quote moves in. It doesn't clip: large marks may reach into the padding,
-    // and the line limit keeps long quotes inside.
+    // The padded box the quote moves in. It doesn't clip, because large marks may reach into the
+    // padding. The line limit keeps long quotes inside.
     <div
       style={{
         position: "absolute",
@@ -94,9 +94,9 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
         fontSizeAdjust: String(style.xHeight),
       }}
     >
-      {/* As wide as its longest line, so a short quote can move sideways. Placed with CSS, so
-          it's right from the server render. Alignment and dragging only move it: the text, marks
-          and author are always centered in it. */}
+      {/* As wide as its longest line, so a short quote has room to move sideways. Plain CSS
+          places it, so the server render is already right. Alignment and dragging move this box.
+          The text inside always stays centered. */}
       <div
         {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
         style={{
@@ -126,7 +126,7 @@ export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
             &ldquo;
           </span>
         )}
-        {/* The text column. Positioned, so the text paints over Large behind's mark. */}
+        {/* position: relative makes the text paint over the Large behind mark. */}
         <div style={{ position: "relative", minWidth: 0 }}>
           <blockquote
             style={{

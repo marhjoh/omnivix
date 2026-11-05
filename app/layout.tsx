@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
-  // No url here: it would mark every page without its own (such as the 404 page) as the home page.
+  // No url here. Pages without their own, like the 404 page, would claim to be the home page.
   openGraph: SITE_OPEN_GRAPH,
   twitter: {
     card: "summary_large_image",
@@ -35,15 +35,14 @@ export const metadata: Metadata = {
     apple: "/brand/apple-touch-icon.png",
   },
   manifest: "/brand/site.webmanifest",
-  // Google Search Console ownership check; removing it unverifies the site.
+  // Google Search Console uses this to verify the site. Don't remove it.
   verification: { google: "CH99E0UrpoR3FTE5rj6SxDSvMADkuXfctdmwFNyYhlo" },
 };
 
 /**
- * No cookies are read here, so pages that don't need them are prerendered. The theme comes from
- * THEME_INIT_SCRIPT, which sets data-theme before first paint; CSS and the themed artwork follow
- * it directly. The studio reads the theme cookie itself, since its banner preview picks colors in
- * JavaScript.
+ * Reads no cookies, so pages that don't need them can be prerendered. THEME_INIT_SCRIPT sets
+ * data-theme before first paint, and the CSS follows it. The studio reads the theme cookie itself
+ * because its banner preview picks colors in JavaScript.
  */
 export default function RootLayout({
   children,
@@ -51,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning: THEME_INIT_SCRIPT adds data-theme before React hydrates.
+    // THEME_INIT_SCRIPT adds data-theme before React hydrates.
     <html lang="en" className={`${inter.variable} ${quoteFontVariables}`} suppressHydrationWarning>
       <head>
         <ThemeScript />

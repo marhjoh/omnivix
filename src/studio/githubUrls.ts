@@ -1,8 +1,9 @@
 import type { GithubDataKind } from "@/src/templates/types";
 
 /**
- * The studio's GitHub API urls for a banner; null for data it doesn't need, or before there's a
- * username. The studio page loads the same urls on the server, so they must match exactly.
+ * The GitHub API URLs the studio fetches for a banner. A URL is null when the banner doesn't need
+ * that data or there's no username yet. The studio page preloads the same URLs on the server, so
+ * both sides must build them exactly the same way.
  */
 export function githubDataUrls({
   githubData,
@@ -15,7 +16,7 @@ export function githubDataUrls({
 }): Record<GithubDataKind, string | null> {
   const user = encodeURIComponent(username);
   return {
-    // Every GitHub banner loads the user: the sidebar's year list needs the account's age.
+    // Every GitHub banner loads the user because the sidebar's year list needs the account's age.
     user: username && githubData.length ? `/api/github/user-summary?username=${user}` : null,
     contributions:
       username && githubData.includes("contributions")

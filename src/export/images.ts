@@ -7,16 +7,16 @@ import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 import { formatNames, isDataUrl, linkImageTypes, type LinkImageType } from "@/src/lib/imageSource";
 import { isOneOf } from "@/src/lib/isOneOf";
 
-/** Raster images the export draws as they are: uploads (once processed) and background links. */
+/** Types the export draws as they are, for processed uploads and background links. */
 const RASTER_TYPES = linkImageTypes({ svg: false });
 
 type ImageSettingKey = "backgroundImage" | "logoImage";
 
 /**
- * The banner's images, by setting. An upload (data URL) or a link is taken out of the payload and
- * served to the render page at `path` instead. No route serves it: Playwright answers the request
- * from memory (see `captureBanner`), so an upload never has to fit in the render URL's token and
- * Playwright never loads a link itself.
+ * The banner's image settings. An upload (data URL) or a link is taken out of the payload, and the
+ * render page loads it from `path` instead. No route serves that path. Playwright answers the
+ * request from memory (see `captureBanner`). This way an upload never has to fit in the render
+ * URL's token, and Playwright never loads a link itself.
  */
 const EXPORT_IMAGES: ReadonlyArray<{
   key: ImageSettingKey;
@@ -52,8 +52,8 @@ export function linkFormatsOf(key: ImageSettingKey): string {
 }
 
 /**
- * A base64 data URL. Processed uploads are WebP, PNG or JPEG (src/studio/imageUpload.ts); any of
- * RASTER_TYPES is accepted.
+ * Processed uploads are WebP, PNG or JPEG (src/studio/imageUpload.ts), but any of RASTER_TYPES is
+ * accepted.
  */
 const DATA_URL_PATTERN = /^data:([^;,]+);base64,([A-Za-z0-9+/]+={0,2})$/;
 
@@ -67,10 +67,7 @@ type ImageSlot = (typeof EXPORT_IMAGES)[number];
 /** How long a link may take to download, redirects included. */
 const LINK_TIMEOUT = "5 seconds";
 
-/**
- * A link downloaded under `fetchImageLink`'s rules, within LINK_TIMEOUT. A timeout, or the
- * export's deadline, stops the download.
- */
+/** Downloads a link with `fetchImageLink`. A timeout or the export's deadline cancels it. */
 function downloadLink(link: string, types: readonly LinkImageType[]) {
   return Effect.tryPromise({
     try: (signal) => fetchImageLink(link, types, signal),
@@ -89,7 +86,7 @@ function downloadLink(link: string, types: readonly LinkImageType[]) {
   );
 }
 
-/** One image setting: null to keep it as it is, or the image to serve at its `path`. */
+/** Returns null when the setting stays as it is, or the image to serve at its `path`. */
 const resolveImage = Effect.fnUntraced(function* (
   value: string | undefined,
   { name, path, maxUploadBytes, linkTypes, presets }: ImageSlot,
@@ -110,7 +107,7 @@ const resolveImage = Effect.fnUntraced(function* (
     return { path, contentType: match[1], body };
   }
 
-  // Plain http links go to the download too, which says why they can't be used (https only).
+  // Plain http links go to the download too. It has the error message for them.
   if (/^https?:\/\//i.test(value.trim())) {
     return { path, ...(yield* downloadLink(value, linkTypes)) };
   }
@@ -119,8 +116,8 @@ const resolveImage = Effect.fnUntraced(function* (
 });
 
 /**
- * The payload as the render page will get it, with each upload or link already replaced by its
- * `path`, without downloading anything: the render URL's length can be checked first.
+ * Replaces each upload or link in the payload with its `path`, without downloading anything. This
+ * lets the caller check the render URL's length before any download.
  */
 export function withImagePaths<T extends ExportRequest>(payload: T): T {
   const state = { ...payload.state };
@@ -132,9 +129,9 @@ export function withImagePaths<T extends ExportRequest>(payload: T): T {
 }
 
 /**
- * Prepares the payload's images for export. Uploads and links are returned as bytes, with their
- * `path` left in the payload in their place; links are downloaded here under `fetchImageLink`'s
- * rules. Presets stay as they are. Anything else fails with `UnusableImage`.
+ * Prepares the payload's images for export. Uploads and links come back as bytes, and the payload
+ * gets their `path` instead. Links are downloaded here with `fetchImageLink`. Presets stay as they
+ * are. Anything else fails with `UnusableImage`.
  */
 export const resolveExportImages = Effect.fnUntraced(function* <T extends ExportRequest>(
   payload: T,

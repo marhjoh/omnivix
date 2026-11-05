@@ -1,8 +1,8 @@
 import localFont from "next/font/local";
 
 /**
- * Inter (variable, Latin), self-hosted so every visitor and the export's browser use the same font;
- * a system font would make the preview and the downloaded banner differ. SIL Open Font License.
+ * Inter, self-hosted so the preview and the exported banner use the same font.
+ * SIL Open Font License.
  */
 export const inter = localFont({
   src: "./fonts/inter-latin-variable.woff2",
@@ -12,10 +12,9 @@ export const inter = localFont({
 });
 
 /*
- * The quote banner's fonts besides Inter, and Inter's italic (src/banner/quoteStyle.ts). Variable,
- * Latin, self-hosted like Inter from Fontsource, SIL Open Font License or
- * Apache License 2.0. Not preloaded: only that
- * banner uses them, and the export waits for fonts to load.
+ * The quote banner's other fonts (src/banner/quoteStyle.ts), self-hosted from Fontsource.
+ * SIL Open Font License or Apache License 2.0. They aren't preloaded because only that banner uses
+ * them, and the export waits for fonts to load anyway.
  */
 
 const interItalic = localFont({

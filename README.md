@@ -17,17 +17,13 @@
 
 ## Features
 
-- **Four templates**
-  - **GitHub Banner:** avatar, username and contribution calendar
-  - **Repos Banner:** pinned or selected repositories with languages, stars and forks
-  - **Contribution Banner:** contribution heatmap
-  - **Quote Banner:** quote and author
-- **Five formats:** 4:1 (LinkedIn, Buy Me a Coffee), 3:1 (X, Bluesky, Mastodon, Ko-fi), 5:2 (Twitch, Patreon, Discord), 16:9 (YouTube) and 3:1 for Reddit, with the content kept where every screen shows it
-- **Backgrounds:** 14 city, nature and abstract backgrounds, an https link, or your own upload; drag and zoom to place it
-- **Logo:** add your company's logo from an https link or an upload (SVG too), and drag it into place
-- **Customization:** drag the content into place, color themes for the contribution grid, layout and size options, and toggles for profile photo, full name, labels and repo details
-- **Export:** PNG or JPEG at up to 3× resolution, or copy the banner to the clipboard
-- **Studio:** light and dark mode, on phones and desktop
+- **Four templates:** GitHub, Repos, Contribution and Quote banners
+- **Sized for every platform:** LinkedIn, X, Bluesky, YouTube, Twitch, Reddit and more
+- **Backgrounds:** 14 built-in, an image link or your own upload
+- **Your logo,** from a link or an upload
+- **Drag to place** the content, logo and background
+- **Export:** PNG or JPEG up to 3×, copy to the clipboard, or embed an image link that stays up to date
+- **Light and dark mode,** on phone and desktop
 
 ## Screenshots
 

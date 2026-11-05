@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { FieldValue, FieldWrapper } from "@/src/ui/FieldLabel";
 
 /**
- * A slider with its label. `valueText` is the value as it reads (Zoom's "120%"): it shows at the
- * end of the label row and is what screen readers say instead of the bare number.
+ * A slider with its label. `valueText`, like Zoom's "120%", shows at the end of the label row.
+ * Screen readers also say it instead of the bare number.
  */
 export function RangeField({
   id,

@@ -11,7 +11,7 @@ import type { GithubError } from "@/src/github/errors";
 import { GITHUB_LIMIT_ATTRIBUTE, GITHUB_USER_MISSING_ATTRIBUTE } from "@/src/export/renderProblem";
 import type { RenderData } from "@/src/templates/types";
 
-/** No banner without the data: a marker tells the export why (see renderProblem.ts). */
+/** Without data there's no banner. The marker tells the export why (see renderProblem.ts). */
 function problemMarker(error: GithubError) {
   switch (error._tag) {
     case "GithubRateLimited":

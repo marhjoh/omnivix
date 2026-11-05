@@ -35,7 +35,6 @@ import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { contributionYear, currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 
-/** What every setting can draw on. */
 interface FieldContext {
   schema: EditorFieldSchema[];
   state: Record<string, unknown>;
@@ -51,7 +50,7 @@ interface FieldContext {
 
 type FieldRenderer = (field: EditorFieldSchema, ctx: FieldContext) => ReactNode;
 
-/** The setting's label, value as text, and a change handler: what most controls take. */
+/** The label, text value and change handler that most controls take. */
 function textProps(field: EditorFieldSchema, { state, onChange }: FieldContext) {
   return {
     label: fieldLabel(field),
@@ -60,7 +59,7 @@ function textProps(field: EditorFieldSchema, { state, onChange }: FieldContext) 
   };
 }
 
-/** Settings drawn by their key, before their type: they need more than their schema says. */
+/** Settings that need more than their schema gives, so they're rendered by key, not type. */
 const BY_KEY: Partial<Record<string, FieldRenderer>> = {
   themeId: (field, ctx) => <GridColorsPicker {...textProps(field, ctx)} />,
   year: (field, ctx) => (
@@ -77,7 +76,7 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
   fontStyle: (field, ctx) => <FontStyleSelect {...textProps(field, ctx)} state={ctx.state} />,
   quoteMarks: (field, ctx) => <QuoteMarksSelect {...textProps(field, ctx)} state={ctx.state} />,
   authorPrefix: (field, ctx) => <AuthorPrefixSelect {...textProps(field, ctx)} state={ctx.state} />,
-  // Off the three spots, Alignment shows Custom.
+  // Alignment shows Custom when the content isn't on one of the three spots.
   alignment: (field, ctx) => {
     const disabled = ctx.disabledFields.has(field.key);
     return (
@@ -198,9 +197,9 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
   ),
 };
 
-/** Settings that don't show on their own: inside another setting, or not in this mode. */
+/** Settings shown inside another setting, or that don't apply in the current mode. */
 function isHidden(field: EditorFieldSchema, state: Record<string, unknown>): boolean {
-  // Inside the logo's picker, once there's a logo.
+  // Shown inside the logo's picker once there's a logo.
   if (field.key === "logoSize") return true;
   // Selected mode shows the repository picker instead of the amount slider.
   if (field.key === "maxRepos") return state.mode === "selected";
@@ -225,15 +224,15 @@ export function ControlSidebar({
   accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
   repoCatalog: RepoCatalog;
-  /** Keys of fields that are unavailable right now; they're disabled and toggles show off. */
+  /** Fields that can't be used right now. They're disabled, and toggles show as off. */
   disabledFields: ReadonlySet<string>;
-  /** The background that can be moved and zoomed; none when there's none, or it can't be used. */
+  /** The background to move and zoom. Undefined when there's none or it can't be used. */
   adjustableBackground: BannerBackground | undefined;
-  /** Shows a one-off error as a toast (e.g. a rejected upload); returns the toast's id. */
+  /** Shows an error toast, e.g. for a rejected upload, and returns its id. */
   onError: (message: string) => number;
   /** Hides the toast with this id, if it's still showing. */
   onErrorResolved: (toastId: number) => void;
-  /** For templates that need a username: the Profile section, first. */
+  /** The Profile section at the top, for templates that need a username. */
   profile?: { username: string; onChangeUsername: () => void };
 }) {
   const { theme: uiTheme } = useTheme();
@@ -270,7 +269,7 @@ export function ControlSidebar({
         return (
           <SettingsSection key={group.title} title={group.title}>
             {group.title === STYLE_GROUP && <AppearancePicker />}
-            {/* Show/hide options are gathered at the end of their group, as one list. */}
+            {/* Toggles go last, in one Show list. */}
             {group.fields.filter((field) => field.type !== "toggle").map(renderField)}
             {toggles.length > 0 && (
               <ShowList

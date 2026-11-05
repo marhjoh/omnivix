@@ -2,12 +2,12 @@ import Image, { type ImageProps } from "next/image";
 import { BRAND_LOGO_SIZE } from "@/src/lib/site";
 
 /*
- * Both variants are rendered; CSS on <html data-theme> shows one (see globals.css). That way the
- * logo switches in the same frame as the colors, and is right before React hydrates.
- * The "light" artwork is the one drawn for dark backgrounds.
+ * Both variants render, and CSS on <html data-theme> shows one (see globals.css). The logo then
+ * switches in the same frame as the colors and is right before React hydrates. The "light" artwork
+ * is the one for dark backgrounds.
  */
 
-/** Props must match the wordmark's ratio for a fixed height (h-9). */
+/** The width and height props must match the wordmark's ratio at the h-9 height. */
 const LOGO_HEIGHT = 36;
 const LOGO_WIDTH = Math.round((LOGO_HEIGHT * BRAND_LOGO_SIZE.width) / BRAND_LOGO_SIZE.height);
 

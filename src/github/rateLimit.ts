@@ -16,8 +16,9 @@ function resetTime(headers: Headers, now: number): Date {
 }
 
 /**
- * When the limit resets, if a GitHub response is its rate limit: a GraphQL `RATE_LIMITED` error,
- * an HTTP 429, or a 403 with no requests left or a `retry-after` (GitHub's secondary limits).
+ * Returns when the limit resets if the response is a rate limit, otherwise null. GitHub signals it
+ * with a GraphQL `RATE_LIMITED` error, an HTTP 429, or a 403 with no requests left or a
+ * `retry-after` header (its secondary limits).
  */
 export function rateLimitResetAt(
   response: { status: number; headers: Headers },
@@ -33,12 +34,12 @@ export function rateLimitResetAt(
   return limited ? resetTime(headers, now) : null;
 }
 
-/** Until when this server instance knows GitHub is limited; requests before then aren't sent. */
+/** This server instance sends no GitHub requests before this time. */
 let limitedUntil = 0;
 
 /**
- * Runs a GitHub request. Once it hits the rate limit, requests fail right away until the limit
- * resets instead of spending more of it, and the hit is logged once.
+ * Runs a GitHub request. After a rate limit hit, later requests fail right away until the limit
+ * resets, so they don't use up more of it. The hit is logged once.
  */
 export function guardRateLimit<A, E>(request: Effect.Effect<A, E | GithubRateLimited>) {
   return Effect.suspend(() =>

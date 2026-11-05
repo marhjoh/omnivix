@@ -11,15 +11,15 @@ const VIEWS = {
 } as const;
 
 /**
- * Under a format that devices crop (YouTube, Reddit): show what a phone, desktop or TV shows. The
- * label shows, so the tiles don't read as download choices: the download is always the full image.
+ * Previews what a phone, desktop or TV shows of a format that devices crop (YouTube, Reddit). The
+ * label is visible so the tiles don't look like download options. The download is always the full
+ * image.
  */
 export function PreviewViewToggle({
   views,
   view,
   onChange,
 }: {
-  /** The format's views. */
   views: readonly BannerView[];
   view: BannerView;
   onChange: (view: BannerView) => void;

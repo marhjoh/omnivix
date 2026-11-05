@@ -21,12 +21,11 @@ export interface BannerBackground {
 
 const CENTER: Position = { x: 50, y: 50 };
 
-/** Where a background sits by default: its preset's focus, or the center. */
 function defaultBackgroundPosition(src: string): Position {
   return presetBySrc(src)?.focus ?? CENTER;
 }
 
-/** Reads the background, its position and zoom from banner state; tolerates missing or bad values. */
+/** Reads the background image, position and zoom from banner state. Bad values get defaults. */
 export function backgroundFromState(state: Record<string, unknown>): BannerBackground | undefined {
   const src = state.backgroundImage;
   if (typeof src !== "string" || !src) return undefined;
@@ -44,8 +43,8 @@ export function isDefaultBackgroundFraming({ src, position, zoom }: BannerBackgr
 }
 
 /**
- * Styles for the background `<img>`. `object-position` places the image; zoom scales it around the
- * same point, so 0% and 100% keep an edge aligned at any zoom and the frame never shows a gap.
+ * Styles for the background `<img>`. Zoom scales around the `object-position` point. That keeps an
+ * edge aligned at 0% and 100%, so no gap shows at any zoom.
  */
 export function backgroundImageStyle({ position, zoom }: BannerBackground): CSSProperties {
   const point = `${position.x}% ${position.y}%`;
@@ -65,9 +64,8 @@ export function backgroundPanRange(frame: Box, image: Box, zoom: number): Box {
 }
 
 /**
- * The position after dragging the image by `delta` banner pixels, rounded (roundPosition).
- * Dragging right shows more of the left side, which lowers `x`. Axes without room to move are left
- * as they are.
+ * The position after dragging the image by `delta` banner pixels. Dragging right shows more of the
+ * left side, which lowers `x`. An axis with no room to move stays put.
  */
 export function dragBackgroundPosition(
   position: Position,
@@ -83,9 +81,8 @@ export function dragBackgroundPosition(
 }
 
 /**
- * The position after an arrow key: `step` percent on each axis, rounded (roundPosition). Like a
- * drag, the image moves the arrow's way (→ shows more of the left side, which lowers `x`), and an
- * axis without room to move is left as it is.
+ * The position after an arrow key, `step` percent per axis. As with a drag, the image moves the
+ * arrow's way, so → lowers `x`.
  */
 export function nudgeBackgroundPosition(
   position: Position,

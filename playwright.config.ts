@@ -2,11 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3100;
 
-/**
- * Smoke tests against a production build (`pnpm build` first). The server runs without secrets,
- * like CI: tests fake GitHub's data in the browser, the rate limits are off, and export tokens use
- * the per-process secret.
- */
+/** Smoke tests against a production build (`pnpm build` first), without secrets, like CI. */
 export default defineConfig({
   testDir: "e2e",
   forbidOnly: !!process.env.CI,
@@ -21,7 +17,8 @@ export default defineConfig({
     command: `pnpm start --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    // Empty values win over .env.local (Next only fills variables that aren't set).
+    // Empty strings hide the secrets in .env.local. Next never overwrites a variable that is
+    // already set.
     env: {
       GITHUB_TOKEN: "",
       EXPORT_TOKEN_SECRET: "",

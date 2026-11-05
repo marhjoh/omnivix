@@ -13,7 +13,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
-    // Enabled with `pnpm test --coverage`; no threshold yet.
+    // Only runs with `pnpm test --coverage`.
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

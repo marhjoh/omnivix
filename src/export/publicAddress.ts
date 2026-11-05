@@ -39,8 +39,8 @@ for (const [network, prefix] of [
 }
 
 /**
- * True for a public unicast IP address; false for private, loopback, link-local, etc. BlockList
- * checks IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) against the IPv4 ranges.
+ * True for a public unicast IP address. Private, loopback, link-local and other special addresses
+ * are false. BlockList checks IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) against the IPv4 ranges.
  */
 export function isPublicAddress(address: string): boolean {
   if (isIPv4(address)) return !nonPublic.check(address, "ipv4");

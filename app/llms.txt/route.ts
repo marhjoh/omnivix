@@ -10,7 +10,7 @@ import { getTemplates } from "@/src/templates/registry";
 import { FAQ, HOW_IT_WORKS } from "@/src/landing/landingContent";
 import { exportApiDocs } from "@/src/export/apiDocs";
 
-// https://llmstxt.org: a Markdown summary of the site for AI assistants.
+// A Markdown summary of the site for AI assistants (https://llmstxt.org).
 export const dynamic = "force-static";
 
 export function GET() {

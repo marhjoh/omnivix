@@ -65,7 +65,7 @@ describe("githubQuery", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  // Last: the rate limit is remembered until it resets (see guardRateLimit).
+  // Keep this test last. The module remembers the rate limit until it resets (see guardRateLimit).
   it("reports GitHub's rate limit", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     fetchMock.mockResolvedValueOnce(json(200, { errors: [{ type: "RATE_LIMITED" }] }));

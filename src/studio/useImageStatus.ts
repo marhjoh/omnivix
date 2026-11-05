@@ -4,17 +4,16 @@ import { isDataUrl } from "@/src/lib/imageSource";
 type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
 /**
- * Images loaded this browser session, so a remount doesn't wait on one already seen. Failures
- * aren't kept: a link that failed on a bad connection is tried again. Uploads (data URLs, often
- * megabytes) aren't kept either; they load instantly anyway.
+ * Images loaded in this session, so a remount doesn't wait for one again. Failures aren't kept, so
+ * a link that failed on a bad connection gets retried. Uploads aren't kept either. They're data
+ * URLs, often megabytes, and load instantly anyway.
  */
 const loadedSrcs = new Set<string>();
 
 /**
- * Preloads `src` and reports its status, so the preview can wait for an image (instead of showing
- * the banner with an empty spot that fills in later on slow networks) and skip it if it fails.
- * The browser caches the preloaded image, so the banner's own <img> renders it immediately.
- * Not a transition: an image load is a browser event, not an action.
+ * Preloads `src` and reports its status. The preview uses it to wait for an image instead of
+ * showing an empty spot on slow networks, and to skip images that fail. The browser caches the
+ * preloaded file, so the banner's own <img> shows it right away.
  */
 export function useImageStatus(
   src: string | undefined,
@@ -23,7 +22,7 @@ export function useImageStatus(
     srcSet,
     sizes,
   }: {
-    /** Report "loaded" while it loads, for an image the page itself is already showing. */
+    /** Reports "loaded" right away, for an image the page is already showing. */
     assumeLoaded?: boolean;
     /** The `srcset` and `sizes` the page's <img> uses, so the same file is preloaded. */
     srcSet?: string;
@@ -41,7 +40,7 @@ export function useImageStatus(
       if (status === "loaded" && !isDataUrl(src)) loadedSrcs.add(src);
       setResult({ src, status });
     };
-    // Decoded before it counts as loaded, so the banner can draw it in the same frame it switches.
+    // Decode first so the banner can draw the image in the same frame it switches to it.
     img.onload = () => {
       img.decode().then(
         () => settle("loaded"),
@@ -49,7 +48,7 @@ export function useImageStatus(
       );
     };
     img.onerror = () => settle("failed");
-    // sizes before srcset, so the first pick already uses it.
+    // Set sizes before srcset so the browser's first pick already uses it.
     if (sizes) img.sizes = sizes;
     if (srcSet) img.srcset = srcSet;
     img.src = src;

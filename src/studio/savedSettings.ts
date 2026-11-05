@@ -11,15 +11,15 @@ import { clampPosition, isPosition } from "@/src/banner/position";
 import { isHttpsUrl } from "@/src/lib/imageSource";
 
 /**
- * The banner's image settings, each with the settings that belong to that one image: a background's
- * position and zoom go with it. The logo's place and size stay for the next logo.
+ * Each image setting with the settings that belong to that image. A background's position and zoom
+ * go when the background changes. The logo's position and size stay for the next logo.
  */
 export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
   backgroundImage: ["backgroundPosition", "backgroundZoom"],
   logoImage: [],
 };
 
-/** An image that can be saved and linked: an https link or a built-in background, not an upload. */
+/** True for an https link or a built-in background. Uploads can't be saved or linked. */
 export function isSavableImage(key: string, value: unknown): value is string {
   if (typeof value !== "string") return false;
   return isHttpsUrl(value) || (key === "backgroundImage" && !!presetBySrc(value));
@@ -43,12 +43,12 @@ export function removeUnsavableImages(state: Record<string, unknown>): void {
   }
 }
 
-/** Positions set by dragging in the preview; not sidebar settings, so checked on their own. */
+/** Positions set by dragging in the preview. They aren't in the schema, so they're checked here. */
 export const POSITION_KEYS = ["contentPosition", "backgroundPosition", "logoPosition"] as const;
 
 /**
- * The template's defaults with saved settings applied. Saved values come from the browser, so
- * anything the template no longer offers falls back to its default.
+ * Applies saved settings over the template defaults. Saved values come from the browser and can be
+ * out of date. A value the template doesn't offer falls back to the default.
  */
 export function applySavedSettings(
   prev: Record<string, unknown>,
@@ -76,11 +76,11 @@ export function applySavedSettings(
     if (isPosition(position)) merged[key] = clampPosition(position);
     else delete merged[key];
   }
-  // A link can set the position and the alignment apart; the position wins, as after a drag.
+  // A link can set the position and alignment separately. The position wins, like after a drag.
   if (isPosition(merged.contentPosition) && "alignment" in prev) {
     merged.alignment = alignmentAt(merged.contentPosition.x) ?? merged.alignment;
   }
-  // The grid colors' field has no options to check against, as its picker draws the presets.
+  // The grid colors field has no options to check because its picker draws the presets itself.
   if ("themeId" in prev) {
     merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, DEFAULT_GRID_COLORS_ID);
   }
@@ -88,8 +88,8 @@ export function applySavedSettings(
 }
 
 /**
- * Repos banner: at most MAX_REPOS selected. Only in Selected mode; Pinned mode's Amount doesn't
- * touch the selection, which is kept for switching back.
+ * Caps the repos banner's selection at MAX_REPOS in Selected mode. Pinned mode leaves the selection
+ * alone so it's still there when the user switches back.
  */
 export function clampSelectedRepos(
   templateId: TemplateId,

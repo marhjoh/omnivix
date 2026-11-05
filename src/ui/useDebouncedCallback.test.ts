@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-// The hook's logic without React: refs are plain objects and effects run at once.
+// Tests the hook without React. Refs become plain objects and effects run right away.
 vi.mock("react", () => ({
   useRef: <T>(value: T) => ({ current: value }),
   useEffect: (effect: () => void) => effect(),

@@ -2,7 +2,7 @@ export interface GithubUserNormalized {
   login: string;
   name: string | null;
   avatarUrl: string;
-  /** ISO date the account was created; the studio offers contribution years from then on. */
+  /** When the account was created (ISO). The studio offers contribution years from then on. */
   createdAt: string;
 }
 
@@ -31,7 +31,7 @@ export type ContributionDayNormalized = {
 };
 
 export interface ContributionWeekNormalized {
-  /** This week's first day (YYYY-MM-DD); the first week of a range can start mid-week. */
+  /** YYYY-MM-DD. The first week of a range can start mid-week. */
   firstDay: string;
   days: ContributionDayNormalized[];
 }
@@ -43,11 +43,11 @@ export interface ContributionMonthNormalized {
   name: string;
 }
 
-/** GitHub's contribution calendar: a grid column per week, and the months for the labels. */
+/** GitHub's contribution calendar. Each week is a grid column, and `months` gives the labels. */
 export interface ContributionsNormalized {
   total: number;
   weeks: ContributionWeekNormalized[];
   months: ContributionMonthNormalized[];
-  /** Inclusive end of the requested range (YYYY-MM-DD); later months get no label. */
+  /** Last day of the requested range (YYYY-MM-DD). Months after it get no label. */
   rangeEndYmd: string;
 }

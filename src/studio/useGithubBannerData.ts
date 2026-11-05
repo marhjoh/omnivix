@@ -21,8 +21,8 @@ import type { RenderData, TemplateId } from "@/src/templates/types";
 const NO_REPOS: RepoNormalized[] = [];
 
 /**
- * The GitHub data the banner draws, loaded for its username, and what the preview and the
- * repository picker say about it: when it's ready, and the problem when it can't be loaded.
+ * Loads the GitHub data the banner draws. Also returns what the preview and the repository picker
+ * need: whether it's ready, and the problem if it can't load.
  */
 export function useGithubBannerData({
   templateId,
@@ -33,15 +33,15 @@ export function useGithubBannerData({
   templateId: TemplateId;
   state: Record<string, unknown>;
   username: string;
-  /** GitHub data the server already loaded, by the url the studio fetches it from. */
+  /** GitHub data the server already loaded, keyed by URL. */
   initialGithubData: Record<string, unknown>;
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
 
   const repoMode = repoModeOf(state.mode);
   const selectedRepos = selectedReposOf(state);
-  // Both repository lists come in one request per user: picking repositories and switching
-  // between pinned and selected need nothing more from GitHub.
+  // One request returns both repository lists. Picking repositories or switching between pinned
+  // and selected needs nothing more from GitHub.
   const urls = githubDataUrls({ githubData, username, year: contributionYear(state.year) });
 
   const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
@@ -67,11 +67,10 @@ export function useGithubBannerData({
     [user, contributions, repos],
   );
 
-  // The GitHub and repos banners show the avatar: wait for the image too (when the photo is on), so
-  // the banner doesn't appear with an empty spot that fills in later on a slow connection.
-  // Preloaded even when off, so switching it on doesn't flash the loading state. The photo from
-  // the server render is already loading in the page (preloaded here), so it counts as loaded,
-  // like the rest of that first paint.
+  // The GitHub and repos banners show the avatar. When the photo is on, wait for it too, so a slow
+  // connection doesn't show the banner with an empty spot. It's preloaded even when off, so turning
+  // it on doesn't flash the loading state. The photo from the server render counts as loaded, like
+  // the rest of the first paint, because the page is already loading it (preloaded here).
   const avatarUrl = githubData.includes("user") ? data.user?.avatarUrl : undefined;
   const serverAvatarUrl = initialUser?.avatarUrl;
   if (serverAvatarUrl) preload(serverAvatarUrl, { as: "image" });
@@ -86,23 +85,23 @@ export function useGithubBannerData({
     [avatarFailed, data],
   );
 
-  // Ready once the data the banner draws has loaded (and the profile photo, when it shows one).
   const dataReady =
     !needsUsername ||
     !username ||
     (githubData.every((kind) => data[kind] !== undefined) &&
       (!githubData.includes("user") || avatarReady));
 
-  // The first failing fetch among the data the banner draws (the contribution banner's user fetch
-  // is only for the sidebar's year list). A failed refetch of the same year keeps its grid.
+  // Find the first failed fetch among the data the banner draws. The contribution banner's user
+  // fetch only feeds the sidebar's year list, so it doesn't count. A failed refetch of the same
+  // year keeps showing its grid.
   const fetches = {
     user: userFetch,
     contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch,
     repos: repoListsFetch,
   };
   const failedFetch = githubData.map((kind) => fetches[kind]).find((fetch) => fetch?.error);
-  // The repos banner with no repositories to show is handled like a failed fetch: the preview
-  // says why instead of drawing an empty banner, and export is blocked.
+  // A repos banner with no repositories is treated like a failed fetch. The preview says why
+  // instead of drawing an empty banner, and export is blocked.
   const noRepos = githubData.includes("repos") && dataReady && data.repos?.length === 0;
   const failedError = failedFetch?.error ?? null;
   const failedLimit = failedFetch?.limit ?? null;
@@ -120,7 +119,7 @@ export function useGithubBannerData({
     return null;
   }, [failedError, failedLimit, failedNotFound, username, noRepos, repoMode, selectedRepos]);
 
-  // Asks again only for what failed.
+  // Only refetch what failed.
   function retry() {
     for (const query of [userFetch, contributionsFetch, repoListsFetch]) {
       if (query.error) void query.refetch();
@@ -141,7 +140,7 @@ export function useGithubBannerData({
     /** The owner's repositories, for the picker. */
     repoCatalog: {
       repos: repoLists?.owned ?? NO_REPOS,
-      // Only "loading" with nothing to show; a refetch keeps the list it has.
+      // A refetch keeps showing the current list, so this is only true when there's no list.
       loading: repoListsFetch.loading && !repoListsFetch.data,
       error: repoLimit ? limitMessage(repoLimit, REQUEST_LIMIT_MESSAGE) : repoListsFetch.error,
       retryAt: limitResetAt(repoLimit),

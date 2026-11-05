@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { LandingHeader } from "@/src/landing/LandingHeader";
 import { LandingFooter } from "@/src/landing/LandingFooter";
 
-/** Header and footer around a page; the footer stays at the bottom of short pages. */
+/** Wraps a page in the site header and footer. The footer stays at the bottom on short pages. */
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">

@@ -18,9 +18,9 @@ import {
 import type { BannerBox } from "@/src/lib/sizes";
 
 /**
- * Covers the preview whenever the banner has a background: drag to move it, or focus it and use the
- * arrow keys. No mode to turn on or off. The items placed on it (content, logo) have their
- * own surfaces on top (`PlacementDragSurface`).
+ * Covers the preview whenever the banner has a background. Drag to move the background, or focus
+ * the surface and use the arrow keys. The content and logo have their own surfaces on top
+ * (`PlacementDragSurface`).
  */
 export function BackgroundDragSurface({
   position,

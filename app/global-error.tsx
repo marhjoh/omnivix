@@ -8,20 +8,20 @@ import { applyStoredTheme } from "@/src/theme/theme";
 import { inter } from "./fonts";
 import "./globals.css";
 
-// Loaded only on an error, as every page loads this boundary.
+// Loaded lazily because every page includes this boundary.
 const RuntimeError = dynamic(() =>
   import("@/src/error-pages/RuntimeError").then((m) => m.RuntimeError),
 );
 
 /**
- * Errors in the root layout. Replaces it, so it brings its own document, styles and font.
- * No header: the theme toggle needs ThemeProvider.
+ * Errors in the root layout. It replaces the layout, so it renders its own <html>, styles and font.
+ * There's no header because the theme toggle needs ThemeProvider.
  */
 export default function GlobalError(props: RuntimeErrorProps) {
   // Rendered on the client, where THEME_INIT_SCRIPT never runs.
   useLayoutEffect(applyStoredTheme, []);
   return (
-    // suppressHydrationWarning: applyStoredTheme adds data-theme.
+    // applyStoredTheme adds data-theme.
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <title>{ERROR_PAGE_TITLE}</title>

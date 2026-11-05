@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Copy, Download, Link } from "lucide-react";
+import { Copy, Download } from "lucide-react";
 import {
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
@@ -18,7 +18,10 @@ import { DropdownChevron } from "@/src/ui/Dropdown";
 import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import { TileGroup } from "@/src/studio/TileGroup";
+import { EmbedDisclosure } from "@/src/studio/EmbedDisclosure";
 import type { ExportKind } from "@/src/studio/useBannerExport";
+import type { TemplateId } from "@/src/templates/types";
+import type { Theme } from "@/src/theme/theme";
 import controls from "@/src/studio/controls.module.css";
 
 /** A tile's value, and a muted hint below it. */
@@ -32,13 +35,14 @@ function ChoiceTile({ label, hint }: { label: string; hint: string }) {
 }
 
 /**
- * Download joined to its options panel, for the studio header's right group. The panel holds
- * everything that takes the banner out of the studio: resolution and format, then the copy actions,
- * so the header stays one button wide.
+ * The Download button with its options panel, for the right side of the studio header. The panel
+ * holds resolution, format, Copy image and the embed URL, so the header only needs one button.
  */
 export function ExportControls({
   onDownload,
   onCopy,
+  onCopyEmbed,
+  banner,
   exporting,
   exportBlocked,
   pixelRatio,
@@ -49,17 +53,20 @@ export function ExportControls({
 }: {
   onDownload: () => void;
   onCopy: () => void;
-  /** The export that's running, if any; both buttons wait for it. */
+  onCopyEmbed: (text: string, name: string) => void;
+  /** The banner the embed URL points to. */
+  banner: { templateId: TemplateId; state: Record<string, unknown>; uiTheme: Theme };
+  /** The export that's running. Both buttons wait until it's done. */
   exporting: ExportKind | null;
-  /** Nothing to export yet (or a problem with it); Copy and Download are disabled. */
+  /** Nothing to export yet, or the banner has a problem. Disables Copy and Download. */
   exportBlocked: boolean;
-  /** The saved choice. A banner format that can't take it as `format` uses its largest instead. */
+  /** The saved choice. If the banner format doesn't allow it, its largest ratio is used. */
   pixelRatio: ExportPixelRatio;
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
-  /** The saved choice. A banner format that doesn't take it uses its own instead. */
+  /** The saved choice. If the banner format doesn't allow it, the format's own is used. */
   format: ExportFormat;
   onFormatChange: (format: ExportFormat) => void;
-  /** The chosen banner format: its size at 1×, for the pixel sizes, and what it takes. */
+  /** Gives the 1× size for the pixel hints, and which ratios and formats are allowed. */
   bannerFormat: BannerFormat;
 }) {
   const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
@@ -81,7 +88,7 @@ export function ExportControls({
             onDownload();
           }}
           disabled={exportBlocked}
-          // aria-disabled, not disabled, while exporting: it keeps focus.
+          // aria-disabled instead of disabled while exporting, so the button keeps focus.
           aria-disabled={busy}
           aria-label={isDownloading ? "Exporting…" : `Download ${formatLabel}`}
           aria-busy={isDownloading}
@@ -104,7 +111,7 @@ export function ExportControls({
           onClick={() => {
             if (!busy) setOpen((isOpen) => !isOpen);
           }}
-          // aria-disabled, not disabled: it keeps focus while Copy image (in the panel) runs.
+          // aria-disabled instead of disabled, so the toggle keeps focus while Copy image runs.
           aria-disabled={busy}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
@@ -119,8 +126,8 @@ export function ExportControls({
         </button>
       </div>
       {open && (
-        // A disclosure, not a dialog: it doesn't trap focus, and the toggle's aria-expanded and
-        // aria-controls say what it opens. Choices keep it open; the actions close it.
+        // A disclosure, not a dialog, so it doesn't trap focus. The toggle's aria-expanded and
+        // aria-controls point to it. Choices keep it open, and the actions close it.
         <div
           id={panelId}
           role="group"
@@ -128,7 +135,8 @@ export function ExportControls({
           className={`popover ${controls.panel}`}
         >
           <div className="space-y-4">
-            {/* Resolution applies to Copy and Download; format only to Download (Copy is a PNG). */}
+            {/* Resolution applies to Copy, Download and the image URL. Format only applies to
+                Download and the image URL, because Copy is always PNG. */}
             <TileGroup
               label="Resolution"
               columns={EXPORT_PIXEL_RATIOS.length}
@@ -176,12 +184,13 @@ export function ExportControls({
               <Copy className="h-4 w-4 shrink-0 text-muted" aria-hidden />
               Copy image
             </button>
-            {/* Placeholder: a studio link with these settings (#132's link format). */}
-            <button type="button" disabled className={controls.panelAction}>
-              <Link className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-              Copy link
-              <span className={controls.soon}>Coming soon</span>
-            </button>
+            <EmbedDisclosure
+              {...banner}
+              format={shownFormat}
+              pixelRatio={shownPixelRatio}
+              disabled={exportBlocked}
+              onCopy={onCopyEmbed}
+            />
           </div>
         </div>
       )}

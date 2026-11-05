@@ -61,8 +61,8 @@
   height: 3.5rem;
 }
 
-/* Full-bleed bar background, faded out when the pill takes over. Back at the top it fades in once
-   the pill has nearly widened into it, so the two never show at once. */
+/* The bar's background. It fades out when the pill appears. On the way back it waits until the
+   pill has nearly widened into the bar, so the two never show at once. */
 .siteHeader::before {
   content: "";
   position: absolute;
@@ -77,9 +77,8 @@
   transition: opacity 0.35s ease;
 }
 
-/* The bar's and the pill's layouts. They switch at once; Motion animates between them with
-   transforms (LandingHeader), so nothing here transitions. Centered with margins, as Motion owns
-   `transform`. */
+/* The bar and pill layouts switch instantly. LandingHeader animates between them with Motion, so
+   there are no transitions here. Centered with margins because Motion sets `transform`. */
 .navBar {
   position: absolute;
   top: 0;
@@ -102,8 +101,8 @@
   padding: 0 0.5rem 0 1rem;
 }
 
-/* The pill's frosted glass: shaped by the bar (corners included) and faded, as animating a blur is
-   slow. It leaves quicker than it comes, so it's gone before the bar is back. */
+/* The pill's frosted glass. It takes its shape from .navBar and only fades, because animating a
+   blur is slow. It fades out faster than in, so it's gone before the bar comes back. */
 .navGlass {
   position: absolute;
   inset: 0;
@@ -236,8 +235,8 @@ details[open] .faqToggle {
   transform: rotate(45deg);
 }
 
-/* FAQ: answers slide open. ::details-content with interpolate-size animates the height where
-   supported (the answer just appears elsewhere); @starting-style fades the text in everywhere. */
+/* FAQ answers slide open where ::details-content and interpolate-size are supported. Elsewhere
+   they just appear. @starting-style fades the text in everywhere. */
 .faqItem {
   interpolate-size: allow-keywords;
 }
@@ -275,14 +274,13 @@ details[open] .faqToggle {
   }
 }
 
-/* Big type: one scale (hero name > section headings > step words) and one gradient, the brand's
-   (.gradient-text), for the hero name and the section headings (.section-heading); both are in
-   app/globals.css, which the error pages share. On scroll, headings wipe in and step words fill in
-   from an outline that then fades out. The scroll effects need animation-timeline (not in Firefox
-   yet) and skip reduced motion; both show the finished, still state instead. */
+/* Big type comes in three sizes: the hero name, then section headings, then step words. The
+   gradient and .section-heading live in app/globals.css because the error pages use them too.
+   The scroll effects need animation-timeline, which Firefox lacks. Without it, or with reduced
+   motion, the text shows finished. */
 
-/* No drop-shadow: .heroGlow gives the halo, and a shadow on a word this wide reaches the page
-   edge on phones, where it gets cut off. */
+/* No drop-shadow. .heroGlow gives the halo, and on phones a shadow on a word this wide gets cut
+   off at the page edge. */
 .heroName {
   display: block;
   font-size: clamp(4.5rem, 1.75rem + 11vw, 10rem);
@@ -291,7 +289,7 @@ details[open] .faqToggle {
   letter-spacing: -0.055em;
 }
 
-/* Solid, not outlined: at this size an outline shows where the font's letter shapes overlap. */
+/* No outline. At this size it would show where the letter shapes overlap. */
 .heroSubline {
   display: block;
   font-size: clamp(1.75rem, 1rem + 3.5vw, 3.5rem);
@@ -301,12 +299,12 @@ details[open] .faqToggle {
   color: var(--muted);
 }
 
-/* One soft glow behind the name. "closest-side" fades it out before its own edges, so wherever
-   the page clips it, no hard edge shows. */
+/* A soft glow behind the name. "closest-side" fades it out before the box edge, so no hard edge
+   shows where the page clips it. */
 .heroGlow {
   --glow-strength: 24%;
   position: absolute;
-  /* Sideways, no further than the page's 1rem side padding until there's room to spare. */
+  /* Stays within the page's 1rem side padding until the screen is wide enough. */
   inset: -2rem -1rem auto -1rem;
   /* Scales with the name, so the glow stays centered behind it on phones too. */
   height: clamp(12rem, 8rem + 14vw, 22rem);
@@ -330,8 +328,7 @@ html[data-theme="light"] .heroGlow {
   --glow-strength: 12%;
 }
 
-/* Like the section headings (.section-heading, app/globals.css), one size below, so "How it
-   works." stays the larger. */
+/* Like .section-heading but one size smaller, so the "How it works." heading stays bigger. */
 .stepWord {
   display: block;
   font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);

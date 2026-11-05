@@ -5,10 +5,10 @@ import { guardRateLimit, rateLimitResetAt, warnIfQuotaLow } from "@/src/github/r
 
 const ENDPOINT = "https://api.github.com/graphql";
 
-/** How long one request may take; the studio page waits far less (initialGithubData). */
+/** The limit for one request. The studio page waits far less (initialGithubData). */
 const REQUEST_TIMEOUT = "10 seconds";
 
-/** Asked for in every query, so a quota running low is logged (see warnIfQuotaLow). Costs nothing. */
+/** Added to every query so a low quota gets logged (see warnIfQuotaLow). It costs nothing. */
 export const QUOTA_FIELDS = `
   rateLimit {
     limit
@@ -43,7 +43,6 @@ const Quota = Schema.Struct({ rateLimit: Schema.optional(GithubQuota) });
 
 const failed = (cause: unknown, transient = false) => new GithubRequestFailed({ cause, transient });
 
-/** The response, from a request that ends after REQUEST_TIMEOUT. */
 function post(body: string) {
   const token = process.env.GITHUB_TOKEN;
   if (!token) return Effect.die(new Error("GITHUB_TOKEN is not set"));
@@ -69,9 +68,8 @@ function post(body: string) {
 }
 
 /**
- * Runs a GraphQL query against GitHub's API and decodes its `data` with `schema`. A rate limit,
- * a missing user and anything else fail as their own errors; network errors, timeouts and 5xx
- * responses are tried once more.
+ * Runs a GraphQL query against GitHub and decodes `data` with `schema`. Network errors, timeouts
+ * and 5xx responses are retried once.
  */
 export function githubQuery<S extends Schema.Decoder<unknown>>(
   query: string,

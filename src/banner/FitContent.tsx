@@ -8,12 +8,11 @@ import { BANNER_CONTENT_ATTRIBUTE } from "@/src/banner/placement";
 import type { Rect } from "@/src/lib/sizes";
 
 /**
- * Scales content laid out at its natural size to fit the banner: `xl` is the largest scale that
- * fits the padded box (`contentBox`), smaller sizes are fractions of it (see `contentSize.ts`).
+ * Scales its content to fit the padded box (`contentBox`) and places it at `position`. `xl` is the
+ * largest scale that fits, and smaller sizes are fractions of it (see contentSize.ts).
  *
- * The scale is a CSS transform, so text and SVG stay sharp. It is written to the DOM after layout
- * rather than kept in state, since it depends only on measured sizes. The content is placed at
- * `position` in the room left around it inside the padded box.
+ * The scale is a CSS transform so text and SVG stay sharp. It's set on the DOM after layout instead
+ * of in state, because it only depends on measured sizes.
  */
 export function FitContent({
   children,
@@ -58,7 +57,7 @@ export function FitContent({
     const observer = new ResizeObserver(() => fit());
     if (contentRef.current) observer.observe(contentRef.current);
 
-    // The fit is only marked ready once fonts are loaded.
+    // Fit again once fonts load. Only a fit with fonts loaded sets "ready".
     let active = true;
     void document.fonts.ready.then(() => {
       if (active) fit();
@@ -78,9 +77,8 @@ export function FitContent({
     >
       <div
         ref={scalerRef}
-        // Geometry (left, top, transform) is set by `fit`. Hidden until then: the server-rendered
-        // page shows the banner before its JavaScript runs, and unfitted content would jump into
-        // place.
+        // `fit` sets left, top and transform. Until then the content is hidden. The server-rendered
+        // banner shows before JavaScript runs, and the content would visibly jump into place.
         {...{ [BANNER_CONTENT_ATTRIBUTE]: "" }}
         style={{
           position: "absolute",

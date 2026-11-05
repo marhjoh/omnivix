@@ -7,7 +7,7 @@ import {
   snapLine,
 } from "./placement";
 
-/** LinkedIn's 4:1 banner: 32px padding, so a 1520 × 332 box. */
+/** LinkedIn's 4:1 banner. With 32px padding, the box is 1520 × 332. */
 const WIDE = { width: 1584, height: 396 };
 
 describe("placementStyle", () => {

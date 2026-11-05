@@ -30,7 +30,7 @@ export function calendarColumns(code: ErrorCode): boolean[][] {
   return [blank, ...columns, blank, blank];
 }
 
-/** Stable pseudo-random scatter of quiet days. */
+/** Picks about one day in ten as quiet. The same days on every render. */
 export function isQuietDay(x: number, y: number): boolean {
   const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
   return n - Math.floor(n) >= 0.9;

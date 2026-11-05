@@ -7,6 +7,7 @@ export const LIMIT_TITLES: Record<TimedLimit, string> = {
   github: "GitHub's limit is reached",
   requests: "Too many requests",
   "daily-exports": "Daily export limit reached",
+  "banner-images": "Daily image limit reached",
 };
 
 /** A bare 429 (the export's Vercel Firewall rule) doesn't say when its window ends. */
@@ -21,7 +22,7 @@ export function tryAgainAt(at: Date): string {
   return `Try again at ${at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
 }
 
-/** The full sentence for a toast or the repository picker; `firewallMessage` for a bare 429. */
+/** The full sentence for a toast or the repository picker. A bare 429 gets `firewallMessage`. */
 export function limitMessage(limit: ApiLimit, firewallMessage: string): string {
   if (limit.kind === "firewall") return firewallMessage;
   return `${LIMIT_TITLES[limit.kind]}. ${tryAgainAt(limit.resetAt)}`;

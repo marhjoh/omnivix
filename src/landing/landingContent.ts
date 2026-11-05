@@ -7,8 +7,8 @@ import { DEFAULT_PIXEL_RATIO, EXPORT_PIXEL_RATIOS } from "@/src/export/format";
 import { SITE_LICENSE, SITE_LINKS } from "@/src/lib/site";
 import { HOUR_MS, MINUTE_MS, TTL_LONG, TTL_SHORT } from "@/src/github/cacheTimes";
 
-// Single source for the landing page's "How it works" and FAQ, the FAQPage JSON-LD and /llms.txt.
-// Keep each answer self-contained: AI answers and search snippets quote single passages.
+// The landing page, the FAQPage JSON-LD and /llms.txt all use this text. Write each answer so it
+// makes sense on its own, because search snippets and AI answers quote single passages.
 
 function bannerFormatsSummary() {
   return Object.values(BANNER_SIZES)
@@ -34,7 +34,7 @@ function oneTimesOnlyPlatforms() {
 
 const NUMBER_WORDS = "zero one two three four five six seven eight nine".split(" ");
 
-/** "six": a number under ten in words, as the FAQ writes the long cache time. */
+/** Numbers under ten as words ("six"), for the FAQ's cache time. */
 function inWords(n: number): string {
   return NUMBER_WORDS[n] ?? String(n);
 }

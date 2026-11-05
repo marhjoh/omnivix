@@ -13,18 +13,18 @@ import { megabytes } from "@/src/lib/text";
 /** Every upload format but SVG, HEIC included. */
 const RASTER_TYPES = uploadImageTypes({ svg: false });
 
-/** The file input's `accept`: MIME types and extensions. A hint only; uploads are checked here. */
+/** The file input's `accept` list. Browsers treat it as a hint, so uploads are still checked. */
 export function uploadAccept(policy: ImageUploadPolicy): string {
   const types = uploadImageTypes(policy);
   return [...types, ...formatExtensions(types).map((extension) => `.${extension}`)].join(",");
 }
 
-/** User-facing line when a file type isn't allowed (including GIFs, which are animated). */
+/** Error for a file type we don't accept. GIFs are rejected because they can be animated. */
 export function supportedFormatsMessage(policy: ImageUploadPolicy): string {
   return `Only ${formatNames(uploadImageTypes(policy), "and")} are supported.`;
 }
 
-/** The file has an allowed type but can't be decoded (damaged, or not what its name says). */
+/** For a file with an allowed type that won't decode, e.g. it's damaged or misnamed. */
 const UNREADABLE_MESSAGE = "Couldn't read this image. Try another file.";
 
 const PROCESSING_MESSAGE = "Couldn't process this image in your browser.";
@@ -38,7 +38,7 @@ function isSvgFile(file: File): boolean {
   return isOneOf(SVG_TYPES, type) || (!type && hasFormatExtension(file.name, SVG_TYPES));
 }
 
-/** Checks before decoding: size, then type (by extension when there's no type). Null if OK. */
+/** Checks size and type before decoding. Returns an error message, or null if the file is OK. */
 export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): string | null {
   if (file.size > MAX_IMAGE_FILE_BYTES) {
     return `Image must be ${megabytes(MAX_IMAGE_FILE_BYTES)} or smaller.`;
@@ -48,8 +48,8 @@ export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): 
     return policy.svg ? null : unsupported;
   }
 
-  // GIF isn't on the allowed list, so its MIME type is rejected here. HEIC sometimes ships as
-  // octet-stream; then its extension is trusted.
+  // GIFs fail here because they aren't in RASTER_TYPES. HEIC files sometimes come as
+  // octet-stream, and then we trust the extension.
   const type = mimeOf(file);
   if (type) {
     return isOneOf(RASTER_TYPES, type) || shouldDecodeHeicWithHeic2any(file) ? null : unsupported;
@@ -57,7 +57,7 @@ export function validateImageUploadMeta(file: File, policy: ImageUploadPolicy): 
   return hasFormatExtension(file.name, RASTER_TYPES) ? null : unsupported;
 }
 
-/** Prefer MIME when present so a PNG named `.heic` is not sent through HEIC conversion. */
+/** Trusts the MIME type over the extension, so a PNG named `.heic` skips HEIC conversion. */
 export function shouldDecodeHeicWithHeic2any(file: File): boolean {
   const t = mimeOf(file);
   if (isOneOf(HEIC_TYPES, t)) return true;
@@ -65,7 +65,7 @@ export function shouldDecodeHeicWithHeic2any(file: File): boolean {
   return hasFormatExtension(file.name, HEIC_TYPES);
 }
 
-/** `toBlob` encodes off the main thread; `toDataURL` blocks it for seconds on a large photo. */
+/** `toBlob` encodes off the main thread. `toDataURL` can block it for seconds on a big photo. */
 function canvasBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
   return new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
 }
@@ -86,7 +86,7 @@ function readAsDataUrl(blob: Blob) {
   });
 }
 
-/** A decoded image, ready to draw; `vector` images can be drawn at any size. */
+/** `vector` images can be drawn at any size without losing quality. */
 interface Decoded {
   source: CanvasImageSource;
   width: number;
@@ -95,7 +95,7 @@ interface Decoded {
   close: () => void;
 }
 
-/** SVG through an `<img>`: `createImageBitmap` doesn't take SVG in every browser. */
+/** Uses an `<img>` because `createImageBitmap` doesn't accept SVG in every browser. */
 async function decodeSvg(file: File): Promise<Decoded> {
   const url = URL.createObjectURL(file);
   const img = new Image();
@@ -137,8 +137,8 @@ async function decodeRaster(file: File, policy: ImageUploadPolicy): Promise<Deco
 }
 
 /**
- * Decode, scale to fit the export, and emit a WebP (or PNG/JPEG) data URL for stable preview and
- * export size.
+ * Decodes an upload, scales it to fit the export and encodes it as a data URL. WebP is preferred,
+ * with PNG or JPEG where the browser can't encode WebP.
  */
 export async function normalizeImageFile(
   file: File,
@@ -159,7 +159,7 @@ export async function normalizeImageFile(
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d")!;
     for (const maxDim of policy.dimensions) {
-      // Photos are only scaled down; a vector is drawn at the full size.
+      // Photos are only scaled down. Vectors are drawn at the full size.
       const fit = maxDim / Math.max(width, height);
       const scale = image.vector ? fit : Math.min(1, fit);
       canvas.width = Math.max(1, Math.round(width * scale));

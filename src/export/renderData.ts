@@ -8,8 +8,8 @@ import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
 
 /**
- * The GitHub data the render page draws: only what this banner needs, loaded in parallel. The
- * export has already checked the settings, so the username and year are valid.
+ * Loads the GitHub data the render page draws, only what this banner needs. The export has already
+ * checked the settings, so the username and year are valid.
  */
 export function loadRenderData(templateId: TemplateId, state: Record<string, unknown>) {
   const username = usernameOf(state);

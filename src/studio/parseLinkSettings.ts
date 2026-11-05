@@ -10,16 +10,18 @@ import type { LinkSettings } from "@/src/studio/linkSettings";
 type Query = Record<string, string | string[] | undefined>;
 
 /**
- * Reads a studio link's query, e.g. `?username=octocat&size=header&themeId=sunset`: the export
- * API's `size` and `state` keys, as text, with positions as `x,y` (`contentPosition=100,0`).
- * Values that aren't valid are left out, so the studio uses the saved setting or the default
- * instead. Server only (the template's schema runs on Effect); `withLink` is in linkSettings.ts.
+ * Reads the query of a studio link or image URL, such as
+ * `?username=octocat&size=header&themeId=sunset`. It uses the export API's `size` and `state` keys,
+ * with positions written as `x,y` (`contentPosition=100,0`). Invalid values are dropped, and the
+ * studio uses the saved setting or the default instead. Server only, because the template schemas
+ * run on Effect. `linkQuery` in embedUrl.ts writes this query.
  */
 export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSettings | null {
   const { schema, initialState, meta } = templateRegistry[templateId];
   const fieldTypes = new Map<string, string>(schema.map((field) => [field.key, field.type]));
   if (meta.needsUsername) fieldTypes.set("username", "text");
   for (const key of POSITION_KEYS) fieldTypes.set(key, "position");
+  fieldTypes.set("backgroundZoom", "range");
 
   const candidate: Record<string, unknown> = {};
   for (const [key, raw] of Object.entries(query)) {
@@ -43,8 +45,8 @@ export function parseLinkSettings(templateId: TemplateId, query: Query): LinkSet
   }
   if (Object.keys(candidate).length === 0) return null;
 
-  // Drop the values the template's rules reject. A placeholder username keeps a link without one
-  // from failing on it.
+  // Drop the values the template rejects. The placeholder username stops a link without one from
+  // failing the check.
   const checked = checkTemplateState(templateId, {
     ...initialState,
     username: "user",

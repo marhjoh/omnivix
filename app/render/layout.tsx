@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-// Headless page the export API screenshots; keep it out of search results.
+// The export API screenshots this page. Search engines shouldn't index it.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };

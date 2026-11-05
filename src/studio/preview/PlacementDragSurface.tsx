@@ -17,9 +17,9 @@ import {
 import { useItemRect } from "@/src/studio/preview/useItemRect";
 
 /**
- * Over an item the banner places (the content, the logo): drag it, or focus it and use the arrow
- * keys. It stops at the padding and snaps to the edges and the middle, with guide lines. A later
- * surface sits on top, like its item in the banner.
+ * Sits over an item the banner places, such as the content or the logo. Drag it, or focus it and
+ * use the arrow keys. The item stops at the padding and snaps to the edges and the middle, with
+ * guide lines. Later surfaces sit on top, in the same order as the items in the banner.
  */
 export function PlacementDragSurface({
   target,

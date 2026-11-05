@@ -2,16 +2,15 @@ import type { ReactNode } from "react";
 import { LabeledGroup } from "@/src/ui/FieldLabel";
 import controls from "@/src/studio/controls.module.css";
 
-/** A tile's choice; a disabled one can't be picked right now. */
 interface TileOption<T> {
   value: T;
   disabled?: boolean;
 }
 
 /**
- * One choice as a labeled group of tiles (.tile in controls.module.css, plus `tileClassName`), each
- * an aria-pressed button showing `children(option)`. `columns` lays them out in a grid of that many;
- * without it, `tilesClassName` lays them out (the preview's view toggle).
+ * A single choice shown as a labeled group of tiles (.tile in controls.module.css). Each tile is an
+ * aria-pressed button that renders `children(option)`. `columns` sets an even grid. Without it,
+ * `tilesClassName` handles the layout, as in the preview's view toggle.
  */
 export function TileGroup<T extends string | number, O extends TileOption<T>>({
   label,
@@ -52,7 +51,7 @@ export function TileGroup<T extends string | number, O extends TileOption<T>>({
             disabled={option.disabled}
             onClick={() => onChange(option.value)}
             className={`${controls.tile} ${tileClassName}`}
-            // For styles that pick a tile out (the Appearance tiles).
+            // Lets CSS style one specific tile, such as the Appearance tiles.
             data-value={option.value}
           >
             {children(option)}

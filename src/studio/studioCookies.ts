@@ -1,4 +1,4 @@
-/** The studio's cookies (see src/lib/cookies.ts). Values come from the browser, so they're checked. */
+/** The studio's cookies (see src/lib/cookies.ts). Values come from the browser and are checked. */
 
 import { isGithubUsername } from "@/src/lib/githubUsername";
 import { BANNER_VIEWS, type BannerView } from "@/src/lib/sizes";
@@ -12,13 +12,13 @@ import {
   type ExportFormat,
 } from "@/src/export/format";
 
-/** A studio cookie: its name, and how its value is read (a fallback when it's missing or invalid). */
+/** `parse` returns a fallback when the value is missing or invalid. */
 export interface StudioCookie<T> {
   name: string;
   parse: (value: string | undefined) => T;
 }
 
-/** The GitHub username, saved for every template (null: none saved yet). */
+/** The GitHub username, shared by all templates. Null when none is saved. */
 export const USERNAME_COOKIE: StudioCookie<string | null> = {
   name: "omnivix-username",
   parse: (value) => {
@@ -32,7 +32,7 @@ export const USERNAME_COOKIE: StudioCookie<string | null> = {
   },
 };
 
-/** One cookie per template, holding that template's settings as JSON (null: none saved yet). */
+/** One cookie per template with its settings as JSON. Null when none are saved. */
 export function settingsCookie(templateId: string): StudioCookie<Record<string, unknown> | null> {
   return {
     name: `omnivix-settings-${templateId}`,
@@ -50,15 +50,15 @@ export function settingsCookie(templateId: string): StudioCookie<Record<string, 
   };
 }
 
-/** Whether the desktop sidebar is collapsed, so the server renders it that way (no slide on load). */
+/** Read on the server so the collapsed desktop sidebar doesn't slide closed on load. */
 export const SIDEBAR_COOKIE: StudioCookie<boolean> = {
   name: "omnivix-sidebar",
   parse: (value) => value === "collapsed",
 };
 
 /**
- * The preview's view (Phone, Desktop or TV), so the server renders it. Phones by default: most
- * viewers see that, and it's the part the content fits.
+ * The preview's view (Phone, Desktop or TV). Defaults to Phone because most viewers see that, and
+ * it's the crop the content is made to fit.
  */
 export const PREVIEW_VIEW_COOKIE: StudioCookie<BannerView> = {
   name: "omnivix-preview-view",

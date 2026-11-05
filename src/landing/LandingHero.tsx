@@ -5,7 +5,7 @@ import { PlatformIcon } from "@/src/ui/PlatformIcon";
 import landingStyles from "@/src/landing/landing.module.css";
 
 export function LandingHero() {
-  // Left-aligned like the section headings below; the name is the largest type on the page.
+  // Left-aligned like the section headings below.
   return (
     <section className="overflow-x-clip bg-bg px-4 pt-16 pb-6 sm:pt-24">
       <div className="relative mx-auto max-w-6xl">

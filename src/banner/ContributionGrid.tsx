@@ -9,7 +9,7 @@ import {
 import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
 import { oneOfOr } from "@/src/lib/isOneOf";
 
-/** The grid's look from banner state: its Grid colors and Cell shape settings. */
+/** Reads the Grid colors and Cell shape settings from banner state. */
 export function contributionGridStyle(state: Record<string, unknown>) {
   return {
     colors: gridColorsById(state.themeId),
@@ -34,8 +34,8 @@ interface ContributionGridProps {
   showDayLabels?: boolean;
   showTotal?: boolean;
   /**
-   * Cover the container: the SVG is stretched to it (CSS only, no layout change), the first and
-   * last weeks' empty weekday slots get out-of-range cells, and cells have no outline.
+   * Covers the container. The SVG stretches with CSS only, the first and last weeks get faded
+   * padding cells, and cells lose their outline.
    */
   fill?: boolean;
 }
@@ -52,7 +52,7 @@ export function ContributionGrid({
   fill = false,
 }: ContributionGridProps) {
   const radius = cellSize * CELL_RADIUS[cellShape];
-  // About 370 cells; worth keeping while the banner re-renders (e.g. dragging the background).
+  // About 370 cells. Dragging the background re-renders the banner often, so this is worth keeping.
   const { placedDays, monthLabels, columnCount } = useMemo(
     () =>
       buildCalendarLayout({

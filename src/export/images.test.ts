@@ -14,7 +14,7 @@ vi.mock("./imageLink", async (importOriginal) => {
 
 afterEach(() => vi.useRealTimers());
 
-/** The result as data: the payload and images, or the message shown to the user. */
+/** Returns the payload and images, or the error message shown to the user. */
 const resolveExportImages = (request: ExportRequest) =>
   Effect.runPromise(
     resolveImages(request).pipe(

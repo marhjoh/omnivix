@@ -4,8 +4,8 @@ import { useKeepWhile } from "@/src/ui/useKeepWhile";
 import styles from "@/src/studio/preview/preview.module.css";
 
 /**
- * Covers the preview while an export runs: the banner dims, a light band sweeps across it (not with
- * reduced motion), and a pill says how far along it is. Quick exports don't show it.
+ * Covers the preview while an export runs. The banner dims, a light band sweeps across it (except
+ * with reduced motion), and a pill shows the progress. Fast exports don't show it.
  */
 export function ExportProgress({ running }: { running: boolean }) {
   const text = useExportProgress(running);

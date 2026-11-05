@@ -40,15 +40,15 @@ function triggerLabel(
     const name = uploadedFileName?.trim();
     return name ? truncateMiddle(name, TRIGGER_LABEL_MAX) : "Uploaded image";
   }
-  // Anything else is a link (see isSavableImage); the link itself shows in the field below.
+  // Anything else is a link (see isSavableImage). The link itself shows in the field below.
   return presets.find((p) => p.src === value)?.label ?? "Image from URL";
 }
 
 const NO_PRESETS: readonly ImagePreset[] = [];
 
 /**
- * An image setting (the background, the logo): None, built-in images if any, a link, or an upload
- * from the device, processed under `policy`.
+ * An image setting, such as the background or the logo. The menu offers None, any built-in images,
+ * a link, or an upload from the device that's processed under `policy`.
  */
 export function ImagePicker({
   id,
@@ -71,7 +71,7 @@ export function ImagePicker({
   policy: ImageUploadPolicy;
   value: string | undefined;
   onChange: (next: string | undefined) => void;
-  /** An upload was rejected, or an image link can't be used; shown as a toast. Returns its id. */
+  /** Shows a toast when an upload is rejected or a link can't be used. Returns the toast's id. */
   onError: (message: string) => number;
   /** Hides the toast with this id (a reported link was changed or now works). */
   onErrorResolved: (toastId: number) => void;
@@ -83,14 +83,13 @@ export function ImagePicker({
   const dropdown = useDropdown(id);
   const groupedPresets = groupPresets(presets);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  /** The upload's file name, when this picker made it (the parent only has the data URL). */
+  /** File name of this picker's upload. The parent only gets the data URL. */
   const [uploadSession, setUploadSession] = useState<{ dataUrl: string; fileName: string } | null>(
     null,
   );
   /**
-   * The upload being converted and scaled (seconds for a large photo), shown in the trigger; null
-   * when it's done or another choice replaced it. Not a transition: its pending state would stay
-   * on until replaced uploads had finished too.
+   * The file being converted and scaled, which can take seconds for a large photo. Not a
+   * transition, because its pending state would stay on until replaced uploads finished too.
    */
   const [processingFile, setProcessingFile] = useState<File | null>(null);
   /** The latest chosen file, so a slower earlier upload can't replace it. */
@@ -105,8 +104,8 @@ export function ImagePicker({
   });
   const joined = link.shown || Boolean(children);
 
-  // The spinner can outlast the upload (useDelayedFlag's minimum show time); the label then
-  // already shows the result.
+  // The spinner can outlast the upload because useDelayedFlag has a minimum show time. By then
+  // the label already shows the result.
   const showUploading = useDelayedFlag(processingFile !== null);
   const uploadingName = showUploading ? (processingFile?.name ?? null) : null;
 
@@ -120,7 +119,7 @@ export function ImagePicker({
     setProcessingFile(null);
   };
 
-  /** A preset, or no image (`undefined`). */
+  /** Picks a preset, or no image with `undefined`. */
   const select = (src: string | undefined) => {
     cancelUpload();
     link.close();
@@ -189,9 +188,8 @@ export function ImagePicker({
             </DropdownOption>
           </DropdownList>
           {/*
-            Keep this input mounted outside the dropdown: closing the menu unmounts the list, but
-            the same node must stay in the document until the user finishes the OS file picker or
-            change events can be dropped.
+            Keep this input outside the dropdown. Closing the menu unmounts the list, and if the
+            input went with it, the change event from the OS file picker could be lost.
           */}
           <input
             ref={fileInputRef}

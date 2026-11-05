@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Calls `callback` once `delayMs` has passed without another `schedule`. `flush` runs a pending call
- * now, `cancel` drops it; nothing runs after unmount.
+ * Calls `callback` after `delayMs` with no new `schedule`. `flush` runs a pending call now and
+ * `cancel` drops it. Nothing runs after unmount.
  */
 export function useDebouncedCallback<T>(callback: (value: T) => void, delayMs: number) {
   const pending = useRef<{ timer: ReturnType<typeof setTimeout>; value: T } | null>(null);
