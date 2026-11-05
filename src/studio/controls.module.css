@@ -432,8 +432,6 @@
 /* The copy actions below the choices. Styled like dropdown options, with a rule above. */
 .panelActions {
   margin: 1rem -0.5rem 0;
-  border-top: 1px solid var(--divider-strong);
-  padding-top: 0.5rem;
 }
 
 .panelAction {
