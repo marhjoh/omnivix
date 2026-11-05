@@ -1,84 +1,79 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  GithubRateLimitError,
-  guardRateLimit,
-  rateLimitResetAt,
-  warnIfQuotaLow,
-} from "./rateLimit";
+import { Effect, Exit } from "effect";
+import { GithubRateLimited } from "./errors";
+import { guardRateLimit, rateLimitResetAt, warnIfQuotaLow } from "./rateLimit";
 
 const NOW = Date.UTC(2026, 9, 18, 12, 0, 0);
 const IN_AN_HOUR = NOW / 1000 + 3600;
 
+const response = (status: number, headers: Record<string, string> = {}) => ({
+  status,
+  headers: new Headers(headers),
+});
+
 describe("rateLimitResetAt", () => {
   it("reads a GraphQL RATE_LIMITED error", () => {
-    const error = {
-      errors: [{ type: "RATE_LIMITED" }],
-      headers: { "x-ratelimit-reset": IN_AN_HOUR },
-    };
-    expect(rateLimitResetAt(error, NOW)).toEqual(new Date(IN_AN_HOUR * 1000));
-  });
-
-  it("reads a 403 with no requests left", () => {
-    const error = {
-      status: 403,
-      response: {
-        headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": String(IN_AN_HOUR) },
-      },
-    };
-    expect(rateLimitResetAt(error, NOW)).toEqual(new Date(IN_AN_HOUR * 1000));
-  });
-
-  it("prefers retry-after (a secondary limit)", () => {
-    const error = { status: 403, response: { headers: { "retry-after": "30" } } };
-    expect(rateLimitResetAt(error, NOW)).toEqual(new Date(NOW + 30_000));
-  });
-
-  it("waits a minute when a 429 says nothing about the reset", () => {
-    expect(rateLimitResetAt({ status: 429, response: { headers: {} } }, NOW)).toEqual(
-      new Date(NOW + 60_000),
+    const limited = response(200, { "x-ratelimit-reset": String(IN_AN_HOUR) });
+    expect(rateLimitResetAt(limited, [{ type: "RATE_LIMITED" }], NOW)).toEqual(
+      new Date(IN_AN_HOUR * 1000),
     );
   });
 
+  it("reads a 403 with no requests left", () => {
+    const limited = response(403, {
+      "x-ratelimit-remaining": "0",
+      "x-ratelimit-reset": String(IN_AN_HOUR),
+    });
+    expect(rateLimitResetAt(limited, [], NOW)).toEqual(new Date(IN_AN_HOUR * 1000));
+  });
+
+  it("prefers retry-after (a secondary limit)", () => {
+    expect(rateLimitResetAt(response(403, { "retry-after": "30" }), [], NOW)).toEqual(
+      new Date(NOW + 30_000),
+    );
+  });
+
+  it("waits a minute when a 429 says nothing about the reset", () => {
+    expect(rateLimitResetAt(response(429), [], NOW)).toEqual(new Date(NOW + 60_000));
+  });
+
   it.each([
-    ["a missing user", { errors: [{ type: "NOT_FOUND" }] }],
-    [
-      "a 403 with requests left",
-      { status: 403, response: { headers: { "x-ratelimit-remaining": "12" } } },
-    ],
-    ["a server error", { status: 502 }],
-    ["a plain error", new Error("boom")],
-    ["nothing", null],
-  ])("ignores %s", (_, error) => {
-    expect(rateLimitResetAt(error, NOW)).toBeNull();
+    ["a missing user", response(200), [{ type: "NOT_FOUND" }]],
+    ["a 403 with requests left", response(403, { "x-ratelimit-remaining": "12" }), []],
+    ["a server error", response(502), []],
+    ["a success", response(200), []],
+  ])("ignores %s", (_, limited, errors) => {
+    expect(rateLimitResetAt(limited, errors, NOW)).toBeNull();
   });
 });
 
 describe("guardRateLimit", () => {
   afterEach(() => vi.useRealTimers());
 
-  it("turns a rate limit into GithubRateLimitError, then skips requests until the reset", async () => {
+  it("remembers a rate limit and skips requests until the reset", async () => {
     vi.useFakeTimers({ now: NOW });
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const limited = { status: 429, response: { headers: { "retry-after": "60" } } };
-    await expect(guardRateLimit(() => Promise.reject(limited))).rejects.toBeInstanceOf(
-      GithubRateLimitError,
+    const resetAt = new Date(NOW + 60_000);
+    const limited = await Effect.runPromiseExit(
+      guardRateLimit(Effect.fail(new GithubRateLimited({ resetAt }))),
     );
+    expect(Exit.isFailure(limited)).toBe(true);
 
-    const request = vi.fn(() => Promise.resolve("data"));
-    await expect(guardRateLimit(request)).rejects.toMatchObject({
-      resetAt: new Date(NOW + 60_000),
-    });
+    const request = vi.fn(() => "data");
+    const skipped = await Effect.runPromiseExit(guardRateLimit(Effect.sync(request)));
+    expect(skipped).toMatchObject({ _tag: "Failure" });
+    expect(String(Exit.isFailure(skipped) && skipped.cause)).toContain("GithubRateLimited");
     expect(request).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalledTimes(1);
 
     vi.setSystemTime(NOW + 61_000);
-    await expect(guardRateLimit(request)).resolves.toBe("data");
+    expect(await Effect.runPromise(guardRateLimit(Effect.sync(request)))).toBe("data");
   });
 
   it("passes other errors through", async () => {
     vi.useFakeTimers({ now: NOW + 120_000 }); // past the reset from the test above
-    const error = new Error("boom");
-    await expect(guardRateLimit(() => Promise.reject(error))).rejects.toBe(error);
+    const exit = await Effect.runPromiseExit(guardRateLimit(Effect.fail("boom")));
+    expect(exit).toEqual(Exit.fail("boom"));
   });
 });
 

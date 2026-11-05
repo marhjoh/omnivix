@@ -64,7 +64,13 @@ export interface ExportImage extends ImageBytes {
 
 type ImageSlot = (typeof EXPORT_IMAGES)[number];
 
-/** A link downloaded under `fetchImageLink`'s rules; stopping the export stops the download. */
+/** How long a link may take to download, redirects included. */
+const LINK_TIMEOUT = "5 seconds";
+
+/**
+ * A link downloaded under `fetchImageLink`'s rules, within LINK_TIMEOUT. A timeout, or the
+ * export's deadline, stops the download.
+ */
 function downloadLink(link: string, types: readonly LinkImageType[]) {
   return Effect.tryPromise({
     try: (signal) => fetchImageLink(link, types, signal),
@@ -75,6 +81,11 @@ function downloadLink(link: string, types: readonly LinkImageType[]) {
         ? Effect.fail(new UnusableImage({ message: cause.message }))
         : Effect.die(cause),
     ),
+    Effect.timeoutOrElse({
+      duration: LINK_TIMEOUT,
+      orElse: () =>
+        Effect.fail(new UnusableImage({ message: "The image link took too long to load." })),
+    }),
   );
 }
 

@@ -116,14 +116,6 @@ describe("fetchImageLink", () => {
     await expect(fetchImageLink("https://example.com/a.png", PNG)).rejects.toThrow("larger");
   });
 
-  it("reports a timeout while the body downloads as a timeout", async () => {
-    responses.set("https://example.com/slow.png", { ...png(), reset: true });
-    const timedOut = AbortSignal.abort(new DOMException("timed out", "TimeoutError"));
-    await expect(fetchImageLink("https://example.com/slow.png", PNG, timedOut)).rejects.toThrow(
-      "took too long",
-    );
-  });
-
   it("reports a connection reset mid-body as a failed load", async () => {
     responses.set("https://example.com/reset.png", { ...png(), reset: true });
     await expect(fetchImageLink("https://example.com/reset.png", PNG)).rejects.toThrow(

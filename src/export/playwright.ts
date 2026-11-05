@@ -1,7 +1,7 @@
 import { access, rename, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Effect } from "effect";
+import { Effect, Schedule } from "effect";
 import { type Page, chromium as playwrightChromium } from "playwright";
 import chromium from "@sparticuz/chromium";
 import { BannerSize } from "@/src/types/template";
@@ -122,9 +122,12 @@ function step<A>(run: () => Promise<A>) {
  * Chromium for one export, closed when the export's scope ends: after the screenshot, after a
  * failure, and when the deadline stops the export mid-step.
  */
-const scopedBrowser = Effect.acquireRelease(step(launchBrowser), (browser) =>
-  // Chromium can crash as it closes on Vercel; the export is done by then.
-  Effect.promise(() => browser.close().catch(() => undefined)),
+const scopedBrowser = Effect.acquireRelease(
+  // A launch that fails is tried once more before the export gives up.
+  step(launchBrowser).pipe(Effect.retry({ times: 1, schedule: Schedule.spaced("500 millis") })),
+  (browser) =>
+    // Chromium can crash as it closes on Vercel; the export is done by then.
+    Effect.promise(() => browser.close().catch(() => undefined)),
 );
 
 /** Loads the render page, failing if it didn't render: an HTTP error or a Vercel login. */

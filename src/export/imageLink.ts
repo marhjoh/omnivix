@@ -6,7 +6,6 @@ import { listText } from "@/src/lib/text";
 import { isPublicAddress } from "@/src/export/publicAddress";
 
 const MAX_LINKED_IMAGE_BYTES = 10 * 1024 * 1024;
-const TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
 
 /** Image formats a link can be, by content type. No GIF: it would animate only in the preview. */
@@ -54,9 +53,6 @@ const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
 
 function toLinkError(error: NodeJS.ErrnoException): ImageLinkError {
   if (error.code === "ENOTPUBLIC") return new ImageLinkError(NOT_ALLOWED);
-  if (error.name === "AbortError" || error.name === "TimeoutError") {
-    return new ImageLinkError("The image link took too long to load.");
-  }
   if (error.code === "ENOTFOUND") return new ImageLinkError("Couldn't find that image link.");
   return new ImageLinkError("Couldn't load the image link.");
 }
@@ -65,16 +61,15 @@ const TOO_LARGE = `The linked image is larger than ${MAX_LINKED_IMAGE_BYTES / (1
 
 /**
  * Downloads an image link for export: https only, public addresses only, one of `types`, at most
- * `MAX_LINKED_IMAGE_BYTES`, within `TIMEOUT_MS` including redirects. Throws `ImageLinkError` when
- * the link can't be used. `abort` stops it sooner (the export's deadline).
+ * `MAX_LINKED_IMAGE_BYTES`, redirects included. Throws `ImageLinkError` when the link can't be
+ * used. `signal` stops it (the caller's timeout, see `resolveExportImages`).
  */
 export function fetchImageLink(
   link: string,
   types: readonly LinkImageType[],
-  abort?: AbortSignal,
+  signal = new AbortController().signal,
 ): Promise<ImageBytes> {
-  const timeout = AbortSignal.timeout(TIMEOUT_MS);
-  return download(link, types, MAX_REDIRECTS, abort ? AbortSignal.any([abort, timeout]) : timeout);
+  return download(link, types, MAX_REDIRECTS, signal);
 }
 
 async function download(
@@ -104,7 +99,7 @@ async function download(
     res.destroy();
     throw new ImageLinkError(TOO_LARGE);
   }
-  return { contentType, body: await readLimitedBody(res, signal) };
+  return { contentType, body: await readLimitedBody(res) };
 }
 
 /** The link as a URL, if it's https and not a private IP literal (those skip the DNS check). */
@@ -156,7 +151,7 @@ function redirectTarget(location: string, from: URL, redirectsLeft: number): str
 }
 
 /** The body, stopped as soon as it passes `MAX_LINKED_IMAGE_BYTES`. */
-function readLimitedBody(res: IncomingMessage, signal: AbortSignal): Promise<Buffer> {
+function readLimitedBody(res: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     let size = 0;
@@ -170,9 +165,6 @@ function readLimitedBody(res: IncomingMessage, signal: AbortSignal): Promise<Buf
       chunks.push(chunk);
     });
     res.on("end", () => resolve(Buffer.concat(chunks)));
-    // A timeout aborts the request, and the response then fails as a reset connection.
-    res.on("error", (error: NodeJS.ErrnoException) =>
-      reject(toLinkError(signal.aborted ? signal.reason : error)),
-    );
+    res.on("error", (error: NodeJS.ErrnoException) => reject(toLinkError(error)));
   });
 }
