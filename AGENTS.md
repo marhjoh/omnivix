@@ -88,6 +88,9 @@ American English everywhere: code, comments, UI copy, docs, commits and PRs (cus
 - Branch from `main` with a `feat/`, `fix/`, `docs/`, `refactor/` or `chore/` prefix. Each branch gets a Vercel preview; `main` is protected by CI and deploys to production.
 - PRs are squash-merged and the PR title becomes the commit, so write it as a [Conventional Commit](https://www.conventionalcommits.org). It decides the release-please version bump; never edit the version or `CHANGELOG.md`.
 - Keep PRs small, and link issues with `Closes #` or `Refs #`. More in [CONTRIBUTING.md](CONTRIBUTING.md).
+- Write issues and PRs with the templates in `.github/`: `ISSUE_TEMPLATE/task.md` or `bug.md`, and `pull_request_template.md`. Keep their headings and drop only the sections they mark as optional.
+- A PR that changes the UI includes screenshots under "Screenshots". Capture them with Playwright at 2× from `pnpm build` and `pnpm start --port <free port>`, in light and dark when the change shows in both. Save them outside the repo.
+- Attach images with `gh pr create` or `gh pr edit` and `--attach` (gh 2.99 or later). Write `![alt](./shot.webp)` in a `--body-file` and pass `--attach ./shot.webp`, and gh swaps the path for the uploaded image. Don't commit screenshots or push them to a branch.
 
 ## Checks
 
