@@ -45,13 +45,13 @@ export function StudioShell({
   initialPixelRatio: ExportPixelRatio;
   /** Download format from its cookie (PNG when none is saved). */
   initialFormat: ExportFormat;
-  /** The preview's view of a format that devices crop, from its cookie (phone when none). */
+  /** Which device crop the preview shows, from its cookie (phone when none is saved). */
   initialPreviewView: BannerView;
   /** The settings and username from their cookies, with the studio link applied. */
   start: StartingSettings;
   /** Settings from a studio link (`?username=…&themeId=…`), applied over the saved ones. */
   link: LinkSettings | null;
-  /** GitHub data the server already loaded, by the url the studio fetches it from. */
+  /** GitHub data the server already loaded, keyed by URL. */
   initialGithubData: Record<string, unknown>;
 }) {
   const { theme: appTheme } = useTheme();
@@ -82,15 +82,15 @@ export function StudioShell({
 
   const size = state.size as BannerSize;
   const fill = state.contentSize === "fill";
-  // A profile photo that failed to load can't be shown, Fill covers the whole banner, and without
-  // quote marks there's nothing to color.
+  // Disable settings that don't apply right now. A photo that failed can't be shown, Fill covers
+  // the whole banner, and with no quote marks there's nothing to color.
   const disabledFields = new Set<string>();
   if (github.avatarFailed) disabledFields.add("showAvatar");
   if (fill) disabledFields.add("alignment");
   if (state.quoteMarks === "none") disabledFields.add("markColor");
 
-  // What the banner waits for: the username first, as nothing loads without it, then a required
-  // field such as the quote.
+  // The first missing setting the banner needs. The username comes first because nothing loads
+  // without it. Then come required fields such as the quote.
   const missingSetting =
     needsUsername && !username.trim()
       ? "username"
@@ -104,7 +104,7 @@ export function StudioShell({
 
   const background = backgroundFromState(state);
   const backgroundImage = useBannerImage(state.backgroundImage, "background", showError);
-  /** The background that can be moved and zoomed: one that's chosen and shows in the preview. */
+  /** Only a chosen background that shows in the preview can be moved and zoomed. */
   const adjustableBackground = backgroundImage.usableSrc ? background : undefined;
   const logoImage = useBannerImage(state.logoImage, "logo", showError);
 
@@ -116,15 +116,15 @@ export function StudioShell({
     }),
     [backgroundImage.usableSrc, state.backgroundPosition, state.backgroundZoom],
   );
-  // A new background replaces the old one once it has loaded, instead of leaving the banner
-  // without one in between.
+  // Keep the old background until the new one has loaded, so the banner is never left without
+  // one.
   const shownBackground = useKeepWhile(backgroundFields, backgroundImage.status === "loading");
   const previewBannerState = useMemo(
     () => ({ ...state, ...shownBackground, logoImage: logoImage.usableSrc }),
     [state, shownBackground, logoImage.usableSrc],
   );
-  // What the preview and the Download button show. A quick load keeps the previous preview
-  // instead of flashing the loading screen (see useHoldDuringLoad); both always change together.
+  // What the preview and the Download button show. They always change together. A fast load
+  // keeps the previous preview instead of flashing the loading screen (see useHoldDuringLoad).
   const livePreview = useMemo(
     () => ({
       previewState,
@@ -134,16 +134,16 @@ export function StudioShell({
     }),
     [previewState, github.problem, previewBannerState, github.data],
   );
-  // Only a finished preview is held; an empty or error state goes straight to loading.
+  // Only hold a finished preview. An empty or error state goes straight to loading.
   const shownPreview = useHoldDuringLoad(
     livePreview,
     previewState === "loading",
     (preview) => preview.previewState === "ready",
   );
-  // Download and Copy have no message of their own: the preview shows why they're off (empty,
-  // loading or a problem), and an unusable image is reported with a toast. They're also off while
-  // the preview still shows an earlier version (a quick load being held, the previous year's grid,
-  // the previous background, or a logo still loading): a download now wouldn't match it.
+  // Download and Copy don't explain why they're off. The preview shows the empty, loading or
+  // problem state, and a broken image gets a toast. They're also off while the preview shows an
+  // older version, so a download always matches what's on screen. That covers a held preview, the
+  // previous year's grid, the old background and a logo that's still loading.
   const exportBlocked =
     shownPreview.previewState !== "ready" ||
     backgroundImage.status === "failed" ||
@@ -181,6 +181,8 @@ export function StudioShell({
           <ExportControls
             onDownload={bannerExport.download}
             onCopy={bannerExport.copy}
+            onCopyEmbed={bannerExport.copyEmbed}
+            banner={{ templateId, state, uiTheme: appTheme }}
             exporting={bannerExport.exporting}
             exportBlocked={exportBlocked}
             pixelRatio={pixelRatio}

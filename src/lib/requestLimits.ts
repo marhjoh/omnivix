@@ -2,22 +2,35 @@ import { createHash } from "node:crypto";
 import { Ratelimit, type RatelimitConfig } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Omnivix's own per-IP limits, counted in Upstash Redis so every server instance shares them.
-// The export's burst limit is a Vercel Firewall rule instead (see docs/deployment.md).
+// Omnivix's own limits, counted in Upstash Redis so every server instance shares them. The
+// export's burst limit is a Vercel Firewall rule instead (see docs/deployment.md).
 
 const DEFAULT_DAILY_EXPORTS = 25;
 
-/** A slow store shouldn't hold up the request; past this, it's let through. */
+/** After this, a slow store is skipped and the request goes through. */
 const CHECK_TIMEOUT_MS = 1000;
 
-/** Loading a user takes up to three requests and switching year one more; CDN hits don't count. */
-export const githubDataLimit = requestLimit("github-data", Ratelimit.slidingWindow(60, "10 m"));
-
-/** Counted per UTC day, so it resets at midnight UTC. Copy counts too: it's the same route. */
-export const dailyExportLimit = requestLimit(
-  "daily-exports",
-  Ratelimit.fixedWindow(dailyExports(), "1 d"),
+/**
+ * Loading a user takes up to three requests, and switching the year one more. CDN hits don't count.
+ */
+export const githubDataLimit = perIp(
+  requestLimit("github-data", Ratelimit.slidingWindow(60, "10 m")),
 );
+
+/**
+ * Counted per UTC day, so it resets at midnight UTC. Copy counts too, because it uses the same
+ * route.
+ */
+export const dailyExportLimit = perIp(
+  requestLimit("daily-exports", Ratelimit.fixedWindow(dailyExports(), "1 d")),
+);
+
+/**
+ * Counts image URL renders per UTC day. The key is the banner (see `bannerImageRoute`), not the IP.
+ * README images come through GitHub's image proxy, and all viewers share its few addresses. CDN
+ * hits never reach the route, so only fresh renders count.
+ */
+export const bannerImageLimit = requestLimit("banner-images", Ratelimit.fixedWindow(30, "1 d"));
 
 function dailyExports(): number {
   const configured = Number(process.env.EXPORT_DAILY_LIMIT);
@@ -27,17 +40,17 @@ function dailyExports(): number {
 /**
  * Returns when a refused request may try again, or null when it may go ahead.
  *
- * Without a store (local and self-hosted runs) there's no limit, and a failing or slow store lets
- * requests through: the limits protect quotas, they aren't access control.
+ * Without a store (local and self-hosted runs) there's no limit. A failing or slow store also lets
+ * requests through. The limits protect quotas and aren't access control.
  */
 function requestLimit(prefix: string, algorithm: RatelimitConfig["limiter"]) {
   let limiter: Ratelimit | null | undefined;
 
-  return async function limitedUntil(request: Request): Promise<Date | null> {
+  return async function limitedUntil(key: string): Promise<Date | null> {
     if (limiter === undefined) limiter = createLimiter(prefix, algorithm);
     if (!limiter) return null;
     try {
-      const { success, reset } = await limiter.limit(clientKey(request));
+      const { success, reset } = await limiter.limit(key);
       return success ? null : new Date(reset);
     } catch (error) {
       console.error(`Limit ${prefix} couldn't be checked; letting the request through.`, error);
@@ -59,15 +72,24 @@ function createLimiter(prefix: string, algorithm: RatelimitConfig["limiter"]): R
   });
 }
 
-/** The Vercel Marketplace store sets the KV_ names; Upstash's own setup the UPSTASH_ ones. */
+/**
+ * The Vercel Marketplace store sets the KV_ variables. Upstash's own setup sets the UPSTASH_ ones.
+ */
 function redisFromEnv(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   return url && token ? new Redis({ url, token }) : null;
 }
 
-/** IPs are stored hashed, and only for the window. Vercel sets `x-real-ip`; visitors can't. */
-function clientKey(request: Request): string {
-  const ip = request.headers.get("x-real-ip") ?? "unknown";
-  return createHash("sha256").update(ip).digest("hex");
+/**
+ * Counts a limit per IP. IPs are stored hashed, and only for the window. Vercel sets `x-real-ip`,
+ * and visitors can't fake it.
+ */
+function perIp(limitedUntil: (key: string) => Promise<Date | null>) {
+  return (request: Request) =>
+    limitedUntil(
+      createHash("sha256")
+        .update(request.headers.get("x-real-ip") ?? "unknown")
+        .digest("hex"),
+    );
 }

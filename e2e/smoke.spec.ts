@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { fakeGithub, USERNAME } from "./github";
 
-/** Errors the page throws or logs; a smoke test should end with none. */
+/** Collects errors the page throws or logs to the console. */
 function pageErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -14,6 +14,8 @@ function pageErrors(page: Page): string[] {
 const preview = (page: Page) => page.locator(".omnivix-artboard");
 const download = (page: Page) => page.getByRole("button", { name: /^Download / });
 
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+
 test("the quote banner loads and downloads as a PNG", async ({ page }) => {
   const errors = pageErrors(page);
   await page.goto("/studio/quote-banner");
@@ -23,9 +25,39 @@ test("the quote banner loads and downloads as a PNG", async ({ page }) => {
   const [file] = await Promise.all([page.waitForEvent("download"), download(page).click()]);
   expect(file.suggestedFilename()).toMatch(/\.png$/);
   const bytes = await (await file.createReadStream()).toArray();
-  // A PNG starts with its signature: \x89PNG.
-  expect(Buffer.concat(bytes).subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  expect(Buffer.concat(bytes).subarray(0, 4)).toEqual(PNG_SIGNATURE);
   expect(errors).toEqual([]);
+});
+
+test("an image URL returns the banner, cached by the CDN", async ({ request }) => {
+  const response = await request.get("/banner/quote-banner.png");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"]).toBe(
+    "public, s-maxage=86400, stale-while-revalidate=604800",
+  );
+  expect((await response.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
+});
+
+test("the export panel copies the banner's image URL as Markdown", async ({
+  page,
+  context,
+  request,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/studio/quote-banner");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await page.getByRole("button", { name: /^Export options/ }).click();
+  await page.getByRole("button", { name: "Embed in a README or site" }).click();
+  await page.getByRole("button", { name: "Markdown", exact: true }).click();
+  await page.getByRole("button", { name: "Copy Markdown" }).click();
+  await expect(page.getByText("Markdown copied.")).toBeVisible();
+
+  const markdown = await page.evaluate(() => navigator.clipboard.readText());
+  const [, url] = /^!\[Quote Banner\]\((\S+)\)$/.exec(markdown) ?? [];
+  expect(url).toMatch(/\/banner\/quote-banner\.png/);
+  const image = await request.get(url);
+  expect(image.status()).toBe(200);
+  expect((await image.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
 });
 
 test.describe("GitHub banners", () => {

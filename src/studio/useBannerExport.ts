@@ -7,7 +7,7 @@ import { readApiError } from "@/src/lib/apiError";
 
 export type ExportKind = "download" | "copy";
 
-/** Exports the banner; a failure throws an Error whose message can be shown as is. */
+/** Exports the banner. Thrown errors have a message that can be shown to the user as is. */
 async function exportBanner(request: ExportRequest): Promise<Blob> {
   let response: Response;
   try {
@@ -28,8 +28,8 @@ async function exportBanner(request: ExportRequest): Promise<Blob> {
 }
 
 /**
- * Download and Copy for the studio, each an async transition whose pending state says which export
- * runs. One export runs at a time; problems and the copy confirmation go to the studio's toast.
+ * Download and Copy for the studio. Each runs as an async transition, and `exporting` says which
+ * one is running. Only one export runs at a time. Errors and copy confirmations show in the toast.
  */
 export function useBannerExport({
   request,
@@ -38,7 +38,7 @@ export function useBannerExport({
   showSuccess,
   dismissToast,
 }: {
-  /** Everything but the format, which Download chooses and Copy can't (the clipboard takes PNG). */
+  /** Everything except the format. Download picks one, and Copy always uses PNG. */
   request: Omit<ExportRequest, "format">;
   format: ExportFormat;
   showError: (message: string) => void;
@@ -49,18 +49,18 @@ export function useBannerExport({
   const [copying, startCopy] = useTransition();
   const exporting: ExportKind | null = downloading ? "download" : copying ? "copy" : null;
 
-  /** The request as `file`, at the chosen ratio or the largest the banner format takes as `file`. */
+  /** Uses the chosen pixel ratio, or the largest the banner format allows for `file`. */
   function requestAs(file: ExportFormat): ExportRequest {
     const pixelRatio = exportPixelRatioFor(BANNER_SIZES[request.size], file, request.pixelRatio);
     return { ...request, pixelRatio, format: file };
   }
 
-  // dismissToast runs before the action, where it would wait for the export to end. Errors are
-  // caught: thrown from an action, they'd reach an error boundary instead of the toast.
+  // Call dismissToast before the action. Inside it, the toast would only close after the export.
+  // Errors are caught because one thrown from an action goes to an error boundary, not the toast.
   function download() {
     if (exporting) return;
     dismissToast();
-    // The chosen format, or the banner format's own if it doesn't take that one.
+    // Falls back to the banner format's own file type if it doesn't take the chosen one.
     const file = exportFormatFor(BANNER_SIZES[request.size], format);
     startDownload(async () => {
       try {
@@ -93,8 +93,9 @@ export function useBannerExport({
       );
       return;
     }
-    // Safari only allows the write during the click, so the image goes in as a promise that
-    // resolves when the export is done. The action runs synchronously until its first await.
+    // Safari only allows the clipboard write during the click. So we pass the image as a promise
+    // that resolves when the export is done. The action runs synchronously up to its first await,
+    // which keeps the write inside the click.
     startCopy(async () => {
       const png = exportBanner(requestAs("png"));
       try {
@@ -110,5 +111,16 @@ export function useBannerExport({
     });
   }
 
-  return { exporting, download, copy };
+  /** Copies an embed snippet. `name` goes in the confirmation, e.g. "Markdown copied." */
+  async function copyEmbed(text: string, name: string) {
+    dismissToast();
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess(`${name} copied.`);
+    } catch {
+      showError("Couldn't copy. Select the text and copy it instead.");
+    }
+  }
+
+  return { exporting, download, copy, copyEmbed };
 }

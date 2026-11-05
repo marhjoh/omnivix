@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  /* Two lines: 56px tall. Frame and text size match the fields (app/globals.css). */
+  /* 56px fits two lines. Frame and text size match the fields (app/globals.css). */
   min-height: 3.5rem;
   border-radius: 8px;
   border: 1px solid var(--control-border);
@@ -23,7 +23,7 @@
   transition-duration: var(--hover-fade);
 }
 
-/* Disabled controls keep their frame; text and icons turn --disabled-text (app/globals.css). */
+/* Disabled controls keep their frame. Text and icons use --disabled-text (app/globals.css). */
 .tile:disabled,
 .tile:focus-visible,
 .reset:focus-visible {
@@ -31,9 +31,9 @@
   outline-offset: 1px;
 }
 
-/* Selected: a blue frame and tint, like selected things across the app. The content keeps its
-   color. Appearance tiles follow <html data-theme>, set before first paint, as the server render
-   may not know the theme yet (a first visit has no cookie). */
+/* Selected: a blue frame and tint, like everywhere else in the app. The content keeps its color.
+   Appearance tiles use <html data-theme> instead, which is set before first paint. The server
+   render may not know the theme yet, because a first visit has no cookie. */
 .tile[aria-pressed="true"]:not(.appearanceTile),
 :global(html[data-theme="light"]) .appearanceTile[data-value="light"],
 :global(html[data-theme="dark"]) .appearanceTile[data-value="dark"] {
@@ -50,8 +50,8 @@
   padding: 0.25rem 0.75rem;
 }
 
-/* A color setting (ColorSelect): the color in its field, and the panel under it with the
-   swatches, and the picker for a custom color. Colors stay in forced colors: they're the choice. */
+/* ColorSelect: the color dot in its field, the swatch panel and the custom color picker. Forced
+   colors mode keeps the colors because they are the choice. */
 .colorDot {
   width: 1rem;
   height: 1rem;
@@ -99,8 +99,8 @@
   height: 1.25rem;
 }
 
-/* Color swatches: round, seven to a row, so the 14 make two rows. Selected: an accent ring and a
-   check, like other selections. Forced colors keep them, as the colors are the choice. */
+/* Round swatches, seven to a row, so the 14 colors make two rows. The selected one gets an accent
+   ring and a check. Forced colors mode keeps them because the colors are the choice. */
 .swatches {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -140,8 +140,8 @@
   background: conic-gradient(#ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444);
 }
 
-/* A setting's Reset, in its label row: a small button framed like the fields. The negative
-   margin keeps the row its height, so nothing moves when it appears. */
+/* A setting's Reset button in its label row, framed like the fields. The negative margin keeps
+   the row height the same, so nothing moves when it appears. */
 .reset {
   display: inline-flex;
   height: 1.5rem;
@@ -160,16 +160,16 @@
   transition-duration: var(--hover-fade);
 }
 
-/* Hover: a faint blue border, like the app's other bordered controls. After .tile and .reset, as
-   :where gives it their weight. On tiles it shows only where a click changes something, so not on
-   the selected tile, whose style outweighs it. */
+/* Hover: a faint blue border, like other bordered controls in the app. It comes after .tile and
+   .reset because :where gives it the same specificity. On tiles it only shows where a click
+   changes something, so the selected tile's style wins over it. */
 .tile:where(:hover:not(:disabled)),
 .reset:where(:hover) {
   border-color: var(--control-border-hover);
 }
 
-/* Forced colors (Windows High Contrast) drop the tint: a thicker frame in the selection color,
-   as a border so the focus outline still shows. */
+/* Forced colors mode (Windows High Contrast) drops the tint, so the selected tile gets a thicker
+   border in the selection color. A border, not an outline, so the focus outline still shows. */
 @media (forced-colors: active) {
   .tile[aria-pressed="true"]:not(.appearanceTile),
   :global(html[data-theme="light"]) .appearanceTile[data-value="light"],
@@ -180,7 +180,7 @@
   }
 }
 
-/* A tile's second line: muted, with even digits (pixel sizes). */
+/* A tile's second line. Tabular digits keep the pixel sizes even. */
 .tileHint {
   font-size: 0.6875rem;
   font-weight: 400;
@@ -205,8 +205,8 @@
   flex: 1;
 }
 
-/* Check lists (Show, Repositories): one frame with a row per option, like the background picker's
-   frame. The whole row is the button; the check on the right fills in when on. */
+/* Check lists (Show, Repositories): one frame with a row per option, like the background picker.
+   The whole row is the button, and the check on the right fills in when on. */
 .checkList {
   overflow: hidden;
   border-radius: 8px;
@@ -282,8 +282,8 @@
   color: var(--text);
 }
 
-/* Download split button: one blue pill, a thin light line before the options toggle. 36px tall
-   and round like the other header buttons. */
+/* Download split button: one blue pill with a thin light divider before the options toggle. 36px
+   tall and round, like the other header buttons. */
 .split {
   display: inline-flex;
   height: 2.25rem;
@@ -293,7 +293,7 @@
   color: #fff;
 }
 
-/* Forced colors drop the blue fill: an outline keeps the button's shape. */
+/* Forced colors mode drops the blue fill, so an outline keeps the button's shape. */
 @media (forced-colors: active) {
   .split {
     outline: 1px solid ButtonText;
@@ -312,7 +312,7 @@
   transition-duration: var(--hover-fade);
 }
 
-/* Icon-only on phones (a little more room on the round side), labeled from sm. */
+/* Icon-only on phones, with a bit more padding on the round side. The label shows from sm up. */
 .splitMain {
   width: 2.5rem;
   padding-left: 0.125rem;
@@ -338,7 +338,7 @@
   cursor: not-allowed;
 }
 
-/* Exporting: the pill stays blue; the running half shows a spinner, the other one fades. */
+/* While exporting, the pill stays blue. The running half shows a spinner and the other fades. */
 .split[data-busy="true"] .splitMain:not([aria-busy="true"]),
 .split[data-busy="true"] .splitToggle:not([aria-busy="true"]) {
   color: rgba(255, 255, 255, 0.55);
@@ -348,7 +348,7 @@
   cursor: progress;
 }
 
-/* Blocked (nothing to export yet): one neutral pill, framed like the fields. The options toggle
+/* Blocked (nothing to export yet): a neutral pill framed like the fields. The options toggle
    still works, so it keeps the text color. The outline adds no width, so the size stays. */
 .split[data-blocked="true"] {
   outline: 1px solid var(--control-border);
@@ -387,7 +387,7 @@
   }
 }
 
-/* The options panel, under the button. Its frame is the dropdown lists' .popover (app/globals.css). */
+/* The options panel under the button. Its frame comes from .popover (app/globals.css). */
 .panel {
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -423,13 +423,13 @@
   }
 }
 
-/* Tiles in the panel: less side padding, so a 3× size (4752 × 1188) fits on one line at 280px. */
+/* Less side padding so a 3× size (4752 × 1188) fits on one line at 280px. */
 .panelTile {
   padding-inline: 0.25rem;
   white-space: nowrap;
 }
 
-/* Copy actions below the choices: rows like the dropdown options, a rule above them. */
+/* The copy actions below the choices. Styled like dropdown options, with a rule above. */
 .panelActions {
   margin: 1rem -0.5rem 0;
   border-top: 1px solid var(--divider-strong);
@@ -470,13 +470,31 @@
   outline-offset: -2px;
 }
 
-/* "Coming soon" on an action that isn't there yet. */
-.soon {
-  margin-left: auto;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--text) 8%, transparent);
-  padding: 0.125rem 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--muted);
+/* The part that opens under "Embed in a README or site". Grid rows going from 0fr to 1fr animate
+   the height. It's hidden while closed, which keeps its controls out of the tab order. */
+.embedBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.embedBody[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .embedBody {
+    transition:
+      grid-template-rows 0.2s ease-out,
+      opacity 0.2s ease-out,
+      visibility 0.2s;
+  }
+}
+
+.embedBody > * {
+  min-height: 0;
+  overflow: hidden;
 }

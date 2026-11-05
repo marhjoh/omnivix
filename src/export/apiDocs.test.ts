@@ -23,12 +23,17 @@ describe("exportApiDocs", () => {
   });
 });
 
-describe("studio link docs", () => {
+describe("studio link and image URL docs", () => {
   it("shows a link the studio reads in full", () => {
     const query = new URLSearchParams(EXAMPLE_LINK.query).toString();
     expect(docs).toContain(`${studioPath(EXAMPLE_LINK.templateId)}?${query}`);
     const link = parseLinkSettings(EXAMPLE_LINK.templateId, EXAMPLE_LINK.query);
     const { username, ...settings } = EXAMPLE_LINK.query;
     expect(link).toEqual({ settings, username });
+  });
+
+  it("shows the same query as an image URL", () => {
+    const query = new URLSearchParams(EXAMPLE_LINK.query).toString();
+    expect(docs).toContain(`/banner/${EXAMPLE_LINK.templateId}.png?${query}`);
   });
 });

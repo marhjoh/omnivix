@@ -1,6 +1,6 @@
 # API
 
-Want a banner without opening the studio, or a link that opens the studio with your settings? Both work without a key or sign-in.
+Want a banner without opening the studio, an image to embed that stays up to date, or a link that opens the studio with your settings? All work without a key or sign-in.
 
 ## Export API
 
@@ -32,7 +32,30 @@ The studio reads the same settings from the URL, so a link can open a banner tha
 https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset
 ```
 
-Values that aren't valid are ignored. Uploaded backgrounds can't be linked.
+Values that aren't valid are ignored. Uploaded backgrounds and logos can't be linked. Positions are `x,y` in percent (`contentPosition=100,0`), and `backgroundZoom` is a number from 1 to 1.5.
+
+## Image URL
+
+`GET /banner/<templateId>.png`, or `.jpg` for JPEG, returns the banner as an image for a README or website. It takes the same query as a studio link, plus `pixelRatio` (`1` or `2`, default `2`) and `uiTheme` (`light` or `dark`). To get a studio link's image URL, change its path:
+
+```md
+![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)
+```
+
+In the studio, "Embed in a README or site" in the export panel builds it for you.
+
+- **Settings:** values that aren't valid use the defaults. Uploaded images can't go in a URL. Images stop at 2×, which is sharp on any screen and keeps photo banners small.
+- **Caching:** an image is cached for a day (`s-maxage=86400`). After that, the old image is served while a new one renders (`stale-while-revalidate=604800`), so a README never waits on a render. Errors are cached for 5 minutes.
+- **Limit:** 30 renders a day per GitHub username, or per banner for the quote banner. Cached images don't count.
+
+Responses are like the export API's:
+
+- `200`: the image, `image/png` or `image/jpeg`
+- `400`: settings it can't render, with `issues`: a GitHub banner without a valid `username`, or a format the size doesn't take (`.png` for `reddit`); or an image link that can't be used
+- `404`: an unknown template or extension, or a GitHub user that doesn't exist
+- `413`: settings too long to render
+- `429`: the daily limit (`"limit": "banner-images"`) or GitHub's (`"limit": "github"`), with `resetAt` and `Retry-After`
+- `500`: a failed render
 
 ## Routes
 
@@ -44,6 +67,7 @@ All routes, including the ones the app uses internally:
 | `/studio/[templateId]`                                     | The editor for one template                     |
 | `/render/[templateId]`                                     | The page the export screenshots; needs a token  |
 | `POST /api/export`                                         | The export API above                            |
+| `/banner/[templateId].png`, `.jpg`                         | The image URL above                             |
 | `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio                      |
 | `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time    |
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI tools |

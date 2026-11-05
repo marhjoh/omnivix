@@ -51,7 +51,13 @@ Two details the diagram doesn't show:
 - **The token is stateless,** because the API route and the render page can run on different serverless instances.
 - **Backgrounds and logos don't go in the token.** Playwright serves an upload or link to the render page from memory (`images.ts`); links are downloaded first, from public https addresses only (`imageLink.ts`).
 
-See also: request fields and responses in [api.md](api.md#export-api), and the rate limit and Chromium version in [deployment.md](deployment.md).
+**Image URLs** (`/banner/<templateId>.png`) use the same render (`renderBanner.ts`). Their settings come from the URL, and Vercel's CDN caches the image for a day.
+
+See also: request fields and responses for the [export API](api.md#export-api) and [image URLs](api.md#image-url), and the rate limits and Chromium version in [deployment.md](deployment.md).
+
+## Why two renderers
+
+Link previews are a fixed card, so `next/og` (Satori) draws them without a browser. Banners need Playwright: they measure their content in the DOM and use CSS grid, which Satori doesn't support.
 
 ## Theme and saved settings
 
@@ -77,11 +83,11 @@ The pieces templates are built from: frame, contribution grid, repo cards and `F
 
 ### `src/studio/`
 
-The editor: sidebar, preview (`preview/`) and export button. Saved settings are read and written in `studioCookies.ts`.
+The editor: sidebar, preview (`preview/`) and export button. Saved settings are in `studioCookies.ts`. `parseLinkSettings.ts` reads studio links, and `embedUrl.ts` builds image URLs.
 
 ### `src/export/`
 
-Server-side export, on Effect: the API route (`route.ts`), validation (`payload.ts`), signed tokens (`exportToken.ts`), the Playwright capture (`playwright.ts`) and the errors each becomes a response for (`errors.ts`). A whole export has a 45-second deadline; Chromium is a scoped resource, so the deadline or a failure closes it. `apiDocs.ts` generates the export API section of `/llms.txt`.
+Server-side export, on Effect. The export API (`route.ts`) and image URLs (`bannerImageRoute.ts`) share one render (`renderBanner.ts`), with validation in `payload.ts`, signed tokens in `exportToken.ts` and the Playwright capture in `playwright.ts`. A render stops after 45 seconds, and Chromium is closed even when it fails. `apiDocs.ts` writes the export part of `/llms.txt`.
 
 **Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
 
