@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://github.com/marhjoh/omnivix/compare/v1.26.0...v1.27.0) (2026-11-05)
+
+
+### Features
+
+* add a private stats dashboard at /admin ([#246](https://github.com/marhjoh/omnivix/issues/246)) ([7acc59b](https://github.com/marhjoh/omnivix/commit/7acc59b3ddf8aeaaa67f43993f1c6e1a9d5e0d40))
+
 ## [1.26.0](https://github.com/marhjoh/omnivix/compare/v1.25.0...v1.26.0) (2026-11-05)
 
 
