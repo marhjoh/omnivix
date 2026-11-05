@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
 import type { ExportRequest } from "@/src/export/request";
-import { resolveExportImages as resolveImages } from "./images";
+import { resolveExportImages as resolveImages, withImagePaths } from "./images";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 
 // The real download, unless a test replaces it.
@@ -153,5 +153,24 @@ describe("resolveExportImages with an http link", () => {
       ok: false,
       error: "Image links must start with https://.",
     });
+  });
+});
+
+describe("withImagePaths", () => {
+  it("puts each upload or link's path in its place, and keeps presets", () => {
+    const request = {
+      ...payload("https://example.com/a.png"),
+      state: {
+        backgroundImage: "https://example.com/a.png",
+        logoImage: "data:image/png;base64,AA",
+      },
+    };
+    expect(withImagePaths(request).state).toEqual({
+      backgroundImage: "/__export/background",
+      logoImage: "/__export/logo",
+    });
+    expect(withImagePaths(payload("/backgrounds/london.avif")).state.backgroundImage).toBe(
+      "/backgrounds/london.avif",
+    );
   });
 });

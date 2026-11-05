@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { preload } from "react-dom";
 import { previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { PREVIEW_PHOTO_SIZES } from "@/src/studio/layout";
@@ -7,8 +7,9 @@ import { useImageStatus } from "@/src/studio/useImageStatus";
 
 /**
  * An image setting (the background, the logo) as the preview loads it. One that failed is left out
- * of the preview and blocks the export; the sidebar keeps it. A failed preset or upload is reported
- * here, once; links report their own problems (ImagePicker).
+ * of the preview and blocks the export; the sidebar keeps it. A failed preset, upload, or link the
+ * studio opened with (saved or from a studio link) is reported here, once; links typed later are
+ * reported by the link field (useImageLinkField).
  */
 export function useBannerImage(
   value: unknown,
@@ -28,13 +29,14 @@ export function useBannerImage(
   const status = useImageStatus(src, { srcSet, sizes });
   const failed = status === "failed";
 
+  const [openedWith] = useState(src);
   const reportedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!failed || !src || isHttpsUrl(src)) return;
+    if (!failed || !src || (isHttpsUrl(src) && src !== openedWith)) return;
     if (reportedRef.current === src) return;
     reportedRef.current = src;
     showError(`Couldn't load this ${name}.`);
-  }, [failed, src, name, showError]);
+  }, [failed, src, openedWith, name, showError]);
 
   /** The image, unless it failed to load. */
   const usableSrc = failed ? undefined : src;

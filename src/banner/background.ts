@@ -87,14 +87,18 @@ export function dragBackgroundPosition(
 
 /**
  * The position after an arrow key: `step` percent on each axis, rounded (roundPosition). Like a
- * drag, the image moves the arrow's way: → shows more of the left side, which lowers `x`.
+ * drag, the image moves the arrow's way (→ shows more of the left side, which lowers `x`), and an
+ * axis without room to move is left as it is.
  */
 export function nudgeBackgroundPosition(
   position: BackgroundPosition,
   step: { x: number; y: number },
+  range: Box,
 ): BackgroundPosition {
+  const move = (value: number, by: number, room: number) =>
+    room < 1 ? value : clampPercent(value - by);
   return roundPosition({
-    x: clampPercent(position.x - step.x),
-    y: clampPercent(position.y - step.y),
+    x: move(position.x, step.x, range.width),
+    y: move(position.y, step.y, range.height),
   });
 }

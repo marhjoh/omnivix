@@ -2,7 +2,7 @@ import "server-only";
 import { Cause, Effect } from "effect";
 import { NextResponse, type NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
-import { resolveExportImages } from "@/src/export/images";
+import { resolveExportImages, withImagePaths } from "@/src/export/images";
 import { createExportToken } from "@/src/export/exportToken";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
@@ -62,12 +62,20 @@ const exportBanner = Effect.fnUntraced(function* (
   request: NextRequest,
   exportRequest: ParsedExportRequest,
 ) {
+  // Before the quota and any download: settings that are too long cost no export.
+  const planned = withImagePaths(exportRequest);
+  if (
+    renderUrl(request, planned.templateId, createExportToken(planned)).length >
+    MAX_RENDER_URL_LENGTH
+  ) {
+    return yield* new SettingsTooLong();
+  }
+
   const limitedUntil = yield* Effect.promise(() => dailyExportLimit(request));
   if (limitedUntil) return yield* new DailyExportLimitReached({ resetAt: limitedUntil });
 
   const { payload, images } = yield* resolveExportImages(exportRequest);
   const url = renderUrl(request, payload.templateId, createExportToken(payload));
-  if (url.length > MAX_RENDER_URL_LENGTH) return yield* new SettingsTooLong();
   const image = yield* captureBanner({
     url,
     size: payload.size,

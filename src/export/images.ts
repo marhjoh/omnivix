@@ -123,6 +123,19 @@ const resolveImage = Effect.fnUntraced(function* (
 });
 
 /**
+ * The payload as the render page will get it, with each upload or link already replaced by its
+ * `path`, without downloading anything: the render URL's length can be checked first.
+ */
+export function withImagePaths<T extends ExportRequest>(payload: T): T {
+  const state = { ...payload.state };
+  for (const { key, path, presets } of EXPORT_IMAGES) {
+    const value = state[key];
+    if (typeof value === "string" && value !== "" && !presets?.test(value)) state[key] = path;
+  }
+  return { ...payload, state };
+}
+
+/**
  * Prepares the payload's images for export. Uploads and links are returned as bytes, with their
  * `path` left in the payload in their place; links are downloaded here under `fetchImageLink`'s
  * rules. Presets stay as they are. Anything else fails with `UnusableImage`.

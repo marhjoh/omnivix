@@ -4,10 +4,11 @@ import { isDataUrl } from "@/src/lib/imageSource";
 type ImageStatus = "none" | "loading" | "loaded" | "failed";
 
 /**
- * Outcome per src for the browser session, so a remount doesn't wait on an image already seen.
- * Uploads (data URLs, often megabytes) aren't kept; they load instantly anyway.
+ * Images loaded this browser session, so a remount doesn't wait on one already seen. Failures
+ * aren't kept: a link that failed on a bad connection is tried again. Uploads (data URLs, often
+ * megabytes) aren't kept either; they load instantly anyway.
  */
-const knownStatus = new Map<string, "loaded" | "failed">();
+const loadedSrcs = new Set<string>();
 
 /**
  * Preloads `src` and reports its status, so the preview can wait for an image (instead of showing
@@ -37,7 +38,7 @@ export function useImageStatus(
     let cancelled = false;
     const settle = (status: "loaded" | "failed") => {
       if (cancelled) return;
-      if (!isDataUrl(src)) knownStatus.set(src, status);
+      if (status === "loaded" && !isDataUrl(src)) loadedSrcs.add(src);
       setResult({ src, status });
     };
     // Decoded before it counts as loaded, so the banner can draw it in the same frame it switches.
@@ -62,5 +63,7 @@ export function useImageStatus(
   if (!src) return "none";
   return result?.src === src
     ? result.status
-    : (knownStatus.get(src) ?? (assumeLoaded ? "loaded" : "loading"));
+    : loadedSrcs.has(src) || assumeLoaded
+      ? "loaded"
+      : "loading";
 }
