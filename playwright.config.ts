@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3100;
 
+/** Opens /admin in the smoke tests. Shared with e2e/smoke.spec.ts. */
+export const ADMIN_PASSWORD = "e2e-admin";
+
 /** Smoke tests against a production build (`pnpm build` first), without secrets, like CI. */
 export default defineConfig({
   testDir: "e2e",
@@ -26,6 +29,7 @@ export default defineConfig({
       UPSTASH_REDIS_REST_TOKEN: "",
       KV_REST_API_URL: "",
       KV_REST_API_TOKEN: "",
+      ADMIN_PASSWORD,
     },
   },
 });

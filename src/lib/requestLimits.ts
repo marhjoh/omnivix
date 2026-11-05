@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { Ratelimit, type RatelimitConfig } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { redisFromEnv, redisNamespace } from "@/src/lib/redis";
 
 // Omnivix's own limits, counted in Upstash Redis so every server instance shares them. The
 // export's burst limit is a Vercel Firewall rule instead (see docs/deployment.md).
@@ -62,23 +62,12 @@ function requestLimit(prefix: string, algorithm: RatelimitConfig["limiter"]) {
 function createLimiter(prefix: string, algorithm: RatelimitConfig["limiter"]): Ratelimit | null {
   const redis = redisFromEnv();
   if (!redis) return null;
-  // Each environment counts on its own, so previews and local runs never use production's quota.
-  const environment = process.env.VERCEL_ENV || "development";
   return new Ratelimit({
     redis,
-    prefix: `omnivix:${environment}:${prefix}`,
+    prefix: `${redisNamespace()}:${prefix}`,
     limiter: algorithm,
     timeout: CHECK_TIMEOUT_MS,
   });
-}
-
-/**
- * The Vercel Marketplace store sets the KV_ variables. Upstash's own setup sets the UPSTASH_ ones.
- */
-function redisFromEnv(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  return url && token ? new Redis({ url, token }) : null;
 }
 
 /**

@@ -1,0 +1,109 @@
+/* The selected period and metric, like the studio's selected tiles (src/studio/controls.module.css). */
+.selected[aria-current="page"] {
+  border-color: color-mix(in oklab, var(--accent-hover) 70%, transparent);
+  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+  cursor: default;
+}
+
+.tile {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition-property: var(--fade-colors);
+  transition-duration: var(--hover-fade);
+}
+
+.tile:where(:hover:not([aria-current="page"])) {
+  border-color: var(--control-border-hover);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Chart lines keep their width when the SVG stretches. */
+.line,
+.previousLine,
+.gridline,
+.baseline {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.previousLine {
+  stroke: var(--muted);
+  stroke-opacity: 0.6;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.gridline {
+  stroke: var(--divider);
+  stroke-width: 1;
+}
+
+.baseline {
+  stroke: var(--divider-strong);
+  stroke-width: 1;
+}
+
+.dashedSwatch {
+  width: 1rem;
+  border-top: 1.5px dashed color-mix(in oklab, var(--muted) 60%, transparent);
+}
+
+.hoverColumn {
+  outline: none;
+}
+
+.guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--divider-strong);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  left: -4px;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.tooltip {
+  position: absolute;
+  top: 4px;
+  z-index: 10;
+  min-width: 7rem;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+  font-size: 0.75rem;
+  line-height: 1.1rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hoverColumn:hover .guide,
+.hoverColumn:hover .tooltip,
+.hoverColumn:focus-visible .guide,
+.hoverColumn:focus-visible .tooltip {
+  opacity: 1;
+}

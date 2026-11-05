@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import type { TimedLimit } from "@/src/lib/apiError";
 import { LIMIT_TITLES } from "@/src/lib/rateLimitMessage";
 import type { GithubRateLimited } from "@/src/github/errors";
+import { countStats } from "@/src/stats/stats";
+import { limitFields } from "@/src/stats/statFields";
 
 // The API's error responses. `readApiError` (apiError.ts) reads them in the browser, so keep the
 // two in sync.
@@ -14,9 +16,10 @@ export function errorResponse(message: string, status: number, extra?: Record<st
 
 /**
  * A 429 that names the limit. `resetAt` is an absolute time, so the browser can show it in the
- * visitor's time zone.
+ * visitor's time zone. Each one counts in the admin stats.
  */
 export function tooManyRequests(limit: TimedLimit, resetAt: Date) {
+  countStats(limitFields(limit));
   const seconds = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
   return NextResponse.json(
     { error: `${LIMIT_TITLES[limit]}.`, limit, resetAt: resetAt.toISOString() },
