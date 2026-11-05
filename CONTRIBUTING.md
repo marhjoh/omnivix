@@ -22,7 +22,7 @@ How the pieces fit together is described in [docs/architecture.md](docs/architec
 
 ## Adding a template
 
-1. Add its id to `TEMPLATE_IDS` (`src/types/template.ts`).
+1. Add its id to `TEMPLATE_IDS` (`src/templates/types.ts`).
 2. Add a definition in `src/templates/definitions.ts`, an entry in `src/templates/registry.ts`, and its settings schema in `src/templates/stateSchemas.ts` (checked by the export API and studio links).
 3. Add a renderer in `src/templates/<template-id>/Renderer.tsx` and add it to `RENDERERS` in `src/templates/BannerRenderer.tsx`, the [shared renderer](docs/architecture.md#rendering) for preview and export.
 4. For the landing page, add a 2× export as `public/landing/<template-id>.webp`, and add the id to `LANDING_TEMPLATE_ORDER` in `src/landing/landingPreviewAssets.ts`.

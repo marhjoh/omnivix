@@ -6,7 +6,7 @@ import { highlightItemClass } from "@/src/ui/classNames";
 import { ThemedIcon } from "@/src/theme/ThemedBrand";
 import { TemplateSwitcher } from "@/src/studio/TemplateSwitcher";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /**
  * The studio header: the same at every width except the Download label, shown from sm. The

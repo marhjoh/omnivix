@@ -1,4 +1,4 @@
-import { themePresetById } from "@/src/types/theme";
+import { gridColorsById } from "@/src/banner/gridColors";
 
 /** 5 × 7 pixel glyphs. */
 export const GLYPHS: Record<string, readonly string[]> = {
@@ -9,15 +9,15 @@ export const GLYPHS: Record<string, readonly string[]> = {
 };
 
 /** Codes the error pages spell, with their grid colors. */
-const CODE_THEMES = { "404": "ocean", ERR: "alternate" } as const;
+const CODE_GRID_COLORS = { "404": "ocean", ERR: "alternate" } as const;
 
-export type ErrorCode = keyof typeof CODE_THEMES;
+export type ErrorCode = keyof typeof CODE_GRID_COLORS;
 
-export const ERROR_CODES = Object.keys(CODE_THEMES) as ErrorCode[];
+export const ERROR_CODES = Object.keys(CODE_GRID_COLORS) as ErrorCode[];
 
 /** Color of the lit cells. */
 export function codeColor(code: ErrorCode): string {
-  return themePresetById(CODE_THEMES[code]).gridLevels[4];
+  return gridColorsById(CODE_GRID_COLORS[code]).gridLevels[4];
 }
 
 /** One column per week: two blank columns on each side, one between glyphs. */

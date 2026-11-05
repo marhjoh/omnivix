@@ -1,6 +1,6 @@
 import "server-only";
 import { Effect } from "effect";
-import type { ExportRequest } from "@/src/types/template";
+import type { ExportRequest } from "@/src/export/request";
 import { UnusableImage } from "@/src/export/errors";
 import { fetchImageLink, ImageLinkError, type ImageBytes } from "@/src/export/imageLink";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
@@ -58,7 +58,7 @@ export function linkFormatsOf(key: ImageSettingKey): string {
 }
 
 /**
- * A base64 data URL. Processed uploads are WebP, PNG or JPEG (src/lib/imageUpload.ts); any of
+ * A base64 data URL. Processed uploads are WebP, PNG or JPEG (src/studio/imageUpload.ts); any of
  * RASTER_TYPES is accepted.
  */
 const DATA_URL_PATTERN = /^data:([^;,]+);base64,([A-Za-z0-9+/]+={0,2})$/;

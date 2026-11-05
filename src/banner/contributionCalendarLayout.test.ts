@@ -4,7 +4,7 @@ import type {
   ContributionWeekNormalized,
   ContributionMonthNormalized,
   ContributionDayNormalized,
-} from "@/src/github/normalize";
+} from "@/src/github/types";
 
 function weekdayFromYmd(ymd: string): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
   const [y, m, d] = ymd.split("-").map(Number);

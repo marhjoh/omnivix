@@ -13,7 +13,7 @@ import sharp, { type Region } from "sharp";
 import { presetSrcById } from "@/src/backgrounds/presets";
 import { EXPORT_FORMAT_DETAILS, EXPORT_FORMATS } from "@/src/export/format";
 import { BANNER_SIZES, exportPixelRatios, type BannerSize } from "@/src/lib/sizes";
-import { TEMPLATE_IDS, type TemplateId } from "@/src/types/template";
+import { TEMPLATE_IDS, type TemplateId } from "@/src/templates/types";
 import { FIT_STATUS_ATTRIBUTE } from "@/src/banner/fit";
 import { BANNER_ROOT_CLASS } from "@/src/banner/placement";
 import { studioPath } from "@/src/lib/site";

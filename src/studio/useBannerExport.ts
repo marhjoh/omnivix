@@ -1,7 +1,7 @@
 import { useTransition } from "react";
 import { EXPORT_FORMAT_DETAILS, type ExportFormat } from "@/src/export/format";
 import { BANNER_SIZES, exportFormatFor, exportFormats, exportPixelRatioFor } from "@/src/lib/sizes";
-import type { ExportRequest } from "@/src/types/template";
+import type { ExportRequest } from "@/src/export/request";
 import { EXPORT_LIMIT_MESSAGE, limitMessage } from "@/src/lib/rateLimitMessage";
 import { readApiError } from "@/src/lib/apiError";
 

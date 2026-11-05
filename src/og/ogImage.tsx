@@ -4,8 +4,9 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
-import { SITE_PLATFORMS, SITE_TAGLINE } from "@/src/lib/site";
-import type { TemplateId } from "@/src/types/template";
+import { BRAND_LOGO_SIZE, SITE_PLATFORMS, SITE_TAGLINE } from "@/src/lib/site";
+import { DARK_PALETTE } from "@/src/theme/theme";
+import type { TemplateId } from "@/src/templates/types";
 import { templateRegistry } from "@/src/templates/registry";
 
 // ImageResponse (Satori) can't decode WebP, so src/og/banners holds 1200px JPEG copies
@@ -14,15 +15,7 @@ import { templateRegistry } from "@/src/templates/registry";
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/jpeg";
 
-const COLORS = {
-  bg: "#0d1117",
-  text: "#e6edf3",
-  muted: "#9da8b3",
-  accent: "#2f81f7",
-};
-
-// public/brand/logo.svg is 968×274.
-const LOGO_RATIO = 274 / 968;
+const LOGO_RATIO = BRAND_LOGO_SIZE.height / BRAND_LOGO_SIZE.width;
 
 const ogDir = join(process.cwd(), "src/og");
 
@@ -71,9 +64,9 @@ const frame = {
   position: "relative",
   overflow: "hidden",
   fontFamily: "Inter",
-  color: COLORS.text,
-  backgroundColor: COLORS.bg,
-  backgroundImage: `radial-gradient(circle at 85% 20%, ${COLORS.accent}33, transparent 55%)`,
+  color: DARK_PALETTE.text,
+  backgroundColor: DARK_PALETTE.bg,
+  backgroundImage: `radial-gradient(circle at 85% 20%, ${DARK_PALETTE.accent}33, transparent 55%)`,
 } as const;
 
 const bannerStyle = {
@@ -132,7 +125,7 @@ export async function renderSiteOgImage() {
             <div style={{ fontSize: 54, fontWeight: 700, lineHeight: 1.1, letterSpacing: -1.5 }}>
               {SITE_TAGLINE}
             </div>
-            <div style={{ fontSize: 26, color: COLORS.muted, lineHeight: 1.35 }}>
+            <div style={{ fontSize: 26, color: DARK_PALETTE.muted, lineHeight: 1.35 }}>
               {`${SITE_PLATFORMS} and other banners from your GitHub profile, repos and contributions.`}
             </div>
           </div>
@@ -154,7 +147,7 @@ export async function renderTemplateOgImage(templateId: TemplateId) {
         <img alt="" src={logo} width={180} height={Math.round(180 * LOGO_RATIO)} />
         <div style={{ display: "flex", flexDirection: "column", marginTop: 36, gap: 8 }}>
           <div style={{ fontSize: 64, fontWeight: 700, letterSpacing: -1.5 }}>{title}</div>
-          <div style={{ fontSize: 30, color: COLORS.muted }}>
+          <div style={{ fontSize: 30, color: DARK_PALETTE.muted }}>
             {`${description} For ${SITE_PLATFORMS} and more.`}
           </div>
         </div>

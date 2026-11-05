@@ -1,10 +1,23 @@
-import {
-  CONTENT_ALIGNS,
-  normalizeContentAlign,
-  type ContentAlign,
-} from "@/src/banner/contentAlign";
 import { contentBoxOf } from "@/src/banner/fit";
 import { positionOr, samePosition, type Position } from "@/src/banner/position";
+import { oneOfOr } from "@/src/lib/isOneOf";
+
+/** The Alignment setting: the content's horizontal place (its x in the content position). */
+export const CONTENT_ALIGNS = ["left", "center", "right"] as const;
+
+export type ContentAlign = (typeof CONTENT_ALIGNS)[number];
+
+export const CONTENT_ALIGN_OPTIONS = CONTENT_ALIGNS.map((value) => ({
+  label: value[0].toUpperCase() + value.slice(1),
+  value,
+}));
+
+export const DEFAULT_CONTENT_ALIGN: ContentAlign = "center";
+
+/** Centered unless the setting is a valid alignment. */
+function normalizeContentAlign(raw: unknown): ContentAlign {
+  return oneOfOr(CONTENT_ALIGNS, raw, DEFAULT_CONTENT_ALIGN);
+}
 
 /**
  * Where the content sits in the padded box, as a placement (see `placement.ts`).

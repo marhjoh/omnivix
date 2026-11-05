@@ -4,7 +4,7 @@ import { useId, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { getTemplates, templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
 import {
   DropdownChevron,

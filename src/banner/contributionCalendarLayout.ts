@@ -16,10 +16,7 @@
  * the week's Sunday for padding.
  */
 
-import type {
-  ContributionWeekNormalized,
-  ContributionMonthNormalized,
-} from "@/src/github/normalize";
+import type { ContributionWeekNormalized, ContributionMonthNormalized } from "@/src/github/types";
 
 type PlacedCalendarDay = {
   date: string;

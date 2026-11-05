@@ -3,6 +3,10 @@ import type { Theme } from "@/src/theme/theme";
 
 /** The quote banner's typography: font, weight and italic, quote marks, and their colors. */
 
+/** A post's length: still readable on the 4:1 banner at the smallest text size. */
+export const QUOTE_MAX_LENGTH = 280;
+export const AUTHOR_MAX_LENGTH = 60;
+
 export const QUOTE_FONTS = [
   "inter",
   "dm-sans",
@@ -285,15 +289,6 @@ export const QUOTE_COLOR_OPTIONS = QUOTE_COLORS.map((value) => ({
   value,
 }));
 
-/** Space above the author, in banner pixels. */
-export const AUTHOR_GAP = 16;
-
-/** The author's size as a share of the quote's, so the two keep in proportion. */
-export const AUTHOR_SCALE = { xs: 0.3, s: 0.35, m: 0.42, l: 0.5, xl: 0.6 } as const;
-
-/** The large marks' glyph: Source Serif's, the classic shape, whatever the quote's font. */
-export const LARGE_MARK_FONT_FAMILY = "var(--font-source-serif), serif";
-
 function fontOf(value: unknown): QuoteFont {
   return oneOfOr(QUOTE_FONTS, value, DEFAULT_QUOTE_STYLE.font);
 }
@@ -304,6 +299,9 @@ export function fontFamily(font: QuoteFont, italic = false): string {
   const name = italic && italicFont !== "none" && italicFont !== "same" ? italicFont : variable;
   return `var(${name}), ${fallback}`;
 }
+
+/** The large marks' glyph: Source Serif's, the classic shape, whatever the quote's font. */
+export const LARGE_MARK_FONT_FAMILY = fontFamily("source-serif");
 
 /** A font style's CSS in a font, for showing it in its own look. */
 export function fontStyleCss(font: unknown, fontStyle: QuoteFontStyle) {

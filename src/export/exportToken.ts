@@ -1,4 +1,4 @@
-import type { ExportRequest } from "@/src/types/template";
+import type { ExportRequest } from "@/src/export/request";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const TOKEN_TTL_SECONDS = 120;

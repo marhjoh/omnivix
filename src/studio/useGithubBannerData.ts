@@ -5,7 +5,7 @@ import type {
   GithubUserNormalized,
   RepoLists,
   RepoNormalized,
-} from "@/src/github/normalize";
+} from "@/src/github/types";
 import { type ApiLimit, limitResetAt } from "@/src/lib/apiError";
 import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
 import { repoModeOf, reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
@@ -15,9 +15,8 @@ import { fetchProblem, noReposProblem } from "@/src/studio/preview/computePrevie
 import type { PreviewProblem } from "@/src/studio/preview/types";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { initialData, useApiQuery } from "@/src/studio/useApiQuery";
-import type { RenderData } from "@/src/templates/renderers/types";
 import { templateRegistry } from "@/src/templates/registry";
-import type { GithubDataKind, TemplateId } from "@/src/types/template";
+import type { GithubDataKind, RenderData, TemplateId } from "@/src/templates/types";
 
 /** Shown when a GitHub request fails without a message of its own (network, platform errors). */
 const GITHUB_FETCH_FALLBACK = "Couldn't load GitHub data.";

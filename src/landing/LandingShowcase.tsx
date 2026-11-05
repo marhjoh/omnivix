@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { templateRegistry } from "@/src/templates/registry";
 import { studioPath } from "@/src/lib/site";
 import { BANNER_SIZES, aspectRatioOf } from "@/src/lib/sizes";

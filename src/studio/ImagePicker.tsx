@@ -6,7 +6,8 @@ import { groupPresets } from "@/src/backgrounds/presets";
 import { useImageStatus } from "@/src/studio/preview/useImageStatus";
 import { useDelayedFlag } from "@/src/studio/useDelayedFlag";
 import { isHttpImageUrl, isDataUrl } from "@/src/lib/imageSource";
-import { normalizeImageFile, uploadAccept, type ImageUploadPolicy } from "@/src/lib/imageUpload";
+import type { ImageUploadPolicy } from "@/src/lib/imageUpload";
+import { normalizeImageFile, uploadAccept } from "@/src/studio/imageUpload";
 import { truncateMiddle } from "@/src/lib/text";
 import { useDebouncedCallback } from "@/src/ui/useDebouncedCallback";
 import {

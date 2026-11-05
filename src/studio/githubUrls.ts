@@ -1,4 +1,4 @@
-import type { GithubDataKind } from "@/src/types/template";
+import type { GithubDataKind } from "@/src/templates/types";
 
 /**
  * The studio's GitHub API urls for a banner; null for data it doesn't need, or before there's a

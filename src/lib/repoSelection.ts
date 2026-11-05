@@ -1,4 +1,4 @@
-import type { RepoLists, RepoNormalized } from "@/src/github/normalize";
+import type { RepoLists, RepoNormalized } from "@/src/github/types";
 import { oneOfOr } from "@/src/lib/isOneOf";
 import { clamp } from "@/src/lib/math";
 

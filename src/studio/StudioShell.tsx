@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { templateRegistry } from "@/src/templates/registry";
-import type { BannerSize, TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview/computePreviewContentState";
@@ -32,7 +32,7 @@ import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import type { LinkSettings } from "@/src/studio/linkSettings";
-import { BANNER_SIZES, type BannerView } from "@/src/lib/sizes";
+import { BANNER_SIZES, type BannerSize, type BannerView } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
@@ -111,7 +111,7 @@ export function StudioShell({
     closeUsernameModal();
   }
 
-  const size = (state.size as BannerSize) ?? definition.meta.defaultSize;
+  const size = state.size as BannerSize;
   const fill = state.contentSize === "fill";
   // A profile photo that failed to load can't be shown, Fill covers the whole banner, and without
   // quote marks there's nothing to color.

@@ -19,7 +19,7 @@ import {
   USERNAME_COOKIE,
 } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /** The part of the state that's saved per template, as JSON. */
 function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {

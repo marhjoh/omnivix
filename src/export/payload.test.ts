@@ -65,7 +65,6 @@ describe("parseExportRequest", () => {
       quote: "Hi",
       author: "Omnivix",
       alignment: "center",
-      themeId: "default",
       size: "header",
     });
   });
@@ -87,13 +86,22 @@ describe("parseExportRequest", () => {
     expect(!result.ok && result.issues).toEqual([{ path: "state.username", message: "Required" }]);
   });
 
-  it("only accepts the real themes", () => {
+  it("only accepts the real grid colors", () => {
+    const result = parseExportRequest({
+      templateId: "contribution-banner",
+      size: "wide",
+      state: { username: "marhjoh", themeId: "neon" },
+    });
+    expect(!result.ok && result.issues.map((issue) => issue.path)).toEqual(["state.themeId"]);
+  });
+
+  it("ignores grid colors on banners without a grid", () => {
     const result = parseExportRequest({
       templateId: "quote-banner",
       size: "wide",
       state: { themeId: "neon" },
     });
-    expect(!result.ok && result.issues.map((issue) => issue.path)).toEqual(["state.themeId"]);
+    expect(result.ok).toBe(true);
   });
 
   it("checks the request's own fields first", () => {

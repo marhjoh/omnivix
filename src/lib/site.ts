@@ -1,10 +1,13 @@
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /** Site-wide name, copy and URL used for metadata and link previews. */
 export const SITE_NAME = "Omnivix";
 
 /** The title of the page shown when something breaks (app/error.tsx, app/global-error.tsx). */
 export const ERROR_PAGE_TITLE = `Something broke · ${SITE_NAME}`;
+
+/** The wordmark's size: the viewBox of public/brand/logo*.svg. */
+export const BRAND_LOGO_SIZE = { width: 968, height: 274 } as const;
 
 export const SITE_TAGLINE = "Create profile banners you actually want to use";
 

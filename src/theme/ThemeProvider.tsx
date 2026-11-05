@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useContext, useLayoutEffect, useMemo, useSyncExternalStore } from "react";
 import {
   DEFAULT_THEME,
   type Theme,
@@ -64,6 +57,10 @@ function applyTheme(theme: Theme) {
   requestAnimationFrame(() => requestAnimationFrame(() => noTransitions.remove()));
 }
 
+function toggleTheme() {
+  applyTheme(getDomTheme() === "dark" ? "light" : "dark");
+}
+
 export function ThemeProvider({
   children,
   initialTheme,
@@ -76,9 +73,7 @@ export function ThemeProvider({
   // For renders where THEME_INIT_SCRIPT didn't run.
   useLayoutEffect(applyStoredTheme, []);
 
-  const setTheme = useCallback((next: Theme) => applyTheme(next), []);
-  const toggle = useCallback(() => applyTheme(getDomTheme() === "dark" ? "light" : "dark"), []);
-  const value = useMemo(() => ({ theme, setTheme, toggle }), [theme, setTheme, toggle]);
+  const value = useMemo(() => ({ theme, setTheme: applyTheme, toggle: toggleTheme }), [theme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

@@ -4,7 +4,7 @@ import { GITHUB_LOADERS } from "@/src/github/client";
 import { contributionYear, isContributionYear } from "@/src/lib/contributionYear";
 import { githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
 
 /**

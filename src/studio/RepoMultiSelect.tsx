@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { RepoNormalized } from "@/src/github/normalize";
+import type { RepoNormalized } from "@/src/github/types";
 import { parseRepoSelection } from "@/src/lib/repoSelection";
 import { CheckList, CheckRow, CheckRowSkeleton } from "@/src/studio/CheckList";
 import { useDelayedFlag } from "@/src/studio/useDelayedFlag";

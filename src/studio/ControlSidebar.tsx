@@ -19,11 +19,11 @@ import {
   useDropdown,
 } from "@/src/ui/Dropdown";
 import { PlatformIcon } from "@/src/ui/PlatformIcon";
-import type { RepoNormalized } from "@/src/github/normalize";
+import type { RepoNormalized } from "@/src/github/types";
 import { CheckList, CheckRow } from "@/src/studio/CheckList";
 import { RepoMultiSelect } from "@/src/studio/RepoMultiSelect";
 import { FieldWrapper, LabeledGroup } from "@/src/ui/FieldLabel";
-import type { EditorFieldSchema, EditorFieldType } from "@/src/types/template";
+import type { EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import {
   AuthorPrefixSelect,
@@ -39,7 +39,7 @@ import {
   contentPositionFromState,
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
-import { THEME_PRESETS } from "@/src/types/theme";
+import { GRID_COLOR_PRESETS } from "@/src/banner/gridColors";
 import { MAX_REPOS, selectedReposOf } from "@/src/lib/repoSelection";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
@@ -90,7 +90,7 @@ function DebouncedInput({
   );
 }
 
-function ThemePicker({
+function GridColorsPicker({
   label,
   value,
   onChange,
@@ -102,7 +102,7 @@ function ThemePicker({
   return (
     <LabeledGroup label={label}>
       <div className="grid grid-cols-2 gap-2">
-        {THEME_PRESETS.map((preset) => (
+        {GRID_COLOR_PRESETS.map((preset) => (
           <button
             key={preset.id}
             type="button"
@@ -306,7 +306,7 @@ function textProps(field: EditorFieldSchema, { state, onChange }: FieldContext) 
 
 /** Settings drawn by their key, before their type: they need more than their schema says. */
 const BY_KEY: Partial<Record<string, FieldRenderer>> = {
-  themeId: (field, ctx) => <ThemePicker {...textProps(field, ctx)} />,
+  themeId: (field, ctx) => <GridColorsPicker {...textProps(field, ctx)} />,
   year: (field, ctx) => (
     <Select
       {...textProps(field, ctx)}

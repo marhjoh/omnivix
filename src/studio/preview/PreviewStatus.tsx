@@ -8,7 +8,7 @@ import {
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import { useTimeReached } from "@/src/studio/preview/useTimeReached";
 import previewStyles from "@/src/studio/preview/preview.module.css";
-import type { GithubDataKind } from "@/src/types/template";
+import type { GithubDataKind } from "@/src/templates/types";
 
 interface StatusActions {
   onRetry: () => void;

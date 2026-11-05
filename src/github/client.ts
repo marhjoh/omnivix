@@ -6,12 +6,12 @@ import type {
   GithubUserNormalized,
   RepoLists,
   RepoNormalized,
-} from "@/src/github/normalize";
+} from "@/src/github/types";
 import { contributionRange } from "@/src/github/contributionRange";
 import { isContributionYear } from "@/src/lib/contributionYear";
 import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
-import type { GithubDataKind } from "@/src/types/template";
+import type { GithubDataKind } from "@/src/templates/types";
 import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
 
 /** Entries each cache keeps at most; the oldest are dropped first. */

@@ -1,4 +1,5 @@
 import Image, { type ImageProps } from "next/image";
+import { BRAND_LOGO_SIZE } from "@/src/lib/site";
 
 /*
  * Both variants are rendered; CSS on <html data-theme> shows one (see globals.css). That way the
@@ -6,9 +7,9 @@ import Image, { type ImageProps } from "next/image";
  * The "light" artwork is the one drawn for dark backgrounds.
  */
 
-/** Wordmark viewBox 968×274 — props must match that ratio for fixed height (h-9). */
-const LOGO_WIDTH = Math.round((36 * 968) / 274);
+/** Props must match the wordmark's ratio for a fixed height (h-9). */
 const LOGO_HEIGHT = 36;
+const LOGO_WIDTH = Math.round((LOGO_HEIGHT * BRAND_LOGO_SIZE.width) / BRAND_LOGO_SIZE.height);
 
 function ThemedImage({
   name,

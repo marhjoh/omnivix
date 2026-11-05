@@ -1,9 +1,15 @@
 import { CSSProperties } from "react";
-import { BANNER_SIZES, bannerViews, shownView, viewRect, type BannerView } from "@/src/lib/sizes";
-import { BannerSize, TemplateId } from "@/src/types/template";
+import {
+  BANNER_SIZES,
+  bannerViews,
+  shownView,
+  viewRect,
+  type BannerSize,
+  type BannerView,
+} from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
-import { RenderData } from "@/src/templates/renderers/types";
+import type { RenderData, TemplateId } from "@/src/templates/types";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import { PreviewStatus } from "@/src/studio/preview/PreviewStatus";
 import previewStyles from "@/src/studio/preview/preview.module.css";

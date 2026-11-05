@@ -14,6 +14,7 @@
 }
 
 /* App chrome tokens: THEME_INIT_SCRIPT (src/theme/theme.ts) sets exactly one of data-theme="dark" | "light" on <html> before first paint. */
+/* Keep --bg, --text, --muted and --accent in sync with DARK_PALETTE in src/theme/theme.ts. */
 html[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;

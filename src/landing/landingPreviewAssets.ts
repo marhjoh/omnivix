@@ -1,4 +1,4 @@
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 /** The order templates appear in on the landing page (hero wall and Templates grid). */
 export const LANDING_TEMPLATE_ORDER: readonly TemplateId[] = [

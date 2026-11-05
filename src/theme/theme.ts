@@ -1,34 +1,70 @@
 import { COOKIE_ATTRIBUTES, setCookieClient } from "@/src/lib/cookies";
+import { oneOfOr } from "@/src/lib/isOneOf";
 
 export const THEMES = ["light", "dark"] as const;
 
 export type Theme = (typeof THEMES)[number];
 
+/**
+ * The app's dark colors, for what can't read the CSS tokens (the Open Graph images). Keep in sync
+ * with `html[data-theme="dark"]` in app/globals.css.
+ */
+export const DARK_PALETTE = {
+  bg: "#0d1117",
+  text: "#e6edf3",
+  muted: "#9da8b3",
+  accent: "#2f81f7",
+} as const;
+
 /** Studio and export: banner chrome follows app light/dark (template `themeId` is separate). */
-type BannerUiChrome = {
+export type BannerUiChrome = {
   baseBg: string;
   text: string;
   textMuted: string;
   gridOverlayBg: string;
   gridOverlayBorder: string;
+  /** The repos banner's cards. */
+  cardBg: string;
+  cardBorder: string;
+  cardText: string;
+  cardTextMuted: string;
+  cardShadow: string;
+  /** A card's language, star and fork pills. */
+  pillBg: string;
 };
+
+const LIGHT_TEXT = "#1f2328";
+const LIGHT_TEXT_MUTED = "#656d76";
 
 export function bannerUiChrome(t: Theme): BannerUiChrome {
   if (t === "light") {
     return {
       baseBg: "#ffffff",
-      text: "#1f2328",
-      textMuted: "#656d76",
+      text: LIGHT_TEXT,
+      textMuted: LIGHT_TEXT_MUTED,
       gridOverlayBg: "rgba(246, 248, 250, 0.94)",
       gridOverlayBorder: "rgba(31, 35, 40, 0.12)",
+      cardBg: "rgba(255, 255, 255, 0.94)",
+      cardBorder: "rgba(31, 35, 40, 0.12)",
+      cardText: LIGHT_TEXT,
+      cardTextMuted: LIGHT_TEXT_MUTED,
+      cardShadow: "0 8px 24px rgba(31, 35, 40, 0.08)",
+      pillBg: "rgba(31, 35, 40, 0.06)",
     };
   }
   return {
-    baseBg: "#0d1117",
+    baseBg: DARK_PALETTE.bg,
     text: "rgba(255,255,255,0.92)",
     textMuted: "rgba(255,255,255,0.58)",
     gridOverlayBg: "rgba(13, 17, 23, 0.82)",
     gridOverlayBorder: "rgba(255, 255, 255, 0.1)",
+    cardBg: "rgba(21, 28, 40, 0.82)",
+    cardBorder: "rgba(255, 255, 255, 0.12)",
+    // A little brighter than the banner's text: the cards sit on their own dark fill.
+    cardText: "rgba(255,255,255,0.94)",
+    cardTextMuted: "rgba(255,255,255,0.68)",
+    cardShadow: "0 10px 26px rgba(2, 6, 23, 0.34)",
+    pillBg: "rgba(255, 255, 255, 0.08)",
   };
 }
 
@@ -40,7 +76,7 @@ export const DEFAULT_THEME: Theme = "dark";
 
 /** Single parser: cookie raw value → Theme. Invalid/missing → default. */
 export function parseThemeCookie(value: string | undefined): Theme {
-  return value === "light" || value === "dark" ? value : DEFAULT_THEME;
+  return oneOfOr(THEMES, value, DEFAULT_THEME);
 }
 
 /** Matches the theme cookie in `document.cookie`; also used, as source, by THEME_INIT_SCRIPT. */

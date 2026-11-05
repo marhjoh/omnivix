@@ -4,7 +4,7 @@ import {
   reposBannerDefinition,
   quoteBannerDefinition,
 } from "@/src/templates/definitions";
-import type { TemplateId } from "@/src/types/template";
+import type { TemplateId } from "@/src/templates/types";
 
 export const templateRegistry = {
   "github-banner": githubBannerDefinition,
