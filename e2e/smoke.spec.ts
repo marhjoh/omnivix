@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { fakeGithub, USERNAME } from "./github";
+import { ADMIN_PASSWORD } from "../playwright.config";
 
 /** Collects errors the page throws or logs to the console. */
 function pageErrors(page: Page): string[] {
@@ -101,5 +102,34 @@ test.describe("GitHub banners", () => {
     await page.getByRole("button", { name: "Try again" }).click();
     await expect(preview(page)).toHaveAttribute("data-state", "ready");
     await expect(download(page)).toBeEnabled();
+  });
+});
+
+test.describe("admin stats", () => {
+  for (const path of ["/admin", "/admin/stats.csv"]) {
+    test(`asks for the password on ${path}`, async ({ request }) => {
+      const response = await request.get(path);
+      expect(response.status()).toBe(401);
+      expect(response.headers()["www-authenticate"]).toMatch(/^Basic /);
+    });
+  }
+
+  test("opens with the password", async ({ browser }) => {
+    const context = await browser.newContext({
+      httpCredentials: { username: "admin", password: ADMIN_PASSWORD },
+    });
+    const page = await context.newPage();
+    const errors = pageErrors(page);
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { name: "Stats" })).toBeVisible();
+    // The smoke tests run without a store.
+    await expect(page.getByText("No Redis store is connected")).toBeVisible();
+    await page.getByRole("link", { name: "7 days" }).click();
+    await expect(page.getByRole("link", { name: "7 days" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(errors).toEqual([]);
+    await context.close();
   });
 });

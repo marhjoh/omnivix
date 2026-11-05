@@ -95,6 +95,10 @@ Server-side export, on Effect. The export API (`route.ts`) and image URLs (`bann
 
 GitHub data, on Effect. `graphql.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups, for the times in `cacheTimes.ts` (browser-safe, as the landing FAQ quotes them). The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
 
+### `src/stats/`, `src/admin/`
+
+Usage stats, as daily counters in Upstash Redis (`stats.ts`), kept for 800 days so a year can be compared with the one before. `proxy.ts` counts page loads without cookies (`pageView.ts`). The export (`renderBanner.ts`) and every named 429 (`tooManyRequests`) count too. `statFields.ts` names the counters, and only values from fixed lists, referring sites and cleaned failure messages end up in them: no usernames, IPs, text or images. `src/admin/` is the private dashboard at `/admin`.
+
 ### `src/landing/`, `src/og/`
 
 The landing page, the site header and footer (`SiteShell.tsx`), and the link-preview images. The "How it works" and FAQ copy in `landingContent.ts` is the single source for the visible FAQ, the JSON-LD and `/llms.txt`.
