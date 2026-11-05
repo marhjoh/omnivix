@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 
 /**
  * Checks the admin page's HTTP Basic Auth on the server, for every request. Any username works;
@@ -26,8 +26,9 @@ function passwordOf(header: string | null): string | null {
   return colon === -1 ? null : decoded.slice(colon + 1);
 }
 
-/** Compares hashes, so neither the time taken nor the length gives the password away. */
+/** Constant time. Only the length can leak. */
 function sameText(a: string, b: string): boolean {
-  const hash = (text: string) => createHash("sha256").update(text).digest();
-  return timingSafeEqual(hash(a), hash(b));
+  const given = Buffer.from(a);
+  const expected = Buffer.from(b);
+  return given.length === expected.length && timingSafeEqual(given, expected);
 }
