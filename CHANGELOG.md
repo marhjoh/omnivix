@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.1](https://github.com/marhjoh/omnivix/compare/v1.27.0...v1.27.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* don't count headless browsers as visitors ([#249](https://github.com/marhjoh/omnivix/issues/249)) ([6e59e73](https://github.com/marhjoh/omnivix/commit/6e59e73d16cf04556c95aca537de3cb91cf4de60))
+
 ## [1.27.0](https://github.com/marhjoh/omnivix/compare/v1.26.0...v1.27.0) (2026-11-05)
 
 
