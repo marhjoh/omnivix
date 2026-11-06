@@ -3,7 +3,7 @@ import type { ExportRequest } from "@/src/export/request";
 import { TEMPLATE_IDS } from "@/src/templates/types";
 import { THEMES } from "@/src/theme/theme";
 import { Result, Schema } from "effect";
-import { fieldIssues, oneOf, type FieldIssue } from "@/src/lib/schema";
+import { fieldIssues, flag, oneOf, type FieldIssue } from "@/src/lib/schema";
 import { checkTemplateState } from "@/src/templates/stateSchemas";
 import {
   BANNER_SIZE_KEYS,
@@ -12,7 +12,7 @@ import {
   exportFormats,
   exportPixelRatios,
 } from "@/src/lib/sizes";
-import { EXPORT_PIXEL_RATIOS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import { EXPORT_FORMATS, EXPORT_PIXEL_RATIOS, type ExportFormat } from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
 /** Only the request's own fields. The template's schema checks `state` (stateSchemas.ts). */
@@ -23,6 +23,7 @@ const exportRequestSchema = Schema.Struct({
   pixelRatio: Schema.optional(oneOf(EXPORT_PIXEL_RATIOS)),
   format: Schema.optional(oneOf(EXPORT_FORMATS)),
   uiTheme: Schema.optional(oneOf(THEMES)),
+  transparent: Schema.optional(flag),
 }).annotate({ message: "Must be a JSON object" });
 
 const decodeRequest = Schema.decodeUnknownResult(exportRequestSchema, { errors: "all" });
@@ -47,12 +48,20 @@ export function parseExportRequest(
     return { ok: false, issues: [{ path: "format", message }] };
   }
   const format = exportFormatFor(BANNER_SIZES[size], request.format);
+  if (request.transparent && format !== "png") {
+    const message = `Must be false for format "${format}", which has no transparency`;
+    return { ok: false, issues: [{ path: "transparent", message }] };
+  }
   const ratios = exportPixelRatios(BANNER_SIZES[size], format);
   if (pixelRatio !== undefined && !ratios.includes(pixelRatio)) {
     const message = `Must be ${ratios.join(" or ")} for size "${size}" with format "${format}"`;
     return { ok: false, issues: [{ path: "pixelRatio", message }] };
   }
   const merged = { ...templateRegistry[request.templateId].initialState, ...request.state, size };
+  if (request.transparent && request.state.backgroundImage) {
+    const message = "Must be false with a background image";
+    return { ok: false, issues: [{ path: "transparent", message }] };
+  }
   const checked = checkTemplateState(request.templateId, merged);
   if (!checked.ok) return { ok: false, issues: checked.issues };
   return { ok: true, request: { ...request, format, state: { ...merged, ...checked.state } } };

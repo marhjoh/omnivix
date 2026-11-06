@@ -41,6 +41,7 @@ export function PreviewArtboard({
   problem,
   missingSetting,
   exporting,
+  transparent,
   onRetry,
   onChangeUsername,
   onEditSetting,
@@ -62,6 +63,8 @@ export function PreviewArtboard({
   missingSetting: string | undefined;
   /** While true, the preview shows export progress and nothing can be dragged. */
   exporting: boolean;
+  /** Shows the banner without its background color, over a checkerboard. */
+  transparent: boolean;
   onRetry: () => void;
   onChangeUsername: () => void;
   /** Opens the settings with the cursor in this setting's field. */
@@ -105,7 +108,12 @@ export function PreviewArtboard({
   return (
     <>
       <div ref={stageRef} className={previewStyles.stage}>
-        <div style={artboardStyle} className="omnivix-artboard" data-state={previewState}>
+        <div
+          style={artboardStyle}
+          className="omnivix-artboard"
+          data-state={previewState}
+          data-transparent={transparent || undefined}
+        >
           {previewState === "ready" ? (
             <>
               {/* One image to screen readers, like the exported file. */}
@@ -120,7 +128,12 @@ export function PreviewArtboard({
                 }}
               >
                 <PreviewPhotosContext value>
-                  <BannerRenderer templateId={templateId} state={state} data={data} />
+                  <BannerRenderer
+                    templateId={templateId}
+                    state={state}
+                    data={data}
+                    transparent={transparent}
+                  />
                 </PreviewPhotosContext>
               </div>
               {/* No dragging during an export. The file uses the positions from the click. */}

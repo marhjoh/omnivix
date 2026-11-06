@@ -20,7 +20,8 @@ import { ExportControls } from "@/src/studio/ExportControls";
 import { useBannerExport } from "@/src/studio/useBannerExport";
 import { UsernameModal } from "@/src/studio/UsernameModal";
 import { useTheme } from "@/src/theme/ThemeProvider";
-import type { ExportPixelRatio, ExportFormat } from "@/src/export/format";
+import type { ExportPixelRatio } from "@/src/export/format";
+import { shownDownloadFormat, type DownloadFormat } from "@/src/studio/downloadFormat";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import type { LinkSettings, StartingSettings } from "@/src/studio/linkSettings";
 import { BANNER_SIZES, type BannerSize, type BannerView } from "@/src/lib/sizes";
@@ -44,7 +45,7 @@ export function StudioShell({
   /** Download resolution from its cookie (3× when none is saved). */
   initialPixelRatio: ExportPixelRatio;
   /** Download format from its cookie (PNG when none is saved). */
-  initialFormat: ExportFormat;
+  initialFormat: DownloadFormat;
   /** Which device crop the preview shows, from its cookie (phone when none is saved). */
   initialPreviewView: BannerView;
   /** The settings and username from their cookies, with the studio link applied. */
@@ -159,9 +160,14 @@ export function StudioShell({
     shownBackground !== backgroundFields ||
     logoImage.status === "loading";
 
+  const shownFormat = shownDownloadFormat(
+    BANNER_SIZES[size],
+    format,
+    backgroundFromState(state) !== undefined,
+  );
   const bannerExport = useBannerExport({
     request: { templateId, size, state, pixelRatio, uiTheme: appTheme },
-    format,
+    format: shownFormat,
     showError,
     showSuccess,
     dismissToast,
@@ -244,6 +250,7 @@ export function StudioShell({
             problem={shownPreview.problem}
             missingSetting={missingSetting}
             exporting={bannerExport.exporting !== null}
+            transparent={shownFormat === "transparent"}
             onRetry={github.retry}
             onChangeUsername={openUsernameModal}
             onEditSetting={sidebar.focusSetting}

@@ -39,7 +39,8 @@ const LABELS: Record<string, (value: string) => string> = {
     isOneOf(BANNER_SIZE_KEYS, value)
       ? `${platformNames(BANNER_SIZES[value])} (${BANNER_SIZES[value].label})`
       : value,
-  [SERIES.format]: (value) => value.toUpperCase(),
+  [SERIES.format]: (value) =>
+    ({ png: "PNG", jpeg: "JPEG", transparent: "Transparent PNG" })[value] ?? value,
   [SERIES.uiTheme]: capitalized,
   [SERIES.gridColors]: (value) =>
     GRID_COLOR_PRESETS.find((preset) => preset.id === value)?.label ?? value,

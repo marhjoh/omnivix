@@ -25,6 +25,11 @@
 
 /* Disabled controls keep their frame. Text and icons use --disabled-text (app/globals.css). */
 .tile:disabled,
+.tile:disabled svg {
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
 .tile:focus-visible,
 .reset:focus-visible {
   outline: 2px solid var(--focus-ring);

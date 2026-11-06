@@ -1,19 +1,15 @@
 import { useId } from "react";
 import { Copy, Download } from "lucide-react";
+import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/format";
+import { exportPixelRatioFor, exportPixelRatios, type BannerFormat } from "@/src/lib/sizes";
 import {
-  EXPORT_PIXEL_RATIOS,
-  type ExportPixelRatio,
-  EXPORT_FORMAT_DETAILS,
-  EXPORT_FORMATS,
-  type ExportFormat,
-} from "@/src/export/format";
-import {
-  exportFormatFor,
-  exportFormats,
-  exportPixelRatioFor,
-  exportPixelRatios,
-  type BannerFormat,
-} from "@/src/lib/sizes";
+  canDownloadAs,
+  DOWNLOAD_FORMAT_DETAILS,
+  DOWNLOAD_FORMATS,
+  shownDownloadFormat,
+  type DownloadFormat,
+} from "@/src/studio/downloadFormat";
+import { backgroundFromState } from "@/src/banner/background";
 import { DropdownChevron } from "@/src/ui/Dropdown";
 import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
@@ -64,17 +60,18 @@ export function ExportControls({
   pixelRatio: ExportPixelRatio;
   onPixelRatioChange: (ratio: ExportPixelRatio) => void;
   /** The saved choice. If the banner format doesn't allow it, the format's own is used. */
-  format: ExportFormat;
-  onFormatChange: (format: ExportFormat) => void;
+  format: DownloadFormat;
+  onFormatChange: (format: DownloadFormat) => void;
   /** Gives the 1× size for the pixel hints, and which ratios and formats are allowed. */
   bannerFormat: BannerFormat;
 }) {
   const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
   const copyTitleId = useId();
-  const shownFormat = exportFormatFor(bannerFormat, format);
-  const formatLabel = EXPORT_FORMAT_DETAILS[shownFormat].label;
-  const shownPixelRatio = exportPixelRatioFor(bannerFormat, shownFormat, pixelRatio);
+  const hasBackgroundImage = backgroundFromState(banner.state) !== undefined;
+  const shownFormat = shownDownloadFormat(bannerFormat, format, hasBackgroundImage);
+  const { name: formatLabel, file: shownFile } = DOWNLOAD_FORMAT_DETAILS[shownFormat];
+  const shownPixelRatio = exportPixelRatioFor(bannerFormat, shownFile, pixelRatio);
   const busy = exporting !== null;
   const isDownloading = exporting === "download";
   const isCopying = exporting === "copy";
@@ -136,8 +133,8 @@ export function ExportControls({
           className={`popover ${controls.panel}`}
         >
           <div className="space-y-4">
-            {/* Resolution applies to Copy, Download and the image URL. Format only applies to
-                Download and the image URL, because Copy is always PNG. */}
+            {/* Resolution applies to Copy, Download and the image URL. Copy is always a PNG, and
+                a transparent one when Transparent is picked. */}
             <TileGroup
               label="Resolution"
               columns={EXPORT_PIXEL_RATIOS.length}
@@ -148,7 +145,7 @@ export function ExportControls({
                 // Thin spaces keep the largest size on one line in the narrow tile.
                 hint: `${bannerFormat.width * ratio}\u2009×\u2009${bannerFormat.height * ratio}`,
                 // YouTube and Reddit are 1× only.
-                disabled: !exportPixelRatios(bannerFormat, shownFormat).includes(ratio),
+                disabled: !exportPixelRatios(bannerFormat, shownFile).includes(ratio),
               }))}
               value={shownPixelRatio}
               onChange={onPixelRatioChange}
@@ -157,14 +154,13 @@ export function ExportControls({
             </TileGroup>
             <TileGroup
               label="Download format"
-              columns={EXPORT_FORMATS.length}
+              columns={DOWNLOAD_FORMATS.length}
               tileClassName={controls.panelTile}
-              options={EXPORT_FORMATS.map((option) => ({
+              options={DOWNLOAD_FORMATS.map((option) => ({
                 value: option,
-                label: EXPORT_FORMAT_DETAILS[option].label,
-                hint: EXPORT_FORMAT_DETAILS[option].hint,
-                // Reddit is JPEG only.
-                disabled: !exportFormats(bannerFormat).includes(option),
+                label: DOWNLOAD_FORMAT_DETAILS[option].label,
+                hint: DOWNLOAD_FORMAT_DETAILS[option].hint,
+                disabled: !canDownloadAs(bannerFormat, option, hasBackgroundImage),
               }))}
               value={shownFormat}
               onChange={onFormatChange}
