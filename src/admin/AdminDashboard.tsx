@@ -403,7 +403,7 @@ function measuredNote(days: DailyStats[]): string {
   return last ? `Measured once a day, last on ${measuredOn(last.day)}.` : "Measured once a day.";
 }
 
-/** Like the tiles above the chart, with a sparkline for the trend. */
+/** Like the tiles above the chart, for a value that's measured instead of counted. */
 function MeasurementTile({
   label,
   values,
@@ -432,28 +432,9 @@ function MeasurementTile({
           ) : (
             <span className="mt-1 block text-xs text-muted">No change in this period</span>
           )}
-          <Sparkline values={values} />
         </>
       )}
     </div>
-  );
-}
-
-/** The trend only, so it has no axes. The numbers are in the tile. */
-function Sparkline({ values }: { values: number[] }) {
-  if (values.length < 2) return null;
-  const low = Math.min(...values);
-  const range = Math.max(...values) - low || 1;
-  const points = values
-    .map(
-      (value, index) =>
-        `${(index / (values.length - 1)) * 100},${28 - ((value - low) / range) * 24 - 2}`,
-    )
-    .join(" ");
-  return (
-    <svg viewBox="0 0 100 28" preserveAspectRatio="none" className="mt-3 h-7 w-full" aria-hidden>
-      <polyline points={points} className={styles.line} />
-    </svg>
   );
 }
 
