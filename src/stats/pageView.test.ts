@@ -102,6 +102,10 @@ describe("countPageView", () => {
         "user-agent": BROWSER.replace("Chrome/", "HeadlessChrome/"),
       }),
     ],
+    [
+      "an AI agent that signs its requests",
+      visit("https://omnivix.app/", { "signature-agent": '"https://chatgpt.com"' }),
+    ],
   ])("skips %s", (_, request) => {
     countPageView(request);
     expect(countStats).not.toHaveBeenCalled();
