@@ -160,7 +160,11 @@ export function StudioShell({
     shownBackground !== backgroundFields ||
     logoImage.status === "loading";
 
-  const shownFormat = shownDownloadFormat(BANNER_SIZES[size], format);
+  const shownFormat = shownDownloadFormat(
+    BANNER_SIZES[size],
+    format,
+    backgroundFromState(state) !== undefined,
+  );
   const bannerExport = useBannerExport({
     request: { templateId, size, state, pixelRatio, uiTheme: appTheme },
     format: shownFormat,

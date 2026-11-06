@@ -21,15 +21,30 @@ export const DOWNLOAD_FORMAT_DETAILS: Record<
   jpeg: { label: "JPEG", hint: "Smaller file", name: "JPEG", file: "jpeg" },
   transparent: {
     label: "Transparent",
-    hint: "See-through",
+    hint: "No background",
     name: "transparent PNG",
     file: "png",
     transparent: true,
   },
 };
 
-/** The saved choice, or the banner format's own file type if it doesn't take that, like Reddit. */
-export function shownDownloadFormat(banner: BannerFormat, format: DownloadFormat): DownloadFormat {
-  const { file } = DOWNLOAD_FORMAT_DETAILS[format];
-  return exportFormats(banner).includes(file) ? format : exportFormatFor(banner, file);
+/** Reddit only takes JPEG, and a banner with a background image can't be transparent. */
+export function canDownloadAs(
+  banner: BannerFormat,
+  format: DownloadFormat,
+  hasBackgroundImage: boolean,
+): boolean {
+  const { file, transparent } = DOWNLOAD_FORMAT_DETAILS[format];
+  return exportFormats(banner).includes(file) && !(transparent && hasBackgroundImage);
+}
+
+/** The saved choice, or the closest one the banner can take: JPEG for Reddit, else PNG. */
+export function shownDownloadFormat(
+  banner: BannerFormat,
+  format: DownloadFormat,
+  hasBackgroundImage: boolean,
+): DownloadFormat {
+  return canDownloadAs(banner, format, hasBackgroundImage)
+    ? format
+    : exportFormatFor(banner, DOWNLOAD_FORMAT_DETAILS[format].file);
 }

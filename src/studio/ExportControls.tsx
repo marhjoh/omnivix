@@ -1,18 +1,15 @@
 import { useId } from "react";
 import { Copy, Download } from "lucide-react";
 import { EXPORT_PIXEL_RATIOS, type ExportPixelRatio } from "@/src/export/format";
+import { exportPixelRatioFor, exportPixelRatios, type BannerFormat } from "@/src/lib/sizes";
 import {
-  exportFormats,
-  exportPixelRatioFor,
-  exportPixelRatios,
-  type BannerFormat,
-} from "@/src/lib/sizes";
-import {
+  canDownloadAs,
   DOWNLOAD_FORMAT_DETAILS,
   DOWNLOAD_FORMATS,
   shownDownloadFormat,
   type DownloadFormat,
 } from "@/src/studio/downloadFormat";
+import { backgroundFromState } from "@/src/banner/background";
 import { DropdownChevron } from "@/src/ui/Dropdown";
 import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
@@ -71,7 +68,8 @@ export function ExportControls({
   const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
   const copyTitleId = useId();
-  const shownFormat = shownDownloadFormat(bannerFormat, format);
+  const hasBackgroundImage = backgroundFromState(banner.state) !== undefined;
+  const shownFormat = shownDownloadFormat(bannerFormat, format, hasBackgroundImage);
   const { name: formatLabel, file: shownFile } = DOWNLOAD_FORMAT_DETAILS[shownFormat];
   const shownPixelRatio = exportPixelRatioFor(bannerFormat, shownFile, pixelRatio);
   const busy = exporting !== null;
@@ -162,10 +160,7 @@ export function ExportControls({
                 value: option,
                 label: DOWNLOAD_FORMAT_DETAILS[option].label,
                 hint: DOWNLOAD_FORMAT_DETAILS[option].hint,
-                // Reddit is JPEG only.
-                disabled: !exportFormats(bannerFormat).includes(
-                  DOWNLOAD_FORMAT_DETAILS[option].file,
-                ),
+                disabled: !canDownloadAs(bannerFormat, option, hasBackgroundImage),
               }))}
               value={shownFormat}
               onChange={onFormatChange}

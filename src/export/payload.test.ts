@@ -42,6 +42,14 @@ describe("parseExportRequest", () => {
     });
   });
 
+  it("refuses a transparent background with a background image", () => {
+    const state = { backgroundImage: "/backgrounds/seoul.avif" };
+    expect(parseExportRequest({ ...request, state, transparent: true })).toEqual({
+      ok: false,
+      issues: [{ path: "transparent", message: "Must be false with a background image" }],
+    });
+  });
+
   it("uses the size's own file format when none is sent", () => {
     const reddit = parseExportRequest({ ...request, size: "reddit" });
     expect(reddit.ok && reddit.request.format).toBe("jpeg");

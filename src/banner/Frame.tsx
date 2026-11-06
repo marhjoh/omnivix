@@ -41,7 +41,7 @@ export function Frame({
   background?: BannerBackground;
   logo?: BannerLogo;
   uiTheme: Theme;
-  /** Leaves out the theme's color. A background image still shows, with its opacity. */
+  /** Leaves out the theme's color. */
   transparent: boolean;
 }>) {
   const chrome = bannerUiChrome(uiTheme);

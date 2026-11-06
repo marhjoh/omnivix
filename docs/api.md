@@ -4,7 +4,7 @@ Want a banner without opening the studio, an image to embed that stays up to dat
 
 ## Export API
 
-`POST /api/export` returns a banner as an image. Send `templateId`, `size` and `state`, the template's settings; settings you leave out use the template's defaults. `pixelRatio`, `format`, `uiTheme` and `transparent` are optional. `transparent: true` leaves out the theme's background color, for PNG only.
+`POST /api/export` returns a banner as an image. Send `templateId`, `size` and `state`, the template's settings; settings you leave out use the template's defaults. `pixelRatio`, `format`, `uiTheme` and `transparent` are optional. `transparent: true` leaves out the theme's background color, for a PNG without a background image.
 
 ```sh
 curl -X POST https://omnivix.vercel.app/api/export \
@@ -36,7 +36,7 @@ Values that aren't valid are ignored. Uploaded backgrounds and logos can't be li
 
 ## Image URL
 
-`GET /banner/<templateId>.png`, or `.jpg` for JPEG, returns the banner as an image for a README or website. It takes the same query as a studio link, plus `pixelRatio` (`1` or `2`, default `2`), `uiTheme` (`light` or `dark`) and, for `.png`, `transparent=true`. To get a studio link's image URL, change its path:
+`GET /banner/<templateId>.png`, or `.jpg` for JPEG, returns the banner as an image for a README or website. It takes the same query as a studio link, plus `pixelRatio` (`1` or `2`, default `2`), `uiTheme` (`light` or `dark`) and, for `.png` without a background image, `transparent=true`. To get a studio link's image URL, change its path:
 
 ```md
 ![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)

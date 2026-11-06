@@ -61,11 +61,13 @@ describe("bannerImageRoute", () => {
     });
   });
 
-  it("leaves out the background color for a PNG, and ignores it for a JPEG", async () => {
+  it("leaves out the background color for a PNG without a background image", async () => {
     await get("/banner/quote-banner.png?transparent=true");
     expect(rendered()).toMatchObject({ transparent: true });
     await get("/banner/quote-banner.jpg?transparent=true");
     expect(rendered()).toMatchObject({ format: "jpeg", transparent: false });
+    await get("/banner/quote-banner.png?transparent=true&backgroundImage=/backgrounds/seoul.avif");
+    expect(rendered()).toMatchObject({ transparent: false });
   });
 
   it("uses the defaults for values that aren't valid, and never an upload", async () => {

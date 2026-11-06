@@ -58,6 +58,10 @@ export function parseExportRequest(
     return { ok: false, issues: [{ path: "pixelRatio", message }] };
   }
   const merged = { ...templateRegistry[request.templateId].initialState, ...request.state, size };
+  if (request.transparent && request.state.backgroundImage) {
+    const message = "Must be false with a background image";
+    return { ok: false, issues: [{ path: "transparent", message }] };
+  }
   const checked = checkTemplateState(request.templateId, merged);
   if (!checked.ok) return { ok: false, issues: checked.issues };
   return { ok: true, request: { ...request, format, state: { ...merged, ...checked.state } } };
