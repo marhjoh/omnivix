@@ -8,20 +8,13 @@ import controls from "@/src/studio/controls.module.css";
 
 const SNIPPETS: ReadonlyArray<{
   name: string;
-  label: string;
   Icon: LucideIcon;
   write: (url: string, alt: string) => string;
 }> = [
-  { name: "Link", label: "Copy link", Icon: Link, write: (url) => url },
-  {
-    name: "Markdown",
-    label: "Copy Markdown",
-    Icon: FileText,
-    write: (url, alt) => `![${alt}](${url})`,
-  },
+  { name: "Link", Icon: Link, write: (url) => url },
+  { name: "Markdown", Icon: FileText, write: (url, alt) => `![${alt}](${url})` },
   {
     name: "HTML",
-    label: "Copy HTML",
     Icon: Code,
     write: (url, alt) => `<img src="${url.replaceAll("&", "&amp;")}" alt="${alt}">`,
   },
@@ -45,7 +38,7 @@ export function EmbedLinks({
   uiTheme: Theme;
   format: ExportFormat;
   pixelRatio: ExportPixelRatio;
-  /** Disabled like Copy image while there's nothing to export. */
+  /** Disabled like the Image button while there's nothing to export. */
   disabled: boolean;
   /** `name` goes in the confirmation, e.g. "Markdown copied." */
   onCopy: (text: string, name: string) => void;
@@ -64,7 +57,7 @@ export function EmbedLinks({
           Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
         </p>
       )}
-      {SNIPPETS.map(({ name, label, Icon, write }) => (
+      {SNIPPETS.map(({ name, Icon, write }) => (
         <button
           key={name}
           type="button"
@@ -73,7 +66,7 @@ export function EmbedLinks({
           className={controls.panelAction}
         >
           <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-          {label}
+          {name}
         </button>
       ))}
     </>
