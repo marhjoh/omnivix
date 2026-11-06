@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.3](https://github.com/marhjoh/omnivix/compare/v1.27.2...v1.27.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* keep the landing page in the history when a template opens ([#251](https://github.com/marhjoh/omnivix/issues/251)) ([ab8b97d](https://github.com/marhjoh/omnivix/commit/ab8b97d144a1ab81d06f48e1cebe56a909003925))
+
 ## [1.27.2](https://github.com/marhjoh/omnivix/compare/v1.27.1...v1.27.2) (2026-11-06)
 
 
