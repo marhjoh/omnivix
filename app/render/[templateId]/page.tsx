@@ -49,6 +49,7 @@ export default async function RenderPage({
         state={payload.state}
         data={data}
         uiTheme={payload.uiTheme ?? DEFAULT_THEME}
+        transparent={payload.background === "transparent"}
       />
     </main>
   );

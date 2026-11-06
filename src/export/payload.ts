@@ -12,7 +12,12 @@ import {
   exportFormats,
   exportPixelRatios,
 } from "@/src/lib/sizes";
-import { EXPORT_PIXEL_RATIOS, EXPORT_FORMATS, type ExportFormat } from "@/src/export/format";
+import {
+  EXPORT_BACKGROUNDS,
+  EXPORT_FORMATS,
+  EXPORT_PIXEL_RATIOS,
+  type ExportFormat,
+} from "@/src/export/format";
 import { templateRegistry } from "@/src/templates/registry";
 
 /** Only the request's own fields. The template's schema checks `state` (stateSchemas.ts). */
@@ -23,6 +28,7 @@ const exportRequestSchema = Schema.Struct({
   pixelRatio: Schema.optional(oneOf(EXPORT_PIXEL_RATIOS)),
   format: Schema.optional(oneOf(EXPORT_FORMATS)),
   uiTheme: Schema.optional(oneOf(THEMES)),
+  background: Schema.optional(oneOf(EXPORT_BACKGROUNDS)),
 }).annotate({ message: "Must be a JSON object" });
 
 const decodeRequest = Schema.decodeUnknownResult(exportRequestSchema, { errors: "all" });
@@ -47,6 +53,10 @@ export function parseExportRequest(
     return { ok: false, issues: [{ path: "format", message }] };
   }
   const format = exportFormatFor(BANNER_SIZES[size], request.format);
+  if (request.background && format !== "png") {
+    const message = `Must be left out for format "${format}", which has no transparency`;
+    return { ok: false, issues: [{ path: "background", message }] };
+  }
   const ratios = exportPixelRatios(BANNER_SIZES[size], format);
   if (pixelRatio !== undefined && !ratios.includes(pixelRatio)) {
     const message = `Must be ${ratios.join(" or ")} for size "${size}" with format "${format}"`;

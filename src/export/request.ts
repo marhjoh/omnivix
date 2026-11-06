@@ -1,6 +1,6 @@
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
-import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
+import type { ExportBackground, ExportFormat, ExportPixelRatio } from "@/src/export/format";
 import type { TemplateId } from "@/src/templates/types";
 
 /**
@@ -15,4 +15,6 @@ export interface ExportRequest {
   format?: ExportFormat;
   /** Matches the studio's theme, so the export looks like the preview. */
   uiTheme?: Theme;
+  /** Left out, the banner has the theme's background color. */
+  background?: ExportBackground;
 }

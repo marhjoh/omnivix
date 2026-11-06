@@ -1,5 +1,6 @@
 import { Code, FileText, Link, type LucideIcon } from "lucide-react";
-import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
+import type { ExportPixelRatio } from "@/src/export/format";
+import type { DownloadFormat } from "@/src/studio/downloadFormat";
 import { bannerImageUrl, linkQuery } from "@/src/studio/embedUrl";
 import { templateRegistry } from "@/src/templates/registry";
 import type { TemplateId } from "@/src/templates/types";
@@ -36,7 +37,7 @@ export function EmbedLinks({
   templateId: TemplateId;
   state: Record<string, unknown>;
   uiTheme: Theme;
-  format: ExportFormat;
+  format: DownloadFormat;
   pixelRatio: ExportPixelRatio;
   /** Disabled like the Image button while there's nothing to export. */
   disabled: boolean;

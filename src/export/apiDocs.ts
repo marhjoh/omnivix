@@ -2,6 +2,7 @@
 // and formats. This keeps the docs in step with what the API and the studio accept.
 import { BACKGROUND_PRESETS } from "@/src/backgrounds/presets";
 import {
+  EXPORT_BACKGROUNDS,
   DEFAULT_EXPORT_FORMAT,
   EXPORT_FORMATS,
   DEFAULT_PIXEL_RATIO,
@@ -134,6 +135,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     `| \`pixelRatio\` | ${oneOf(EXPORT_PIXEL_RATIOS)}, default ${code(DEFAULT_PIXEL_RATIO)}${ratioLimits}: the image is the size above times this |`,
     `| \`format\` | ${oneOf(EXPORT_FORMATS)}, default ${code(DEFAULT_EXPORT_FORMAT)}${formatNotes} |`,
     `| \`uiTheme\` | ${oneOf(THEMES)}, default ${code(DEFAULT_THEME)}: whether the banner's cards and text are light or dark |`,
+    `| \`background\` | ${oneOf(EXPORT_BACKGROUNDS)}, or leave it out for the theme's color. \`png\` only. A background image still shows. |`,
     "",
     "Example:",
     "",
@@ -167,7 +169,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${imageUrl}`,
     "",
-    `It also takes \`pixelRatio\` (\`1\` or \`2\`, default \`2\`) and \`uiTheme\`. Invalid values use the defaults. In Markdown: \`![My banner](${imageUrl})\`.`,
+    `It also takes \`pixelRatio\` (\`1\` or \`2\`, default \`2\`), \`uiTheme\` and, for \`.png\`, \`background=transparent\`. Invalid values use the defaults. In Markdown: \`![My banner](${imageUrl})\`.`,
     "",
     `Images are cached for a day. Each GitHub username, or each banner without one, gets 30 renders a day. Over that, the answer is ${limitBody("banner-images")}. Errors are JSON, as in the export API.`,
     "",

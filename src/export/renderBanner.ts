@@ -82,6 +82,7 @@ export async function renderBanner(
         size: payload.size,
         pixelRatio: payload.pixelRatio,
         format: payload.format,
+        transparent: payload.background === "transparent",
         images,
       });
       const seconds = (performance.now() - startedAt) / 1000;
