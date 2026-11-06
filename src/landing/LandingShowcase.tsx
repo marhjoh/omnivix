@@ -12,9 +12,8 @@ const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
 
 function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
   // No fade-in. The cards are in the server HTML, so the grid never looks empty while JS loads.
-  // A plain link, not next/link: the studio waits for the server, and a client-side navigation only
-  // adds the history entry then. iPhone browsers treat that late entry as added without a tap, and
-  // Back skips past the landing page.
+  // A plain link, so the history entry is added on the tap. next/link adds it once the studio has
+  // rendered, and on iPhone Back skips entries added that late.
   return (
     <a
       href={studioPath(templateId)}
