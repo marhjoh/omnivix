@@ -170,9 +170,21 @@ function Stats({
         </Card>
       </Section>
 
-      <Section title="Project">
-        <Stars current={current} added={totals.stars ?? 0} />
-        <Coverage current={current} />
+      <Section title="Project" note={measuredNote(current)}>
+        <div className="grid grid-cols-2 content-start gap-3">
+          <MeasurementTile
+            label="GitHub stars"
+            values={measurements(current, STARS_FIELD)}
+            change={(gained) => `${formatCount(gained)} in this period`}
+            format={formatCount}
+          />
+          <MeasurementTile
+            label="Test coverage"
+            values={measurements(current, COVERAGE_FIELD)}
+            change={(points) => `${points} points in this period`}
+            format={(percent) => `${percent}%`}
+          />
+        </div>
         <Lighthouse current={current} />
       </Section>
     </>
@@ -190,15 +202,23 @@ function ChangeLine({
   if (!difference) {
     return <span className="mt-1 block text-xs text-muted">Same as {before}</span>;
   }
-  const Arrow = difference > 0 ? ArrowUp : ArrowDown;
   // A change under 0.5% rounds to 0%, so the difference says more.
   const amount = percent ? `${Math.abs(percent)}%` : formatCount(Math.abs(difference));
+  return (
+    <ArrowLine up={difference > 0}>
+      {amount} vs. {before}
+    </ArrowLine>
+  );
+}
+
+function ArrowLine({ up, children }: { up: boolean; children: ReactNode }) {
+  const Arrow = up ? ArrowUp : ArrowDown;
   return (
     <span className="mt-1 flex items-start gap-1 text-xs text-muted">
       <Arrow size={12} className="mt-0.5 shrink-0" aria-hidden />
       <span>
-        <span className="sr-only">{difference > 0 ? "Up " : "Down "}</span>
-        {amount} vs. {before}
+        <span className="sr-only">{up ? "Up " : "Down "}</span>
+        {children}
       </span>
     </span>
   );
@@ -371,45 +391,69 @@ function measuredOn(day: string): string {
   });
 }
 
-function Stars({ current, added }: { current: DailyStats[]; added: number }) {
-  const latest = measurementRange(current, STARS_FIELD)?.last;
+/** A measurement's values in the period, oldest first, skipping days without one. */
+function measurements(days: DailyStats[], field: string): number[] {
+  return days.flatMap(({ counts }) => (field in counts ? [counts[field]] : []));
+}
+
+function measuredNote(days: DailyStats[]): string {
+  const last = days.findLast(({ counts }) =>
+    Object.keys(counts).some((field) => field.startsWith("quality:")),
+  );
+  return last ? `Measured once a day, last on ${measuredOn(last.day)}.` : "Measured once a day.";
+}
+
+/** Like the tiles above the chart, with a sparkline for the trend. */
+function MeasurementTile({
+  label,
+  values,
+  change,
+  format,
+}: {
+  label: string;
+  values: number[];
+  /** The text after the arrow, for the change since the period's first value. */
+  change: (amount: number) => string;
+  format: (value: number) => string;
+}) {
+  const first = values[0];
+  const last = values.at(-1);
+  const difference = last === undefined ? 0 : Math.round((last - first) * 10) / 10;
   return (
-    <Card title="GitHub stars">
-      {latest ? (
-        <>
-          <p className="text-3xl font-semibold tabular-nums">{formatCount(latest.value)}</p>
-          <p className="mt-1 text-sm text-muted">
-            {formatCount(added)} new in this period, measured {measuredOn(latest.day)}
-          </p>
-        </>
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <span className="block text-sm text-muted">{label}</span>
+      {last === undefined ? (
+        <span className="mt-1 block text-xs text-muted">Not measured yet</span>
       ) : (
-        <p className="text-sm text-muted">Not measured yet. A job saves the total once a day.</p>
+        <>
+          <span className="mt-1 block text-3xl font-semibold tabular-nums">{format(last)}</span>
+          {difference ? (
+            <ArrowLine up={difference > 0}>{change(Math.abs(difference))}</ArrowLine>
+          ) : (
+            <span className="mt-1 block text-xs text-muted">No change in this period</span>
+          )}
+          <Sparkline values={values} />
+        </>
       )}
-    </Card>
+    </div>
   );
 }
 
-function Coverage({ current }: { current: DailyStats[] }) {
-  const range = measurementRange(current, COVERAGE_FIELD);
-  if (!range) {
-    return (
-      <Card title="Test coverage">
-        <p className="text-sm text-muted">Not measured yet. CI saves it on each push to main.</p>
-      </Card>
-    );
-  }
-  const { first, last } = range;
-  const points = Math.round((last.value - first.value) * 10) / 10;
+/** The trend only, so it has no axes. The numbers are in the tile. */
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return null;
+  const low = Math.min(...values);
+  const range = Math.max(...values) - low || 1;
+  const points = values
+    .map(
+      (value, index) =>
+        `${(index / (values.length - 1)) * 100},${28 - ((value - low) / range) * 24 - 2}`,
+    )
+    .join(" ");
   return (
-    <Card title="Test coverage">
-      <p className="text-3xl font-semibold tabular-nums">{last.value}%</p>
-      <p className="mt-1 text-sm text-muted">
-        of lines, measured {measuredOn(last.day)}
-        {points
-          ? `. ${points > 0 ? "Up" : "Down"} ${Math.abs(points)} points since ${measuredOn(first.day)}.`
-          : "."}
-      </p>
-    </Card>
+    <svg viewBox="0 0 100 28" preserveAspectRatio="none" className="mt-3 h-7 w-full" aria-hidden>
+      <polyline points={points} className={styles.line} />
+    </svg>
   );
 }
 
@@ -432,37 +476,33 @@ function Lighthouse({ current }: { current: DailyStats[] }) {
   const measured = pages.flatMap((page) =>
     LIGHTHOUSE_CATEGORIES.map((category) => latest(page, category)),
   );
-  const day = measured.find(Boolean)?.day;
   return (
     <Card title="Lighthouse on a phone">
-      {day ? (
-        <>
-          <table className="w-full text-left text-sm">
-            <thead className="text-muted">
-              <tr>
-                <th className="pb-2 font-normal">Score</th>
+      {measured.some(Boolean) ? (
+        <table className="w-full text-left text-sm">
+          <thead className="text-muted">
+            <tr>
+              <th className="pb-2 font-normal">Score</th>
+              {pages.map((page) => (
+                <th key={page} className="pb-2 text-right font-normal">
+                  {PAGE_LABELS[page]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {LIGHTHOUSE_CATEGORIES.map((category) => (
+              <tr key={category} className="border-t border-divider">
+                <td className="py-2">{CATEGORY_LABELS[category]}</td>
                 {pages.map((page) => (
-                  <th key={page} className="pb-2 text-right font-normal">
-                    {PAGE_LABELS[page]}
-                  </th>
+                  <td key={page} className="py-2 text-right tabular-nums">
+                    {latest(page, category)?.value ?? "–"}
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {LIGHTHOUSE_CATEGORIES.map((category) => (
-                <tr key={category} className="border-t border-divider">
-                  <td className="py-2">{CATEGORY_LABELS[category]}</td>
-                  {pages.map((page) => (
-                    <td key={page} className="py-2 text-right tabular-nums">
-                      {latest(page, category)?.value ?? "–"}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="mt-3 text-xs text-muted">Measured {measuredOn(day)}, once a day.</p>
-        </>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <p className="text-sm text-muted">Not measured yet. A job runs Lighthouse once a day.</p>
       )}
