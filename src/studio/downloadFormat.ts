@@ -1,4 +1,4 @@
-import type { ExportBackground, ExportFormat } from "@/src/export/format";
+import type { ExportFormat } from "@/src/export/format";
 import { exportFormatFor, exportFormats, type BannerFormat } from "@/src/lib/sizes";
 
 /** The studio's Download format tiles. Transparent is a PNG without the theme's background color. */
@@ -14,7 +14,7 @@ export const DOWNLOAD_FORMAT_DETAILS: Record<
     /** For "Download …" on the button. */
     name: string;
     file: ExportFormat;
-    background?: ExportBackground;
+    transparent?: boolean;
   }
 > = {
   png: { label: "PNG", hint: "Best quality", name: "PNG", file: "png" },
@@ -24,7 +24,7 @@ export const DOWNLOAD_FORMAT_DETAILS: Record<
     hint: "No background",
     name: "transparent PNG",
     file: "png",
-    background: "transparent",
+    transparent: true,
   },
 };
 

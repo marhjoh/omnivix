@@ -12,11 +12,6 @@ export const EXPORT_FORMAT_DETAILS: Record<
   jpeg: { contentType: "image/jpeg", extension: "jpg" },
 };
 
-/** `transparent` leaves out the theme's background color. PNG only, since JPEG has no alpha. */
-export const EXPORT_BACKGROUNDS = ["transparent"] as const;
-
-export type ExportBackground = (typeof EXPORT_BACKGROUNDS)[number];
-
 /** 1× is the platform's exact size. */
 export const EXPORT_PIXEL_RATIOS = [1, 2, 3] as const;
 

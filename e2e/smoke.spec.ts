@@ -41,7 +41,7 @@ test("an image URL returns the banner, cached by the CDN", async ({ request }) =
 });
 
 test("a transparent image URL has no background color", async ({ request }) => {
-  const response = await request.get("/banner/quote-banner.png?background=transparent");
+  const response = await request.get("/banner/quote-banner.png?transparent=true");
   expect(response.status()).toBe(200);
   // The corner is outside the quote, so only the background color could fill it.
   const { data } = await sharp(await response.body())

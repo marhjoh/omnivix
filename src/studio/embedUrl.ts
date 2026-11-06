@@ -39,7 +39,7 @@ export function linkQuery(
 
 /**
  * The banner's image URL, e.g. `https://…/banner/github-banner.png?username=octocat`. Leaves out
- * the pixel ratio, theme and background when they're the route's defaults.
+ * the pixel ratio, theme and transparency when they're the route's defaults.
  */
 export function bannerImageUrl(
   origin: string,
@@ -51,11 +51,11 @@ export function bannerImageUrl(
     uiTheme,
   }: { format: DownloadFormat; pixelRatio: ExportPixelRatio; uiTheme: Theme },
 ): string {
-  const { file, background } = DOWNLOAD_FORMAT_DETAILS[format];
+  const { file, transparent } = DOWNLOAD_FORMAT_DETAILS[format];
   const params = new URLSearchParams(query);
   if (pixelRatio < IMAGE_URL_PIXEL_RATIO) params.set("pixelRatio", String(pixelRatio));
   if (uiTheme !== DEFAULT_THEME) params.set("uiTheme", uiTheme);
-  if (background) params.set("background", background);
+  if (transparent) params.set("transparent", "true");
   const path = `/banner/${templateId}.${EXPORT_FORMAT_DETAILS[file].extension}`;
   // Keep `,` `/` `:` unescaped so positions and image links stay readable.
   const search = params.toString().replace(/%2C|%2F|%3A/g, decodeURIComponent);

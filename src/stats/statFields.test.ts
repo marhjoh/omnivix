@@ -38,7 +38,7 @@ describe("exportFields", () => {
   });
 
   it("counts a transparent PNG as its own format", () => {
-    const fields = exportFields("download", { ...banner, background: "transparent" }, 7);
+    const fields = exportFields("download", { ...banner, transparent: true }, 7);
     expect(fields).toContain("exports:format:transparent");
     expect(fields).not.toContain("exports:format:png");
   });

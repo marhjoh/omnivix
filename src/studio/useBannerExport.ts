@@ -40,7 +40,7 @@ export function useBannerExport({
   dismissToast,
 }: {
   /** Everything except the format. Copy is always PNG, transparent when that's picked. */
-  request: Omit<ExportRequest, "format" | "background">;
+  request: Omit<ExportRequest, "format" | "transparent">;
   /** One the banner format takes (see shownDownloadFormat). */
   format: DownloadFormat;
   showError: (message: string) => void;
@@ -53,9 +53,9 @@ export function useBannerExport({
 
   /** Uses the chosen pixel ratio, or the largest the banner format allows for the file type. */
   function requestAs(download: DownloadFormat): ExportRequest {
-    const { file, background } = DOWNLOAD_FORMAT_DETAILS[download];
+    const { file, transparent } = DOWNLOAD_FORMAT_DETAILS[download];
     const pixelRatio = exportPixelRatioFor(BANNER_SIZES[request.size], file, request.pixelRatio);
-    return { ...request, pixelRatio, format: file, background };
+    return { ...request, pixelRatio, format: file, transparent };
   }
 
   // Call dismissToast before the action. Inside it, the toast would only close after the export.

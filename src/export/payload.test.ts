@@ -26,17 +26,17 @@ describe("parseExportRequest", () => {
   });
 
   it("takes a transparent background for PNG only", () => {
-    const transparent = parseExportRequest({ ...request, background: "transparent" });
-    expect(transparent.ok && transparent.request.background).toBe("transparent");
+    const transparent = parseExportRequest({ ...request, transparent: true });
+    expect(transparent.ok && transparent.request.transparent).toBe(true);
     const issue = (format: string) => ({
-      path: "background",
-      message: `Must be left out for format "${format}", which has no transparency`,
+      path: "transparent",
+      message: `Must be false for format "${format}", which has no transparency`,
     });
-    expect(parseExportRequest({ ...request, format: "jpeg", background: "transparent" })).toEqual({
+    expect(parseExportRequest({ ...request, format: "jpeg", transparent: true })).toEqual({
       ok: false,
       issues: [issue("jpeg")],
     });
-    expect(parseExportRequest({ ...request, size: "reddit", background: "transparent" })).toEqual({
+    expect(parseExportRequest({ ...request, size: "reddit", transparent: true })).toEqual({
       ok: false,
       issues: [issue("jpeg")],
     });

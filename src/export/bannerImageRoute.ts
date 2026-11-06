@@ -3,11 +3,7 @@ import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { parseExportRequest, type ParsedExportRequest } from "@/src/export/payload";
 import { renderBanner } from "@/src/export/renderBanner";
-import {
-  EXPORT_BACKGROUNDS,
-  EXPORT_PIXEL_RATIOS,
-  IMAGE_URL_PIXEL_RATIO,
-} from "@/src/export/format";
+import { EXPORT_PIXEL_RATIOS, IMAGE_URL_PIXEL_RATIO } from "@/src/export/format";
 import { parseLinkSettings } from "@/src/studio/parseLinkSettings";
 import { bannerImageLimit } from "@/src/lib/requestLimits";
 import { errorResponse } from "@/src/lib/apiResponse";
@@ -66,10 +62,7 @@ async function bannerImage(request: NextRequest, file: string): Promise<Response
     format,
     uiTheme: isOneOf(THEMES, query.uiTheme) ? query.uiTheme : undefined,
     // JPEG has no transparency, so it's ignored there like other invalid values.
-    background:
-      format === "png" && isOneOf(EXPORT_BACKGROUNDS, query.background)
-        ? query.background
-        : undefined,
+    transparent: format === "png" && query.transparent === "true" ? true : undefined,
   });
   if (!parsed.ok) {
     return errorResponse("Couldn't make this banner. Check the settings in the URL.", 400, {

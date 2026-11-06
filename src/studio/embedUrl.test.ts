@@ -103,7 +103,7 @@ describe("bannerImageUrl", () => {
         format: "transparent",
       }),
     ).toBe(
-      "https://omnivix.example/banner/github-banner.png?username=octocat&contentPosition=100,0&background=transparent",
+      "https://omnivix.example/banner/github-banner.png?username=octocat&contentPosition=100,0&transparent=true",
     );
   });
 });

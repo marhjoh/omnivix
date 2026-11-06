@@ -53,7 +53,7 @@ export function exportFields(
     uiTheme,
     state,
     format,
-    background,
+    transparent,
   }: ExportRequest & { format: ExportFormat },
   seconds: number,
 ): string[] {
@@ -63,7 +63,7 @@ export function exportFields(
     `${SERIES.source}:${source}`,
     `${SERIES.template}:${templateId}`,
     `${SERIES.size}:${size}`,
-    `${SERIES.format}:${background === "transparent" ? "transparent" : format}`,
+    `${SERIES.format}:${transparent ? "transparent" : format}`,
     `${SERIES.uiTheme}:${uiTheme ?? DEFAULT_THEME}`,
     `${SERIES.background}:${backgroundKind(state.backgroundImage)}`,
   ];
