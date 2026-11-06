@@ -30,15 +30,6 @@ test("the quote banner loads and downloads as a PNG", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("an image URL returns the banner, cached by the CDN", async ({ request }) => {
-  const response = await request.get("/banner/quote-banner.png");
-  expect(response.status()).toBe(200);
-  expect(response.headers()["cache-control"]).toBe(
-    "public, s-maxage=86400, stale-while-revalidate=604800",
-  );
-  expect((await response.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
-});
-
 test("the export panel copies the banner's image URL as Markdown", async ({
   page,
   context,
@@ -56,6 +47,9 @@ test("the export panel copies the banner's image URL as Markdown", async ({
   expect(url).toMatch(/\/banner\/quote-banner\.png/);
   const image = await request.get(url);
   expect(image.status()).toBe(200);
+  expect(image.headers()["cache-control"]).toBe(
+    "public, s-maxage=86400, stale-while-revalidate=604800",
+  );
   expect((await image.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
 });
 

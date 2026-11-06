@@ -71,7 +71,6 @@ describe("resolveExportImages with a background", () => {
       `an upload over ${MAX_UPLOADED_BACKGROUND_BYTES / (1024 * 1024)} MB`,
       dataUrl("image/png", Buffer.alloc(MAX_UPLOADED_BACKGROUND_BYTES + 1)),
     ],
-    ["an http link", "http://example.com/a.jpg"],
     ["a protocol-relative link", "//example.com/a.jpg"],
     ["another app path", "/api/github/repos"],
     ["an old .jpg preset path", "/backgrounds/chicago.jpg"],

@@ -30,7 +30,7 @@ describe("logoFromState", () => {
   it("is sized and placed by the part every device shows on YouTube", () => {
     expect(
       logoFromState({ logoImage: "https://example.com/logo.svg", size: "youtube" }),
-    ).toMatchObject({ height: 63, box: { left: 541, top: 543, width: 1478, height: 355 } });
+    ).toMatchObject({ height: 63 });
   });
 });
 

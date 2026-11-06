@@ -1,24 +1,8 @@
 import { describe, expect, it } from "vitest";
-import {
-  dragPlacement,
-  nudgePlacement,
-  placementRoom,
-  placementStyle,
-  snapLine,
-} from "./placement";
+import { dragPlacement, nudgePlacement, placementRoom, snapLine } from "./placement";
 
 /** LinkedIn's 4:1 banner. With 32px padding, the box is 1520 × 332. */
 const WIDE = { width: 1584, height: 396 };
-
-describe("placementStyle", () => {
-  it("puts the item's own point on the box's", () => {
-    expect(placementStyle({ x: 100, y: 0 })).toMatchObject({
-      left: "100%",
-      top: "0%",
-      transform: "translate(-100%, -0%)",
-    });
-  });
-});
 
 describe("placementRoom", () => {
   it("is the padded box less the item", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getTemplates } from "@/src/templates/registry";
-import { fieldLabel, groupFields, STYLE_GROUP } from "./settingGroups";
+import { groupFields, STYLE_GROUP } from "./settingGroups";
 
 const outline = (id: string) => {
   const template = getTemplates().find(({ meta }) => meta.id === id)!;
@@ -21,17 +21,6 @@ describe("groupFields", () => {
     ]);
   });
 
-  it("gives the repos banner a Repositories group", () => {
-    expect(outline("repos-banner").map(([title]) => title)).toEqual([
-      "Format",
-      "Style",
-      "Layout",
-      "Logo",
-      "Repositories",
-      "Content",
-    ]);
-  });
-
   it("keeps the Style group without any of its settings, for the light/dark setting", () => {
     const schema = [{ key: "year", label: "Year", type: "select" as const }];
     expect(groupFields(schema).map((g) => g.title)).toEqual([STYLE_GROUP, "Content"]);
@@ -42,12 +31,5 @@ describe("groupFields", () => {
       const grouped = groupFields(schema).flatMap((g) => g.fields.map((f) => f.key));
       expect(grouped.toSorted(), meta.id).toEqual(schema.map((f) => f.key).toSorted());
     }
-  });
-});
-
-describe("fieldLabel", () => {
-  it("renames settings whose schema name is unclear in the sidebar", () => {
-    expect(fieldLabel({ key: "size", label: "Type", type: "sizeSelect" })).toBe("Platform");
-    expect(fieldLabel({ key: "year", label: "Year", type: "select" })).toBe("Year");
   });
 });

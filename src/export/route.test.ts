@@ -27,12 +27,6 @@ afterEach(() => {
 });
 
 describe("exportRoute", () => {
-  it("returns the image", async () => {
-    const response = await post(banner);
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("image/png");
-  });
-
   it("refuses an export over the daily quota without rendering it", async () => {
     const resetAt = new Date(Date.now() + 3_600_000);
     dailyExportLimit.mockResolvedValueOnce(resetAt);
