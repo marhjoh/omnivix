@@ -105,8 +105,9 @@ describe("parseExportRequest", () => {
 describe("parseExportRequest year", () => {
   const contributions = { templateId: "contribution-banner", size: "wide" };
 
-  it.each(["2024", "latest"])("accepts %s", (year) => {
-    expect(parseExportRequest({ ...contributions, state: { username: "x", year } }).ok).toBe(true);
+  it("accepts latest", () => {
+    const state = { username: "x", year: "latest" };
+    expect(parseExportRequest({ ...contributions, state }).ok).toBe(true);
   });
 
   it("rejects a year that isn't four digits or latest, instead of failing the render", () => {

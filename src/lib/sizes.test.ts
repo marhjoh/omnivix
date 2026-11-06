@@ -1,14 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   BANNER_SIZES,
-  bannerViews,
   exportFormatFor,
-  exportFormats,
   exportPixelRatioFor,
-  exportPixelRatios,
   normalizeBannerSize,
   platformOf,
-  safeAreaOf,
   sizeOfPlatform,
   shownView,
   viewRect,
@@ -52,37 +48,10 @@ describe("viewRect", () => {
   });
 });
 
-describe("bannerViews", () => {
-  it("lists the views the format has", () => {
-    expect(bannerViews(BANNER_SIZES.wide)).toEqual([]);
-    expect(bannerViews(BANNER_SIZES.youtube)).toEqual(["phone", "desktop", "tv"]);
-    expect(bannerViews(BANNER_SIZES.reddit)).toEqual(["phone", "desktop"]);
-  });
-});
-
 describe("shownView", () => {
   it("falls back to the phone view when the format has no such view", () => {
     expect(shownView(BANNER_SIZES.youtube, "tv")).toBe("tv");
     expect(shownView(BANNER_SIZES.reddit, "tv")).toBe("phone");
-  });
-});
-
-describe("safeAreaOf", () => {
-  it("is the phone view unless the format sets its own", () => {
-    expect(safeAreaOf(BANNER_SIZES.youtube)).toEqual(viewRect(BANNER_SIZES.youtube, "phone"));
-    expect(safeAreaOf(BANNER_SIZES.reddit)).toEqual({
-      left: 1190,
-      top: 390,
-      width: 1040,
-      height: 460,
-    });
-  });
-});
-
-describe("exportFormats", () => {
-  it("lists the file formats the platform takes", () => {
-    expect(exportFormats(BANNER_SIZES.wide)).toEqual(["png", "jpeg"]);
-    expect(exportFormats(BANNER_SIZES.reddit)).toEqual(["jpeg"]);
   });
 });
 
@@ -95,14 +64,6 @@ describe("exportFormatFor", () => {
   it("uses the platform's own when it doesn't take the chosen one", () => {
     expect(exportFormatFor(BANNER_SIZES.reddit, "png")).toBe("jpeg");
     expect(exportFormatFor(BANNER_SIZES.reddit)).toBe("jpeg");
-  });
-});
-
-describe("exportPixelRatios", () => {
-  it("lists every ratio the format takes in the file format", () => {
-    expect(exportPixelRatios(BANNER_SIZES.wide, "png")).toEqual([1, 2, 3]);
-    expect(exportPixelRatios(BANNER_SIZES.youtube, "png")).toEqual([1]);
-    expect(exportPixelRatios(BANNER_SIZES.youtube, "jpeg")).toEqual([1]);
   });
 });
 

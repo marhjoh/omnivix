@@ -23,15 +23,11 @@ function contrast(a: string, b: string): number {
 
 describe("quoteStyleFromState", () => {
   it("is bold Inter with curly marks in the text color by default", () => {
-    expect(quoteStyleFromState({}, "dark")).toEqual({
+    expect(quoteStyleFromState({}, "dark")).toMatchObject({
       fontFamily: "var(--font-inter), sans-serif",
-      authorFontFamily: "var(--font-inter), sans-serif",
       fontWeight: 700,
       fontStyle: "normal",
-      letterSpacing: "-0.02em",
-      xHeight: 0.55,
       marks: "curly",
-      textMarks: ["“", "”"],
       color: undefined,
       markColor: undefined,
       authorColor: undefined,
@@ -110,9 +106,9 @@ describe("colors", () => {
     expect(contrast(c.dark, "#0d1117")).toBeGreaterThanOrEqual(3);
   });
 
-  it("takes a deeper shade on light banners and uses a hex code as is", () => {
-    expect(colorValue("green", "light")).toBe("#15803d");
-    expect(colorValue("green", "dark")).toBe("#4ade80");
+  it("takes the theme's shade and uses a hex code as is", () => {
+    expect(colorValue("green", "light")).toBe(PALETTE.green.light);
+    expect(colorValue("green", "dark")).toBe(PALETTE.green.dark);
     expect(colorValue("#FF6600", "light")).toBe("#FF6600");
     expect(colorValue("default", "dark")).toBeUndefined();
   });

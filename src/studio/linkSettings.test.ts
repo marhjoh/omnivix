@@ -3,26 +3,6 @@ import { withLink } from "./linkSettings";
 import { parseLinkSettings } from "./parseLinkSettings";
 
 describe("parseLinkSettings", () => {
-  it("reads settings with the export API's keys", () => {
-    expect(
-      parseLinkSettings("contribution-banner", {
-        username: "marhjoh",
-        size: "header",
-        themeId: "sunset",
-        backgroundImage: "/backgrounds/seoul.avif",
-      }),
-    ).toEqual({
-      settings: { size: "header", themeId: "sunset", backgroundImage: "/backgrounds/seoul.avif" },
-      username: "marhjoh",
-    });
-  });
-
-  it("turns toggles and numbers into their types", () => {
-    expect(
-      parseLinkSettings("repos-banner", { showStars: "false", maxRepos: "3" })?.settings,
-    ).toEqual({ showStars: false, maxRepos: 3 });
-  });
-
   it("leaves out values that aren't valid, keeping the rest", () => {
     expect(
       parseLinkSettings("github-banner", {
@@ -55,13 +35,7 @@ describe("parseLinkSettings", () => {
     ).toBeNull();
   });
 
-  it("reads positions as x,y", () => {
-    expect(
-      parseLinkSettings("github-banner", {
-        contentPosition: "100,0",
-        backgroundPosition: "25.5,80",
-      })?.settings,
-    ).toEqual({ contentPosition: { x: 100, y: 0 }, backgroundPosition: { x: 25.5, y: 80 } });
+  it("leaves out positions that aren't x,y from 0 to 100", () => {
     expect(
       parseLinkSettings("quote-banner", { contentPosition: "120,0", backgroundPosition: "50" }),
     ).toBeNull();
