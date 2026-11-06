@@ -17,11 +17,11 @@ const MAX_NAME_LENGTH = 30;
 
 /**
  * Counts a visit to the landing page or a studio page, without cookies. Only full page loads count:
- * moving between pages inside the app doesn't load a document. Bots aren't counted.
+ * moving between pages inside the app doesn't load a document.
  */
 export function countPageView(request: NextRequest): void {
   const page = pageOf(request.nextUrl.pathname);
-  if (!page || !isPageLoad(request) || userAgent(request).isBot) return;
+  if (!page || !isPageLoad(request) || isAutomated(request)) return;
   countStats(pageViewFields(request, page), {
     id: visitorId(request),
     steps: page === "/" ? ["site"] : ["site", "studio"],
@@ -32,6 +32,15 @@ function pageOf(path: string): string | null {
   if (path === "/") return "/";
   const templateId = STUDIO_PATH.exec(path)?.[1];
   return isOneOf(TEMPLATE_IDS, templateId) ? `/studio/${templateId}` : null;
+}
+
+/**
+ * Bots, headless browsers like Vercel's deployment screenshots, and AI agents that sign their
+ * requests (https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/).
+ */
+function isAutomated(request: NextRequest): boolean {
+  const agent = userAgent(request);
+  return agent.isBot || agent.ua.includes("Headless") || request.headers.has("signature-agent");
 }
 
 /** Browsers send these on a navigation. Prefetches and most bots don't. */

@@ -96,6 +96,16 @@ describe("countPageView", () => {
         "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
       }),
     ],
+    [
+      "a headless browser",
+      visit("https://omnivix.app/", {
+        "user-agent": BROWSER.replace("Chrome/", "HeadlessChrome/"),
+      }),
+    ],
+    [
+      "an AI agent that signs its requests",
+      visit("https://omnivix.app/", { "signature-agent": '"https://chatgpt.com"' }),
+    ],
   ])("skips %s", (_, request) => {
     countPageView(request);
     expect(countStats).not.toHaveBeenCalled();
