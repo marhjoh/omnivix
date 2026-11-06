@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.2](https://github.com/marhjoh/omnivix/compare/v1.27.1...v1.27.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* drop "Copy" from the copy buttons ([#250](https://github.com/marhjoh/omnivix/issues/250)) ([6b99e97](https://github.com/marhjoh/omnivix/commit/6b99e97eec4e492cb39fb3873dd8389931e6a34d))
+
 ## [1.27.1](https://github.com/marhjoh/omnivix/compare/v1.27.0...v1.27.1) (2026-11-06)
 
 
