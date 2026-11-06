@@ -103,6 +103,10 @@ describe("countPageView", () => {
       }),
     ],
     [
+      "a Lighthouse run",
+      visit("https://omnivix.app/", { "user-agent": `${BROWSER} Chrome-Lighthouse` }),
+    ],
+    [
       "an AI agent that signs its requests",
       visit("https://omnivix.app/", { "signature-agent": '"https://chatgpt.com"' }),
     ],

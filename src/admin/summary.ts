@@ -1,5 +1,9 @@
+import { STARS_FIELD } from "@/src/stats/quality";
 import { DURATION_BUCKETS, SERIES } from "@/src/stats/statFields";
 import { visitorsField, type DailyStats } from "@/src/stats/stats";
+
+/** Stars gained per day, worked out from the daily totals (see `withNewStars`). */
+const NEW_STARS_FIELD = "stars";
 
 /** The tiles above the chart. Clicking one shows it in the chart. */
 export const METRICS = [
@@ -8,6 +12,7 @@ export const METRICS = [
   { id: "exports", label: "Exports", field: SERIES.exports },
   { id: "failures", label: "Failures", field: SERIES.failures },
   { id: "limits", label: "Limit hits", field: SERIES.limits },
+  { id: "stars", label: "New stars", field: NEW_STARS_FIELD },
 ] as const;
 
 export type Metric = (typeof METRICS)[number];
@@ -41,7 +46,10 @@ export type ChartPoint = {
   previous: number;
 };
 
-/** One point per day, or per week for long periods, counted back from today. The last one is still running. */
+/**
+ * One point per day, or per week for long periods, counted back from today. The last one is still
+ * running.
+ */
 export function chartPoints(
   current: DailyStats[],
   previous: DailyStats[],
@@ -72,4 +80,32 @@ export function durationPercentile(totals: Record<string, number>, share: number
   if (!total) return null;
   let seen = 0;
   return DURATION_BUCKETS.find((_, index) => (seen += counts[index]) >= share * total)!;
+}
+
+/**
+ * Adds the stars gained since the last measured day. The first measured day counts 0, since there's
+ * nothing before it to compare with.
+ */
+export function withNewStars(stats: DailyStats[]): DailyStats[] {
+  let previous: number | undefined;
+  return stats.map(({ day, counts }) => {
+    const total = counts[STARS_FIELD];
+    if (total === undefined) return { day, counts };
+    const gained = previous === undefined ? 0 : total - previous;
+    previous = total;
+    return { day, counts: { ...counts, [NEW_STARS_FIELD]: gained } };
+  });
+}
+
+export type Measurement = { day: string; value: number };
+
+/** The first and last value of a measurement in the period, or null when it wasn't measured. */
+export function measurementRange(
+  days: DailyStats[],
+  field: string,
+): { first: Measurement; last: Measurement } | null {
+  const measured = days
+    .filter(({ counts }) => field in counts)
+    .map(({ day, counts }) => ({ day, value: counts[field] }));
+  return measured.length ? { first: measured[0], last: measured.at(-1)! } : null;
 }

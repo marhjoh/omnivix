@@ -8,10 +8,18 @@ import {
   changeOf,
   chartPoints,
   durationPercentile,
+  measurementRange,
   METRICS,
   type Change,
   type Metric,
 } from "@/src/admin/summary";
+import {
+  COVERAGE_FIELD,
+  STARS_FIELD,
+  LIGHTHOUSE_CATEGORIES,
+  LIGHTHOUSE_PAGES,
+  lighthouseField,
+} from "@/src/stats/quality";
 import { valueLabel } from "@/src/admin/labels";
 import { MetricChart } from "@/src/admin/MetricChart";
 import styles from "@/src/admin/admin.module.css";
@@ -101,7 +109,10 @@ function Stats({
 
   return (
     <>
-      <nav aria-label="Chart" className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
+      <nav
+        aria-label="Chart"
+        className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+      >
         {METRICS.map((tile) => (
           <Link
             key={tile.id}
@@ -158,6 +169,24 @@ function Stats({
           <FailureMessages rows={breakdown(totals, SERIES.failureMessage)} />
         </Card>
       </Section>
+
+      <Section title="Project" note={measuredNote(current)}>
+        <div className="grid grid-cols-2 content-start gap-3">
+          <MeasurementTile
+            label="GitHub stars"
+            values={measurements(current, STARS_FIELD)}
+            change={(gained) => `${formatCount(gained)} in this period`}
+            format={formatCount}
+          />
+          <MeasurementTile
+            label="Test coverage"
+            values={measurements(current, COVERAGE_FIELD)}
+            change={(points) => `${points} points in this period`}
+            format={(percent) => `${percent}%`}
+          />
+        </div>
+        <Lighthouse current={current} />
+      </Section>
     </>
   );
 }
@@ -173,15 +202,23 @@ function ChangeLine({
   if (!difference) {
     return <span className="mt-1 block text-xs text-muted">Same as {before}</span>;
   }
-  const Arrow = difference > 0 ? ArrowUp : ArrowDown;
   // A change under 0.5% rounds to 0%, so the difference says more.
   const amount = percent ? `${Math.abs(percent)}%` : formatCount(Math.abs(difference));
+  return (
+    <ArrowLine up={difference > 0}>
+      {amount} vs. {before}
+    </ArrowLine>
+  );
+}
+
+function ArrowLine({ up, children }: { up: boolean; children: ReactNode }) {
+  const Arrow = up ? ArrowUp : ArrowDown;
   return (
     <span className="mt-1 flex items-start gap-1 text-xs text-muted">
       <Arrow size={12} className="mt-0.5 shrink-0" aria-hidden />
       <span>
-        <span className="sr-only">{difference > 0 ? "Up " : "Down "}</span>
-        {amount} vs. {before}
+        <span className="sr-only">{up ? "Up " : "Down "}</span>
+        {children}
       </span>
     </span>
   );
@@ -343,5 +380,113 @@ function FailureMessages({ rows }: { rows: [string, number][] }) {
         ))}
       </tbody>
     </table>
+  );
+}
+
+function measuredOn(day: string): string {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/** A measurement's values in the period, oldest first, skipping days without one. */
+function measurements(days: DailyStats[], field: string): number[] {
+  return days.flatMap(({ counts }) => (field in counts ? [counts[field]] : []));
+}
+
+function measuredNote(days: DailyStats[]): string {
+  const last = days.findLast(({ counts }) =>
+    Object.keys(counts).some((field) => field.startsWith("quality:")),
+  );
+  return last ? `Measured once a day, last on ${measuredOn(last.day)}.` : "Measured once a day.";
+}
+
+/** Like the tiles above the chart, for a value that's measured instead of counted. */
+function MeasurementTile({
+  label,
+  values,
+  change,
+  format,
+}: {
+  label: string;
+  values: number[];
+  /** The text after the arrow, for the change since the period's first value. */
+  change: (amount: number) => string;
+  format: (value: number) => string;
+}) {
+  const first = values[0];
+  const last = values.at(-1);
+  const difference = last === undefined ? 0 : Math.round((last - first) * 10) / 10;
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <span className="block text-sm text-muted">{label}</span>
+      {last === undefined ? (
+        <span className="mt-1 block text-xs text-muted">Not measured yet</span>
+      ) : (
+        <>
+          <span className="mt-1 block text-3xl font-semibold tabular-nums">{format(last)}</span>
+          {difference ? (
+            <ArrowLine up={difference > 0}>{change(Math.abs(difference))}</ArrowLine>
+          ) : (
+            <span className="mt-1 block text-xs text-muted">No change in this period</span>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+const PAGE_LABELS: Record<keyof typeof LIGHTHOUSE_PAGES, string> = {
+  landing: "Landing page",
+  studio: "Studio",
+};
+
+const CATEGORY_LABELS: Record<(typeof LIGHTHOUSE_CATEGORIES)[number], string> = {
+  performance: "Performance",
+  accessibility: "Accessibility",
+  "best-practices": "Best practices",
+  seo: "SEO",
+};
+
+function Lighthouse({ current }: { current: DailyStats[] }) {
+  const pages = Object.keys(LIGHTHOUSE_PAGES) as (keyof typeof LIGHTHOUSE_PAGES)[];
+  const latest = (page: string, category: string) =>
+    measurementRange(current, lighthouseField(page, category))?.last;
+  const measured = pages.flatMap((page) =>
+    LIGHTHOUSE_CATEGORIES.map((category) => latest(page, category)),
+  );
+  return (
+    <Card title="Lighthouse on a phone">
+      {measured.some(Boolean) ? (
+        <table className="w-full text-left text-sm">
+          <thead className="text-muted">
+            <tr>
+              <th className="pb-2 font-normal">Score</th>
+              {pages.map((page) => (
+                <th key={page} className="pb-2 text-right font-normal">
+                  {PAGE_LABELS[page]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {LIGHTHOUSE_CATEGORIES.map((category) => (
+              <tr key={category} className="border-t border-divider">
+                <td className="py-2">{CATEGORY_LABELS[category]}</td>
+                {pages.map((page) => (
+                  <td key={page} className="py-2 text-right tabular-nums">
+                    {latest(page, category)?.value ?? "–"}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-sm text-muted">Not measured yet. A job runs Lighthouse once a day.</p>
+      )}
+    </Card>
   );
 }

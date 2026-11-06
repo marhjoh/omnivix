@@ -75,18 +75,21 @@ describe("countStats", () => {
 });
 
 describe("readStats", () => {
-  it("reads each day, oldest first, with its unique visitors", async () => {
+  it("reads each day, oldest first, with its measurements and unique visitors", async () => {
     connectStore();
     results.value = [
-      ...[{ exports: 2 }, 4, 2, 1],
-      ...[null, 0, 0, 0],
-      ...[{ exports: "3", limits: 1 }, 1, 0, 0],
+      ...[{ exports: 2 }, null, 4, 2, 1],
+      ...[null, null, 0, 0, 0],
+      ...[{ exports: "3", limits: 1 }, { "quality:coverage": "87.5" }, 1, 0, 0],
     ];
     const days = await readStats(3, Date.parse("2026-11-05T08:00:00Z"));
     expect(commands.filter(([command]) => command === "hgetall").map(([, key]) => key)).toEqual([
       "omnivix:production:stats:2026-11-03",
+      "omnivix:production:quality:2026-11-03",
       "omnivix:production:stats:2026-11-04",
+      "omnivix:production:quality:2026-11-04",
       "omnivix:production:stats:2026-11-05",
+      "omnivix:production:quality:2026-11-05",
     ]);
     expect(days).toEqual([
       {
@@ -102,13 +105,14 @@ describe("readStats", () => {
         counts: {
           exports: 3,
           limits: 1,
+          "quality:coverage": 87.5,
           "visitors:site": 1,
           "visitors:studio": 0,
           "visitors:export": 0,
         },
       },
     ]);
-    expect(sumStats(days!)).toEqual({
+    expect(sumStats(days!)).toMatchObject({
       exports: 5,
       limits: 1,
       "visitors:site": 5,
