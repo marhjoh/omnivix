@@ -1,14 +1,6 @@
 import "server-only";
 import { Effect, Schema } from "effect";
-import type { NextRequest } from "next/server";
-import { sameText } from "@/src/lib/sameText";
-import { getSiteUrl } from "@/src/lib/site";
-import {
-  LIGHTHOUSE_CATEGORIES,
-  LIGHTHOUSE_PAGES,
-  lighthouseField,
-  saveQuality,
-} from "@/src/stats/quality";
+import { LIGHTHOUSE_CATEGORIES, LIGHTHOUSE_PAGES, lighthouseField } from "@/src/stats/quality";
 
 const ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 
@@ -63,7 +55,8 @@ function pageScores(url: URL) {
   );
 }
 
-function measure(site: URL) {
+/** Scores out of 100 for every page and category. */
+export function lighthouseScores(site: URL) {
   return Effect.forEach(
     Object.entries(LIGHTHOUSE_PAGES),
     ([page, path]) =>
@@ -78,25 +71,5 @@ function measure(site: URL) {
         ),
       ),
     { concurrency: "unbounded" },
-  ).pipe(Effect.map((pages) => Object.fromEntries(pages.flat())));
-}
-
-/** The daily Vercel Cron job (vercel.json). Vercel sends `CRON_SECRET` as a bearer token. */
-export async function lighthouseCronRoute(request: NextRequest): Promise<Response> {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || !sameText(request.headers.get("authorization") ?? "", `Bearer ${secret}`)) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-  return Effect.runPromise(
-    measure(getSiteUrl()).pipe(
-      Effect.tap((scores) => Effect.promise(() => saveQuality(scores))),
-      Effect.map((scores) => Response.json(scores)),
-      Effect.catchTag("PageSpeedFailed", ({ cause }) =>
-        Effect.sync(() => {
-          console.error("Lighthouse couldn't run", cause);
-          return new Response("Lighthouse couldn't run", { status: 502 });
-        }),
-      ),
-    ),
-  );
+  ).pipe(Effect.map((pages): Record<string, number> => Object.fromEntries(pages.flat())));
 }

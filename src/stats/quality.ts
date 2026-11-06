@@ -9,6 +9,8 @@ export const KEEP_SECONDS = 800 * 24 * 60 * 60;
 
 export const COVERAGE_FIELD = "quality:coverage";
 
+export const STARS_FIELD = "quality:stars";
+
 /** The quote banner's studio needs no GitHub user, so it always has a banner to measure. */
 export const LIGHTHOUSE_PAGES = { landing: "/", studio: studioPath("quote-banner") } as const;
 
@@ -34,7 +36,7 @@ export function qualityKey(day: string): string {
 /** Saves today's measurements. Returns false without a store. */
 export async function saveQuality(values: Record<string, number>): Promise<boolean> {
   const redis = redisFromEnv();
-  if (!redis) return false;
+  if (!redis || !Object.keys(values).length) return false;
   const key = qualityKey(utcDay(Date.now()));
   await redis.pipeline().hset(key, values).expire(key, KEEP_SECONDS).exec();
   return true;

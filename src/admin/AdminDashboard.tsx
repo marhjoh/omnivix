@@ -15,12 +15,12 @@ import {
 } from "@/src/admin/summary";
 import {
   COVERAGE_FIELD,
+  STARS_FIELD,
   LIGHTHOUSE_CATEGORIES,
   LIGHTHOUSE_PAGES,
   lighthouseField,
 } from "@/src/stats/quality";
 import { valueLabel } from "@/src/admin/labels";
-import type { RepoStars } from "@/src/stats/stars";
 import { MetricChart } from "@/src/admin/MetricChart";
 import styles from "@/src/admin/admin.module.css";
 
@@ -40,15 +40,12 @@ export function AdminDashboard({
   period,
   metric,
   stats,
-  stars,
   environment,
 }: {
   period: AdminPeriod;
   metric: Metric;
   /** Twice the period: the one before it comes first. */
   stats: DailyStats[] | null;
-  /** Null when GitHub couldn't be reached. */
-  stars: RepoStars | null;
   environment: string;
 }) {
   return (
@@ -83,7 +80,7 @@ export function AdminDashboard({
           </div>
         </header>
         {stats ? (
-          <Stats period={period} metric={metric} stats={stats} stars={stars} />
+          <Stats period={period} metric={metric} stats={stats} />
         ) : (
           <p className="mt-10 text-muted">
             No Redis store is connected, so nothing is counted. Set <code>KV_REST_API_URL</code> and{" "}
@@ -99,12 +96,10 @@ function Stats({
   period,
   metric,
   stats,
-  stars,
 }: {
   period: AdminPeriod;
   metric: Metric;
   stats: DailyStats[];
-  stars: RepoStars | null;
 }) {
   const previous = stats.slice(0, -period);
   const current = stats.slice(-period);
@@ -118,7 +113,7 @@ function Stats({
         aria-label="Chart"
         className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
       >
-        {METRICS.filter((tile) => tile.id !== "stars" || stars?.perDay).map((tile) => (
+        {METRICS.map((tile) => (
           <Link
             key={tile.id}
             href={adminHref(period, tile)}
@@ -176,7 +171,7 @@ function Stats({
       </Section>
 
       <Section title="Project">
-        <Stars stars={stars} added={totals.stars ?? 0} />
+        <Stars current={current} added={totals.stars ?? 0} />
         <Coverage current={current} />
         <Lighthouse current={current} />
       </Section>
@@ -376,20 +371,19 @@ function measuredOn(day: string): string {
   });
 }
 
-function Stars({ stars, added }: { stars: RepoStars | null; added: number }) {
+function Stars({ current, added }: { current: DailyStats[]; added: number }) {
+  const latest = measurementRange(current, STARS_FIELD)?.last;
   return (
     <Card title="GitHub stars">
-      {stars ? (
+      {latest ? (
         <>
-          <p className="text-3xl font-semibold tabular-nums">{formatCount(stars.total)}</p>
+          <p className="text-3xl font-semibold tabular-nums">{formatCount(latest.value)}</p>
           <p className="mt-1 text-sm text-muted">
-            {stars.perDay
-              ? `${formatCount(added)} new in this period`
-              : "The history needs a GitHub token that can list stargazers, like a classic token with no scopes."}
+            {formatCount(added)} new in this period, measured {measuredOn(latest.day)}
           </p>
         </>
       ) : (
-        <p className="text-sm text-muted">Couldn&apos;t load the stars from GitHub.</p>
+        <p className="text-sm text-muted">Not measured yet. A job saves the total once a day.</p>
       )}
     </Card>
   );

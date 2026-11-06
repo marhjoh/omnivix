@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { DailyStats } from "@/src/stats/stats";
-import { changeOf, chartPoints, durationPercentile, measurementRange, withStars } from "./summary";
+import {
+  changeOf,
+  chartPoints,
+  durationPercentile,
+  measurementRange,
+  withNewStars,
+} from "./summary";
 
 const days = (counts: number[]) =>
   counts.map((exports, index) => ({
@@ -51,10 +57,15 @@ describe("durationPercentile", () => {
   });
 });
 
-describe("withStars", () => {
-  it("adds each day's new stars, and 0 on days without", () => {
-    const stats = withStars(days([1, 2]), { "2026-01-02": 3, "2025-12-31": 9 });
-    expect(stats.map(({ counts }) => counts.stars)).toEqual([0, 3]);
+describe("withNewStars", () => {
+  it("counts the stars gained since the last measured day", () => {
+    const stats: DailyStats[] = [
+      { day: "2026-01-01", counts: { "quality:stars": 2 } },
+      { day: "2026-01-02", counts: {} },
+      { day: "2026-01-03", counts: { "quality:stars": 5 } },
+      { day: "2026-01-04", counts: { "quality:stars": 4 } },
+    ];
+    expect(withNewStars(stats).map(({ counts }) => counts.stars)).toEqual([0, undefined, 3, -1]);
   });
 });
 
