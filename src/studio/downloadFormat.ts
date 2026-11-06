@@ -21,7 +21,7 @@ export const DOWNLOAD_FORMAT_DETAILS: Record<
   jpeg: { label: "JPEG", hint: "Smaller file", name: "JPEG", file: "jpeg" },
   transparent: {
     label: "Transparent",
-    hint: "No background",
+    hint: "See-through",
     name: "transparent PNG",
     file: "png",
     transparent: true,
