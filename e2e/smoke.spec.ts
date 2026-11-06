@@ -48,7 +48,7 @@ test("the export panel copies the banner's image URL as Markdown", async ({
   await page.goto("/studio/quote-banner");
   await expect(preview(page)).toHaveAttribute("data-state", "ready");
   await page.getByRole("button", { name: /^Export options/ }).click();
-  await page.getByRole("button", { name: "Copy Markdown" }).click();
+  await page.getByRole("button", { name: "Markdown", exact: true }).click();
   await expect(page.getByText("Markdown copied.")).toBeVisible();
 
   const markdown = await page.evaluate(() => navigator.clipboard.readText());

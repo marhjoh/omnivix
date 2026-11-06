@@ -36,7 +36,7 @@ function ChoiceTile({ label, hint }: { label: string; hint: string }) {
 
 /**
  * The Download button with its options panel, for the right side of the studio header. The panel
- * holds resolution, format, Copy image and the embed URL, so the header only needs one button.
+ * holds resolution, format and the Copy group, so the header only needs one button.
  */
 export function ExportControls({
   onDownload,
@@ -112,7 +112,7 @@ export function ExportControls({
           onClick={() => {
             if (!busy) setOpen((isOpen) => !isOpen);
           }}
-          // aria-disabled instead of disabled, so the toggle keeps focus while Copy image runs.
+          // aria-disabled instead of disabled, so the toggle keeps focus while the image is copied.
           aria-disabled={busy}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
@@ -122,7 +122,7 @@ export function ExportControls({
           aria-busy={isCopying}
           className={controls.splitToggle}
         >
-          {/* The panel closes when Copy image starts, so the toggle shows that it's copying. */}
+          {/* The panel closes when the image starts copying, so the toggle shows that it's copying. */}
           <DropdownChevron open={open} busy={isCopying} />
         </button>
       </div>
@@ -186,7 +186,7 @@ export function ExportControls({
               className={controls.panelAction}
             >
               <Copy className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-              Copy image
+              Image
             </button>
             <EmbedLinks
               {...banner}
