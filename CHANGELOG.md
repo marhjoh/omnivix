@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.0](https://github.com/marhjoh/omnivix/compare/v1.27.3...v1.28.0) (2026-11-06)
+
+
+### Features
+
+* add GitHub stars, Lighthouse scores and test coverage to the stats ([#255](https://github.com/marhjoh/omnivix/issues/255)) ([a039f33](https://github.com/marhjoh/omnivix/commit/a039f33222eed231f48f6135826839002f952af7))
+
 ## [1.27.3](https://github.com/marhjoh/omnivix/compare/v1.27.2...v1.27.3) (2026-11-06)
 
 
