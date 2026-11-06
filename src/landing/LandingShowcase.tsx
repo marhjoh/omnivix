@@ -1,12 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { TemplateId } from "@/src/templates/types";
 import { templateRegistry } from "@/src/templates/registry";
 import { studioPath } from "@/src/lib/site";
 import { BANNER_SIZES, aspectRatioOf } from "@/src/lib/sizes";
 import { LANDING_TEMPLATE_ORDER, landingPreviewSrc } from "@/src/landing/landingPreviewAssets";
 import landingStyles from "@/src/landing/landing.module.css";
-import { LinkPendingSpinner } from "@/src/landing/LinkPendingSpinner";
 import { SectionHeading } from "@/src/landing/SectionHeading";
 
 /** One column on phones, then two in the 72rem container with 16px padding and a 24px gap. */
@@ -14,8 +12,10 @@ const IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1152px) 50vw, 548px";
 
 function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
   // No fade-in. The cards are in the server HTML, so the grid never looks empty while JS loads.
+  // A plain link, so the history entry is added on the tap. next/link adds it once the studio has
+  // rendered, and on iPhone Back skips entries added that late.
   return (
-    <Link
+    <a
       href={studioPath(templateId)}
       className={`group min-w-0 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:outline-hidden ${landingStyles.showcaseTile}`}
     >
@@ -33,11 +33,10 @@ function ShowcaseCard({ templateId }: { templateId: TemplateId }) {
           className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
-      <p className="flex items-center justify-between gap-2 px-4 py-3.5 text-sm font-semibold tracking-tight text-text">
+      <p className="px-4 py-3.5 text-sm font-semibold tracking-tight text-text">
         {templateRegistry[templateId].meta.title}
-        <LinkPendingSpinner />
       </p>
-    </Link>
+    </a>
   );
 }
 
