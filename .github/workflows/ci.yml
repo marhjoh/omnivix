@@ -47,9 +47,19 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm typecheck
 
-      - name: Test
+      - id: test
+        name: Test
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: pnpm test --coverage
+
+      # The coverage of main goes in the production stats on /admin.
+      - name: Save coverage
+        if: ${{ github.event_name == 'push' && steps.test.outcome == 'success' }}
+        env:
+          VERCEL_ENV: production
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+        run: pnpm save-coverage
 
       # Builds without secrets. GitHub data and export tokens are only needed at request time.
       - id: build

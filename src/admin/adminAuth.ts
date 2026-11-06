@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { sameText } from "@/src/lib/sameText";
 
 /**
  * Checks the admin page's HTTP Basic Auth on the server, for every request. Any username works;
@@ -24,11 +24,4 @@ function passwordOf(header: string | null): string | null {
   const decoded = Buffer.from(encoded, "base64").toString("utf8");
   const colon = decoded.indexOf(":");
   return colon === -1 ? null : decoded.slice(colon + 1);
-}
-
-/** Constant time. Only the length can leak. */
-function sameText(a: string, b: string): boolean {
-  const given = Buffer.from(a);
-  const expected = Buffer.from(b);
-  return given.length === expected.length && timingSafeEqual(given, expected);
 }

@@ -2,11 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { after } from "next/server";
 import { redisFromEnv, redisNamespace } from "@/src/lib/redis";
-
-/** Two years and a bit, so the dashboard can compare a year with the one before. */
-const KEEP_DAYS = 800;
-
-const KEEP_SECONDS = KEEP_DAYS * 24 * 60 * 60;
+import { KEEP_SECONDS, qualityKey, utcDay } from "@/src/stats/quality";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -24,10 +20,6 @@ export function visitorsField(step: VisitorStep): string {
 
 /** A day's counters, by UTC date (`2026-11-05`). */
 export type DailyStats = { day: string; counts: Record<string, number> };
-
-function utcDay(time: number): string {
-  return new Date(time).toISOString().slice(0, 10);
-}
 
 function dayKey(day: string): string {
   return `${redisNamespace()}:stats:${day}`;
@@ -78,7 +70,10 @@ export function countStats(fields: string[], visitor?: { id: string; steps: Visi
   });
 }
 
-/** The last `days` days of counters, oldest first and today last. Null without a store. */
+/**
+ * The last `days` days of counters and measurements, oldest first and today last. Null without a
+ * store.
+ */
 export async function readStats(days: number, now = Date.now()): Promise<DailyStats[] | null> {
   const redis = redisFromEnv();
   if (!redis) return null;
@@ -88,13 +83,17 @@ export async function readStats(days: number, now = Date.now()): Promise<DailySt
   const pipeline = redis.pipeline();
   for (const day of dayList) {
     pipeline.hgetall<Record<string, number>>(dayKey(day));
+    pipeline.hgetall<Record<string, number>>(qualityKey(day));
     for (const step of VISITOR_STEPS) pipeline.pfcount(visitorsKey(step, day));
   }
   const results = await pipeline.exec<unknown[]>();
-  const perDay = 1 + VISITOR_STEPS.length;
+  const perDay = 2 + VISITOR_STEPS.length;
   return dayList.map((day, index) => {
-    const [hash, ...visitors] = results.slice(index * perDay, (index + 1) * perDay);
-    const counts = numbers(hash as Record<string, unknown> | null);
+    const [hash, quality, ...visitors] = results.slice(index * perDay, (index + 1) * perDay);
+    const counts = {
+      ...numbers(hash as Record<string, unknown> | null),
+      ...numbers(quality as Record<string, unknown> | null),
+    };
     VISITOR_STEPS.forEach((step, stepIndex) => {
       counts[visitorsField(step)] = Number(visitors[stepIndex]);
     });

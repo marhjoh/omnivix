@@ -18,7 +18,8 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.ts"],
-      reporter: ["text", "text-summary"],
+      // json-summary is what scripts/save-coverage.mts reads.
+      reporter: ["text", "text-summary", "json-summary"],
     },
   },
 });

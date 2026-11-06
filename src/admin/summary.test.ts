@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { changeOf, chartPoints, durationPercentile } from "./summary";
+import type { DailyStats } from "@/src/stats/stats";
+import { changeOf, chartPoints, durationPercentile, measurementRange, withStars } from "./summary";
 
 const days = (counts: number[]) =>
   counts.map((exports, index) => ({
@@ -47,5 +48,28 @@ describe("durationPercentile", () => {
     expect(durationPercentile(totals, 0.9)).toBe(8);
     expect(durationPercentile(totals, 0.95)).toBe(20);
     expect(durationPercentile({}, 0.5)).toBeNull();
+  });
+});
+
+describe("withStars", () => {
+  it("adds each day's new stars, and 0 on days without", () => {
+    const stats = withStars(days([1, 2]), { "2026-01-02": 3, "2025-12-31": 9 });
+    expect(stats.map(({ counts }) => counts.stars)).toEqual([0, 3]);
+  });
+});
+
+describe("measurementRange", () => {
+  it("finds the first and last day a measurement was taken", () => {
+    const stats: DailyStats[] = [
+      { day: "2026-01-01", counts: {} },
+      { day: "2026-01-02", counts: { "quality:coverage": 40.5 } },
+      { day: "2026-01-03", counts: {} },
+      { day: "2026-01-04", counts: { "quality:coverage": 41 } },
+    ];
+    expect(measurementRange(stats, "quality:coverage")).toEqual({
+      first: { day: "2026-01-02", value: 40.5 },
+      last: { day: "2026-01-04", value: 41 },
+    });
+    expect(measurementRange(stats, "quality:lighthouse:landing:seo")).toBeNull();
   });
 });

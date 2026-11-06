@@ -8,11 +8,19 @@ import {
   changeOf,
   chartPoints,
   durationPercentile,
+  measurementRange,
   METRICS,
   type Change,
   type Metric,
 } from "@/src/admin/summary";
+import {
+  COVERAGE_FIELD,
+  LIGHTHOUSE_CATEGORIES,
+  LIGHTHOUSE_PAGES,
+  lighthouseField,
+} from "@/src/stats/quality";
 import { valueLabel } from "@/src/admin/labels";
+import type { RepoStars } from "@/src/stats/stars";
 import { MetricChart } from "@/src/admin/MetricChart";
 import styles from "@/src/admin/admin.module.css";
 
@@ -32,12 +40,15 @@ export function AdminDashboard({
   period,
   metric,
   stats,
+  stars,
   environment,
 }: {
   period: AdminPeriod;
   metric: Metric;
   /** Twice the period: the one before it comes first. */
   stats: DailyStats[] | null;
+  /** Null when GitHub couldn't be reached. */
+  stars: RepoStars | null;
   environment: string;
 }) {
   return (
@@ -72,7 +83,7 @@ export function AdminDashboard({
           </div>
         </header>
         {stats ? (
-          <Stats period={period} metric={metric} stats={stats} />
+          <Stats period={period} metric={metric} stats={stats} stars={stars} />
         ) : (
           <p className="mt-10 text-muted">
             No Redis store is connected, so nothing is counted. Set <code>KV_REST_API_URL</code> and{" "}
@@ -88,10 +99,12 @@ function Stats({
   period,
   metric,
   stats,
+  stars,
 }: {
   period: AdminPeriod;
   metric: Metric;
   stats: DailyStats[];
+  stars: RepoStars | null;
 }) {
   const previous = stats.slice(0, -period);
   const current = stats.slice(-period);
@@ -101,8 +114,11 @@ function Stats({
 
   return (
     <>
-      <nav aria-label="Chart" className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
-        {METRICS.map((tile) => (
+      <nav
+        aria-label="Chart"
+        className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
+      >
+        {METRICS.filter((tile) => tile.id !== "stars" || stars?.perDay).map((tile) => (
           <Link
             key={tile.id}
             href={adminHref(period, tile)}
@@ -157,6 +173,12 @@ function Stats({
         <Card title="Failure messages">
           <FailureMessages rows={breakdown(totals, SERIES.failureMessage)} />
         </Card>
+      </Section>
+
+      <Section title="Project">
+        <Stars stars={stars} added={totals.stars ?? 0} />
+        <Coverage current={current} />
+        <Lighthouse current={current} />
       </Section>
     </>
   );
@@ -343,5 +365,113 @@ function FailureMessages({ rows }: { rows: [string, number][] }) {
         ))}
       </tbody>
     </table>
+  );
+}
+
+function measuredOn(day: string): string {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function Stars({ stars, added }: { stars: RepoStars | null; added: number }) {
+  return (
+    <Card title="GitHub stars">
+      {stars ? (
+        <>
+          <p className="text-3xl font-semibold tabular-nums">{formatCount(stars.total)}</p>
+          <p className="mt-1 text-sm text-muted">
+            {stars.perDay
+              ? `${formatCount(added)} new in this period`
+              : "The history needs a GitHub token that can list stargazers, like a classic token with no scopes."}
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-muted">Couldn&apos;t load the stars from GitHub.</p>
+      )}
+    </Card>
+  );
+}
+
+function Coverage({ current }: { current: DailyStats[] }) {
+  const range = measurementRange(current, COVERAGE_FIELD);
+  if (!range) {
+    return (
+      <Card title="Test coverage">
+        <p className="text-sm text-muted">Not measured yet. CI saves it on each push to main.</p>
+      </Card>
+    );
+  }
+  const { first, last } = range;
+  const points = Math.round((last.value - first.value) * 10) / 10;
+  return (
+    <Card title="Test coverage">
+      <p className="text-3xl font-semibold tabular-nums">{last.value}%</p>
+      <p className="mt-1 text-sm text-muted">
+        of lines, measured {measuredOn(last.day)}
+        {points
+          ? `. ${points > 0 ? "Up" : "Down"} ${Math.abs(points)} points since ${measuredOn(first.day)}.`
+          : "."}
+      </p>
+    </Card>
+  );
+}
+
+const PAGE_LABELS: Record<keyof typeof LIGHTHOUSE_PAGES, string> = {
+  landing: "Landing page",
+  studio: "Studio",
+};
+
+const CATEGORY_LABELS: Record<(typeof LIGHTHOUSE_CATEGORIES)[number], string> = {
+  performance: "Performance",
+  accessibility: "Accessibility",
+  "best-practices": "Best practices",
+  seo: "SEO",
+};
+
+function Lighthouse({ current }: { current: DailyStats[] }) {
+  const pages = Object.keys(LIGHTHOUSE_PAGES) as (keyof typeof LIGHTHOUSE_PAGES)[];
+  const latest = (page: string, category: string) =>
+    measurementRange(current, lighthouseField(page, category))?.last;
+  const measured = pages.flatMap((page) =>
+    LIGHTHOUSE_CATEGORIES.map((category) => latest(page, category)),
+  );
+  const day = measured.find(Boolean)?.day;
+  return (
+    <Card title="Lighthouse on a phone">
+      {day ? (
+        <>
+          <table className="w-full text-left text-sm">
+            <thead className="text-muted">
+              <tr>
+                <th className="pb-2 font-normal">Score</th>
+                {pages.map((page) => (
+                  <th key={page} className="pb-2 text-right font-normal">
+                    {PAGE_LABELS[page]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {LIGHTHOUSE_CATEGORIES.map((category) => (
+                <tr key={category} className="border-t border-divider">
+                  <td className="py-2">{CATEGORY_LABELS[category]}</td>
+                  {pages.map((page) => (
+                    <td key={page} className="py-2 text-right tabular-nums">
+                      {latest(page, category)?.value ?? "–"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-3 text-xs text-muted">Measured {measuredOn(day)}, once a day.</p>
+        </>
+      ) : (
+        <p className="text-sm text-muted">Not measured yet. A job runs Lighthouse once a day.</p>
+      )}
+    </Card>
   );
 }

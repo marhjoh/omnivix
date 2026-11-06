@@ -35,12 +35,14 @@ function pageOf(path: string): string | null {
 }
 
 /**
- * Bots, headless browsers like Vercel's deployment screenshots, and AI agents that sign their
- * requests (https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/).
+ * Bots, headless browsers like Vercel's deployment screenshots, Lighthouse runs, and AI agents that
+ * sign their requests (https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/).
  */
 function isAutomated(request: NextRequest): boolean {
   const agent = userAgent(request);
-  return agent.isBot || agent.ua.includes("Headless") || request.headers.has("signature-agent");
+  return (
+    agent.isBot || /Headless|Lighthouse/.test(agent.ua) || request.headers.has("signature-agent")
+  );
 }
 
 /** Browsers send these on a navigation. Prefetches and most bots don't. */

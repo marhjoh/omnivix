@@ -23,7 +23,8 @@
     "social-preview": "tsx scripts/social-preview.mts",
     "readme-screenshots": "tsx scripts/readme-screenshots.mts",
     "export-quality": "tsx scripts/export-quality.mts",
-    "backgrounds": "tsx scripts/backgrounds.mts"
+    "backgrounds": "tsx scripts/backgrounds.mts",
+    "save-coverage": "tsx scripts/save-coverage.mts"
   },
   "dependencies": {
     "@sparticuz/chromium": "^153.0.0",
