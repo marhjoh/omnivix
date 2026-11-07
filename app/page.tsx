@@ -1,32 +1,6 @@
-import type { Metadata } from "next";
-import { SITE_OPEN_GRAPH } from "@/src/lib/site";
-import { LandingHero } from "@/src/landing/LandingHero";
-import { LandingShowcase } from "@/src/landing/LandingShowcase";
-import { LandingHowItWorks } from "@/src/landing/LandingHowItWorks";
-import { LandingFaq } from "@/src/landing/LandingFaq";
-import { landingJsonLd } from "@/src/landing/structuredData";
-import { SiteShell } from "@/src/landing/SiteShell";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-  openGraph: { ...SITE_OPEN_GRAPH, url: "/" },
-};
-
+// Temporary on the diag branch: any preview link lands on the list of test pages.
 export default function Home() {
-  return (
-    <SiteShell>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(landingJsonLd()).replace(/</g, "\\u003c"),
-        }}
-      />
-      <main className="flex-1">
-        <LandingHero />
-        <LandingShowcase />
-        <LandingHowItWorks />
-        <LandingFaq />
-      </main>
-    </SiteShell>
-  );
+  redirect("/diag");
 }
