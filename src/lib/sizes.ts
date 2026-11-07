@@ -1,5 +1,4 @@
 import { oneOfOr } from "@/src/lib/isOneOf";
-import type { BaseSettings } from "@/src/templates/stateSchemas";
 import {
   DEFAULT_EXPORT_FORMAT,
   EXPORT_FORMATS,
@@ -181,7 +180,7 @@ export function sizeOfPlatform(id: unknown): BannerSize | undefined {
  * The platform picked in banner state. If it belongs to another format, the format's first
  * platform.
  */
-export function platformOf(state: Pick<BaseSettings, "size" | "platform">): BannerPlatform {
+export function platformOf(state: { size: BannerSize; platform?: PlatformId }): BannerPlatform {
   const { platforms } = BANNER_SIZES[state.size];
   return platforms.find((platform) => platform.id === state.platform) ?? platforms[0];
 }

@@ -1,7 +1,12 @@
 import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 import { BANNER_PLATFORMS, normalizeBannerSize } from "@/src/lib/sizes";
 import { templateRegistry } from "@/src/templates/registry";
-import type { BannerSettings, EditorFieldSchema, TemplateId } from "@/src/templates/types";
+import type {
+  BannerSettings,
+  EditorFieldSchema,
+  StudioSettings,
+  TemplateId,
+} from "@/src/templates/types";
 import { DEFAULT_GRID_COLORS_ID, GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { oneOfOr } from "@/src/lib/isOneOf";
 import { presetBySrc } from "@/src/backgrounds/presets";
@@ -83,7 +88,7 @@ export function applySavedSettings(
   templateId: TemplateId,
   saved: Record<string, unknown> | null,
   username: string | null,
-): BannerSettings {
+): StudioSettings {
   if (!saved && !username) return prev;
   const defaults: Readonly<Record<string, unknown>> = prev;
   const merged: Record<string, unknown> = { ...prev, ...saved };
@@ -114,14 +119,14 @@ export function applySavedSettings(
     merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, DEFAULT_GRID_COLORS_ID);
   }
   // Every setting is checked above, so they fit the template's settings type.
-  return clampSelectedRepos(merged as BannerSettings);
+  return clampSelectedRepos(merged as StudioSettings);
 }
 
 /**
  * Caps the repos banner's selection at MAX_REPOS in Selected mode. Pinned mode leaves the selection
  * alone so it's still there when the user switches back.
  */
-export function clampSelectedRepos(state: BannerSettings): BannerSettings {
+export function clampSelectedRepos<S extends BannerSettings>(state: S): S {
   if (!("selectedRepos" in state) || state.mode !== "selected") return state;
   const parts = parseRepoSelection(state.selectedRepos);
   if (parts.length <= MAX_REPOS) return state;

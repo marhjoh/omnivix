@@ -5,7 +5,7 @@ import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/backgroun
 import { CONTENT_ALIGNS } from "@/src/banner/contentPosition";
 import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
-import { BANNER_PLATFORMS, BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
@@ -41,8 +41,6 @@ const position = Schema.Struct({ x: percent, y: percent }).annotate({
 
 const bannerFields = {
   size: oneOf(BANNER_SIZE_KEYS),
-  /** The platform picked in the studio. The size follows it, and the export doesn't use it. */
-  platform: Schema.optional(oneOf(BANNER_PLATFORMS.map((platform) => platform.id))),
   alignment: oneOf(CONTENT_ALIGNS),
   backgroundImage: Schema.optional(text),
   backgroundPosition: Schema.optional(position),

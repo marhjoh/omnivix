@@ -1,4 +1,5 @@
 import type { Theme } from "@/src/theme/theme";
+import type { PlatformId } from "@/src/lib/sizes";
 import type { TemplateSettings } from "@/src/templates/stateSchemas";
 import type {
   ContributionsNormalized,
@@ -17,6 +18,9 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 /** Any template's settings. Check a key with `in` to read a setting only some templates have. */
 export type BannerSettings = TemplateSettings[TemplateId];
+
+/** The studio's settings: the banner's, and the platform picked for its size. */
+export type StudioSettings = BannerSettings & { platform?: PlatformId };
 
 /** The value each kind of control edits. */
 interface FieldValues {

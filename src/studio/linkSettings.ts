@@ -1,7 +1,7 @@
 import { applySavedSettings, IMAGE_SETTINGS, removeImage } from "@/src/studio/savedSettings";
 import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
-import type { BannerSettings, TemplateId } from "@/src/templates/types";
+import type { StudioSettings, TemplateId } from "@/src/templates/types";
 
 /** Settings from a studio link. The username is separate because it's saved for all templates. */
 export interface LinkSettings {
@@ -26,7 +26,7 @@ export function withLink(
 }
 
 export interface StartingSettings {
-  state: BannerSettings;
+  state: StudioSettings;
   /** Null if no username was saved or linked. The studio then asks for one. */
   username: string | null;
 }

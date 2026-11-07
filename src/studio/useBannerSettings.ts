@@ -18,10 +18,10 @@ import {
 } from "@/src/studio/savedSettings";
 import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
-import type { BannerSettings, TemplateId } from "@/src/templates/types";
+import type { StudioSettings, TemplateId } from "@/src/templates/types";
 
 /** The part of the state that's saved per template, as JSON. */
-function storedStateJson(state: BannerSettings, needsUsername: boolean): string {
+function storedStateJson(state: StudioSettings, needsUsername: boolean): string {
   const clone: Record<string, unknown> = { ...state };
   // The username is saved once for all templates.
   if (needsUsername) delete clone.username;
@@ -58,7 +58,7 @@ export function useBannerSettings({
       ? serverStart
       : startingSettings(templateId, readCookieClient, link),
   );
-  const [state, setState] = useState<BannerSettings>(start.state);
+  const [state, setState] = useState<StudioSettings>(start.state);
   // Apply the link once, then remove it from the address bar. Otherwise a reload would apply it
   // again over the user's later changes.
   useEffect(() => {
@@ -75,7 +75,7 @@ export function useBannerSettings({
       // Picking an alignment puts the content at that spot, centered vertically.
       if (key === "alignment") delete next.contentPosition;
       // The sidebar's controls only offer values their setting takes.
-      return clampSelectedRepos(next as BannerSettings);
+      return clampSelectedRepos(next as StudioSettings);
     });
   }, []);
 

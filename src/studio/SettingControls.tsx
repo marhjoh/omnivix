@@ -18,7 +18,7 @@ import { TileGroup } from "@/src/studio/TileGroup";
 import { fieldLabel } from "@/src/studio/settingGroups";
 import controls from "@/src/studio/controls.module.css";
 import { GRID_COLOR_PRESETS } from "@/src/banner/gridColors";
-import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
+import type { BannerSettings, EditorFieldSchema, StudioSettings } from "@/src/templates/types";
 import { fieldValue } from "@/src/studio/fieldValue";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { Theme } from "@/src/theme/theme";
@@ -97,7 +97,7 @@ export function PlatformPicker({
   onChange,
 }: {
   label: string;
-  state: BannerSettings;
+  state: StudioSettings;
   onChange: (platform: PlatformId) => void;
 }) {
   const id = useId();

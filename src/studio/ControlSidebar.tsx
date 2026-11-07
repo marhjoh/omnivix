@@ -4,7 +4,12 @@ import { Fragment, type ReactNode } from "react";
 import { Select } from "@/src/ui/Dropdown";
 import { FieldWrapper } from "@/src/ui/FieldLabel";
 import { RangeField } from "@/src/ui/RangeField";
-import type { BannerSettings, EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
+import type {
+  BannerSettings,
+  EditorFieldSchema,
+  EditorFieldType,
+  StudioSettings,
+} from "@/src/templates/types";
 import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import {
@@ -37,7 +42,7 @@ import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 
 interface FieldContext {
   schema: EditorFieldSchema[];
-  state: BannerSettings;
+  state: StudioSettings;
   onChange: (key: string, value: unknown) => void;
   disabledFields: ReadonlySet<string>;
   uiTheme: Theme;
@@ -238,7 +243,7 @@ export function ControlSidebar({
   onErrorResolved,
 }: {
   schema: EditorFieldSchema[];
-  state: BannerSettings;
+  state: StudioSettings;
   accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
   repoCatalog: RepoCatalog;
