@@ -14,6 +14,7 @@ import type {
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
+import { GRID_TEXT_MAX_LENGTH, toGridText } from "@/src/banner/gridText";
 import {
   AUTHOR_MAX_LENGTH,
   DEFAULT_QUOTE_STYLE,
@@ -211,12 +212,23 @@ export const contributionBannerDefinition: TemplateDefinition<
     { ...contentSizeField, options: [...CONTENT_SIZE_OPTIONS, { label: "Fill", value: "fill" }] },
     cellShapeField,
     ...logoFields,
+    {
+      key: "gridText",
+      label: "Text",
+      type: "text",
+      maxLength: GRID_TEXT_MAX_LENGTH,
+      format: toGridText,
+    },
+    // Shown once there's text: off leaves the grid empty behind it.
+    { key: "showContributions", label: "Contributions", type: "toggle" },
   ],
   initialState: {
     ...bannerInitialState,
     ...contributionGridInitialState,
     username: "",
     contentSize: DEFAULT_CONTENT_SIZE,
+    gridText: "",
+    showContributions: false,
   },
 };
 

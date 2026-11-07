@@ -1,13 +1,29 @@
 import { useMemo } from "react";
-import type { ContributionsNormalized } from "@/src/github/types";
+import type { ContributionDayNormalized, ContributionsNormalized } from "@/src/github/types";
 import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/banner/contributionCalendarLayout";
 import type { ContributionCellShape } from "@/src/banner/cellShape";
 import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
 import type { ContributionGridSettings } from "@/src/templates/stateSchemas";
+import { gridTextCells } from "@/src/banner/gridText";
 
 /** The Grid colors and Cell shape settings, as the grid takes them. */
 export function contributionGridStyle(state: ContributionGridSettings) {
   return { colors: gridColorsById(state.themeId), cellShape: state.cellShape };
+}
+
+/**
+ * A cell's level with text in the grid. `lit` is undefined without text. Letters take the top
+ * level. The contributions behind them drop to the lowest level, which keeps them visible and works
+ * on light and dark backgrounds, unlike fading.
+ */
+function withText(
+  level: ContributionDayNormalized["level"],
+  lit: boolean | undefined,
+  overContributions: boolean,
+): ContributionDayNormalized["level"] {
+  if (lit === undefined) return level;
+  if (lit) return 4;
+  return overContributions ? (Math.min(level, 1) as 0 | 1) : 0;
 }
 
 const CELL_RADIUS: Record<ContributionCellShape, number> = {
@@ -26,6 +42,12 @@ interface ContributionGridProps {
   /** Mon/Wed/Fri labels in the left gutter. */
   showDayLabels?: boolean;
   showTotal?: boolean;
+  /** Pixel letters drawn at the top level (gridText.ts). */
+  text?: string;
+  /** Keeps the contributions behind the text, at the lowest level. Otherwise the grid is empty. */
+  textOverContributions?: boolean;
+  /** The columns the text may take. Fill shows only part of the grid. */
+  textColumns?: number;
   /**
    * Covers the container. The SVG stretches with CSS only, the first and last weeks get faded
    * padding cells, and cells lose their outline.
@@ -42,6 +64,9 @@ export function ContributionGrid({
   showMonthLabels = false,
   showDayLabels = false,
   showTotal = false,
+  text = "",
+  textOverContributions = false,
+  textColumns,
   fill = false,
 }: ContributionGridProps) {
   const radius = cellSize * CELL_RADIUS[cellShape];
@@ -55,6 +80,10 @@ export function ContributionGrid({
         renderPaddingDays: fill,
       }),
     [contributions, fill],
+  );
+  const textCells = useMemo(
+    () => (text ? gridTextCells(text, columnCount, textColumns) : null),
+    [text, columnCount, textColumns],
   );
 
   const dayLabelWidth = showDayLabels ? 28 : 0;
@@ -113,20 +142,27 @@ export function ContributionGrid({
             </text>
           ))}
 
-        {placedDays.map(({ date, level, col, row, isOutOfRange }) => (
-          <rect
-            key={date}
-            x={dayLabelWidth + col * step}
-            y={monthLabelHeight + row * step}
-            width={cellSize}
-            height={cellSize}
-            rx={radius}
-            fill={colors.gridLevels[level]}
-            stroke={fill ? undefined : "rgba(255,255,255,0.14)"}
-            strokeWidth={fill ? 0 : 0.6}
-            opacity={isOutOfRange ? 0.3 : 1}
-          />
-        ))}
+        {placedDays.map(({ date, level, col, row, isOutOfRange }) => {
+          const shownLevel = withText(
+            level,
+            textCells?.has(`${col},${row}`),
+            textOverContributions,
+          );
+          return (
+            <rect
+              key={date}
+              x={dayLabelWidth + col * step}
+              y={monthLabelHeight + row * step}
+              width={cellSize}
+              height={cellSize}
+              rx={radius}
+              fill={colors.gridLevels[shownLevel]}
+              stroke={fill ? undefined : "rgba(255,255,255,0.14)"}
+              strokeWidth={fill ? 0 : 0.6}
+              opacity={isOutOfRange ? 0.3 : 1}
+            />
+          );
+        })}
 
         {showTotal && (
           <text

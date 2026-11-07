@@ -77,7 +77,8 @@ function fitsField(field: EditorFieldSchema, value: unknown): boolean {
       return (
         typeof value === "string" &&
         (!field.options || field.options.some((option) => option.value === value)) &&
-        (field.maxLength === undefined || value.length <= field.maxLength)
+        (field.maxLength === undefined || value.length <= field.maxLength) &&
+        (!field.format || field.format(value) === value)
       );
   }
 }

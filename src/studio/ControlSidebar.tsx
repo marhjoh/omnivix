@@ -122,7 +122,7 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
         className="field-input"
         maxLength={field.maxLength}
         value={fieldValue(ctx.state, field)}
-        onChange={(e) => ctx.onChange(field.key, e.target.value)}
+        onChange={(e) => ctx.onChange(field.key, field.format?.(e.target.value) ?? e.target.value)}
       />
     </FieldWrapper>
   ),
@@ -235,6 +235,8 @@ function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   const selectedMode = "mode" in state && state.mode === "selected";
   if (field.key === "maxRepos") return selectedMode;
   if (field.type === "repoMultiSelect") return !selectedMode;
+  // Only once there's text to put something behind.
+  if (field.key === "showContributions") return "gridText" in state && !state.gridText;
   return false;
 }
 
