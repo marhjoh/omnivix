@@ -32,4 +32,36 @@ export const DIAG_VARIANTS = {
   },
   "hero-only": { label: "Only the hero", hero: true, rest: false, css: "" },
   "no-hero": { label: "Everything but the hero", hero: false, rest: true, css: "" },
+  "no-header": {
+    label: "No header",
+    hero: true,
+    rest: true,
+    css: '[class*="siteHeader"]{display:none!important}',
+  },
+  "static-header": {
+    label: "Header doesn't stick",
+    hero: true,
+    rest: true,
+    css: '[class*="siteHeader"]{position:relative!important}',
+  },
+  "no-pill": {
+    label: "Header without pill (always the bar)",
+    hero: true,
+    rest: true,
+    css: '[class*="siteHeader"]::before{opacity:1!important}[class*="navGlass"]{opacity:0!important}[class*="siteHeader"] [class*="navBar"]{top:0!important;height:100%!important;max-width:72rem!important;border-radius:0!important;transform:none!important}',
+  },
+  "no-blur": {
+    label: "Header without blur",
+    hero: true,
+    rest: true,
+    css: '[class*="navGlass"]{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}',
+  },
+  "lazy-shell": {
+    label: "Lazy shell (like the 404 page)",
+    hero: true,
+    rest: true,
+    css: "",
+    lazyShell: true,
+  },
+  short: { label: "Short page (like the 404 page)", hero: false, rest: false, css: "" },
 } as const;

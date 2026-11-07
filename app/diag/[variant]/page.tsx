@@ -7,6 +7,7 @@ import { LandingShowcase } from "@/src/landing/LandingShowcase";
 import { LandingHowItWorks } from "@/src/landing/LandingHowItWorks";
 import { LandingFaq } from "@/src/landing/LandingFaq";
 import { SiteShell } from "@/src/landing/SiteShell";
+import { LazySiteShell } from "@/src/landing/LazySiteShell";
 import { DIAG_VARIANTS } from "../variants";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -19,10 +20,14 @@ export default async function DiagPage({ params }: { params: Promise<{ variant: 
   const { variant } = await params;
   const config = DIAG_VARIANTS[variant as keyof typeof DIAG_VARIANTS];
   if (!config) notFound();
+  const Shell = "lazyShell" in config ? LazySiteShell : SiteShell;
   return (
-    <SiteShell>
+    <Shell>
       {config.css && <style>{config.css}</style>}
       <main className="flex-1">
+        {!config.hero && !config.rest && (
+          <p className="px-4 py-24 text-lg text-muted">A short page with the real header.</p>
+        )}
         {config.hero && <LandingHero />}
         {config.rest && (
           <>
@@ -32,6 +37,6 @@ export default async function DiagPage({ params }: { params: Promise<{ variant: 
           </>
         )}
       </main>
-    </SiteShell>
+    </Shell>
   );
 }
