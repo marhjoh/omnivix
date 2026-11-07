@@ -6,6 +6,7 @@ import { LandingHowItWorks } from "@/src/landing/LandingHowItWorks";
 import { LandingFaq } from "@/src/landing/LandingFaq";
 import { landingJsonLd } from "@/src/landing/structuredData";
 import { SiteShell } from "@/src/landing/SiteShell";
+import { ScrollRestoreScript } from "@/src/landing/ScrollRestoreScript";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -27,6 +28,7 @@ export default function Home() {
         <LandingHowItWorks />
         <LandingFaq />
       </main>
+      <ScrollRestoreScript />
     </SiteShell>
   );
 }
