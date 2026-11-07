@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.1](https://github.com/marhjoh/omnivix/compare/v1.29.0...v1.29.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* keep the scroll position when reloading the landing page in Safari ([#260](https://github.com/marhjoh/omnivix/issues/260)) ([dab1aa4](https://github.com/marhjoh/omnivix/commit/dab1aa44890c6dd468d40ad0ec47062327306173))
+
 ## [1.29.0](https://github.com/marhjoh/omnivix/compare/v1.28.0...v1.29.0) (2026-11-07)
 
 
