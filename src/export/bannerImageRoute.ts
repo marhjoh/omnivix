@@ -61,6 +61,11 @@ async function bannerImage(request: NextRequest, file: string): Promise<Response
     pixelRatio: exportPixelRatioFor(BANNER_SIZES[size], format, pixelRatio),
     format,
     uiTheme: isOneOf(THEMES, query.uiTheme) ? query.uiTheme : undefined,
+    // Like other invalid values, it's ignored for a JPEG and with a background image.
+    transparent:
+      format === "png" && query.transparent === "true" && !link?.settings.backgroundImage
+        ? true
+        : undefined,
   });
   if (!parsed.ok) {
     return errorResponse("Couldn't make this banner. Check the settings in the URL.", 400, {

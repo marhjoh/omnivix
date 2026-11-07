@@ -1,4 +1,3 @@
-/** Banners always have a solid background, so JPEG never loses transparency. */
 export const EXPORT_FORMATS = ["png", "jpeg"] as const;
 
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
@@ -7,10 +6,10 @@ export const DEFAULT_EXPORT_FORMAT: ExportFormat = "png";
 
 export const EXPORT_FORMAT_DETAILS: Record<
   ExportFormat,
-  { label: string; hint: string; contentType: string; extension: string }
+  { contentType: string; extension: string }
 > = {
-  png: { label: "PNG", hint: "Best quality", contentType: "image/png", extension: "png" },
-  jpeg: { label: "JPEG", hint: "Smaller file", contentType: "image/jpeg", extension: "jpg" },
+  png: { contentType: "image/png", extension: "png" },
+  jpeg: { contentType: "image/jpeg", extension: "jpg" },
 };
 
 /** 1× is the platform's exact size. */

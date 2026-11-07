@@ -7,7 +7,12 @@ import { verifyExportToken } from "./exportToken";
 const { bannerImageLimit, captureBanner } = vi.hoisted(() => ({
   bannerImageLimit: vi.fn<(key: string) => Promise<Date | null>>(async () => null),
   captureBanner: vi.fn<
-    (options: { url: string; pixelRatio?: number; format: string }) => Effect.Effect<Buffer>
+    (options: {
+      url: string;
+      pixelRatio?: number;
+      format: string;
+      transparent?: boolean;
+    }) => Effect.Effect<Buffer>
   >(() => Effect.succeed(Buffer.from("image"))),
 }));
 
@@ -21,9 +26,9 @@ function get(path: string) {
 
 /** What the render page was asked to draw, from the token in its URL. */
 function rendered() {
-  const [{ url, pixelRatio, format }] = captureBanner.mock.lastCall!;
+  const [{ url, pixelRatio, format, transparent }] = captureBanner.mock.lastCall!;
   const payload = verifyExportToken(new URL(url).searchParams.get("token")!)!;
-  return { ...payload, pixelRatio, format };
+  return { ...payload, pixelRatio, format, transparent };
 }
 
 afterEach(() => {
@@ -54,6 +59,15 @@ describe("bannerImageRoute", () => {
       format: "jpeg",
       uiTheme: "light",
     });
+  });
+
+  it("leaves out the background color for a PNG without a background image", async () => {
+    await get("/banner/quote-banner.png?transparent=true");
+    expect(rendered()).toMatchObject({ transparent: true });
+    await get("/banner/quote-banner.jpg?transparent=true");
+    expect(rendered()).toMatchObject({ format: "jpeg", transparent: false });
+    await get("/banner/quote-banner.png?transparent=true&backgroundImage=/backgrounds/seoul.avif");
+    expect(rendered()).toMatchObject({ transparent: false });
   });
 
   it("uses the defaults for values that aren't valid, and never an upload", async () => {

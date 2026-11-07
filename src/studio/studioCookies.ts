@@ -8,9 +8,8 @@ import {
   EXPORT_PIXEL_RATIOS,
   type ExportPixelRatio,
   DEFAULT_EXPORT_FORMAT,
-  EXPORT_FORMATS,
-  type ExportFormat,
 } from "@/src/export/format";
+import { DOWNLOAD_FORMATS, type DownloadFormat } from "@/src/studio/downloadFormat";
 
 /** `parse` returns a fallback when the value is missing or invalid. */
 export interface StudioCookie<T> {
@@ -73,7 +72,7 @@ export const PIXEL_RATIO_COOKIE: StudioCookie<ExportPixelRatio> = {
 };
 
 /** Download format, so the server renders the last choice. */
-export const FORMAT_COOKIE: StudioCookie<ExportFormat> = {
+export const FORMAT_COOKIE: StudioCookie<DownloadFormat> = {
   name: "omnivix-format",
-  parse: (value) => oneOfOr(EXPORT_FORMATS, value, DEFAULT_EXPORT_FORMAT),
+  parse: (value) => oneOfOr(DOWNLOAD_FORMATS, value, DEFAULT_EXPORT_FORMAT),
 };

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import sharp from "sharp";
 import { fakeGithub, USERNAME } from "./github";
 import { ADMIN_PASSWORD } from "../playwright.config";
 
@@ -37,6 +38,28 @@ test("an image URL returns the banner, cached by the CDN", async ({ request }) =
     "public, s-maxage=86400, stale-while-revalidate=604800",
   );
   expect((await response.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
+});
+
+test("a transparent image URL has no background color", async ({ request }) => {
+  const response = await request.get("/banner/quote-banner.png?transparent=true");
+  expect(response.status()).toBe(200);
+  // The corner is outside the quote, so only the background color could fill it.
+  const { data } = await sharp(await response.body())
+    .ensureAlpha()
+    .extract({ left: 0, top: 0, width: 1, height: 1 })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  expect(data[3]).toBe(0);
+});
+
+test("picking Transparent shows the preview over a checkerboard", async ({ page }) => {
+  await page.goto("/studio/quote-banner");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await expect(preview(page)).not.toHaveAttribute("data-transparent");
+  await page.getByRole("button", { name: /^Export options/ }).click();
+  await page.getByRole("button", { name: /^Transparent/ }).click();
+  await expect(preview(page)).toHaveAttribute("data-transparent");
+  await expect(download(page)).toHaveAccessibleName("Download transparent PNG");
 });
 
 test("the export panel copies the banner's image URL as Markdown", async ({
