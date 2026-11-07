@@ -32,8 +32,8 @@ export type ParsedExportRequest = ExportRequest & { format: ExportFormat };
 
 /**
  * Checks an export request. Settings start from the template's defaults, so a caller only sends
- * what it changes. Unknown settings are kept for the renderer. Without a format, the size's
- * default is used, like JPEG for Reddit.
+ * what it changes. Unknown settings are dropped. Without a format, the size's default is used, like
+ * JPEG for Reddit.
  */
 export function parseExportRequest(
   body: unknown,
@@ -64,5 +64,5 @@ export function parseExportRequest(
   }
   const checked = checkTemplateState(request.templateId, merged);
   if (!checked.ok) return { ok: false, issues: checked.issues };
-  return { ok: true, request: { ...request, format, state: { ...merged, ...checked.state } } };
+  return { ok: true, request: { ...request, format, state: checked.state } };
 }

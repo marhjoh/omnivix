@@ -123,7 +123,7 @@ export function withImagePaths<T extends ExportRequest>(payload: T): T {
   const state = { ...payload.state };
   for (const { key, path, presets } of EXPORT_IMAGES) {
     const value = state[key];
-    if (typeof value === "string" && value !== "" && !presets?.test(value)) state[key] = path;
+    if (value && !presets?.test(value)) state[key] = path;
   }
   return { ...payload, state };
 }
@@ -137,8 +137,7 @@ export const resolveExportImages = Effect.fnUntraced(function* <T extends Export
   payload: T,
 ): Effect.fn.Return<{ payload: T; images: ExportImage[] }, UnusableImage> {
   const resolved = yield* Effect.all(
-    // The settings are checked, so each is text or unset.
-    EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key] as string | undefined, slot)),
+    EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key], slot)),
     { concurrency: "unbounded" },
   );
   const state = { ...payload.state };
