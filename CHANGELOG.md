@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.0](https://github.com/marhjoh/omnivix/compare/v1.29.1...v1.30.0) (2026-11-07)
+
+
+### Features
+
+* draw text in the contribution banner's grid ([#274](https://github.com/marhjoh/omnivix/issues/274)) ([daa80a0](https://github.com/marhjoh/omnivix/commit/daa80a08a8a15c166252222e3837ec1c453ef080))
+
 ## [1.29.1](https://github.com/marhjoh/omnivix/compare/v1.29.0...v1.29.1) (2026-11-07)
 
 
