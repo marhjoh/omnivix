@@ -15,6 +15,7 @@ import { alignmentAt } from "@/src/banner/contentPosition";
 import { isQuoteColor } from "@/src/banner/quoteStyle";
 import { clampPosition, isPosition } from "@/src/banner/position";
 import { isHttpsUrl } from "@/src/lib/imageSource";
+import { isContributionYear } from "@/src/lib/contributionYear";
 
 /**
  * Each image setting with the settings that belong to that image. A background's position goes
@@ -117,6 +118,10 @@ export function applySavedSettings(
   // The grid colors field has no options to check because its picker draws the presets itself.
   if ("themeId" in prev) {
     merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, DEFAULT_GRID_COLORS_ID);
+  }
+  // The year's options depend on the account's age, so the field has none to check against.
+  if ("year" in prev && !(typeof merged.year === "string" && isContributionYear(merged.year))) {
+    merged.year = prev.year;
   }
   // Every setting is checked above, so they fit the template's settings type.
   return clampSelectedRepos(merged as StudioSettings);
