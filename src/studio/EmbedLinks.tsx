@@ -46,15 +46,12 @@ export function EmbedLinks({
   onCopy: (text: string, name: string) => void;
 }) {
   const query = linkQuery(templateId, state);
-  const url = query
-    ? bannerImageUrl(window.location.origin, templateId, query, { format, pixelRatio, uiTheme })
-    : null;
   const { title, needsUsername } = templateRegistry[templateId].meta;
   const alt = needsUsername ? `${title} by @${usernameOf(state)}` : title;
 
   return (
     <>
-      {url === null && (
+      {query === null && (
         <p className="px-2 pb-1 text-xs text-muted">
           Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
         </p>
@@ -63,8 +60,16 @@ export function EmbedLinks({
         <button
           key={name}
           type="button"
-          disabled={disabled || url === null}
-          onClick={() => url && onCopy(write(url, alt), name)}
+          disabled={disabled || query === null}
+          onClick={() => {
+            if (!query) return;
+            const url = bannerImageUrl(window.location.origin, templateId, query, {
+              format,
+              pixelRatio,
+              uiTheme,
+            });
+            onCopy(write(url, alt), name);
+          }}
           className={controls.panelAction}
         >
           <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />
