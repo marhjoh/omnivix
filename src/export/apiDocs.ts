@@ -59,6 +59,12 @@ function accepts(field: EditorFieldSchema): string {
   if (field.key === "themeId") {
     return `the contribution grid's colors, ${oneOf(GRID_COLOR_IDS)}`;
   }
+  if (field.key === "gridText") {
+    return `letters, digits, spaces and ${code("- . ! ?")}, drawn as pixel letters in the grid. As many as fit its width, about 12; Fill shows fewer, depending on the size`;
+  }
+  if (field.key === "showContributions") {
+    return `${code("true")} keeps the contributions behind ${code("gridText")}, ${code("false")} leaves the grid empty`;
+  }
   if (field.key === "year") {
     return `${code(LATEST_YEAR)} (the last 365 days) or a year, e.g. ${code(String(currentYear()))}`;
   }

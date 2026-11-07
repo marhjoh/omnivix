@@ -94,6 +94,16 @@ test.describe("GitHub banners", () => {
     });
   }
 
+  test("a studio link draws text in the contribution grid", async ({ page }) => {
+    const errors = pageErrors(page);
+    await fakeGithub(page, () => "data");
+    await page.goto("/studio/contribution-banner?gridText=Hi%202026");
+    await expect(preview(page)).toHaveAttribute("data-state", "ready");
+    await expect(page.getByLabel("Text", { exact: true })).toHaveValue("Hi 2026");
+    await expect(page.getByRole("button", { name: "Contributions" })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test("an unknown user offers to change the username", async ({ page }) => {
     await fakeGithub(page, () => "not-found");
     await page.goto("/studio/github-banner");

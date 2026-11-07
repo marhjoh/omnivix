@@ -10,6 +10,7 @@ import { isRepoSelection, MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection"
 import { isGithubUsername } from "@/src/lib/githubUsername";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
+import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
 import {
   AUTHOR_MAX_LENGTH,
   AUTHOR_PREFIXES,
@@ -111,6 +112,11 @@ const STATE_SCHEMAS = {
     ...contributionGridFields,
     username: githubUsername,
     contentSize: oneOf(CONTENT_SIZES_OR_FILL),
+    gridText: textWhere(
+      isGridText,
+      `Must fit the grid: at most ${GRID_TEXT_MAX_LENGTH} letters, digits, spaces or - . ! ?, fewer when wide`,
+    ),
+    showContributions: flag,
   }),
   "quote-banner": Schema.Struct({
     ...bannerFields,

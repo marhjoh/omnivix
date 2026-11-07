@@ -56,6 +56,8 @@ export type EditorFieldSchema<S = BannerSettings> = {
     step?: number;
     /** Longest allowed text, for text and textarea fields. */
     maxLength?: number;
+    /** Text fields only: turns typed text into a value the setting takes. */
+    format?: (value: string) => string;
   };
 }[EditorFieldType];
 

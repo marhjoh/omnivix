@@ -8,6 +8,7 @@ import { parseLinkSettings } from "./parseLinkSettings";
 
 /** A valid value for the setting that isn't its default. */
 function changed(field: EditorFieldSchema, initial: unknown): unknown {
+  if (field.format) return field.format("Ship it 2!");
   switch (field.type) {
     case "toggle":
       return !initial;
