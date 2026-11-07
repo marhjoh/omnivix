@@ -112,3 +112,28 @@ describe("applySavedSettings logos", () => {
     expect(result).toMatchObject({ logoSize: "s", logoPosition: { x: 0, y: 0 } });
   });
 });
+
+describe("applySavedSettings values", () => {
+  const defaults = templateRegistry["repos-banner"].initialState;
+
+  it("keeps saved values the controls could have set", () => {
+    const saved = { showStars: false, maxRepos: 3, platform: "x", backgroundZoom: 1.2 };
+    expect(applySavedSettings(defaults, "repos-banner", saved, "a")).toMatchObject(saved);
+  });
+
+  it("falls back to the default for a value of the wrong type or out of range", () => {
+    const result = applySavedSettings(
+      defaults,
+      "repos-banner",
+      { showStars: "no", maxRepos: 99, selectedRepos: 1, backgroundZoom: 9, platform: "myspace" },
+      "a",
+    );
+    expect(result).toMatchObject({
+      showStars: defaults.showStars,
+      maxRepos: defaults.maxRepos,
+      selectedRepos: defaults.selectedRepos,
+    });
+    expect(result).not.toHaveProperty("backgroundZoom");
+    expect(result).not.toHaveProperty("platform");
+  });
+});

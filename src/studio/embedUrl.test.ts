@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getTemplates } from "@/src/templates/registry";
-import type { EditorFieldSchema } from "@/src/templates/types";
+import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { LATEST_YEAR } from "@/src/lib/contributionYear";
 import { bannerImageUrl, linkQuery } from "./embedUrl";
@@ -45,14 +45,21 @@ const IMAGE_OPTIONS = { format: "png", pixelRatio: 3, uiTheme: "dark" } as const
 describe("linkQuery", () => {
   for (const { meta, schema, initialState } of getTemplates()) {
     it(`writes what parseLinkSettings reads back for ${meta.id}`, () => {
+      const defaults: Readonly<Record<string, unknown>> = initialState;
       const settings = {
         ...Object.fromEntries(
-          schema.map((field) => [field.key, changed(field, initialState[field.key])]),
+          schema.map((field) => [field.key, changed(field, defaults[field.key])]),
         ),
         ...DRAGGED,
       };
       const username = meta.needsUsername ? "octocat" : null;
-      const query = linkQuery(meta.id, { ...initialState, ...settings, username });
+      // `changed` gives each field a value it takes.
+      const state = {
+        ...initialState,
+        ...settings,
+        ...(username && { username }),
+      } as BannerSettings;
+      const query = linkQuery(meta.id, state);
       const url = new URL(
         bannerImageUrl("https://omnivix.example", meta.id, query!, IMAGE_OPTIONS),
       );
@@ -71,7 +78,10 @@ describe("linkQuery", () => {
   });
 
   it("can't link an upload", () => {
-    expect(linkQuery("quote-banner", { logoImage: "data:image/png;base64,AAAA" })).toBeNull();
+    const { initialState } = getTemplates().find(({ meta }) => meta.id === "quote-banner")!;
+    expect(
+      linkQuery("quote-banner", { ...initialState, logoImage: "data:image/png;base64,AAAA" }),
+    ).toBeNull();
   });
 });
 

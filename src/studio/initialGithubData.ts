@@ -1,10 +1,10 @@
 import "server-only";
 import { Effect } from "effect";
 import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
-import { contributionYear, isContributionYear } from "@/src/lib/contributionYear";
+import { isContributionYear } from "@/src/lib/contributionYear";
 import { githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
 
 /**
@@ -21,12 +21,12 @@ const WAIT_MS = 800;
  */
 export async function loadInitialGithubData(
   templateId: TemplateId,
-  state: Record<string, unknown>,
+  state: BannerSettings,
 ): Promise<Record<string, unknown>> {
   const { meta } = templateRegistry[templateId];
   const username = usernameOf(state);
   if (!meta.needsUsername || !username) return {};
-  const year = contributionYear(state.year);
+  const year = "year" in state ? state.year : "";
   const urls = githubDataUrls({
     githubData: meta.githubData,
     username,

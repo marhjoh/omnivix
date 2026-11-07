@@ -9,7 +9,7 @@ import {
 } from "@/src/lib/sizes";
 import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
-import type { RenderData, TemplateId } from "@/src/templates/types";
+import type { BannerSettings, RenderData, TemplateId } from "@/src/templates/types";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import { PreviewStatus } from "@/src/studio/preview/PreviewStatus";
 import previewStyles from "@/src/studio/preview/preview.module.css";
@@ -54,7 +54,7 @@ export function PreviewArtboard({
   /** The device crop to show, for formats that devices crop. Others show the whole banner. */
   view: BannerView;
   onViewChange: (view: BannerView) => void;
-  state: Record<string, unknown>;
+  state: BannerSettings;
   data: RenderData;
   previewState: PreviewContentState;
   /** Shown in place of the banner when `previewState` is "error". */

@@ -18,11 +18,11 @@ import {
 } from "@/src/studio/savedSettings";
 import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
 /** The part of the state that's saved per template, as JSON. */
-function storedStateJson(state: Record<string, unknown>, needsUsername: boolean): string {
-  const clone = { ...state };
+function storedStateJson(state: BannerSettings, needsUsername: boolean): string {
+  const clone: Record<string, unknown> = { ...state };
   // The username is saved once for all templates.
   if (needsUsername) delete clone.username;
   // Keep presets and https links with their settings. Uploads are too large for a cookie.
@@ -58,28 +58,26 @@ export function useBannerSettings({
       ? serverStart
       : startingSettings(templateId, readCookieClient, link),
   );
-  const [state, setState] = useState<Record<string, unknown>>(start.state);
+  const [state, setState] = useState<BannerSettings>(start.state);
   // Apply the link once, then remove it from the address bar. Otherwise a reload would apply it
   // again over the user's later changes.
   useEffect(() => {
     if (link) window.history.replaceState(null, "", window.location.pathname);
   }, [link]);
 
-  const updateState = useCallback(
-    (key: string, value: unknown) => {
-      setState((prev) => {
-        // A platform comes with its format.
-        const size = key === "platform" ? (sizeOfPlatform(value) ?? prev.size) : prev.size;
-        const next = clampSelectedRepos(templateId, { ...prev, size, [key]: value });
-        // A new image drops the old one's settings, such as a background's position.
-        removeImageSettings(next, key);
-        // Picking an alignment puts the content at that spot, centered vertically.
-        if (key === "alignment") delete next.contentPosition;
-        return next;
-      });
-    },
-    [templateId],
-  );
+  const updateState = useCallback((key: string, value: unknown) => {
+    setState((prev) => {
+      // A platform comes with its format.
+      const size = key === "platform" ? (sizeOfPlatform(value) ?? prev.size) : prev.size;
+      const next: Record<string, unknown> = { ...prev, size, [key]: value };
+      // A new image drops the old one's settings, such as a background's position.
+      removeImageSettings(next, key);
+      // Picking an alignment puts the content at that spot, centered vertically.
+      if (key === "alignment") delete next.contentPosition;
+      // The sidebar's controls only offer values their setting takes.
+      return clampSelectedRepos(next as BannerSettings);
+    });
+  }, []);
 
   // Dropping the content on the left, center or right line also sets the alignment.
   const moveContent = useCallback((position: Position) => {

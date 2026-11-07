@@ -2,13 +2,7 @@
 
 import { useId, type ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
-import {
-  BANNER_SIZE_KEYS,
-  BANNER_SIZES,
-  bannerFormatOf,
-  platformOf,
-  type PlatformId,
-} from "@/src/lib/sizes";
+import { BANNER_SIZE_KEYS, BANNER_SIZES, platformOf, type PlatformId } from "@/src/lib/sizes";
 import {
   DropdownGroupLabel,
   DropdownList,
@@ -24,7 +18,8 @@ import { TileGroup } from "@/src/studio/TileGroup";
 import { fieldLabel } from "@/src/studio/settingGroups";
 import controls from "@/src/studio/controls.module.css";
 import { GRID_COLOR_PRESETS } from "@/src/banner/gridColors";
-import type { EditorFieldSchema } from "@/src/templates/types";
+import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
+import { fieldValue } from "@/src/studio/fieldValue";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { Theme } from "@/src/theme/theme";
 
@@ -102,7 +97,7 @@ export function PlatformPicker({
   onChange,
 }: {
   label: string;
-  state: Record<string, unknown>;
+  state: BannerSettings;
   onChange: (platform: PlatformId) => void;
 }) {
   const id = useId();
@@ -117,7 +112,7 @@ export function PlatformPicker({
               <PlatformIcon icon={current.id} size={14} />
             </span>
             <span className="truncate">
-              {current.name} ({bannerFormatOf(state.size).label})
+              {current.name} ({BANNER_SIZES[state.size].label})
             </span>
           </span>
         </DropdownTrigger>
@@ -166,8 +161,8 @@ export function ShowList({
   disabledFields,
   onChange,
 }: {
-  fields: EditorFieldSchema[];
-  state: Record<string, unknown>;
+  fields: Extract<EditorFieldSchema, { type: "toggle" }>[];
+  state: BannerSettings;
   disabledFields: ReadonlySet<string>;
   onChange: (key: string, value: unknown) => void;
 }) {
@@ -177,7 +172,7 @@ export function ShowList({
         {fields.map((field) => {
           const disabled = disabledFields.has(field.key);
           // Shown off while disabled, without changing the saved value.
-          const checked = !disabled && Boolean(state[field.key] ?? false);
+          const checked = !disabled && fieldValue(state, field);
           return (
             <CheckRow
               key={field.key}

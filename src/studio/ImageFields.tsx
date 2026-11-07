@@ -5,38 +5,34 @@ import {
   MIN_BACKGROUND_ZOOM,
   type BannerBackground,
 } from "@/src/banner/background";
-import { DEFAULT_LOGO_SIZE, isDefaultLogoPosition } from "@/src/banner/logo";
+import { isDefaultLogoPosition } from "@/src/banner/logo";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
 import { ImagePicker } from "@/src/studio/ImagePicker";
 import { ResetButton } from "@/src/studio/ResetButton";
 import { fieldLabel } from "@/src/studio/settingGroups";
-import type { EditorFieldSchema } from "@/src/templates/types";
+import { fieldValue } from "@/src/studio/fieldValue";
+import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
 import { Select } from "@/src/ui/Dropdown";
 import { RangeField } from "@/src/ui/RangeField";
 
 /** Zoom slider step: 5 percentage points. */
 const ZOOM_STEP = 0.05;
 
-interface ImageFieldProps {
-  field: EditorFieldSchema;
-  state: Record<string, unknown>;
+interface ImageFieldProps<T extends "logoPicker" | "backgroundPicker"> {
+  field: Extract<EditorFieldSchema, { type: T }>;
+  state: BannerSettings;
   onChange: (key: string, value: unknown) => void;
   onError: (message: string) => number;
   onErrorResolved: (toastId: number) => void;
-}
-
-function imageValue(state: Record<string, unknown>, key: string): string | undefined {
-  const value = state[key];
-  return typeof value === "string" ? value : undefined;
 }
 
 /** The logo picker. Its size slider shows inside it once there's a logo. */
 export function LogoField({
   sizeField,
   ...props
-}: ImageFieldProps & { sizeField: EditorFieldSchema | undefined }) {
+}: ImageFieldProps<"logoPicker"> & { sizeField: EditorFieldSchema | undefined }) {
   const { field, state, onChange } = props;
-  const logo = imageValue(state, field.key);
+  const logo = fieldValue(state, field);
   return (
     <ImagePicker
       id={field.key}
@@ -60,7 +56,7 @@ export function LogoField({
       {logo && sizeField ? (
         <Select
           label={fieldLabel(sizeField)}
-          value={String(state.logoSize ?? DEFAULT_LOGO_SIZE)}
+          value={state.logoSize}
           options={sizeField.options ?? []}
           onChange={(value) => onChange("logoSize", value)}
         />
@@ -76,7 +72,7 @@ export function LogoField({
 export function BackgroundField({
   background,
   ...props
-}: ImageFieldProps & { background: BannerBackground | undefined }) {
+}: ImageFieldProps<"backgroundPicker"> & { background: BannerBackground | undefined }) {
   const { field, state, onChange } = props;
   return (
     <ImagePicker
@@ -85,7 +81,7 @@ export function BackgroundField({
       menuLabel="Background options"
       presets={BACKGROUND_PRESETS}
       policy={BACKGROUND_UPLOAD}
-      value={imageValue(state, field.key)}
+      value={fieldValue(state, field)}
       onChange={(next) => onChange(field.key, next)}
       onError={props.onError}
       onErrorResolved={props.onErrorResolved}

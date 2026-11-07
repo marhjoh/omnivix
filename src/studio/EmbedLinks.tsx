@@ -3,7 +3,8 @@ import type { ExportPixelRatio } from "@/src/export/format";
 import type { DownloadFormat } from "@/src/studio/downloadFormat";
 import { bannerImageUrl, linkQuery } from "@/src/studio/embedUrl";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
+import { usernameOf } from "@/src/lib/githubUsername";
 import type { Theme } from "@/src/theme/theme";
 import controls from "@/src/studio/controls.module.css";
 
@@ -35,7 +36,7 @@ export function EmbedLinks({
   onCopy,
 }: {
   templateId: TemplateId;
-  state: Record<string, unknown>;
+  state: BannerSettings;
   uiTheme: Theme;
   format: DownloadFormat;
   pixelRatio: ExportPixelRatio;
@@ -49,7 +50,7 @@ export function EmbedLinks({
     ? bannerImageUrl(window.location.origin, templateId, query, { format, pixelRatio, uiTheme })
     : null;
   const { title, needsUsername } = templateRegistry[templateId].meta;
-  const alt = needsUsername ? `${title} by @${state.username}` : title;
+  const alt = needsUsername ? `${title} by @${usernameOf(state)}` : title;
 
   return (
     <>

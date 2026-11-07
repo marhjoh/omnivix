@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from "react";
 import { Select } from "@/src/ui/Dropdown";
 import { FieldWrapper } from "@/src/ui/FieldLabel";
 import { RangeField } from "@/src/ui/RangeField";
-import type { EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
+import type { BannerSettings, EditorFieldSchema, EditorFieldType } from "@/src/templates/types";
 import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import {
@@ -28,16 +28,16 @@ import {
   contentPositionFromState,
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
-import { selectedReposOf } from "@/src/lib/repoSelection";
+import { fieldValue } from "@/src/studio/fieldValue";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
-import { contributionYear, currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
+import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
 
 interface FieldContext {
   schema: EditorFieldSchema[];
-  state: Record<string, unknown>;
+  state: BannerSettings;
   onChange: (key: string, value: unknown) => void;
   disabledFields: ReadonlySet<string>;
   uiTheme: Theme;
@@ -48,24 +48,28 @@ interface FieldContext {
   onErrorResolved: (toastId: number) => void;
 }
 
-type FieldRenderer = (field: EditorFieldSchema, ctx: FieldContext) => ReactNode;
+type FieldOfType<T extends EditorFieldType> = Extract<EditorFieldSchema, { type: T }>;
 
-/** The label, text value and change handler that most controls take. */
-function textProps(field: EditorFieldSchema, { state, onChange }: FieldContext) {
+type FieldRenderer<T extends EditorFieldType = EditorFieldType> = (
+  field: FieldOfType<T>,
+  ctx: FieldContext,
+) => ReactNode;
+
+/** The label, value and change handler that select controls take. */
+function textProps(field: FieldOfType<"select">, { state, onChange }: FieldContext) {
   return {
     label: fieldLabel(field),
-    value: String(state[field.key] ?? ""),
+    value: fieldValue(state, field),
     onChange: (value: string) => onChange(field.key, value),
   };
 }
 
-/** Settings that need more than their schema gives, so they're rendered by key, not type. */
-const BY_KEY: Partial<Record<string, FieldRenderer>> = {
+/** Selects that need more than their schema gives, so they're rendered by key, not type. */
+const BY_KEY: Partial<Record<string, FieldRenderer<"select">>> = {
   themeId: (field, ctx) => <GridColorsPicker {...textProps(field, ctx)} />,
   year: (field, ctx) => (
     <Select
       {...textProps(field, ctx)}
-      value={contributionYear(ctx.state.year)}
       options={[
         { value: LATEST_YEAR, label: "Last 365 days" },
         ...ctx.years.map((year) => ({ value: year, label: year })),
@@ -73,9 +77,13 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
     />
   ),
   font: (field, ctx) => <FontSelect {...textProps(field, ctx)} />,
-  fontStyle: (field, ctx) => <FontStyleSelect {...textProps(field, ctx)} state={ctx.state} />,
-  quoteMarks: (field, ctx) => <QuoteMarksSelect {...textProps(field, ctx)} state={ctx.state} />,
-  authorPrefix: (field, ctx) => <AuthorPrefixSelect {...textProps(field, ctx)} state={ctx.state} />,
+  // The quote banner's typography is shown in its font.
+  fontStyle: (field, ctx) =>
+    "font" in ctx.state && <FontStyleSelect {...textProps(field, ctx)} state={ctx.state} />,
+  quoteMarks: (field, ctx) =>
+    "font" in ctx.state && <QuoteMarksSelect {...textProps(field, ctx)} state={ctx.state} />,
+  authorPrefix: (field, ctx) =>
+    "font" in ctx.state && <AuthorPrefixSelect {...textProps(field, ctx)} state={ctx.state} />,
   // Alignment shows Custom when the content isn't on one of the three spots.
   alignment: (field, ctx) => {
     const disabled = ctx.disabledFields.has(field.key);
@@ -100,7 +108,7 @@ const BY_KEY: Partial<Record<string, FieldRenderer>> = {
   },
 };
 
-const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
+const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
   text: (field, ctx) => (
     <FieldWrapper label={fieldLabel(field)} htmlFor={field.key}>
       <input
@@ -108,7 +116,7 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
         type="text"
         className="field-input"
         maxLength={field.maxLength}
-        value={String(ctx.state[field.key] ?? "")}
+        value={fieldValue(ctx.state, field)}
         onChange={(e) => ctx.onChange(field.key, e.target.value)}
       />
     </FieldWrapper>
@@ -120,7 +128,7 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
         maxLength={field.maxLength}
         rows={4}
         className="field-input resize-y"
-        value={String(ctx.state[field.key] ?? "")}
+        value={fieldValue(ctx.state, field)}
         onChange={(e) => ctx.onChange(field.key, e.target.value)}
       />
     </FieldWrapper>
@@ -135,7 +143,7 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
     />
   ),
   range: (field, ctx) => {
-    const value = Number(ctx.state[field.key] ?? field.min ?? 1);
+    const value = fieldValue(ctx.state, field);
     return (
       // The value is in the label, which says what it counts ("Number of repos: 4").
       <RangeField
@@ -152,7 +160,7 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
   colorPicker: (field, ctx) => (
     <ColorSelect
       label={fieldLabel(field)}
-      value={ctx.state[field.key]}
+      value={fieldValue(ctx.state, field)}
       options={field.options ?? []}
       onChange={(value) => ctx.onChange(field.key, value)}
       disabled={ctx.disabledFields.has(field.key)}
@@ -188,22 +196,32 @@ const BY_TYPE: Record<EditorFieldType, FieldRenderer> = {
       onErrorResolved={ctx.onErrorResolved}
     />
   ),
-  repoMultiSelect: (_field, { repoCatalog, state, onChange }) => (
+  repoMultiSelect: (field, { repoCatalog, state, onChange }) => (
     <RepoMultiSelect
       catalog={repoCatalog}
-      valueCsv={selectedReposOf(state)}
+      valueCsv={fieldValue(state, field)}
       onChange={(csv) => onChange("selectedRepos", csv)}
     />
   ),
 };
 
+function renderControl(field: EditorFieldSchema, ctx: FieldContext): ReactNode {
+  if (field.type === "select") {
+    const byKey = BY_KEY[field.key];
+    if (byKey) return byKey(field, ctx);
+  }
+  // BY_TYPE's renderer for this field's type takes it, but TypeScript can't pair the two.
+  return (BY_TYPE[field.type] as FieldRenderer)(field, ctx);
+}
+
 /** Settings shown inside another setting, or that don't apply in the current mode. */
-function isHidden(field: EditorFieldSchema, state: Record<string, unknown>): boolean {
+function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   // Shown inside the logo's picker once there's a logo.
   if (field.key === "logoSize") return true;
   // Selected mode shows the repository picker instead of the amount slider.
-  if (field.key === "maxRepos") return state.mode === "selected";
-  if (field.type === "repoMultiSelect") return state.mode !== "selected";
+  const selectedMode = "mode" in state && state.mode === "selected";
+  if (field.key === "maxRepos") return selectedMode;
+  if (field.type === "repoMultiSelect") return !selectedMode;
   return false;
 }
 
@@ -220,7 +238,7 @@ export function ControlSidebar({
   onErrorResolved,
 }: {
   schema: EditorFieldSchema[];
-  state: Record<string, unknown>;
+  state: BannerSettings;
   accountCreatedYear: number | null;
   onChange: (key: string, value: unknown) => void;
   repoCatalog: RepoCatalog;
@@ -253,8 +271,7 @@ export function ControlSidebar({
 
   const renderField = (field: EditorFieldSchema) => {
     if (isHidden(field, state)) return null;
-    const render = BY_KEY[field.key] ?? BY_TYPE[field.type];
-    return <Fragment key={field.key}>{render(field, ctx)}</Fragment>;
+    return <Fragment key={field.key}>{renderControl(field, ctx)}</Fragment>;
   };
 
   return (
