@@ -55,7 +55,7 @@ interface FieldContext {
 
 type FieldOfType<T extends EditorFieldType> = Extract<EditorFieldSchema, { type: T }>;
 
-type FieldRenderer<T extends EditorFieldType = EditorFieldType> = (
+type FieldRenderer<T extends EditorFieldType> = (
   field: FieldOfType<T>,
   ctx: FieldContext,
 ) => ReactNode;
@@ -215,8 +215,16 @@ function renderControl(field: EditorFieldSchema, ctx: FieldContext): ReactNode {
     const byKey = BY_KEY[field.key];
     if (byKey) return byKey(field, ctx);
   }
-  // BY_TYPE's renderer for this field's type takes it, but TypeScript can't pair the two.
-  return (BY_TYPE[field.type] as FieldRenderer)(field, ctx);
+  return renderByType(field.type, field, ctx);
+}
+
+/** Takes the type on its own, so TypeScript can pair BY_TYPE's renderer with the field. */
+function renderByType<T extends EditorFieldType>(
+  type: T,
+  field: FieldOfType<T>,
+  ctx: FieldContext,
+) {
+  return BY_TYPE[type](field, ctx);
 }
 
 /** Settings shown inside another setting, or that don't apply in the current mode. */
