@@ -95,4 +95,15 @@ describe("bannerImageUrl", () => {
       "https://omnivix.example/banner/github-banner.jpg?username=octocat&contentPosition=100,0&pixelRatio=1&uiTheme=light",
     );
   });
+
+  it("names a transparent background on a PNG", () => {
+    expect(
+      bannerImageUrl("https://omnivix.example", "github-banner", query, {
+        ...IMAGE_OPTIONS,
+        format: "transparent",
+      }),
+    ).toBe(
+      "https://omnivix.example/banner/github-banner.png?username=octocat&contentPosition=100,0&transparent=true",
+    );
+  });
 });

@@ -15,4 +15,6 @@ export interface ExportRequest {
   format?: ExportFormat;
   /** Matches the studio's theme, so the export looks like the preview. */
   uiTheme?: Theme;
+  /** Leaves out the theme's background color. PNG only, since JPEG has no transparency. */
+  transparent?: boolean;
 }

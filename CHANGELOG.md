@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.29.0](https://github.com/marhjoh/omnivix/compare/v1.28.0...v1.29.0) (2026-11-07)
+
+
+### Features
+
+* export a PNG with a transparent background ([40d1785](https://github.com/marhjoh/omnivix/commit/40d17851e391c746c6d7b416824ff582e0727214))
+
+
+### Bug Fixes
+
+* dim disabled tiles instead of showing a focus ring ([40d1785](https://github.com/marhjoh/omnivix/commit/40d17851e391c746c6d7b416824ff582e0727214))
+
 ## [1.28.0](https://github.com/marhjoh/omnivix/compare/v1.27.3...v1.28.0) (2026-11-06)
 
 

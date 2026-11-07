@@ -47,7 +47,14 @@ function durationBucket(seconds: number): number {
 
 export function exportFields(
   source: ExportSource,
-  { templateId, size, uiTheme, state, format }: ExportRequest & { format: ExportFormat },
+  {
+    templateId,
+    size,
+    uiTheme,
+    state,
+    format,
+    transparent,
+  }: ExportRequest & { format: ExportFormat },
   seconds: number,
 ): string[] {
   const fields = [
@@ -56,7 +63,7 @@ export function exportFields(
     `${SERIES.source}:${source}`,
     `${SERIES.template}:${templateId}`,
     `${SERIES.size}:${size}`,
-    `${SERIES.format}:${format}`,
+    `${SERIES.format}:${transparent ? "transparent" : format}`,
     `${SERIES.uiTheme}:${uiTheme ?? DEFAULT_THEME}`,
     `${SERIES.background}:${backgroundKind(state.backgroundImage)}`,
   ];

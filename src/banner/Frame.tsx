@@ -36,10 +36,13 @@ export function Frame({
   background,
   logo,
   uiTheme,
+  transparent,
 }: PropsWithChildren<{
   background?: BannerBackground;
   logo?: BannerLogo;
   uiTheme: Theme;
+  /** Leaves out the theme's color. */
+  transparent: boolean;
 }>) {
   const chrome = bannerUiChrome(uiTheme);
   const previewPhotos = useContext(PreviewPhotosContext);
@@ -52,7 +55,7 @@ export function Frame({
         height: "100%",
         overflow: "hidden",
         position: "relative",
-        background: chrome.baseBg,
+        background: transparent ? undefined : chrome.baseBg,
         color: chrome.text,
         // Keep the banner's own colors in Windows High Contrast mode.
         forcedColorAdjust: "none",

@@ -36,6 +36,12 @@ describe("exportFields", () => {
     expect(fields).toContain("exports:seconds:45");
     expect(fields.some((field) => field.startsWith("exports:grid-colors"))).toBe(false);
   });
+
+  it("counts a transparent PNG as its own format", () => {
+    const fields = exportFields("download", { ...banner, transparent: true }, 7);
+    expect(fields).toContain("exports:format:transparent");
+    expect(fields).not.toContain("exports:format:png");
+  });
 });
 
 describe("failureFields", () => {

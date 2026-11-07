@@ -172,12 +172,14 @@ export const captureBanner = Effect.fnUntraced(function* ({
   size,
   pixelRatio,
   format,
+  transparent = false,
   images = [],
 }: {
   url: string;
   size: BannerSize;
   pixelRatio?: ExportPixelRatio;
   format: ExportFormat;
+  transparent?: boolean;
   /** Uploaded or linked images, each served at its `path`. */
   images?: ExportImage[];
 }) {
@@ -201,7 +203,12 @@ export const captureBanner = Effect.fnUntraced(function* ({
   yield* step(() => waitForRasterReady(page));
   yield* step(() => waitForContentFit(page));
   const png = yield* step(() =>
-    target.screenshot({ type: "png", animations: "disabled", scale: "device" }),
+    target.screenshot({
+      type: "png",
+      animations: "disabled",
+      scale: "device",
+      omitBackground: transparent,
+    }),
   );
   return format === "jpeg" ? yield* step(() => toJpeg(png, banner.uploadLimit)) : png;
 }, Effect.scoped);

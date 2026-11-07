@@ -152,6 +152,20 @@
 /* A 1px ring in the text color at 12% shows on the preview's tinted background in both themes,
    plus a theme-aware shadow. The ring is a box-shadow, not a border, so it takes no space from the
    scaled banner. */
+/* The usual sign for transparency. It's on the artboard, not the scaled banner, so the squares
+   keep their size. */
+:global(.omnivix-artboard[data-transparent]) {
+  --checker: color-mix(in oklab, var(--border) 55%, transparent);
+  background-color: var(--surface);
+  background-image: conic-gradient(
+    var(--checker) 25%,
+    transparent 0 50%,
+    var(--checker) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+
 :global(html[data-theme="dark"] .omnivix-artboard) {
   box-shadow:
     0 0 0 1px color-mix(in oklab, var(--text) 12%, transparent),

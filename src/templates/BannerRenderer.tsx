@@ -24,18 +24,26 @@ export function BannerRenderer({
   state,
   data,
   uiTheme,
+  transparent = false,
 }: {
   templateId: TemplateId;
   state: Record<string, unknown>;
   data: RenderData;
   /** Overrides the app's theme. The export's render page sets it. */
   uiTheme?: Theme;
+  /** Leaves out the theme's background color. */
+  transparent?: boolean;
 }) {
   const { theme } = useTheme();
   const shownTheme = uiTheme ?? theme;
   const Renderer = RENDERERS[templateId];
   return (
-    <Frame uiTheme={shownTheme} background={backgroundFromState(state)} logo={logoFromState(state)}>
+    <Frame
+      uiTheme={shownTheme}
+      transparent={transparent}
+      background={backgroundFromState(state)}
+      logo={logoFromState(state)}
+    >
       <Renderer state={state} data={data} uiTheme={shownTheme} />
     </Frame>
   );
