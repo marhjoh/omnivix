@@ -2,7 +2,7 @@ import { RepoCard } from "@/src/banner/RepoCard";
 import { ProfileBanner } from "@/src/banner/ProfileBlock";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/types";
-import { repoModeOf, reposShown } from "@/src/lib/repoSelection";
+import { reposShown } from "@/src/lib/repoSelection";
 
 /** Columns per repository count (1–6), so 4 repositories make a 2×2 grid rather than 3 + 1. */
 const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
@@ -10,18 +10,13 @@ const COLUMNS_BY_COUNT = [1, 2, 3, 2, 3, 3];
 const REPO_GRID_GAP_PX = 10;
 const REPO_CARD_COLUMN_PX = 250;
 
-export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
+export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps<"repos-banner">) {
   const chrome = bannerUiChrome(uiTheme);
-  const mode = repoModeOf(state.mode);
+  const { mode } = state;
   const shown = reposShown(mode, state.maxRepos);
   const repos = data.repos?.slice(0, shown) ?? [];
   // In selected mode the layout follows the picked repos. In pinned mode it follows the amount.
   const cols = COLUMNS_BY_COUNT[(mode === "selected" ? Math.max(1, repos.length) : shown) - 1];
-
-  const showDescription = state.showDescription !== false;
-  const showLanguage = state.showLanguage !== false;
-  const showStars = state.showStars !== false;
-  const showForks = state.showForks !== false;
 
   return (
     <ProfileBanner state={state} user={data.user} chrome={chrome}>
@@ -38,10 +33,10 @@ export function ReposBannerRenderer({ state, data, uiTheme }: RendererProps) {
             key={repo.id}
             repo={repo}
             chrome={chrome}
-            showDescription={showDescription}
-            showLanguage={showLanguage}
-            showStars={showStars}
-            showForks={showForks}
+            showDescription={state.showDescription}
+            showLanguage={state.showLanguage}
+            showStars={state.showStars}
+            showForks={state.showForks}
           />
         ))}
       </div>

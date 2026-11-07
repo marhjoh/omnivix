@@ -1,3 +1,5 @@
+import type { BannerSettings } from "@/src/templates/types";
+
 /** GitHub's rules: letters, digits and single hyphens (not at the ends), at most 39 characters. */
 const GITHUB_USERNAME = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
@@ -5,9 +7,9 @@ export function isGithubUsername(value: string): boolean {
   return GITHUB_USERNAME.test(value);
 }
 
-/** The banner's username, or "" when it has none. */
-export function usernameOf(state: Record<string, unknown>): string {
-  return typeof state.username === "string" ? state.username : "";
+/** The banner's username, or "" for a template without one. */
+export function usernameOf(state: BannerSettings): string {
+  return "username" in state ? state.username : "";
 }
 
 const GITHUB_HOSTS = new Set(["github.com", "www.github.com"]);

@@ -1,4 +1,11 @@
-import { bannerFormatOf, safeAreaOf, type BannerBox, type Box, type Rect } from "@/src/lib/sizes";
+import {
+  BANNER_SIZES,
+  safeAreaOf,
+  type BannerBox,
+  type BannerSize,
+  type Box,
+  type Rect,
+} from "@/src/lib/sizes";
 
 /** Fit math for FitContent. It doesn't touch the DOM, so it can be unit tested. */
 
@@ -24,8 +31,8 @@ export function contentBox(banner: BannerBox): Rect {
 }
 
 /** `contentBox` for the format named in banner state's `size`. */
-export function contentBoxOf(size: unknown): Rect {
-  return contentBox(bannerFormatOf(size));
+export function contentBoxOf(size: BannerSize): Rect {
+  return contentBox(BANNER_SIZES[size]);
 }
 
 /** Largest scale at which content of the given natural size fits the box. */

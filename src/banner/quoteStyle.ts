@@ -1,5 +1,6 @@
-import { isOneOf, oneOfOr } from "@/src/lib/isOneOf";
+import { isOneOf } from "@/src/lib/isOneOf";
 import type { Theme } from "@/src/theme/theme";
+import type { TemplateSettings } from "@/src/templates/stateSchemas";
 
 /** The quote banner's typography: font, weight and italic, quote marks, and their colors. */
 
@@ -271,10 +272,6 @@ export const QUOTE_COLOR_OPTIONS = QUOTE_COLORS.map((value) => ({
   value,
 }));
 
-function fontOf(value: unknown): QuoteFont {
-  return oneOfOr(QUOTE_FONTS, value, DEFAULT_QUOTE_STYLE.font);
-}
-
 /** The font's CSS font-family, upright or italic. */
 export function fontFamily(font: QuoteFont, italic = false): string {
   const { variable, fallback, italic: italicFont } = FONTS[font];
@@ -286,10 +283,10 @@ export function fontFamily(font: QuoteFont, italic = false): string {
 export const LARGE_MARK_FONT_FAMILY = fontFamily("source-serif");
 
 /** A font style's CSS in a font, for showing it in its own look. */
-export function fontStyleCss(font: unknown, fontStyle: QuoteFontStyle) {
+export function fontStyleCss(font: QuoteFont, fontStyle: QuoteFontStyle) {
   const { weight, italic } = FONT_STYLE[fontStyleShown(font, fontStyle)];
   return {
-    fontFamily: fontFamily(fontOf(font), italic),
+    fontFamily: fontFamily(font, italic),
     fontWeight: weight,
     fontStyle: italic ? "italic" : "normal",
   } as const;
@@ -301,15 +298,14 @@ export function textMarksOf(marks: QuoteMarks): readonly [string, string] | unde
 }
 
 /** The font styles a font has: only the upright ones for a font without an italic. */
-export function fontStyleOptions(font: unknown) {
-  const hasItalic = FONTS[fontOf(font)].italic !== "none";
+export function fontStyleOptions(font: QuoteFont) {
+  const hasItalic = FONTS[font].italic !== "none";
   return QUOTE_FONT_STYLE_OPTIONS.filter(({ value }) => hasItalic || !FONT_STYLE[value].italic);
 }
 
 /** The font style as the font shows it: upright when the font has no italic. */
-export function fontStyleShown(font: unknown, fontStyle: unknown): QuoteFontStyle {
-  const style = oneOfOr(QUOTE_FONT_STYLES, fontStyle, DEFAULT_QUOTE_STYLE.fontStyle);
-  return FONTS[fontOf(font)].italic === "none" ? FONT_STYLE[style].upright : style;
+export function fontStyleShown(font: QuoteFont, fontStyle: QuoteFontStyle): QuoteFontStyle {
+  return FONTS[font].italic === "none" ? FONT_STYLE[fontStyle].upright : fontStyle;
 }
 
 /** The color to draw with, or undefined for Default (the banner's text color). */
@@ -319,12 +315,10 @@ export function colorValue(color: unknown, uiTheme: Theme): string | undefined {
   return PALETTE[color][uiTheme];
 }
 
-/** Reads the quote's typography from banner state. Unknown values fall back to defaults. */
-export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: Theme) {
-  const font = fontOf(state.font);
+/** The quote's typography, from the quote banner's settings. */
+export function quoteStyleFromState(state: TemplateSettings["quote-banner"], uiTheme: Theme) {
+  const { font, quoteMarks: marks } = state;
   const style = FONT_STYLE[fontStyleShown(font, state.fontStyle)];
-  const marks = oneOfOr(QUOTE_MARKS, state.quoteMarks, DEFAULT_QUOTE_STYLE.quoteMarks);
-  const prefix = oneOfOr(AUTHOR_PREFIXES, state.authorPrefix, DEFAULT_QUOTE_STYLE.authorPrefix);
   const color = colorValue(state.quoteColor, uiTheme);
   return {
     fontFamily: fontFamily(font, style.italic),
@@ -338,6 +332,6 @@ export function quoteStyleFromState(state: Record<string, unknown>, uiTheme: The
     color,
     markColor: colorValue(state.markColor, uiTheme) ?? color,
     authorColor: colorValue(state.authorColor, uiTheme),
-    authorPrefix: AUTHOR_PREFIX[prefix].text,
+    authorPrefix: AUTHOR_PREFIX[state.authorPrefix].text,
   };
 }

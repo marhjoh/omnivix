@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { templateRegistry } from "@/src/templates/registry";
 import {
-  MAX_BACKGROUND_ZOOM,
   backgroundFromState,
   backgroundImageStyle,
   backgroundPanRange,
@@ -9,18 +9,21 @@ import {
   nudgeBackgroundPosition,
 } from "./background";
 
+const defaults = templateRegistry["quote-banner"].initialState;
+
 describe("backgroundFromState", () => {
   it("is undefined without a background", () => {
-    expect(backgroundFromState({})).toBeUndefined();
-    expect(backgroundFromState({ backgroundImage: "" })).toBeUndefined();
+    expect(backgroundFromState(defaults)).toBeUndefined();
+    expect(backgroundFromState({ ...defaults, backgroundImage: "" })).toBeUndefined();
   });
 
   it("uses a preset's focus, else the center", () => {
-    expect(backgroundFromState({ backgroundImage: "/backgrounds/london.avif" })?.position).toEqual({
-      x: 30,
-      y: 85,
-    });
-    expect(backgroundFromState({ backgroundImage: "https://example.com/a.jpg" })).toEqual({
+    expect(
+      backgroundFromState({ ...defaults, backgroundImage: "/backgrounds/london.avif" })?.position,
+    ).toEqual({ x: 30, y: 85 });
+    expect(
+      backgroundFromState({ ...defaults, backgroundImage: "https://example.com/a.jpg" }),
+    ).toEqual({
       src: "https://example.com/a.jpg",
       position: { x: 50, y: 50 },
       zoom: 1,
@@ -30,6 +33,7 @@ describe("backgroundFromState", () => {
 
   it("prefers a saved position, zoom and opacity", () => {
     const background = backgroundFromState({
+      ...defaults,
       backgroundImage: "/backgrounds/london.avif",
       backgroundPosition: { x: 10, y: 20 },
       backgroundZoom: 1.25,
@@ -39,26 +43,6 @@ describe("backgroundFromState", () => {
     expect(background?.zoom).toBe(1.25);
     expect(background?.opacity).toBe(0);
   });
-
-  it("clamps or ignores bad values", () => {
-    const background = backgroundFromState({
-      backgroundImage: "/x.jpg",
-      backgroundPosition: { x: -20, y: 400 },
-      backgroundZoom: 9,
-      backgroundOpacity: 140,
-    });
-    expect(background?.position).toEqual({ x: 0, y: 100 });
-    expect(background?.zoom).toBe(MAX_BACKGROUND_ZOOM);
-    expect(background?.opacity).toBe(100);
-    expect(
-      backgroundFromState({
-        backgroundImage: "/x.jpg",
-        backgroundPosition: "top",
-        backgroundZoom: NaN,
-        backgroundOpacity: "50",
-      }),
-    ).toMatchObject({ position: { x: 50, y: 50 }, zoom: 1, opacity: 28 });
-  });
 });
 
 describe("isDefaultBackgroundPosition", () => {
@@ -66,6 +50,7 @@ describe("isDefaultBackgroundPosition", () => {
 
   it("is true at the preset's focus, whatever the zoom and opacity", () => {
     const state = {
+      ...defaults,
       backgroundImage: london,
       backgroundPosition: { x: 30, y: 85 },
       backgroundZoom: 1.2,
@@ -75,7 +60,7 @@ describe("isDefaultBackgroundPosition", () => {
   });
 
   it("is false once moved", () => {
-    const moved = { backgroundImage: london, backgroundPosition: { x: 30, y: 70 } };
+    const moved = { ...defaults, backgroundImage: london, backgroundPosition: { x: 30, y: 70 } };
     expect(isDefaultBackgroundPosition(backgroundFromState(moved)!)).toBe(false);
   });
 });

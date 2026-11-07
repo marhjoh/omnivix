@@ -1,14 +1,8 @@
 import type { CSSProperties } from "react";
 import { presetBySrc } from "@/src/backgrounds/presets";
-import {
-  clampPercent,
-  positionOr,
-  roundPosition,
-  samePosition,
-  type Position,
-} from "@/src/banner/position";
-import { clamp } from "@/src/lib/math";
+import { clampPercent, roundPosition, samePosition, type Position } from "@/src/banner/position";
 import type { Box } from "@/src/lib/sizes";
+import type { BaseSettings } from "@/src/templates/stateSchemas";
 
 export const MIN_BACKGROUND_ZOOM = 1;
 export const MAX_BACKGROUND_ZOOM = 1.5;
@@ -28,22 +22,16 @@ function defaultBackgroundPosition(src: string): Position {
   return presetBySrc(src)?.focus ?? CENTER;
 }
 
-function finiteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-/** Reads the background image, position, zoom and opacity from banner state. Bad values get defaults. */
-export function backgroundFromState(state: Record<string, unknown>): BannerBackground | undefined {
+/** The background image with its position, zoom and opacity, or undefined when there's none. */
+export function backgroundFromState(state: BaseSettings): BannerBackground | undefined {
   const src = state.backgroundImage;
-  if (typeof src !== "string" || !src) return undefined;
-  const position = positionOr(state.backgroundPosition, defaultBackgroundPosition(src));
-  const zoom = finiteNumber(state.backgroundZoom)
-    ? clamp(state.backgroundZoom, MIN_BACKGROUND_ZOOM, MAX_BACKGROUND_ZOOM)
-    : MIN_BACKGROUND_ZOOM;
-  const opacity = finiteNumber(state.backgroundOpacity)
-    ? clampPercent(state.backgroundOpacity)
-    : DEFAULT_BACKGROUND_OPACITY;
-  return { src, position, zoom, opacity };
+  if (!src) return undefined;
+  return {
+    src,
+    position: state.backgroundPosition ?? defaultBackgroundPosition(src),
+    zoom: state.backgroundZoom ?? MIN_BACKGROUND_ZOOM,
+    opacity: state.backgroundOpacity ?? DEFAULT_BACKGROUND_OPACITY,
+  };
 }
 
 /** True when the background hasn't been moved, so there's nothing to reset. */

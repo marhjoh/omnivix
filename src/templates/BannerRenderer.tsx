@@ -11,23 +11,24 @@ import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
 import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
 import type { RenderData, RendererProps, TemplateId } from "@/src/templates/types";
+import type { TemplateSettings } from "@/src/templates/stateSchemas";
 
-const RENDERERS: Record<TemplateId, ComponentType<RendererProps>> = {
+const RENDERERS: { [K in TemplateId]: ComponentType<RendererProps<K>> } = {
   "github-banner": GithubBannerRenderer,
   "repos-banner": ReposBannerRenderer,
   "contribution-banner": ContributionBannerRenderer,
   "quote-banner": QuoteBannerRenderer,
 };
 
-export function BannerRenderer({
+export function BannerRenderer<K extends TemplateId>({
   templateId,
   state,
   data,
   uiTheme,
   transparent = false,
 }: {
-  templateId: TemplateId;
-  state: Record<string, unknown>;
+  templateId: K;
+  state: TemplateSettings[K];
   data: RenderData;
   /** Overrides the app's theme. The export's render page sets it. */
   uiTheme?: Theme;
@@ -36,7 +37,7 @@ export function BannerRenderer({
 }) {
   const { theme } = useTheme();
   const shownTheme = uiTheme ?? theme;
-  const Renderer = RENDERERS[templateId];
+  const Renderer: ComponentType<RendererProps<K>> = RENDERERS[templateId];
   return (
     <Frame
       uiTheme={shownTheme}
