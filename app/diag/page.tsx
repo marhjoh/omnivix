@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { DIAG_VARIANTS } from "./variants";
 
 // Temporary index for testing on a phone. Plain links, so each opens as a fresh page load.
@@ -16,9 +15,24 @@ export default function DiagIndex() {
           </li>
         ))}
       </ul>
-      <Link className="text-muted underline" href="/">
-        Real landing page
-      </Link>
+      <h2 className="pt-4 text-lg font-semibold">Round 3: speed</h2>
+      <ul className="space-y-3">
+        <li>
+          <a className="text-accent underline" href="/diag/dynamic">
+            Rendered on request
+          </a>
+        </li>
+        <li>
+          <a className="text-accent underline" href="/diag/slow">
+            Slow (0.8 s)
+          </a>
+        </li>
+        <li>
+          <a className="text-accent underline" href="/diag/notfound-static">
+            404 content, pre-built
+          </a>
+        </li>
+      </ul>
     </main>
   );
 }
