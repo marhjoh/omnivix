@@ -8,6 +8,15 @@ export const REPO_MODES = ["pinned", "selected"] as const;
 
 export type RepoMode = (typeof REPO_MODES)[number];
 
+/** GitHub's rule for a repository name: letters, digits, `.`, `-` and `_`, at most 100 of them. */
+const REPO_NAME = /^[\w.-]{1,100}$/;
+
+/** True for at most MAX_REPOS repository names, comma-separated. */
+export function isRepoSelection(value: string): boolean {
+  const names = parseRepoSelection(value);
+  return names.length <= MAX_REPOS && names.every((name) => REPO_NAME.test(name));
+}
+
 /** Repository names from the comma-separated `selectedRepos` setting (or query parameter). */
 export function parseRepoSelection(raw: string | null | undefined): string[] {
   return (raw ?? "")

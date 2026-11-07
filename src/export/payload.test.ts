@@ -88,6 +88,35 @@ describe("parseExportRequest", () => {
     expect(!result.ok && result.issues).toEqual([{ path: "state.username", message: "Required" }]);
   });
 
+  it("only accepts a GitHub username", () => {
+    const result = parseExportRequest({
+      templateId: "github-banner",
+      size: "wide",
+      state: { username: "not a username" },
+    });
+    expect(!result.ok && result.issues).toEqual([
+      { path: "state.username", message: "Must be a GitHub username" },
+    ]);
+  });
+
+  it("takes at most six repository names", () => {
+    const parse = (selectedRepos: string) =>
+      parseExportRequest({
+        templateId: "repos-banner",
+        size: "wide",
+        state: { username: "marhjoh", mode: "selected", selectedRepos },
+      });
+    expect(parse("omnivix, dotfiles, my_repo.js").ok).toBe(true);
+    const tooMany = parse("a,b,c,d,e,f,g");
+    expect(!tooMany.ok && tooMany.issues).toEqual([
+      {
+        path: "state.selectedRepos",
+        message: "Must be at most 6 repository names, comma-separated",
+      },
+    ]);
+    expect(parse("not a repo").ok).toBe(false);
+  });
+
   it("only accepts the real grid colors", () => {
     const result = parseExportRequest({
       templateId: "contribution-banner",

@@ -6,7 +6,8 @@ import { CONTENT_ALIGNS } from "@/src/banner/contentPosition";
 import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
-import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
+import { isRepoSelection, MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
+import { isGithubUsername } from "@/src/lib/githubUsername";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import {
@@ -56,6 +57,13 @@ const bannerFields = {
 
 const contentSize = oneOf(CONTENT_SIZES);
 
+/** An empty username only gets "Required". */
+const githubUsername = requiredText.check(
+  Schema.makeFilter((value: string) => value === "" || isGithubUsername(value), {
+    message: "Must be a GitHub username",
+  }),
+);
+
 /** Shared by the GitHub and contribution banners. */
 const contributionGridFields = {
   year: textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`),
@@ -65,7 +73,7 @@ const contributionGridFields = {
 
 /** Shared by the GitHub and repos banners. */
 const profileFields = {
-  username: requiredText,
+  username: githubUsername,
   showAvatar: flag,
   showDisplayName: flag,
   profilePosition: oneOf(PROFILE_POSITIONS),
@@ -87,7 +95,10 @@ const STATE_SCHEMAS = {
     ...bannerFields,
     ...profileFields,
     mode: oneOf(REPO_MODES),
-    selectedRepos: text,
+    selectedRepos: textWhere(
+      isRepoSelection,
+      `Must be at most ${MAX_REPOS} repository names, comma-separated`,
+    ),
     maxRepos: numberBetween(1, MAX_REPOS),
     showDescription: flag,
     showLanguage: flag,
@@ -98,7 +109,7 @@ const STATE_SCHEMAS = {
   "contribution-banner": Schema.Struct({
     ...bannerFields,
     ...contributionGridFields,
-    username: requiredText,
+    username: githubUsername,
     contentSize: oneOf(CONTENT_SIZES_OR_FILL),
   }),
   "quote-banner": Schema.Struct({

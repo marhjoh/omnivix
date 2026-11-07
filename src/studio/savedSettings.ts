@@ -1,4 +1,4 @@
-import { MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
+import { isRepoSelection, MAX_REPOS, parseRepoSelection } from "@/src/lib/repoSelection";
 import { BANNER_PLATFORMS, normalizeBannerSize } from "@/src/lib/sizes";
 import { templateRegistry } from "@/src/templates/registry";
 import type {
@@ -67,6 +67,8 @@ function fitsField(field: EditorFieldSchema, value: unknown): boolean {
       return isNumberFrom(value, field.min, field.max);
     case "colorPicker":
       return isQuoteColor(value);
+    case "repoMultiSelect":
+      return typeof value === "string" && isRepoSelection(value);
     // removeUnsavableImages checks these.
     case "backgroundPicker":
     case "logoPicker":
