@@ -5,7 +5,7 @@ import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/backgroun
 import { CONTENT_ALIGNS } from "@/src/banner/contentPosition";
 import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
-import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
+import { BANNER_PLATFORMS, BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
@@ -41,6 +41,8 @@ const position = Schema.Struct({ x: percent, y: percent }).annotate({
 
 const bannerFields = {
   size: oneOf(BANNER_SIZE_KEYS),
+  /** The platform picked in the studio. The size follows it, and the export doesn't use it. */
+  platform: Schema.optional(oneOf(BANNER_PLATFORMS.map((platform) => platform.id))),
   alignment: oneOf(CONTENT_ALIGNS),
   backgroundImage: Schema.optional(text),
   backgroundPosition: Schema.optional(position),
@@ -117,15 +119,28 @@ const STATE_SCHEMAS = {
   }),
 } satisfies Record<TemplateId, Schema.Top>;
 
+/** Each template's settings, as its schema checks them. */
+export type TemplateSettings = { [K in TemplateId]: (typeof STATE_SCHEMAS)[K]["Type"] };
+
+/** The settings every banner has. */
+export type BaseSettings = Schema.Struct<typeof bannerFields>["Type"];
+
+/** The GitHub and repos banners' profile settings. */
+export type ProfileSettings = Schema.Struct<typeof profileFields>["Type"];
+
+/** The GitHub and contribution banners' grid settings. */
+export type ContributionGridSettings = Schema.Struct<typeof contributionGridFields>["Type"];
+
 /**
  * Checks a template's settings. On failure it returns each bad field as a `state.…` path. Unknown
  * keys are dropped from the result.
  */
-export function checkTemplateState(
-  templateId: TemplateId,
+export function checkTemplateState<K extends TemplateId>(
+  templateId: K,
   state: Record<string, unknown>,
-): { ok: true; state: Record<string, unknown> } | { ok: false; issues: FieldIssue[] } {
-  const schema = STATE_SCHEMAS[templateId] as Schema.Codec<Record<string, unknown>>;
+): { ok: true; state: TemplateSettings[K] } | { ok: false; issues: FieldIssue[] } {
+  const schemas: { [T in TemplateId]: Schema.Codec<TemplateSettings[T]> } = STATE_SCHEMAS;
+  const schema: Schema.Codec<TemplateSettings[K]> = schemas[templateId];
   const decoded = Schema.decodeUnknownResult(schema, { errors: "all" })(state);
   return Result.isSuccess(decoded)
     ? { ok: true, state: decoded.success }
