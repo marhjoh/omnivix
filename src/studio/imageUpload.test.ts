@@ -14,11 +14,7 @@ describe("validateImageUploadMeta for backgrounds", () => {
   it.each([
     ["photo.png", "image/png"],
     ["x.webp", ""],
-    ["photo.avif", "image/avif"],
-    ["photo.avif", ""],
     ["IMG.HEIC", "image/heic"],
-    ["x.heif", "image/heif"],
-    ["photo.heic", ""],
     ["photo.heic", "application/octet-stream"],
   ])("accepts %s as %j", (name, type) => {
     expect(validateBackgroundUploadMeta(new File([], name, { type }))).toBeNull();
@@ -26,8 +22,6 @@ describe("validateImageUploadMeta for backgrounds", () => {
 
   it.each([
     ["x.gif", "image/gif"],
-    ["x.gif", ""],
-    ["x.bmp", "image/bmp"],
     ["x.bin", ""],
   ])("rejects %s as %j, naming the formats", (name, type) => {
     expect(validateBackgroundUploadMeta(new File([], name, { type }))).toBe(

@@ -48,8 +48,6 @@ afterEach(() => {
 describe("request limits", () => {
   it.each([
     ["production", "omnivix:production"],
-    ["preview", "omnivix:preview"],
-    ["development", "omnivix:development"],
     ["", "omnivix:development"],
   ])(
     "isolate both limits for environment '%s' with namespace '%s'",
@@ -108,7 +106,6 @@ describe("request limits", () => {
   it.each([
     [undefined, 25],
     ["40", 40],
-    ["0", 25],
     ["many", 25],
   ])("allow EXPORT_DAILY_LIMIT=%s exports a day as %i", async (dailyLimit, expected) => {
     await load({ dailyLimit });

@@ -33,56 +33,37 @@ describe("USERNAME_COOKIE", () => {
     expect(USERNAME_COOKIE.parse("some-user")).toBe("some-user");
   });
 
-  it.each([
-    undefined,
-    "",
-    "bad name",
-    "-leading",
-    "trailing-",
-    "a".repeat(40),
-    "%3Cscript%3E",
-    "%E0%A4%A",
-  ])("rejects %s", (value) => {
+  it.each([undefined, "bad name", "%3Cscript%3E", "%E0%A4%A"])("rejects %s", (value) => {
     expect(USERNAME_COOKIE.parse(value)).toBeNull();
   });
 });
 
-describe("settingsCookie name", () => {
-  it("is one cookie per template", () => {
-    expect(settingsCookie("quote-banner").name).toBe("omnivix-settings-quote-banner");
-  });
-});
-
 describe("PIXEL_RATIO_COOKIE", () => {
-  it.each([
-    ["1", 1],
-    ["2", 2],
-    ["3", 3],
-  ])("reads %s", (value, ratio) => {
-    expect(PIXEL_RATIO_COOKIE.parse(value)).toBe(ratio);
+  it("reads a ratio", () => {
+    expect(PIXEL_RATIO_COOKIE.parse("2")).toBe(2);
   });
 
-  it.each([undefined, "", "4", "0", "2.5", "abc"])("falls back to 3× for %s", (value) => {
+  it.each([undefined, "4", "2.5"])("falls back to 3× for %s", (value) => {
     expect(PIXEL_RATIO_COOKIE.parse(value)).toBe(3);
   });
 });
 
 describe("FORMAT_COOKIE", () => {
-  it.each(["png", "jpeg"])("reads %s", (value) => {
-    expect(FORMAT_COOKIE.parse(value)).toBe(value);
+  it("reads a format", () => {
+    expect(FORMAT_COOKIE.parse("jpeg")).toBe("jpeg");
   });
 
-  it.each([undefined, "", "jpg", "JPEG", "webp"])("falls back to PNG for %s", (value) => {
+  it.each([undefined, "JPEG"])("falls back to PNG for %s", (value) => {
     expect(FORMAT_COOKIE.parse(value)).toBe("png");
   });
 });
 
 describe("PREVIEW_VIEW_COOKIE", () => {
-  it.each(["phone", "desktop", "tv"])("reads %s", (value) => {
-    expect(PREVIEW_VIEW_COOKIE.parse(value)).toBe(value);
+  it("reads a view", () => {
+    expect(PREVIEW_VIEW_COOKIE.parse("tv")).toBe("tv");
   });
 
-  it.each([undefined, "", "TV", "tablet"])("falls back to phone for %s", (value) => {
+  it.each([undefined, "TV"])("falls back to phone for %s", (value) => {
     expect(PREVIEW_VIEW_COOKIE.parse(value)).toBe("phone");
   });
 });

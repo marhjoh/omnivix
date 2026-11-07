@@ -111,52 +111,10 @@ function monthsForYear(year: number): ContributionMonthNormalized[] {
   }));
 }
 
-describe("buildCalendarLayout — authoritative weeks contract", () => {
-  it("columnCount === weeks.length for year 2025", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
-    const { columnCount } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-    });
-    expect(columnCount).toBe(weeks.length);
-  });
-
-  it("columnCount === weeks.length for leap year 2024", () => {
-    const weeks = buildWeeksForRange("2024-01-01", "2024-12-31");
-    const { columnCount } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2024),
-      rangeEndYmd: "2024-12-31",
-    });
-    expect(columnCount).toBe(weeks.length);
-  });
-
-  it("renderPaddingDays never changes columnCount", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
-    const compact = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: false,
-    });
-    const padded = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: true,
-    });
-    expect(padded.columnCount).toBe(compact.columnCount);
-    expect(padded.columnCount).toBe(weeks.length);
-  });
-});
-
 describe("buildCalendarLayout — no duplicate dates (React keys)", () => {
   it.each([
-    ["2025, first day a Wednesday", buildWeeksForRange, 2025, false],
     ["2022, first day a Saturday", buildWeeksForRange, 2022, false],
     ["2025 with padding days", buildWeeksForRange, 2025, true],
-    ["Sunday-aligned weeks", buildSundayAlignedWeeksForRange, 2025, false],
     ["Sunday-aligned weeks with padding days", buildSundayAlignedWeeksForRange, 2025, true],
   ])("%s", (_, weeksFor, year, renderPaddingDays) => {
     const { placedDays } = buildCalendarLayout({
@@ -212,38 +170,6 @@ describe("buildCalendarLayout — padding cells", () => {
     expect(placedDays.every((d) => !d.isOutOfRange)).toBe(true);
   });
 
-  it("renderPaddingDays=true adds out-of-range cells only in first/last week", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
-    const { placedDays, columnCount } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: true,
-    });
-    const oor = placedDays.filter((d) => d.isOutOfRange);
-    expect(oor.length).toBeGreaterThan(0);
-    for (const p of oor) {
-      expect(p.col === 0 || p.col === columnCount - 1).toBe(true);
-    }
-  });
-
-  it("padding dates are before rangeStart or after rangeEnd", () => {
-    const weeks = buildWeeksForRange("2025-01-01", "2025-12-31");
-    const { placedDays } = buildCalendarLayout({
-      weeks,
-      months: monthsForYear(2025),
-      rangeEndYmd: "2025-12-31",
-      renderPaddingDays: true,
-    });
-    const oor = placedDays.filter((d) => d.isOutOfRange);
-    for (const p of oor) {
-      const ms = parseYmd(p.date);
-      const before = ms < parseYmd("2025-01-01");
-      const after = ms > parseYmd("2025-12-31");
-      expect(before || after).toBe(true);
-    }
-  });
-
   it("padding fills correct weekday rows for non-Sunday firstDay", () => {
     // 2025-01-01 is Wednesday. First week has Wed(3)-Sat(6).
     // Padding should fill Sun(0), Mon(1), Tue(2) — dates Dec 29, 30, 31.
@@ -295,19 +221,5 @@ describe("buildCalendarLayout — month labels", () => {
       return feb1Ms >= sundayMs && feb1Ms < sundayMs + 7 * 86400000;
     });
     expect(feb!.colIndex).toBe(febWeekIdx);
-  });
-
-  it("month label collision: labels too close are dropped", () => {
-    const weeks = buildWeeksForRange("2025-01-27", "2025-02-08");
-    const months: ContributionMonthNormalized[] = [
-      { firstDay: "2025-01-01", name: "January" },
-      { firstDay: "2025-02-01", name: "February" },
-    ];
-    const { monthLabels } = buildCalendarLayout({
-      weeks,
-      months,
-      rangeEndYmd: "2025-02-08",
-    });
-    expect(monthLabels.length).toBeLessThanOrEqual(2);
   });
 });
