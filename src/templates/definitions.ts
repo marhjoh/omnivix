@@ -5,6 +5,12 @@ import { CONTRIBUTION_CELL_SHAPE_OPTIONS, DEFAULT_CELL_SHAPE } from "@/src/banne
 import { DEFAULT_GRID_COLORS_ID } from "@/src/banner/gridColors";
 import { DEFAULT_BANNER_SIZE } from "@/src/lib/sizes";
 import type { EditorFieldSchema, TemplateDefinition } from "@/src/templates/types";
+import type {
+  BaseSettings,
+  ContributionGridSettings,
+  ProfileSettings,
+  TemplateSettings,
+} from "@/src/templates/stateSchemas";
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
@@ -22,33 +28,37 @@ import {
 // The sidebar shows fields in `schema` order. Validation is in stateSchemas.ts.
 
 /** Defaults every banner shares. The background has none. */
-const bannerInitialState = {
+const bannerInitialState: Pick<BaseSettings, "size" | "logoSize" | "alignment"> = {
   size: DEFAULT_BANNER_SIZE,
   logoSize: DEFAULT_LOGO_SIZE,
   alignment: DEFAULT_CONTENT_ALIGN,
 };
 
-const sizeField: EditorFieldSchema = { key: "size", label: "Type", type: "sizeSelect" };
+const sizeField: EditorFieldSchema<BaseSettings> = {
+  key: "size",
+  label: "Type",
+  type: "sizeSelect",
+};
 
-const backgroundField: EditorFieldSchema = {
+const backgroundField: EditorFieldSchema<BaseSettings> = {
   key: "backgroundImage",
   label: "Background",
   type: "backgroundPicker",
 };
 
-const logoFields: EditorFieldSchema[] = [
+const logoFields: EditorFieldSchema<BaseSettings>[] = [
   { key: "logoImage", label: "Logo", type: "logoPicker" },
   { key: "logoSize", label: "Logo size", type: "select", options: CONTENT_SIZE_OPTIONS },
 ];
 
-const alignmentField: EditorFieldSchema = {
+const alignmentField: EditorFieldSchema<BaseSettings> = {
   key: "alignment",
   label: "Alignment",
   type: "select",
   options: CONTENT_ALIGN_OPTIONS,
 };
 
-const contentSizeField: EditorFieldSchema = {
+const contentSizeField: EditorFieldSchema<{ contentSize: string }> = {
   key: "contentSize",
   label: "Content size",
   type: "select",
@@ -56,18 +66,26 @@ const contentSizeField: EditorFieldSchema = {
 };
 
 /** Shared by the GitHub and contribution banners. */
-const contributionGridInitialState = {
+const contributionGridInitialState: ContributionGridSettings = {
   year: String(currentYear()),
   themeId: DEFAULT_GRID_COLORS_ID,
   cellShape: DEFAULT_CELL_SHAPE,
 };
 
 /** The sidebar labels this "Grid colors" (settingGroups.ts). */
-const gridColorsField: EditorFieldSchema = { key: "themeId", label: "Theme", type: "select" };
+const gridColorsField: EditorFieldSchema<ContributionGridSettings> = {
+  key: "themeId",
+  label: "Theme",
+  type: "select",
+};
 
-const yearField: EditorFieldSchema = { key: "year", label: "Year", type: "select" };
+const yearField: EditorFieldSchema<ContributionGridSettings> = {
+  key: "year",
+  label: "Year",
+  type: "select",
+};
 
-const cellShapeField: EditorFieldSchema = {
+const cellShapeField: EditorFieldSchema<ContributionGridSettings> = {
   key: "cellShape",
   label: "Cell shape",
   type: "select",
@@ -75,26 +93,26 @@ const cellShapeField: EditorFieldSchema = {
 };
 
 /** Shared by the GitHub and repos banners. */
-const profileInitialState = {
+const profileInitialState: ProfileSettings = {
   username: "",
   showAvatar: true,
   showDisplayName: false,
   profilePosition: "left",
 };
 
-const profilePositionField: EditorFieldSchema = {
+const profilePositionField: EditorFieldSchema<ProfileSettings> = {
   key: "profilePosition",
   label: "Profile position",
   type: "select",
   options: PROFILE_POSITION_OPTIONS,
 };
 
-const profileFields: EditorFieldSchema[] = [
+const profileFields: EditorFieldSchema<ProfileSettings>[] = [
   { key: "showAvatar", label: "Profile photo", type: "toggle" },
   { key: "showDisplayName", label: "Full name", type: "toggle" },
 ];
 
-export const githubBannerDefinition: TemplateDefinition = {
+export const githubBannerDefinition: TemplateDefinition<TemplateSettings["github-banner"]> = {
   meta: {
     id: "github-banner",
     title: "GitHub Banner",
@@ -128,7 +146,7 @@ export const githubBannerDefinition: TemplateDefinition = {
   },
 };
 
-export const reposBannerDefinition: TemplateDefinition = {
+export const reposBannerDefinition: TemplateDefinition<TemplateSettings["repos-banner"]> = {
   meta: {
     id: "repos-banner",
     title: "Repos Banner",
@@ -174,7 +192,9 @@ export const reposBannerDefinition: TemplateDefinition = {
   },
 };
 
-export const contributionBannerDefinition: TemplateDefinition = {
+export const contributionBannerDefinition: TemplateDefinition<
+  TemplateSettings["contribution-banner"]
+> = {
   meta: {
     id: "contribution-banner",
     title: "Contribution Banner",
@@ -200,7 +220,7 @@ export const contributionBannerDefinition: TemplateDefinition = {
   },
 };
 
-export const quoteBannerDefinition: TemplateDefinition = {
+export const quoteBannerDefinition: TemplateDefinition<TemplateSettings["quote-banner"]> = {
   meta: {
     id: "quote-banner",
     title: "Quote Banner",

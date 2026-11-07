@@ -8,15 +8,14 @@ import type {
 } from "@/src/github/types";
 import { limitResetAt } from "@/src/lib/apiError";
 import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
-import { repoModeOf, reposForBanner, selectedReposOf } from "@/src/lib/repoSelection";
+import { reposForBanner } from "@/src/lib/repoSelection";
 import { githubDataUrls } from "@/src/studio/githubUrls";
-import { contributionYear } from "@/src/lib/contributionYear";
 import { fetchProblem, noReposProblem } from "@/src/studio/preview/previewProblems";
 import type { PreviewProblem } from "@/src/studio/preview/types";
 import { useImageStatus } from "@/src/studio/useImageStatus";
 import { initialData, useApiQuery } from "@/src/studio/useApiQuery";
 import { templateRegistry } from "@/src/templates/registry";
-import type { RenderData, TemplateId } from "@/src/templates/types";
+import type { BannerSettings, RenderData, TemplateId } from "@/src/templates/types";
 
 const NO_REPOS: RepoNormalized[] = [];
 
@@ -31,18 +30,19 @@ export function useGithubBannerData({
   initialGithubData,
 }: {
   templateId: TemplateId;
-  state: Record<string, unknown>;
+  state: BannerSettings;
   username: string;
   /** GitHub data the server already loaded, keyed by URL. */
   initialGithubData: Record<string, unknown>;
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
 
-  const repoMode = repoModeOf(state.mode);
-  const selectedRepos = selectedReposOf(state);
+  const repoMode = "mode" in state ? state.mode : "pinned";
+  const selectedRepos = "selectedRepos" in state ? state.selectedRepos : "";
   // One request returns both repository lists. Picking repositories or switching between pinned
   // and selected needs nothing more from GitHub.
-  const urls = githubDataUrls({ githubData, username, year: contributionYear(state.year) });
+  const year = "year" in state ? state.year : "";
+  const urls = githubDataUrls({ githubData, username, year });
 
   const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
   const userFetch = useApiQuery<GithubUserNormalized>(urls.user, { initial: initialUser });
@@ -77,7 +77,7 @@ export function useGithubBannerData({
   const avatarStatus = useImageStatus(avatarUrl, {
     assumeLoaded: avatarUrl !== undefined && avatarUrl === serverAvatarUrl,
   });
-  const avatarReady = state.showAvatar === false || avatarStatus !== "loading";
+  const avatarReady = ("showAvatar" in state && !state.showAvatar) || avatarStatus !== "loading";
   const avatarFailed = avatarStatus === "failed";
   // A photo that failed to load is left out, so the banner never shows a broken-image icon.
   const renderData = useMemo<RenderData>(

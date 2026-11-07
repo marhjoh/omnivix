@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isGithubUsername, usernameFromProfileLink, usernameOf } from "./githubUsername";
+import { templateRegistry } from "@/src/templates/registry";
 
 describe("isGithubUsername", () => {
   it("follows GitHub's rules", () => {
@@ -40,9 +41,9 @@ describe("usernameFromProfileLink", () => {
 });
 
 describe("usernameOf", () => {
-  it("reads a string username, else none", () => {
-    expect(usernameOf({ username: "octocat" })).toBe("octocat");
-    expect(usernameOf({ username: 1 })).toBe("");
-    expect(usernameOf({})).toBe("");
+  it("reads the username, or none for a template without one", () => {
+    const github = templateRegistry["github-banner"].initialState;
+    expect(usernameOf({ ...github, username: "octocat" })).toBe("octocat");
+    expect(usernameOf(templateRegistry["quote-banner"].initialState)).toBe("");
   });
 });

@@ -1,7 +1,7 @@
 import type { BannerSize } from "@/src/lib/sizes";
 import type { Theme } from "@/src/theme/theme";
 import type { ExportFormat, ExportPixelRatio } from "@/src/export/format";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
 /**
  * The export API's request body. The studio sends the same shape (src/studio/useBannerExport.ts).
@@ -9,7 +9,7 @@ import type { TemplateId } from "@/src/templates/types";
 export interface ExportRequest {
   templateId: TemplateId;
   size: BannerSize;
-  state: Record<string, unknown>;
+  state: BannerSettings;
   pixelRatio?: ExportPixelRatio;
   /** PNG when left out, or the size's first format if it doesn't take PNG. */
   format?: ExportFormat;

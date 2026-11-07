@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getTemplates } from "@/src/templates/registry";
+import type { EditorFieldSchema } from "@/src/templates/types";
 import { groupFields, STYLE_GROUP } from "./settingGroups";
 
 const outline = (id: string) => {
@@ -22,7 +23,7 @@ describe("groupFields", () => {
   });
 
   it("keeps the Style group without any of its settings, for the light/dark setting", () => {
-    const schema = [{ key: "year", label: "Year", type: "select" as const }];
+    const schema: EditorFieldSchema[] = [{ key: "year", label: "Year", type: "select" }];
     expect(groupFields(schema).map((g) => g.title)).toEqual([STYLE_GROUP, "Content"]);
   });
 

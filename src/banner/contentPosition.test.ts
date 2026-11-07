@@ -5,26 +5,21 @@ import {
   contentPositionFromState,
   isDefaultContentPosition,
 } from "./contentPosition";
+import { templateRegistry } from "@/src/templates/registry";
+
+const base = templateRegistry["quote-banner"].initialState;
 
 describe("contentPositionFromState", () => {
   it("follows the alignment, centered vertically, until the content is moved", () => {
-    expect(contentPositionFromState({})).toEqual({ x: 50, y: 50 });
-    expect(contentPositionFromState({ alignment: "left" })).toEqual({ x: 0, y: 50 });
-    expect(contentPositionFromState({ alignment: "right" })).toEqual({ x: 100, y: 50 });
+    expect(contentPositionFromState({ ...base, alignment: "center" })).toEqual({ x: 50, y: 50 });
+    expect(contentPositionFromState({ ...base, alignment: "left" })).toEqual({ x: 0, y: 50 });
+    expect(contentPositionFromState({ ...base, alignment: "right" })).toEqual({ x: 100, y: 50 });
   });
 
-  it("uses a moved position, kept between 0 and 100", () => {
+  it("uses a moved position", () => {
     expect(
-      contentPositionFromState({ alignment: "left", contentPosition: { x: 30, y: 10 } }),
+      contentPositionFromState({ ...base, alignment: "left", contentPosition: { x: 30, y: 10 } }),
     ).toEqual({ x: 30, y: 10 });
-    expect(contentPositionFromState({ contentPosition: { x: -5, y: 140 } })).toEqual({
-      x: 0,
-      y: 100,
-    });
-    expect(contentPositionFromState({ contentPosition: { x: "a", y: 10 } })).toEqual({
-      x: 50,
-      y: 50,
-    });
   });
 });
 
@@ -48,15 +43,12 @@ describe("alignmentShown", () => {
 
 describe("isDefaultContentPosition", () => {
   it("is true at the alignment, centered vertically", () => {
-    expect(isDefaultContentPosition({ alignment: "right" })).toBe(true);
+    const right = { ...base, alignment: "right" } as const;
+    expect(isDefaultContentPosition(right)).toBe(true);
+    expect(isDefaultContentPosition({ ...right, contentPosition: { x: 100, y: 50 } })).toBe(true);
+    expect(isDefaultContentPosition({ ...right, contentPosition: { x: 100, y: 0 } })).toBe(false);
     expect(
-      isDefaultContentPosition({ alignment: "right", contentPosition: { x: 100, y: 50 } }),
-    ).toBe(true);
-    expect(
-      isDefaultContentPosition({ alignment: "right", contentPosition: { x: 100, y: 0 } }),
+      isDefaultContentPosition({ ...base, alignment: "left", contentPosition: { x: 30, y: 50 } }),
     ).toBe(false);
-    expect(isDefaultContentPosition({ alignment: "left", contentPosition: { x: 30, y: 50 } })).toBe(
-      false,
-    );
   });
 });

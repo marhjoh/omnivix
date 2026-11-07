@@ -1,7 +1,8 @@
-import { normalizeContentSize, type ContentSize } from "@/src/banner/contentSize";
+import type { ContentSize } from "@/src/banner/contentSize";
 import { contentBoxOf } from "@/src/banner/fit";
-import { positionOr, samePosition, type Position } from "@/src/banner/position";
-import { bannerFormatOf, safeAreaOf, type Rect } from "@/src/lib/sizes";
+import { samePosition, type Position } from "@/src/banner/position";
+import { BANNER_SIZES, safeAreaOf, type Rect } from "@/src/lib/sizes";
+import type { BaseSettings } from "@/src/templates/stateSchemas";
 
 export const DEFAULT_LOGO_SIZE: ContentSize = "m";
 
@@ -27,24 +28,23 @@ export interface BannerLogo {
   box: Rect;
 }
 
-export function logoPositionFromState(state: Record<string, unknown>): Position {
-  return positionOr(state.logoPosition, DEFAULT_LOGO_POSITION);
+export function logoPositionFromState(state: BaseSettings): Position {
+  return state.logoPosition ?? DEFAULT_LOGO_POSITION;
 }
 
 /** True when the logo is at its default place, so there's nothing to reset. */
-export function isDefaultLogoPosition(state: Record<string, unknown>): boolean {
+export function isDefaultLogoPosition(state: BaseSettings): boolean {
   return samePosition(logoPositionFromState(state), DEFAULT_LOGO_POSITION);
 }
 
-/** Reads the logo, its position and size from banner state. Bad values fall back to defaults. */
-export function logoFromState(state: Record<string, unknown>): BannerLogo | undefined {
+/** The logo with its position and size, or undefined when there's none. */
+export function logoFromState(state: BaseSettings): BannerLogo | undefined {
   const src = state.logoImage;
-  if (typeof src !== "string" || !src) return undefined;
-  const size = normalizeContentSize(state.logoSize, DEFAULT_LOGO_SIZE);
+  if (!src) return undefined;
   return {
     src,
     position: logoPositionFromState(state),
-    height: Math.round(safeAreaOf(bannerFormatOf(state.size)).height * LOGO_HEIGHT[size]),
+    height: Math.round(safeAreaOf(BANNER_SIZES[state.size]).height * LOGO_HEIGHT[state.logoSize]),
     box: contentBoxOf(state.size),
   };
 }

@@ -16,7 +16,7 @@ import { useDisclosure } from "@/src/ui/useDisclosure";
 import { TileGroup } from "@/src/studio/TileGroup";
 import { EmbedLinks } from "@/src/studio/EmbedLinks";
 import type { ExportKind } from "@/src/studio/useBannerExport";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import type { Theme } from "@/src/theme/theme";
 import controls from "@/src/studio/controls.module.css";
 
@@ -51,7 +51,7 @@ export function ExportControls({
   onCopy: () => void;
   onCopyEmbed: (text: string, name: string) => void;
   /** The banner the embed URL points to. */
-  banner: { templateId: TemplateId; state: Record<string, unknown>; uiTheme: Theme };
+  banner: { templateId: TemplateId; state: BannerSettings; uiTheme: Theme };
   /** The export that's running. Both buttons wait until it's done. */
   exporting: ExportKind | null;
   /** Nothing to export yet, or the banner has a problem. Disables Copy and Download. */

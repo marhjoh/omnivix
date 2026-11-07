@@ -67,14 +67,14 @@ export function exportFields(
     `${SERIES.uiTheme}:${uiTheme ?? DEFAULT_THEME}`,
     `${SERIES.background}:${backgroundKind(state.backgroundImage)}`,
   ];
-  // Only the templates with a contribution grid have grid colors. The settings schema checks them.
-  if (typeof state.themeId === "string") fields.push(`${SERIES.gridColors}:${state.themeId}`);
+  // Only the templates with a contribution grid have grid colors.
+  if ("themeId" in state) fields.push(`${SERIES.gridColors}:${state.themeId}`);
   return fields;
 }
 
 /** A built-in background by its id. Links and uploads are only counted, never stored. */
-function backgroundKind(image: unknown): string {
-  if (typeof image !== "string" || !image) return "none";
+function backgroundKind(image: string | undefined): string {
+  if (!image) return "none";
   if (isDataUrl(image)) return "upload";
   if (isHttpsUrl(image)) return "link";
   return presetBySrc(image)?.id ?? "other";

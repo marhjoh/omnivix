@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
+import { templateRegistry } from "@/src/templates/registry";
 import { breakdown, exportFields, failureFields } from "./statFields";
 
 const banner = {
   templateId: "contribution-banner",
   size: "wide",
   format: "png",
-  state: { themeId: "sunset", backgroundImage: "/backgrounds/seoul.avif" },
+  state: {
+    ...templateRegistry["contribution-banner"].initialState,
+    themeId: "sunset",
+    backgroundImage: "/backgrounds/seoul.avif",
+  },
 } as const;
 
 describe("exportFields", () => {
@@ -30,7 +35,9 @@ describe("exportFields", () => {
     ["https://example.com/photo.jpg?user=me", "link"],
     ["/backgrounds/unknown.avif", "other"],
   ])("never stores the image itself (%s)", (backgroundImage, kind) => {
-    const fields = exportFields("image-url", { ...banner, state: { backgroundImage } }, 60);
+    // The quote banner has no grid colors.
+    const state = { ...templateRegistry["quote-banner"].initialState, backgroundImage };
+    const fields = exportFields("image-url", { ...banner, templateId: "quote-banner", state }, 60);
     expect(fields).toContain(`exports:background:${kind}`);
     expect(fields).toContain("exports:ui-theme:dark");
     expect(fields).toContain("exports:seconds:45");

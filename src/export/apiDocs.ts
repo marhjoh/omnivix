@@ -181,7 +181,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     `\`backgroundZoom\`, from ${code(MIN_BACKGROUND_ZOOM)} to ${code(MAX_BACKGROUND_ZOOM)}, zooms the background in; the default is ${code(MIN_BACKGROUND_ZOOM)}. \`backgroundOpacity\`, from ${code(0)} to ${code(100)} percent, sets how strongly it shows; the default is ${code(DEFAULT_BACKGROUND_OPACITY)}.`,
     "",
     ...getTemplates().flatMap(({ meta, schema, initialState }) => {
-      const defaults = initialState as Record<string, unknown>;
+      const defaults: Readonly<Record<string, unknown>> = initialState;
       const rows = schema
         .filter((field) => field.type !== "sizeSelect")
         .map(

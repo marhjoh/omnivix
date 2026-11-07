@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
+import { templateRegistry } from "@/src/templates/registry";
 import { createExportToken, verifyExportToken } from "./exportToken";
 
 const samplePayload = {
   templateId: "quote-banner" as const,
   size: "header" as const,
   pixelRatio: 2 as const,
-  state: { quote: "hello", author: "omnivix", themeId: "default", alignment: "left" },
-};
+  state: { ...templateRegistry["quote-banner"].initialState, quote: "hello", alignment: "left" },
+} as const;
 
 describe("export token", () => {
   it("round-trips a valid payload", () => {

@@ -4,14 +4,15 @@ import {
   reposBannerDefinition,
   quoteBannerDefinition,
 } from "@/src/templates/definitions";
-import type { TemplateId } from "@/src/templates/types";
+import type { TemplateDefinition, TemplateId } from "@/src/templates/types";
+import type { TemplateSettings } from "@/src/templates/stateSchemas";
 
-export const templateRegistry = {
+export const templateRegistry: { [K in TemplateId]: TemplateDefinition<TemplateSettings[K]> } = {
   "github-banner": githubBannerDefinition,
   "repos-banner": reposBannerDefinition,
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
-} as const;
+};
 
 /** Own keys only, so inherited names like "constructor" or "toString" aren't templates. */
 export function isTemplateId(id: string): id is TemplateId {

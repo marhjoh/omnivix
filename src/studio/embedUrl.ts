@@ -1,5 +1,5 @@
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/templates/types";
+import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import { IMAGE_SETTINGS, isSavableImage, POSITION_KEYS } from "@/src/studio/savedSettings";
 import { isPosition } from "@/src/banner/position";
 import {
@@ -15,11 +15,10 @@ import { DEFAULT_THEME, type Theme } from "@/src/theme/theme";
  * Only values that differ from the template defaults go in, to keep it short. Returns null when an
  * image is an upload, because uploads can't go in a link.
  */
-export function linkQuery(
-  templateId: TemplateId,
-  state: Record<string, unknown>,
-): URLSearchParams | null {
+export function linkQuery(templateId: TemplateId, state: BannerSettings): URLSearchParams | null {
   const { schema, initialState, meta } = templateRegistry[templateId];
+  const values: Readonly<Record<string, unknown>> = state;
+  const defaults: Readonly<Record<string, unknown>> = initialState;
   const keys = [
     ...(meta.needsUsername ? ["username"] : []),
     ...schema.map((field) => field.key),
@@ -29,8 +28,8 @@ export function linkQuery(
   ];
   const query = new URLSearchParams();
   for (const key of keys) {
-    const value = state[key];
-    if (value === undefined || value === "" || value === initialState[key]) continue;
+    const value = values[key];
+    if (value === undefined || value === "" || value === defaults[key]) continue;
     if (key in IMAGE_SETTINGS && !isSavableImage(key, value)) return null;
     query.set(key, isPosition(value) ? `${value.x},${value.y}` : String(value));
   }

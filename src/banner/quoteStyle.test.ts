@@ -7,6 +7,17 @@ import {
   PALETTE,
   quoteStyleFromState,
 } from "./quoteStyle";
+import { templateRegistry } from "@/src/templates/registry";
+import type { TemplateSettings } from "@/src/templates/stateSchemas";
+import type { Theme } from "@/src/theme/theme";
+
+/** The quote's style with `settings` over the quote banner's defaults. */
+function quoteStyle(settings: Partial<TemplateSettings["quote-banner"]>, uiTheme: Theme) {
+  return quoteStyleFromState(
+    { ...templateRegistry["quote-banner"].initialState, ...settings },
+    uiTheme,
+  );
+}
 
 /** WCAG contrast ratio between two hex colors. */
 function contrast(a: string, b: string): number {
@@ -23,7 +34,7 @@ function contrast(a: string, b: string): number {
 
 describe("quoteStyleFromState", () => {
   it("is bold Inter with curly marks in the text color by default", () => {
-    expect(quoteStyleFromState({}, "dark")).toMatchObject({
+    expect(quoteStyle({}, "dark")).toMatchObject({
       fontFamily: "var(--font-inter), sans-serif",
       fontWeight: 700,
       fontStyle: "normal",
@@ -36,21 +47,22 @@ describe("quoteStyleFromState", () => {
   });
 
   it("sets the author's color and what comes before the name", () => {
-    expect(
-      quoteStyleFromState({ authorColor: "amber", authorPrefix: "tilde" }, "light"),
-    ).toMatchObject({ authorColor: "#b45309", authorPrefix: "~ " });
-    expect(quoteStyleFromState({ authorPrefix: "none" }, "dark").authorPrefix).toBe("");
+    expect(quoteStyle({ authorColor: "amber", authorPrefix: "tilde" }, "light")).toMatchObject({
+      authorColor: "#b45309",
+      authorPrefix: "~ ",
+    });
+    expect(quoteStyle({ authorPrefix: "none" }, "dark").authorPrefix).toBe("");
   });
 
   it("uses Inter's own italic, and the font's italic style elsewhere", () => {
-    expect(quoteStyleFromState({ fontStyle: "italic" }, "dark")).toMatchObject({
+    expect(quoteStyle({ fontStyle: "italic" }, "dark")).toMatchObject({
       fontFamily: "var(--font-inter-italic), sans-serif",
       authorFontFamily: "var(--font-inter), sans-serif",
       fontWeight: 400,
       fontStyle: "italic",
     });
     expect(
-      quoteStyleFromState({ font: "playfair-display", fontStyle: "semibold-italic" }, "dark"),
+      quoteStyle({ font: "playfair-display", fontStyle: "semibold-italic" }, "dark"),
     ).toMatchObject({
       fontFamily: "var(--font-playfair-display), serif",
       fontWeight: 600,
@@ -59,30 +71,23 @@ describe("quoteStyleFromState", () => {
   });
 
   it("sets a font without an italic upright, keeping the weight", () => {
-    expect(quoteStyleFromState({ font: "caveat", fontStyle: "bold-italic" }, "dark")).toMatchObject(
-      { fontFamily: "var(--font-caveat), cursive", fontWeight: 700, fontStyle: "normal" },
-    );
+    expect(quoteStyle({ font: "caveat", fontStyle: "bold-italic" }, "dark")).toMatchObject({
+      fontFamily: "var(--font-caveat), cursive",
+      fontWeight: 700,
+      fontStyle: "normal",
+    });
   });
 
   it("sets text marks around the text, but not for the decorative styles", () => {
-    expect(quoteStyleFromState({ quoteMarks: "guillemets" }, "dark").textMarks).toEqual(["«", "»"]);
-    expect(quoteStyleFromState({ quoteMarks: "large-above" }, "dark").textMarks).toBeUndefined();
+    expect(quoteStyle({ quoteMarks: "guillemets" }, "dark").textMarks).toEqual(["«", "»"]);
+    expect(quoteStyle({ quoteMarks: "large-above" }, "dark").textMarks).toBeUndefined();
   });
 
   it("colors the marks like the quote unless they have their own color", () => {
-    expect(quoteStyleFromState({ quoteColor: "blue" }, "dark").markColor).toBe("#60a5fa");
-    expect(
-      quoteStyleFromState({ quoteColor: "blue", markColor: "#ff6600" }, "dark").markColor,
-    ).toBe("#ff6600");
-  });
-
-  it("falls back to the defaults for unknown values", () => {
-    expect(
-      quoteStyleFromState(
-        { font: "comic", fontStyle: "wavy", quoteMarks: "x", quoteColor: 1, markColor: "#12" },
-        "light",
-      ),
-    ).toEqual(quoteStyleFromState({}, "light"));
+    expect(quoteStyle({ quoteColor: "blue" }, "dark").markColor).toBe("#60a5fa");
+    expect(quoteStyle({ quoteColor: "blue", markColor: "#ff6600" }, "dark").markColor).toBe(
+      "#ff6600",
+    );
   });
 });
 

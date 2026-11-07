@@ -6,7 +6,7 @@ import type { RendererProps } from "@/src/templates/types";
 /** Cell size before FitContent scales the content. */
 const GRID = { cell: 10, gap: 2 };
 
-export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps) {
+export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps<"github-banner">) {
   const chrome = bannerUiChrome(uiTheme);
 
   return (
@@ -26,9 +26,9 @@ export function GithubBannerRenderer({ state, data, uiTheme }: RendererProps) {
             {...contributionGridStyle(state)}
             cellSize={GRID.cell}
             gap={GRID.gap}
-            showMonthLabels={state.showMonthLabels !== false}
-            showDayLabels={state.showDayLabels !== false}
-            showTotal={state.showTotal !== false}
+            showMonthLabels={state.showMonthLabels}
+            showDayLabels={state.showDayLabels}
+            showTotal={state.showTotal}
           />
         ) : null}
       </div>

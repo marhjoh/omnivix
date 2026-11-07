@@ -1,6 +1,4 @@
 import type { RepoLists, RepoNormalized } from "@/src/github/types";
-import { oneOfOr } from "@/src/lib/isOneOf";
-import { clamp } from "@/src/lib/math";
 
 /** The repos banner shows at most this many repositories. */
 export const MAX_REPOS = 6;
@@ -10,12 +8,13 @@ export const REPO_MODES = ["pinned", "selected"] as const;
 
 export type RepoMode = (typeof REPO_MODES)[number];
 
-export function repoModeOf(raw: unknown): RepoMode {
-  return oneOfOr(REPO_MODES, raw, "pinned");
-}
+/** GitHub's rule for a repository name: letters, digits, `.`, `-` and `_`, at most 100 of them. */
+const REPO_NAME = /^[\w.-]{1,100}$/;
 
-export function selectedReposOf(state: Record<string, unknown>): string {
-  return String(state.selectedRepos ?? "");
+/** True for at most MAX_REPOS repository names, comma-separated. */
+export function isRepoSelection(value: string): boolean {
+  const names = parseRepoSelection(value);
+  return names.length <= MAX_REPOS && names.every((name) => REPO_NAME.test(name));
 }
 
 /** Repository names from the comma-separated `selectedRepos` setting (or query parameter). */
@@ -26,16 +25,15 @@ export function parseRepoSelection(raw: string | null | undefined): string[] {
     .filter(Boolean);
 }
 
-export function reposShown(mode: unknown, maxRepos: unknown): number {
-  if (mode === "selected") return MAX_REPOS;
-  const amount = Number(maxRepos ?? MAX_REPOS);
-  return clamp(Number.isFinite(amount) ? Math.round(amount) : MAX_REPOS, 1, MAX_REPOS);
+/** The schema allows any number from 1 to MAX_REPOS, so a fraction is rounded. */
+export function reposShown(mode: RepoMode, maxRepos: number): number {
+  return mode === "selected" ? MAX_REPOS : Math.round(maxRepos);
 }
 
 /** Selected repositories keep the order they were picked in. */
 export function reposForBanner(
   lists: RepoLists,
-  mode: unknown,
+  mode: RepoMode,
   selectedRepos: string,
 ): RepoNormalized[] {
   if (mode !== "selected") return lists.pinned;

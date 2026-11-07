@@ -1,20 +1,13 @@
 import { useMemo } from "react";
 import type { ContributionsNormalized } from "@/src/github/types";
 import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/banner/contributionCalendarLayout";
-import {
-  CONTRIBUTION_CELL_SHAPES,
-  DEFAULT_CELL_SHAPE,
-  type ContributionCellShape,
-} from "@/src/banner/cellShape";
+import type { ContributionCellShape } from "@/src/banner/cellShape";
 import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
-import { oneOfOr } from "@/src/lib/isOneOf";
+import type { ContributionGridSettings } from "@/src/templates/stateSchemas";
 
-/** Reads the Grid colors and Cell shape settings from banner state. */
-export function contributionGridStyle(state: Record<string, unknown>) {
-  return {
-    colors: gridColorsById(state.themeId),
-    cellShape: oneOfOr(CONTRIBUTION_CELL_SHAPES, state.cellShape, DEFAULT_CELL_SHAPE),
-  };
+/** The Grid colors and Cell shape settings, as the grid takes them. */
+export function contributionGridStyle(state: ContributionGridSettings) {
+  return { colors: gridColorsById(state.themeId), cellShape: state.cellShape };
 }
 
 const CELL_RADIUS: Record<ContributionCellShape, number> = {

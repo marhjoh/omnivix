@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
 import { NextRequest } from "next/server";
 import { exportRoute } from "./route";
+import { createExportToken } from "./exportToken";
 
 const { dailyExportLimit, captureBanner } = vi.hoisted(() => ({
   dailyExportLimit: vi.fn(async (): Promise<Date | null> => null),
@@ -13,6 +14,10 @@ vi.mock("@/src/lib/requestLimits", async (importOriginal) => ({
   dailyExportLimit,
 }));
 vi.mock("@/src/export/playwright", () => ({ captureBanner }));
+vi.mock("@/src/export/exportToken", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/src/export/exportToken")>();
+  return { ...original, createExportToken: vi.fn(original.createExportToken) };
+});
 
 const post = (body: unknown) =>
   exportRoute(
@@ -58,7 +63,9 @@ describe("exportRoute", () => {
   });
 
   it("refuses settings too long to export before counting them against the quota", async () => {
-    const response = await post({ ...banner, state: { note: "x".repeat(8000) } });
+    // Each setting has a length limit, so only a token this long gets past them.
+    vi.mocked(createExportToken).mockReturnValueOnce("x".repeat(8000));
+    const response = await post(banner);
     expect(response.status).toBe(413);
     expect(dailyExportLimit).not.toHaveBeenCalled();
     expect(captureBanner).not.toHaveBeenCalled();

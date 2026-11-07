@@ -24,11 +24,16 @@ import type { ExportPixelRatio } from "@/src/export/format";
 import { shownDownloadFormat, type DownloadFormat } from "@/src/studio/downloadFormat";
 import { useCookieChoice } from "@/src/studio/useCookieChoice";
 import type { LinkSettings, StartingSettings } from "@/src/studio/linkSettings";
-import { BANNER_SIZES, type BannerSize, type BannerView } from "@/src/lib/sizes";
+import { BANNER_SIZES, type BannerView } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
+import { fieldValue } from "@/src/studio/fieldValue";
+
+function isBlank(value: unknown): boolean {
+  return typeof value === "string" && !value.trim();
+}
 
 export function StudioShell({
   templateId,
@@ -81,22 +86,21 @@ export function StudioShell({
     closeUsernameModal();
   }
 
-  const size = state.size as BannerSize;
+  const { size } = state;
   const fill = state.contentSize === "fill";
   // Disable settings that don't apply right now. A photo that failed can't be shown, Fill covers
   // the whole banner, and with no quote marks there's nothing to color.
   const disabledFields = new Set<string>();
   if (github.avatarFailed) disabledFields.add("showAvatar");
   if (fill) disabledFields.add("alignment");
-  if (state.quoteMarks === "none") disabledFields.add("markColor");
+  if ("quoteMarks" in state && state.quoteMarks === "none") disabledFields.add("markColor");
 
   // The first missing setting the banner needs. The username comes first because nothing loads
   // without it. Then come required fields such as the quote.
   const missingSetting =
     needsUsername && !username.trim()
       ? "username"
-      : definition.schema.find((field) => field.required && !String(state[field.key] ?? "").trim())
-          ?.key;
+      : definition.schema.find((field) => field.required && isBlank(fieldValue(state, field)))?.key;
   const previewState = computePreviewContentState({
     missingSetting,
     hasProblem: github.problem !== null,

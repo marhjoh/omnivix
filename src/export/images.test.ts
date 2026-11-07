@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import type { ExportRequest } from "@/src/export/request";
 import { resolveExportImages as resolveImages, withImagePaths } from "./images";
 import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { templateRegistry } from "@/src/templates/registry";
 
 // The real download, unless a test replaces it.
 const fetchImageLink = vi.hoisted(() => vi.fn());
@@ -27,10 +28,13 @@ const resolveExportImages = (request: ExportRequest) =>
 
 const MAX_UPLOADED_BACKGROUND_BYTES = BACKGROUND_UPLOAD.maxBytes;
 
-const payload = (backgroundImage?: unknown): ExportRequest => ({
+const payload = (backgroundImage?: string): ExportRequest => ({
   templateId: "quote-banner",
   size: "wide",
-  state: { quote: "hello", ...(backgroundImage === undefined ? {} : { backgroundImage }) },
+  state: {
+    ...templateRegistry["quote-banner"].initialState,
+    ...(backgroundImage === undefined ? {} : { backgroundImage }),
+  },
 });
 
 const dataUrl = (type: string, bytes: Buffer) => `data:${type};base64,${bytes.toString("base64")}`;
@@ -53,8 +57,7 @@ describe("resolveExportImages with a background", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.payload.state).toEqual({
-      quote: "hello",
+    expect(result.payload.state).toMatchObject({
       backgroundImage: "/__export/background",
     });
     expect(result.images).toEqual([
@@ -93,7 +96,7 @@ describe("resolveExportImages with a background", () => {
 });
 
 describe("resolveExportImages with a logo", () => {
-  const withLogo = (logoImage: unknown, backgroundImage?: unknown): ExportRequest => ({
+  const withLogo = (logoImage: string, backgroundImage?: string): ExportRequest => ({
     ...payload(backgroundImage),
     state: { ...payload(backgroundImage).state, logoImage },
   });
@@ -159,11 +162,12 @@ describe("withImagePaths", () => {
     const request = {
       ...payload("https://example.com/a.png"),
       state: {
+        ...payload().state,
         backgroundImage: "https://example.com/a.png",
         logoImage: "data:image/png;base64,AA",
       },
     };
-    expect(withImagePaths(request).state).toEqual({
+    expect(withImagePaths(request).state).toMatchObject({
       backgroundImage: "/__export/background",
       logoImage: "/__export/logo",
     });

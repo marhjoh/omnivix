@@ -11,6 +11,7 @@ import {
   QUOTE_MARKS_OPTIONS,
 } from "@/src/banner/quoteStyle";
 import { QuoteMarksPreview } from "@/src/studio/QuoteMarksPreview";
+import type { TemplateSettings } from "@/src/templates/stateSchemas";
 import { Select } from "@/src/ui/Dropdown";
 
 // Typography settings for the quote banner. Each option is shown in its own type.
@@ -19,7 +20,7 @@ interface QuoteFieldProps {
   label: string;
   /** `state` gives the settings the options are shown in, such as the font. */
   value: string;
-  state: Record<string, unknown>;
+  state: TemplateSettings["quote-banner"];
   onChange: (value: string) => void;
 }
 
@@ -67,11 +68,11 @@ export function FontSelect({ label, value, onChange }: Omit<QuoteFieldProps, "st
 }
 
 /** Only the styles the font has (some have no italics), each in its own weight and slant. */
-export function FontStyleSelect({ label, value, state, onChange }: QuoteFieldProps) {
+export function FontStyleSelect({ label, state, onChange }: QuoteFieldProps) {
   return (
     <Select
       label={label}
-      value={fontStyleShown(state.font, value)}
+      value={fontStyleShown(state.font, state.fontStyle)}
       options={fontStyleOptions(state.font).map((option) => ({
         ...option,
         style: fontStyleCss(state.font, option.value),

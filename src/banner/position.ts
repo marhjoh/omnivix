@@ -36,11 +36,6 @@ export function clampPosition({ x, y }: Position): Position {
   return { x: clampPercent(x), y: clampPercent(y) };
 }
 
-/** A position from banner state, kept between 0 and 100, or `fallback` when there's none. */
-export function positionOr(raw: unknown, fallback: Position): Position {
-  return isPosition(raw) ? clampPosition(raw) : fallback;
-}
-
 /** Parses a studio link's position, like `100,0`. Null unless both are numbers from 0 to 100. */
 export function parsePositionText(text: string): Position | null {
   const parts = text.split(",");

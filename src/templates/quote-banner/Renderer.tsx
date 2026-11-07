@@ -64,15 +64,14 @@ const LARGE_MARKS: Partial<
   },
 };
 
-export function QuoteBannerRenderer({ state, uiTheme }: RendererProps) {
+export function QuoteBannerRenderer({ state, uiTheme }: RendererProps<"quote-banner">) {
   const chrome = bannerUiChrome(uiTheme);
   const position = contentPositionFromState(state);
   const style = quoteStyleFromState(state, uiTheme);
-  const quote = String(state.quote ?? "");
-  const author = String(state.author ?? "");
-  const quoteSize = QUOTE_SIZES[state.contentSize as ContentSize];
+  const { quote, author } = state;
+  const quoteSize = QUOTE_SIZES[state.contentSize];
   // Follows the quote size setting, not the smaller type of a long quote.
-  const authorFontSize = Math.round(quoteSize * AUTHOR_SCALE[state.authorSize as ContentSize]);
+  const authorFontSize = Math.round(quoteSize * AUTHOR_SCALE[state.authorSize]);
 
   const longText = quote.length > LONG_QUOTE_CHARS;
   const quoteFontSize = longText
