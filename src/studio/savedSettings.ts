@@ -26,6 +26,7 @@ import { isContributionYear } from "@/src/lib/contributionYear";
 export const IMAGE_SETTINGS: Record<string, readonly string[]> = {
   backgroundImage: ["backgroundPosition"],
   logoImage: [],
+  photoImage: [],
 };
 
 /** True for an https link or a built-in background. Uploads can't be saved or linked. */
@@ -75,6 +76,7 @@ function fitsField(field: EditorFieldSchema, value: unknown): boolean {
     // removeUnsavableImages checks these.
     case "backgroundPicker":
     case "logoPicker":
+    case "photoPicker":
       return true;
     default:
       return (

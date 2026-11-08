@@ -20,6 +20,8 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
       return "/backgrounds/london.avif";
     case "logoPicker":
       return "https://example.com/logo.svg";
+    case "photoPicker":
+      return "https://example.com/photo.jpg";
     case "colorPicker":
       return "#ff6600";
     case "repoMultiSelect":
@@ -78,6 +80,15 @@ describe("linkQuery", () => {
     expect(String(linkQuery("github-banner", { ...initialState, username: "octocat" }))).toBe(
       "username=octocat",
     );
+  });
+
+  it("keeps a cleared setting whose default isn't empty", () => {
+    const { initialState } = getTemplates().find(({ meta }) => meta.id === "intro-banner")!;
+    const query = linkQuery("intro-banner", { ...initialState, github: "" })!;
+    expect(String(query)).toBe("github=");
+    expect(parseLinkSettings("intro-banner", Object.fromEntries(query))?.settings).toEqual({
+      github: "",
+    });
   });
 
   it("can't link an upload", () => {

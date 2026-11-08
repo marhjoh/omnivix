@@ -44,6 +44,19 @@ test("the tech stack banner adds an icon found by search", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the intro banner shows a typed name and link without GitHub data", async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto("/studio/intro-banner");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+
+  await page.getByLabel("Name", { exact: true }).fill("Ada Lovelace");
+  await page.getByLabel("Website", { exact: true }).fill("https://ada.dev/");
+  await expect(preview(page).getByText("Ada Lovelace", { exact: true })).toBeVisible();
+  await expect(preview(page).getByText("ada.dev", { exact: true })).toBeVisible();
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
 test("a transparent image URL has no background color", async ({ request }) => {
   const response = await request.get("/banner/quote-banner.png?transparent=true");
   expect(response.status()).toBe(200);

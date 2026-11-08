@@ -5,7 +5,7 @@ import { FitContent } from "@/src/banner/FitContent";
 import { brandIconColor } from "@/src/banner/iconColor";
 import { ELLIPSIS } from "@/src/banner/textStyle";
 import { IconMark } from "@/src/icons/IconMark";
-import { parseIconSelection } from "@/src/icons/iconSelection";
+import { iconsInOrder } from "@/src/icons/iconSelection";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/types";
 
@@ -22,9 +22,7 @@ export function TechStackBannerRenderer({
   uiTheme,
 }: RendererProps<"tech-stack-banner">) {
   const chrome = bannerUiChrome(uiTheme);
-  // In the setting's order. The data may still hold icons that were removed since.
-  const bySlug = new Map((data.icons ?? []).map((icon) => [icon.slug, icon]));
-  const icons = parseIconSelection(state.icons).flatMap((slug) => bySlug.get(slug) ?? []);
+  const icons = iconsInOrder(state.icons, data.icons);
   const tile = state.showLabels ? TILE.labeled : TILE.plain;
   const columns = Math.max(1, Math.min(Math.round(state.iconsPerRow), icons.length));
   const style: CSSProperties = {

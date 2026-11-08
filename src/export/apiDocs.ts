@@ -85,6 +85,8 @@ function accepts(field: EditorFieldSchema): string {
       return `${oneOf(field.options?.map((option) => option.value) ?? [])}, or a hex color such as \`#ff6600\` (\`%23ff6600\` in a studio link)`;
     case "logoPicker":
       return `a public \`https://\` ${linkFormatsOf("logoImage")} image URL; leave out for none`;
+    case "photoPicker":
+      return `a public \`https://\` ${linkFormatsOf("photoImage")} image URL; leave out for none`;
     case "repoMultiSelect":
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     case "iconPicker":
@@ -169,7 +171,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${exampleQuery}`, siteUrl)}`,
     "",
-    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
+    "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` and `photoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",
     "## Image URLs",
     "",

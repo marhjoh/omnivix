@@ -31,7 +31,7 @@ export async function loadInitialApiData(
   return { ...(await loadGithubData(templateId, state)), ...iconData(state) };
 }
 
-/** The tech stack banner's icons. They're on this server, so there's no wait. */
+/** The tech stack and intro banners' icons. They're on this server, so there's no wait. */
 function iconData(state: BannerSettings): Record<string, unknown> {
   const value = "icons" in state ? state.icons : "";
   const url = iconsUrl(value);

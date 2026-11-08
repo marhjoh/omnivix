@@ -1,6 +1,6 @@
 /**
- * Limits for image uploads (the background and the logo). The studio processes uploads to fit them
- * (src/studio/imageUpload.ts), and the export checks them again.
+ * Limits for image uploads (the background, the logo and the intro banner's photo). The studio
+ * processes uploads to fit them (src/studio/imageUpload.ts), and the export checks them again.
  */
 
 /** Raw file size limit before decode (bytes). */
@@ -25,8 +25,9 @@ export interface ImageUploadPolicy {
   svg: boolean;
 }
 
-// An export request carries both uploads, and Vercel limits a request body to 4.5 MB. As base64,
-// the background's 3 MB is 4 MB and the logo's 200 KB about 270 KB.
+// An export request carries every upload, and Vercel limits a request body to 4.5 MB. As base64,
+// the background's 3 MB is 4 MB, the logo's 200 KB about 270 KB and the photo's 100 KB about
+// 135 KB.
 
 /**
  * Exports are up to 4752px wide. The background is shown at 28% opacity, which hides compression
@@ -47,4 +48,17 @@ export const LOGO_UPLOAD: ImageUploadPolicy = {
   quality: 0.9,
   transparent: true,
   svg: true,
+};
+
+/**
+ * Next to a name only, at XL in a 3× export, the photo is 1000px across or more. A photo too
+ * detailed for 100 KB at 1200px is made smaller. The cap stays low because the request also
+ * carries the background.
+ */
+export const PHOTO_UPLOAD: ImageUploadPolicy = {
+  dimensions: [1200, 800, 600],
+  maxBytes: 100 * 1024,
+  quality: 0.86,
+  transparent: false,
+  svg: false,
 };

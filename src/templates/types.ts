@@ -14,6 +14,7 @@ export const TEMPLATE_IDS = [
   "repos-banner",
   "stats-banner",
   "tech-stack-banner",
+  "intro-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;
@@ -34,6 +35,7 @@ interface FieldValues {
   select: string;
   backgroundPicker: string | undefined;
   logoPicker: string | undefined;
+  photoPicker: string | undefined;
   colorPicker: string;
   sizeSelect: string;
   range: number;
@@ -91,7 +93,7 @@ export interface RenderData {
   contributions?: ContributionsNormalized;
   repos?: RepoNormalized[];
   organizations?: OrganizationNormalized[];
-  /** The tech stack banner's icons, loaded from Simple Icons. */
+  /** The tech stack and intro banners' icons, loaded from Simple Icons. */
   icons?: TechIcon[];
 }
 

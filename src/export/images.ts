@@ -1,16 +1,20 @@
 import "server-only";
 import { Effect } from "effect";
 import type { ExportRequest } from "@/src/export/request";
+import type { BannerSettings } from "@/src/templates/types";
 import { UnusableImage } from "@/src/export/errors";
 import { fetchImageLink, ImageLinkError, type ImageBytes } from "@/src/export/imageLink";
-import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD, PHOTO_UPLOAD } from "@/src/lib/imageUpload";
 import { formatNames, isDataUrl, linkImageTypes, type LinkImageType } from "@/src/lib/imageSource";
 import { isOneOf } from "@/src/lib/isOneOf";
 
-/** Types the export draws as they are, for processed uploads and background links. */
+/** Types the export draws as they are, for processed uploads and background and photo links. */
 const RASTER_TYPES = linkImageTypes({ svg: false });
 
-type ImageSettingKey = "backgroundImage" | "logoImage";
+type ImageSettingKey = "backgroundImage" | "logoImage" | "photoImage";
+
+/** A banner's settings, read as image settings. Only the intro banner has a photo. */
+type WithImages = BannerSettings & Partial<Record<ImageSettingKey, string>>;
 
 /**
  * The banner's image settings. An upload (data URL) or a link is taken out of the payload, and the
@@ -43,6 +47,13 @@ const EXPORT_IMAGES: ReadonlyArray<{
     maxUploadBytes: LOGO_UPLOAD.maxBytes,
     // Most logos are SVG. The render page shows it as an image, which can't run scripts.
     linkTypes: linkImageTypes({ svg: true }),
+  },
+  {
+    key: "photoImage",
+    name: "photo",
+    path: "/__export/photo",
+    maxUploadBytes: PHOTO_UPLOAD.maxBytes,
+    linkTypes: RASTER_TYPES,
   },
 ];
 
@@ -120,7 +131,7 @@ const resolveImage = Effect.fnUntraced(function* (
  * lets the caller check the render URL's length before any download.
  */
 export function withImagePaths<T extends ExportRequest>(payload: T): T {
-  const state = { ...payload.state };
+  const state: WithImages = { ...payload.state };
   for (const { key, path, presets } of EXPORT_IMAGES) {
     const value = state[key];
     if (value && !presets?.test(value)) state[key] = path;
@@ -136,11 +147,11 @@ export function withImagePaths<T extends ExportRequest>(payload: T): T {
 export const resolveExportImages = Effect.fnUntraced(function* <T extends ExportRequest>(
   payload: T,
 ): Effect.fn.Return<{ payload: T; images: ExportImage[] }, UnusableImage> {
+  const state: WithImages = { ...payload.state };
   const resolved = yield* Effect.all(
-    EXPORT_IMAGES.map((slot) => resolveImage(payload.state[slot.key], slot)),
+    EXPORT_IMAGES.map((slot) => resolveImage(state[slot.key], slot)),
     { concurrency: "unbounded" },
   );
-  const state = { ...payload.state };
   const images: ExportImage[] = [];
   for (const [index, image] of resolved.entries()) {
     if (!image) continue;

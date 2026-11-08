@@ -4,6 +4,7 @@ import {
   reposBannerDefinition,
   statsBannerDefinition,
   techStackBannerDefinition,
+  introBannerDefinition,
   quoteBannerDefinition,
 } from "@/src/templates/definitions";
 import type { TemplateDefinition, TemplateId } from "@/src/templates/types";
@@ -14,6 +15,7 @@ export const templateRegistry: { [K in TemplateId]: TemplateDefinition<TemplateS
   "repos-banner": reposBannerDefinition,
   "stats-banner": statsBannerDefinition,
   "tech-stack-banner": techStackBannerDefinition,
+  "intro-banner": introBannerDefinition,
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
 };

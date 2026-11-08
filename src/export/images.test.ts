@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
 import type { ExportRequest } from "@/src/export/request";
 import { resolveExportImages as resolveImages, withImagePaths } from "./images";
-import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD, PHOTO_UPLOAD } from "@/src/lib/imageUpload";
 import { templateRegistry } from "@/src/templates/registry";
 
 // The real download, unless a test replaces it.
@@ -134,6 +134,29 @@ describe("resolveExportImages with a logo", () => {
     expect(await resolveExportImages(withLogo("ftp://example.com/logo.png"))).toEqual({
       ok: false,
       error: "Unsupported logo image.",
+    });
+  });
+});
+
+describe("resolveExportImages with an intro banner's photo", () => {
+  const withPhoto = (photoImage: string): ExportRequest => ({
+    templateId: "intro-banner",
+    size: "wide",
+    state: { ...templateRegistry["intro-banner"].initialState, photoImage },
+  });
+
+  it("serves an uploaded photo at its own path", async () => {
+    const result = await resolveExportImages(
+      withPhoto(dataUrl("image/jpeg", Buffer.from([0xff, 0xd8, 0xff]))),
+    );
+    expect(result.ok && result.payload.state).toMatchObject({ photoImage: "/__export/photo" });
+  });
+
+  it(`rejects an upload over ${PHOTO_UPLOAD.maxBytes / 1024} KB`, async () => {
+    const photo = dataUrl("image/jpeg", Buffer.alloc(PHOTO_UPLOAD.maxBytes + 1));
+    expect(await resolveExportImages(withPhoto(photo))).toEqual({
+      ok: false,
+      error: "The uploaded photo is too large. Try a smaller image.",
     });
   });
 });

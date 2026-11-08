@@ -27,7 +27,7 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
 
 /**
  * "Loading profile and contributions…", from the GitHub data the banner draws. A banner without
- * GitHub data only waits for the tech stack banner's icons.
+ * GitHub data only waits for its Simple Icons.
  */
 export function previewLoadingMessage(githubData: readonly GithubDataKind[]): string {
   if (githubData.length === 0) return "Loading icons…";
@@ -36,9 +36,9 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 }
 
 /**
- * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote and
- * the tech stack banner for its icons. The action opens the username dialog or puts the cursor in
- * that setting's field.
+ * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote,
+ * the tech stack banner for its icons and the intro banner for a name. The action opens the
+ * username dialog or puts the cursor in that setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
   switch (missingSetting) {
@@ -53,6 +53,12 @@ export function previewEmptyCopy(missingSetting: string) {
         title: "Add your tech stack",
         hint: "Search for icons in the sidebar to add them here.",
         actionLabel: "Add icons",
+      };
+    case "name":
+      return {
+        title: "Add your name",
+        hint: "Enter your name in the sidebar to see it here.",
+        actionLabel: "Add name",
       };
     default:
       return {

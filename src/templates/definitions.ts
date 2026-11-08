@@ -22,6 +22,14 @@ import {
 } from "@/src/banner/techStack";
 import { GRID_TEXT_MAX_LENGTH, toGridText } from "@/src/banner/gridText";
 import {
+  DEFAULT_INTRO_ICONS,
+  HEADLINE_MAX_LENGTH,
+  INTRO_LINKS,
+  LINK_MAX_LENGTH,
+  NAME_MAX_LENGTH,
+  TAGLINE_MAX_LENGTH,
+} from "@/src/banner/intro";
+import {
   AUTHOR_MAX_LENGTH,
   DEFAULT_QUOTE_STYLE,
   QUOTE_COLOR_OPTIONS,
@@ -281,6 +289,55 @@ export const techStackBannerDefinition: TemplateDefinition<TemplateSettings["tec
       showIconColors: true,
     },
   };
+
+export const introBannerDefinition: TemplateDefinition<TemplateSettings["intro-banner"]> = {
+  meta: {
+    id: "intro-banner",
+    title: "Intro Banner",
+    description: "Your name, headline, and links.",
+    needsUsername: false,
+    githubData: [],
+  },
+  schema: [
+    sizeField,
+    backgroundField,
+    alignmentField,
+    contentSizeField,
+    { key: "name", label: "Name", type: "text", required: true, maxLength: NAME_MAX_LENGTH },
+    { key: "headline", label: "Headline", type: "text", maxLength: HEADLINE_MAX_LENGTH },
+    { key: "tagline", label: "Tagline", type: "textarea", maxLength: TAGLINE_MAX_LENGTH },
+    { key: "photoImage", label: "Photo", type: "photoPicker" },
+    ...INTRO_LINKS.map(({ key, label }): EditorFieldSchema<TemplateSettings["intro-banner"]> => ({
+      key,
+      label,
+      type: "text",
+      maxLength: LINK_MAX_LENGTH,
+    })),
+    { key: "icons", label: "Icons", type: "iconPicker" },
+    { key: "showHeadline", label: "Headline", type: "toggle" },
+    { key: "showLinks", label: "Links", type: "toggle" },
+    { key: "showIcons", label: "Icons", type: "toggle" },
+    { key: "showIconColors", label: "Icon colors", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    name: "Martin Johannessen",
+    headline: "Developer",
+    tagline: "Turning messy real-world problems into products.",
+    github: "marhjoh",
+    linkedin: "martinhejo",
+    x: "",
+    website: "",
+    email: "",
+    icons: DEFAULT_INTRO_ICONS,
+    showHeadline: true,
+    showLinks: true,
+    showIcons: true,
+    showIconColors: true,
+  },
+};
 
 export const contributionBannerDefinition: TemplateDefinition<
   TemplateSettings["contribution-banner"]
