@@ -3,6 +3,7 @@ import {
   activeDays,
   decodeAiUsage,
   encodeAiUsage,
+  firstActiveDay,
   USAGE_DAYS,
   usageCalendar,
   type AiUsage,
@@ -68,7 +69,8 @@ describe("usageCalendar", () => {
     expect(calendar.months).toHaveLength(13);
   });
 
-  it("counts active days", () => {
+  it("counts active days and finds the first one", () => {
     expect(activeDays(usage)).toBe(3);
+    expect(firstActiveDay(usage)).toBe("2026-11-05");
   });
 });

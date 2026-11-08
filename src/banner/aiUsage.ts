@@ -115,6 +115,11 @@ export function isAiUsage(text: string): boolean {
   return decodeAiUsage(text) !== null;
 }
 
+/** The first day with usage (YYYY-MM-DD). */
+export function firstActiveDay({ end, levels }: AiUsage): string {
+  return toYmd(utcMs(usageStart(end)) + levels.search(/[1-4]/) * DAY_MS);
+}
+
 export function activeDays({ levels }: AiUsage): number {
   return levels.replaceAll("0", "").length;
 }
