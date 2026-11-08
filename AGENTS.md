@@ -1,6 +1,6 @@
 # Omnivix
 
-A Next.js app on Vercel that turns public GitHub data and quotes into downloadable profile banners. No user accounts.
+A Next.js app on Vercel that turns public GitHub data, typed text and pasted AI usage into downloadable profile banners. No user accounts.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
@@ -58,7 +58,7 @@ The studio preview and the export render the same `BannerRenderer`. `POST /api/e
 
 The server runs on Effect 4: the export API (`src/export/`), the GitHub client and routes (`src/github/`), and the settings schemas (`src/templates/stateSchemas.ts`, `src/lib/schema.ts`).
 
-- Server only: every module that imports `effect` starts with `import "server-only"`, so a browser import fails the build. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and checks nothing itself: its controls keep settings valid, and the export API checks them.
+- Server only: every module that imports `effect` starts with `import "server-only"`, so a browser import fails the build. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and checks nothing itself: its controls keep settings valid, and the export API checks them. The one exception is pasted ccusage output, which `src/banner/ccusage.ts` checks by hand.
 - Most examples online and most AI output are Effect 3. Work from the installed docs: `Effect.catchAll` is now `Effect.catch`, `Effect.either` is `Effect.result`, and errors are `Schema.TaggedError` classes.
 - Check a module's `@stability` tag before using it; unstable ones can change in a minor release, which is why the version is pinned.
 - Route handlers stay plain Next.js: build one Effect and run it with `Effect.runPromise` at the edge, turning each tagged error into its response there with `Effect.catchTags` (see `src/export/route.ts`).

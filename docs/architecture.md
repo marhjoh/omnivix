@@ -1,6 +1,6 @@
 # Architecture
 
-Omnivix is a Next.js app on Vercel that turns public GitHub data and quotes into downloadable banners. No user accounts are needed.
+Omnivix is a Next.js app on Vercel that turns public GitHub data, typed text and pasted AI usage into downloadable banners. No user accounts are needed.
 
 ## Rendering
 
@@ -17,7 +17,7 @@ flowchart LR
 Two kinds of scaling keep the preview and the export identical:
 
 - **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`previewScale.ts`).
-- **The content inside it:** the GitHub, repos, stats, tech stack, intro, terminal and contribution banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
+- **The content inside it:** the GitHub, repos, stats, tech stack, intro, terminal, AI usage and contribution banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
 
 YouTube and Reddit crop the banner differently on each device (`views` in `sizes.ts`). YouTube phones show the middle 1546 × 423, desktop the 2560 × 423 strip it's in, and TVs the whole image. Reddit's app shows the middle half of a 3:1 upload, with its buttons, the avatar and a fade over parts of it. The content and the logo fit the safe area, the part every device shows clearly (the phone view on YouTube), and the preview shows one view at a time.
 
@@ -66,6 +66,13 @@ Everything the visitor chooses is kept in cookies, so the server renders it on t
 - **Theme:** the `omnivix-theme` cookie, applied by an inline script in `<head>`. The studio also reads it on the server, because the preview picks colors in JavaScript.
 - **Studio settings:** one cookie per template, plus one for the GitHub username.
 - **Background:** a built-in background or link is saved with its position and zoom. An upload isn't saved, because it's too large for a cookie.
+
+## AI usage
+
+No API gives a person's coding agent usage, so the AI usage banner reads the output of [ccusage](https://github.com/ryoppippi/ccusage), which the visitor runs on their own machine and pastes into the studio.
+
+- **Read in the browser:** `ccusage.ts` checks the JSON by hand, because `effect` stays out of the browser. The paste goes in a dialog (`UsageModal.tsx`), and one it can't read is reported in a toast.
+- **Only what the banner draws is kept:** the last 365 days as one level (0–4) per day, the totals and the model and agent shares. `aiUsage.ts` writes them as one short `usage` setting of about 600 characters, so it fits the settings cookie, a studio link and the export token. The JSON itself is never saved or sent.
 
 ## Code map
 
