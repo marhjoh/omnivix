@@ -78,7 +78,8 @@ export function buildCalendarLayout(options: {
     }
   }
 
-  // A month label too close to the previous one is skipped.
+  // A month label too close to the previous one is skipped, and so is one in the last column,
+  // which is too narrow for it.
   const gridStartMs = sundayOfWeek(weeks[0].firstDay);
   const MS_PER_WEEK = 7 * MS_PER_DAY;
   const monthLabels: MonthLabel[] = [];
@@ -91,7 +92,7 @@ export function buildCalendarLayout(options: {
       firstDayMs < gridStartMs
         ? 0
         : Math.min(Math.floor((firstDayMs - gridStartMs) / MS_PER_WEEK), columnCount - 1);
-    if (colIndex < prevColIndex + 2) continue;
+    if (colIndex < prevColIndex + 2 || colIndex === columnCount - 1) continue;
     monthLabels.push({ label: month.name.slice(0, 3), colIndex });
     prevColIndex = colIndex;
   }
