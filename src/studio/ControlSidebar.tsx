@@ -13,6 +13,7 @@ import type {
 import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import { IconPicker } from "@/src/studio/IconPicker";
+import { UsageField } from "@/src/studio/UsageField";
 import {
   AuthorPrefixSelect,
   FontSelect,
@@ -40,6 +41,7 @@ import { UsernameField } from "@/src/studio/UsernameField";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
+import { decodeAiUsage } from "@/src/banner/aiUsage";
 
 interface FieldContext {
   schema: EditorFieldSchema[];
@@ -52,6 +54,7 @@ interface FieldContext {
   background: BannerBackground | undefined;
   onError: (message: string) => number;
   onErrorResolved: (toastId: number) => void;
+  onOpenUsage: () => void;
 }
 
 type FieldOfType<T extends EditorFieldType> = Extract<EditorFieldSchema, { type: T }>;
@@ -226,6 +229,9 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
       onChange={(value) => onChange(field.key, value)}
     />
   ),
+  usagePaste: (field, { state, onOpenUsage }) => (
+    <UsageField label={fieldLabel(field)} value={fieldValue(state, field)} onOpen={onOpenUsage} />
+  ),
 };
 
 function renderControl(field: EditorFieldSchema, ctx: FieldContext): ReactNode {
@@ -255,6 +261,8 @@ function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   if (field.type === "repoMultiSelect") return !selectedMode;
   // Only once there's text to put something behind.
   if (field.key === "showContributions") return "gridText" in state && !state.gridText;
+  // Output made with `ccusage --no-cost` has no cost to show.
+  if (field.key === "showCost") return "usage" in state && decodeAiUsage(state.usage)?.cost == null;
   return false;
 }
 
@@ -269,6 +277,7 @@ export function ControlSidebar({
   adjustableBackground,
   onError,
   onErrorResolved,
+  onOpenUsage,
 }: {
   schema: EditorFieldSchema[];
   state: StudioSettings;
@@ -283,6 +292,8 @@ export function ControlSidebar({
   onError: (message: string) => number;
   /** Hides the toast with this id, if it's still showing. */
   onErrorResolved: (toastId: number) => void;
+  /** Opens the AI usage dialog. */
+  onOpenUsage: () => void;
   /** The Profile section at the top, for templates that need a username. */
   profile?: { username: string; onChangeUsername: () => void };
 }) {
@@ -300,6 +311,7 @@ export function ControlSidebar({
     background: adjustableBackground,
     onError,
     onErrorResolved,
+    onOpenUsage,
   };
 
   const renderField = (field: EditorFieldSchema) => {

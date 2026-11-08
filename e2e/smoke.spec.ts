@@ -57,6 +57,43 @@ test("the intro banner shows a typed name and link without GitHub data", async (
   expect(errors).toEqual([]);
 });
 
+test("the AI usage banner reads ccusage output pasted in its dialog", async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto("/studio/ai-usage-banner");
+  const dialog = page.getByRole("dialog", { name: "Add your AI usage" });
+  const field = dialog.getByLabel("ccusage output");
+  await expect(field).toBeFocused();
+
+  await expect(dialog.getByRole("button", { name: "Use usage" })).toBeDisabled();
+  await field.fill("not ccusage");
+  await dialog.getByRole("button", { name: "Use usage" }).click();
+  await expect(page.getByText("This isn't JSON.")).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(preview(page)).toContainText("Add your AI usage");
+  await expect(download(page)).toBeDisabled();
+
+  await page.getByRole("button", { name: "Add usage", exact: true }).click();
+  await field.fill(
+    JSON.stringify({
+      daily: [
+        {
+          date: "2026-10-01",
+          totalTokens: 5000,
+          totalCost: 3.2,
+          modelBreakdowns: [{ modelName: "claude-haiku-4-5-20251001", inputTokens: 5000 }],
+        },
+      ],
+    }),
+  );
+  await dialog.getByRole("button", { name: "Use usage" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await expect(preview(page).getByText("Haiku 4.5")).toBeVisible();
+  await expect(page.getByRole("button", { name: "AI usage Oct 1, 2026" })).toBeVisible();
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
 test("a transparent image URL has no background color", async ({ request }) => {
   const response = await request.get("/banner/quote-banner.png?transparent=true");
   expect(response.status()).toBe(200);

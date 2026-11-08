@@ -3,6 +3,7 @@ import { getTemplates } from "@/src/templates/registry";
 import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { LATEST_YEAR } from "@/src/lib/contributionYear";
+import { encodeAiUsage, USAGE_DAYS } from "@/src/banner/aiUsage";
 import { bannerImageUrl, linkQuery } from "./embedUrl";
 import { parseLinkSettings } from "./parseLinkSettings";
 
@@ -28,6 +29,15 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
       return "omnivix, dotfiles";
     case "iconPicker":
       return "rust, git";
+    case "usagePaste":
+      return encodeAiUsage({
+        end: "2026-11-07",
+        levels: "1".repeat(USAGE_DAYS),
+        tokens: 5000,
+        cost: null,
+        models: [{ name: "Sonnet 4.5", percent: 100 }],
+        agents: [],
+      });
     case "text":
     case "textarea":
       return "Ship it, (twice) & smile #1";

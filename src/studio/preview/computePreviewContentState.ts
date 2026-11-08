@@ -37,7 +37,8 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 
 /**
  * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote,
- * the tech stack banner for its icons and the intro banner for a name. The action opens the
+ * the tech stack banner for its icons, the intro banner for a name and the AI usage banner for
+ * pasted ccusage output. The action opens the
  * username dialog or puts the cursor in that setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
@@ -53,6 +54,12 @@ export function previewEmptyCopy(missingSetting: string) {
         title: "Add your tech stack",
         hint: "Search for icons in the sidebar to add them here.",
         actionLabel: "Add icons",
+      };
+    case "usage":
+      return {
+        title: "Add your AI usage",
+        hint: "Paste the output of ccusage to see it here.",
+        actionLabel: "Add usage",
       };
     case "name":
       return {

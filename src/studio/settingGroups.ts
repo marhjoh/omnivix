@@ -17,6 +17,8 @@ export function fieldLabel(field: EditorFieldSchema): string {
 export const STYLE_GROUP = "Style";
 
 const GROUPS: Array<{ title: string; keys: string[] | null }> = [
+  // Only the AI usage banner has this. It's at the top, like the GitHub banners' Profile.
+  { title: "Usage", keys: ["usage"] },
   { title: "Format", keys: ["size"] },
   { title: STYLE_GROUP, keys: ["themeId", "cellShape", "showIconColors", "backgroundImage"] },
   {
@@ -61,7 +63,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Only the tech stack and intro banners have these.
   { title: "Icons", keys: ["icons", "iconsPerRow", "showLabels", "showIcons"] },
-  // Only the stats and terminal banners have these.
+  // Only the stats, terminal and AI usage banners have these.
   {
     title: "Stats",
     keys: [
@@ -71,11 +73,17 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "showFollowingCount",
       "showPullRequestCount",
       "showContributionCount",
+      "showTokenCount",
+      "showCost",
+      "showActiveDays",
       "showCurrentStreak",
       "showLongestStreak",
       "showStreak",
       "showLanguages",
       "showOrganizations",
+      "showHeatmap",
+      "showModels",
+      "showAgents",
     ],
   },
   // Everything else, in schema order. New settings land here until they get a group.

@@ -30,6 +30,17 @@ export const GRID_COLOR_PRESETS = [
     label: "Sunset",
     gridLevels: ["#3d2a45", "#6c3560", "#a04578", "#d8568a", "#ff8fb8"],
   },
+  // Brand colors for the AI usage banner.
+  {
+    id: "claude",
+    label: "Claude",
+    gridLevels: ["#2c2320", "#5e3324", "#9b4c33", "#d97757", "#f5a98a"],
+  },
+  {
+    id: "openai",
+    label: "OpenAI",
+    gridLevels: ["#1b2622", "#0b4a3b", "#0e7a60", "#10a37f", "#5fd4b0"],
+  },
 ] as const satisfies readonly GridColorPreset[];
 
 export type GridColorsId = (typeof GRID_COLOR_PRESETS)[number]["id"];

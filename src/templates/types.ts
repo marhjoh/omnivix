@@ -16,6 +16,7 @@ export const TEMPLATE_IDS = [
   "tech-stack-banner",
   "intro-banner",
   "terminal-banner",
+  "ai-usage-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;
@@ -42,6 +43,8 @@ interface FieldValues {
   range: number;
   repoMultiSelect: string;
   iconPicker: string;
+  /** Opens the AI usage dialog, which saves what the banner draws (aiUsage.ts). */
+  usagePaste: string;
 }
 
 export type EditorFieldType = keyof FieldValues;

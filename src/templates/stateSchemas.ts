@@ -18,6 +18,7 @@ import {
   TAGLINE_MAX_LENGTH,
 } from "@/src/banner/intro";
 import { TERMINAL_TEXT_MAX_LENGTH } from "@/src/banner/terminal";
+import { isAiUsage } from "@/src/banner/aiUsage";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
 import {
@@ -74,11 +75,16 @@ const githubUsername = requiredText.check(
   }),
 );
 
-/** Shared by the GitHub and contribution banners. */
-const contributionGridFields = {
-  year: textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`),
+/** Shared by the GitHub, contribution and AI usage banners. */
+const gridStyleFields = {
   themeId: oneOf(GRID_COLOR_IDS),
   cellShape: oneOf(CONTRIBUTION_CELL_SHAPES),
+};
+
+/** Shared by the GitHub and contribution banners. */
+const contributionGridFields = {
+  ...gridStyleFields,
+  year: textWhere(isContributionYear, `Must be a four-digit year or "${LATEST_YEAR}"`),
 };
 
 /** Shared by the GitHub, repos and stats banners. */
@@ -98,6 +104,13 @@ const link = text.check(textUpTo(LINK_MAX_LENGTH));
 const quoteColor = textWhere(isQuoteColor, "Unknown color");
 
 const terminalText = text.check(textUpTo(TERMINAL_TEXT_MAX_LENGTH));
+
+/** Empty until something is pasted. An empty value only gets "Required". */
+const aiUsage = requiredText.check(
+  Schema.makeFilter((value: string) => value === "" || isAiUsage(value), {
+    message: "Must be usage as the studio saves it",
+  }),
+);
 
 const STATE_SCHEMAS = {
   "github-banner": Schema.Struct({
@@ -186,6 +199,21 @@ const STATE_SCHEMAS = {
     showColorBlocks: flag,
     showWindow: flag,
   }),
+  "ai-usage-banner": Schema.Struct({
+    ...bannerFields,
+    ...gridStyleFields,
+    contentSize,
+    usage: aiUsage,
+    showTokenCount: flag,
+    showCost: flag,
+    showActiveDays: flag,
+    showCurrentStreak: flag,
+    showLongestStreak: flag,
+    showHeatmap: flag,
+    showModels: flag,
+    showAgents: flag,
+    showIconColors: flag,
+  }),
   "contribution-banner": Schema.Struct({
     ...bannerFields,
     ...contributionGridFields,
@@ -224,6 +252,9 @@ export type ProfileSettings = Schema.Struct<typeof profileFields>["Type"];
 
 /** The GitHub and contribution banners' grid settings. */
 export type ContributionGridSettings = Schema.Struct<typeof contributionGridFields>["Type"];
+
+/** The grid's colors and cell shape. */
+export type GridStyleSettings = Schema.Struct<typeof gridStyleFields>["Type"];
 
 /**
  * Checks a template's settings. On failure it returns each bad field as a `state.…` path. Unknown
