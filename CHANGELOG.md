@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.33.0](https://github.com/marhjoh/omnivix/compare/v1.32.0...v1.33.0) (2026-11-08)
+
+
+### Features
+
+* add an Intro banner ([f3ae3d0](https://github.com/marhjoh/omnivix/commit/f3ae3d0dbe7804032781fe43ef05834a2576f4e9))
+
+
+### Bug Fixes
+
+* keep cleared settings in studio links and image URLs ([f3ae3d0](https://github.com/marhjoh/omnivix/commit/f3ae3d0dbe7804032781fe43ef05834a2576f4e9))
+
 ## [1.32.0](https://github.com/marhjoh/omnivix/compare/v1.31.0...v1.32.0) (2026-11-08)
 
 
