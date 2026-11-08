@@ -120,7 +120,6 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
   const languages = state.showLanguages ? topLanguages(repos) : [];
   // Every banner size is wide, so up to six tiles share one row. Seven or eight make two rows.
   const columns = tiles.length <= 6 ? tiles.length : Math.ceil(tiles.length / 2);
-  const shownOrganizations = state.showOrganizations ? organizations : [];
   const card: CSSProperties = { ...cardStyle(chrome), padding: CARD_PADDING };
   // Zero width with a full min-width: a wide card wraps at the tiles' width instead of widening
   // the banner content.
@@ -156,9 +155,9 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
         {languages.length > 0 && (
           <LanguageBar languages={languages} chrome={chrome} style={fullWidthCard} />
         )}
-        {shownOrganizations.length > 0 && (
+        {state.showOrganizations && organizations.length > 0 && (
           <OrganizationsCard
-            organizations={shownOrganizations}
+            organizations={organizations}
             iconColor={iconColor("blue")}
             chrome={chrome}
             style={fullWidthCard}

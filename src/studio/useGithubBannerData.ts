@@ -144,6 +144,8 @@ export function useGithubBannerData({
     /** Another year's grid is showing while this year's loads. */
     contributionsStale: contributionsFetch.stale,
     avatarFailed,
+    /** The user is a public member of no organizations. */
+    noOrganizations: organizations?.length === 0,
     accountCreatedYear: user?.createdAt ? new Date(user.createdAt).getUTCFullYear() : null,
     /** The owner's repositories, for the picker. */
     repoCatalog: {
