@@ -87,6 +87,7 @@ try {
     await studio(demo, "intro-banner", "sydney"),
     await studio(demo, "terminal-banner", "swiss-alps"),
     await studio(demo, "ai-usage-banner", "sahara", { usage: demoAiUsage() }),
+    await studio(demo, "certifications-banner", "norwegian-fjord"),
     await studio(demo, "contribution-banner", "toronto"),
     await studio(demo, "quote-banner", "new-york"),
   ];
