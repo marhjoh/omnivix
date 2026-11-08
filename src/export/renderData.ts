@@ -8,6 +8,7 @@ import {
 } from "@/src/github/client";
 import { techIcons } from "@/src/icons/simpleIcons";
 import { parseIconSelection } from "@/src/icons/iconSelection";
+import { drawnIcons } from "@/src/icons/bannerIcons";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import { yearOf } from "@/src/lib/contributionYear";
@@ -15,9 +16,9 @@ import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
 /**
- * Loads the data the render page draws, only what this banner needs: GitHub data, and the tech
- * stack and intro banners' icons. The export has already checked the settings, so the username
- * and year are valid.
+ * Loads the data the render page draws, only what this banner needs: GitHub data, and the Simple
+ * Icons of the tech stack, intro and certifications banners. The export has already checked the
+ * settings, so the username and year are valid.
  */
 export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
   const username = usernameOf(state);
@@ -39,7 +40,7 @@ export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
           )
         : none,
       organizations: needs.has("organizations") ? getOrganizations(username) : none,
-      icons: "icons" in state ? Effect.succeed(techIcons(parseIconSelection(state.icons))) : none,
+      icons: Effect.succeed(techIcons(parseIconSelection(drawnIcons(state)))),
     },
     { concurrency: "unbounded" },
   );

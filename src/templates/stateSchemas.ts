@@ -19,6 +19,15 @@ import {
 } from "@/src/banner/intro";
 import { TERMINAL_TEXT_MAX_LENGTH } from "@/src/banner/terminal";
 import { isAiUsage } from "@/src/banner/aiUsage";
+import {
+  CERTIFICATION_NAME_MAX_LENGTH,
+  ISSUER_MAX_LENGTH,
+  isCertifications,
+  MAX_BADGES_PER_ROW,
+  MAX_CERTIFICATIONS,
+  MIN_BADGES_PER_ROW,
+  namedCertifications,
+} from "@/src/banner/certifications";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
 import {
@@ -109,6 +118,16 @@ const terminalText = text.check(textUpTo(TERMINAL_TEXT_MAX_LENGTH));
 const aiUsage = requiredText.check(
   Schema.makeFilter((value: string) => value === "" || isAiUsage(value), {
     message: "Must be usage as the studio saves it",
+  }),
+);
+
+/** Rows without a name are allowed, but one needs a name for the banner to show anything. */
+const certifications = requiredText.check(
+  Schema.makeFilter((value: string) => value === "" || isCertifications(value), {
+    message: `Must be at most ${MAX_CERTIFICATIONS} certifications as name|issuer|year|slug, separated by ;, with names up to ${CERTIFICATION_NAME_MAX_LENGTH} and issuers up to ${ISSUER_MAX_LENGTH} characters`,
+  }),
+  Schema.makeFilter((value: string) => value === "" || namedCertifications(value).length > 0, {
+    message: "Must have a certification with a name",
   }),
 );
 
@@ -212,6 +231,15 @@ const STATE_SCHEMAS = {
     showHeatmap: flag,
     showModels: flag,
     showAgents: flag,
+    showIconColors: flag,
+  }),
+  "certifications-banner": Schema.Struct({
+    ...bannerFields,
+    contentSize,
+    certifications,
+    badgesPerRow: numberBetween(MIN_BADGES_PER_ROW, MAX_BADGES_PER_ROW),
+    showIssuer: flag,
+    showYear: flag,
     showIconColors: flag,
   }),
   "contribution-banner": Schema.Struct({

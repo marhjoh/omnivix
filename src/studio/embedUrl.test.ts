@@ -29,6 +29,8 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
       return "omnivix, dotfiles";
     case "iconPicker":
       return "rust, git";
+    case "certificationList":
+      return "AWS Solutions Architect, Associate|AWS|2024|;CKA|Linux Foundation||linuxfoundation";
     case "usagePaste":
       return encodeAiUsage({
         end: "2026-11-07",

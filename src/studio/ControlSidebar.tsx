@@ -14,6 +14,7 @@ import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect"
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import { IconPicker } from "@/src/studio/IconPicker";
 import { UsageField } from "@/src/studio/UsageField";
+import { CertificationList } from "@/src/studio/CertificationList";
 import {
   AuthorPrefixSelect,
   FontSelect,
@@ -223,6 +224,14 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
   ),
   iconPicker: (field, { state, onChange }) => (
     <IconPicker
+      id={field.key}
+      label={fieldLabel(field)}
+      value={fieldValue(state, field)}
+      onChange={(value) => onChange(field.key, value)}
+    />
+  ),
+  certificationList: (field, { state, onChange }) => (
+    <CertificationList
       id={field.key}
       label={fieldLabel(field)}
       value={fieldValue(state, field)}

@@ -168,7 +168,7 @@ export function IconPicker({
 }
 
 /** A search result. Picked ones show a check, the others their brand color. */
-function IconOption({
+export function IconOption({
   id,
   icon,
   picked,

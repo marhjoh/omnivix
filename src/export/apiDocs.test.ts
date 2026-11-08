@@ -17,6 +17,18 @@ describe("exportApiDocs", () => {
     }
   });
 
+  it("keeps every settings row at three cells, even with | in a value", () => {
+    const keys = new Set<string>(
+      getTemplates().flatMap(({ schema }) =>
+        schema.filter((f) => f.type !== "sizeSelect").map((f) => f.key),
+      ),
+    );
+    const rows = docs.split("\n").filter((line) => keys.has(/^\| `([^`]+)`/.exec(line)?.[1] ?? ""));
+    for (const row of rows) {
+      expect(row.replaceAll("\\|", "").split("|"), row).toHaveLength(5);
+    }
+  });
+
   it("shows an example the API accepts", () => {
     expect(docs).toContain(JSON.stringify(EXAMPLE_REQUEST));
     expect(parseExportRequest(EXAMPLE_REQUEST).ok).toBe(true);

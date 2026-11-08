@@ -18,6 +18,7 @@ import { clampPosition, isPosition } from "@/src/banner/position";
 import { isHttpsUrl } from "@/src/lib/imageSource";
 import { isContributionYear } from "@/src/lib/contributionYear";
 import { isAiUsage } from "@/src/banner/aiUsage";
+import { isCertifications } from "@/src/banner/certifications";
 
 /**
  * Each image setting with the settings that belong to that image. A background's position goes
@@ -74,6 +75,8 @@ function fitsField(field: EditorFieldSchema, value: unknown): boolean {
       return typeof value === "string" && isRepoSelection(value);
     case "iconPicker":
       return typeof value === "string" && isIconSelection(value);
+    case "certificationList":
+      return typeof value === "string" && isCertifications(value);
     case "usagePaste":
       return typeof value === "string" && (value === "" || isAiUsage(value));
     // removeUnsavableImages checks these.
