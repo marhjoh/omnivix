@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Made-up posts for the latest posts banner's landing, link-preview and README images. -->
+<rss version="2.0">
+  <channel>
+    <title>Demo blog</title>
+    <link>https://github.com/marhjoh/omnivix</link>
+    <description>Made-up posts for Omnivix's screenshots.</description>
+    <item>
+      <title>Shipping a banner generator in a weekend</title>
+      <pubDate>Mon, 02 Nov 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>What RSS taught me about the open web</title>
+      <pubDate>Sun, 18 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Three lessons from moving a server to Effect</title>
+      <pubDate>Fri, 02 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Designing for a 4:1 canvas</title>
+      <pubDate>Tue, 15 Sep 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>My developer setup in 2026</title>
+      <pubDate>Sun, 30 Aug 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Why I still write a blog</title>
+      <pubDate>Sun, 09 Aug 2026 08:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
