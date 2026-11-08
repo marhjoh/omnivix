@@ -5,7 +5,7 @@ import { guardRateLimit, rateLimitResetAt, warnIfQuotaLow } from "@/src/github/r
 
 const API = "https://api.github.com";
 
-/** The limit for one request. The studio page waits far less (initialGithubData). */
+/** The limit for one request. The studio page waits far less (initialApiData.ts). */
 const REQUEST_TIMEOUT = "10 seconds";
 
 /** Added to every query so a low quota gets logged (see warnIfQuotaLow). It costs nothing. */

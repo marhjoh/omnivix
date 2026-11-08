@@ -7,7 +7,7 @@ import { StudioShell } from "@/src/studio/StudioShell";
 import { StudioQueryProvider } from "@/src/studio/StudioQueryProvider";
 import { startingSettings } from "@/src/studio/linkSettings";
 import { parseLinkSettings } from "@/src/studio/parseLinkSettings";
-import { loadInitialGithubData } from "@/src/studio/initialGithubData";
+import { loadInitialApiData } from "@/src/studio/initialApiData";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
 import { parseThemeCookie, THEME_COOKIE_NAME } from "@/src/theme/theme";
 import {
@@ -62,8 +62,8 @@ export default async function StudioPage({
   // A studio link's settings win over the saved ones (see linkSettings.ts).
   const link = parseLinkSettings(templateId, await searchParams);
   const start = startingSettings(templateId, readCookie, link);
-  // Load GitHub data for the starting settings, so it matches what the studio shows first.
-  const initialGithubData = await loadInitialGithubData(templateId, start.state);
+  // Load data for the starting settings, so the first paint shows the banner.
+  const initialApiData = await loadInitialApiData(templateId, start.state);
   return (
     // The banner preview picks its colors in JavaScript, so the theme must be right on the server.
     <ThemeProvider initialTheme={parseThemeCookie(readCookie(THEME_COOKIE_NAME))}>
@@ -77,7 +77,7 @@ export default async function StudioPage({
           initialPreviewView={read(PREVIEW_VIEW_COOKIE)}
           start={start}
           link={link}
-          initialGithubData={initialGithubData}
+          initialApiData={initialApiData}
         />
       </StudioQueryProvider>
     </ThemeProvider>

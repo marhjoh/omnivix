@@ -24,6 +24,8 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
       return "#ff6600";
     case "repoMultiSelect":
       return "omnivix, dotfiles";
+    case "iconPicker":
+      return "rust, git";
     case "text":
     case "textarea":
       return "Ship it, (twice) & smile #1";

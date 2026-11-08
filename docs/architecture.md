@@ -17,7 +17,7 @@ flowchart LR
 Two kinds of scaling keep the preview and the export identical:
 
 - **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`previewScale.ts`).
-- **The content inside it:** the GitHub, contribution and repos banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
+- **The content inside it:** the GitHub, repos, stats, tech stack and contribution banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
 
 YouTube and Reddit crop the banner differently on each device (`views` in `sizes.ts`). YouTube phones show the middle 1546 × 423, desktop the 2560 × 423 strip it's in, and TVs the whole image. Reddit's app shows the middle half of a 3:1 upload, with its buttons, the avatar and a fade over parts of it. The content and the logo fit the safe area, the part every device shows clearly (the phone view on YouTube), and the preview shows one view at a time.
 
@@ -94,6 +94,10 @@ Server-side export, on Effect. The export API (`route.ts`) and image URLs (`bann
 ### `src/github/`
 
 GitHub data, on Effect. `api.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`. Its `githubRest` does the same for the REST API, for what GraphQL doesn't give our token: a following count that includes organizations, and a user's public organizations; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups, for the times in `cacheTimes.ts` (browser-safe, as the landing FAQ quotes them). The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
+
+### `src/icons/`
+
+Brand icons from [Simple Icons](https://simpleicons.org) for the tech stack banner. Every icon's path is in the `simple-icons` package (about 5 MB), so only the server loads it (`simpleIcons.ts`). The studio gets a search list without paths (`/api/icons/catalog`, built once with the app) and the paths of the icons it shows (`/api/icons?slugs=`). The export reads them on the server.
 
 ### `src/stats/`, `src/admin/`
 

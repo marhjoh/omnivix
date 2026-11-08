@@ -11,6 +11,8 @@ import { githubDataUrls } from "@/src/studio/githubUrls";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
+import { iconsUrl, parseIconSelection } from "@/src/icons/iconSelection";
+import { techIcons } from "@/src/icons/simpleIcons";
 
 /**
  * How long the studio page waits for GitHub data. It's usually in the server cache and takes
@@ -19,12 +21,29 @@ import { usernameOf } from "@/src/lib/githubUsername";
 const WAIT_MS = 800;
 
 /**
- * Loads the GitHub data the studio shows first, keyed by the URL the studio would fetch it from.
- * This way the first paint shows the banner instead of a loading screen. Anything that fails or
- * takes longer than WAIT_MS is left out, and the studio loads it as usual. A load that's still
- * running isn't canceled. It finishes into the GitHub cache, where the studio's request finds it.
+ * Loads the data the studio shows first, keyed by the URL the studio would fetch it from. This way
+ * the first paint shows the banner instead of a loading screen.
  */
-export async function loadInitialGithubData(
+export async function loadInitialApiData(
+  templateId: TemplateId,
+  state: BannerSettings,
+): Promise<Record<string, unknown>> {
+  return { ...(await loadGithubData(templateId, state)), ...iconData(state) };
+}
+
+/** The tech stack banner's icons. They're on this server, so there's no wait. */
+function iconData(state: BannerSettings): Record<string, unknown> {
+  const value = "icons" in state ? state.icons : "";
+  const url = iconsUrl(value);
+  return url ? { [url]: techIcons(parseIconSelection(value)) } : {};
+}
+
+/**
+ * The banner's GitHub data. Anything that fails or takes longer than WAIT_MS is left out, and the
+ * studio loads it as usual. A load that's still running isn't canceled. It finishes into the GitHub
+ * cache, where the studio's request finds it.
+ */
+async function loadGithubData(
   templateId: TemplateId,
   state: BannerSettings,
 ): Promise<Record<string, unknown>> {

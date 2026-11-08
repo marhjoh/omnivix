@@ -14,6 +14,12 @@ import type {
 import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
+import {
+  DEFAULT_ICONS,
+  DEFAULT_ICONS_PER_ROW,
+  MAX_ICONS_PER_ROW,
+  MIN_ICONS_PER_ROW,
+} from "@/src/banner/techStack";
 import { GRID_TEXT_MAX_LENGTH, toGridText } from "@/src/banner/gridText";
 import {
   AUTHOR_MAX_LENGTH,
@@ -238,6 +244,43 @@ export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-b
     showIconColors: true,
   },
 };
+
+export const techStackBannerDefinition: TemplateDefinition<TemplateSettings["tech-stack-banner"]> =
+  {
+    meta: {
+      id: "tech-stack-banner",
+      title: "Tech Stack Banner",
+      description: "The tools you use, as brand icons.",
+      needsUsername: false,
+      githubData: [],
+    },
+    schema: [
+      sizeField,
+      backgroundField,
+      alignmentField,
+      contentSizeField,
+      { key: "icons", label: "Icons", type: "iconPicker", required: true },
+      {
+        key: "iconsPerRow",
+        label: "Icons per row",
+        type: "range",
+        min: MIN_ICONS_PER_ROW,
+        max: MAX_ICONS_PER_ROW,
+        step: 1,
+      },
+      { key: "showLabels", label: "Names", type: "toggle" },
+      { key: "showIconColors", label: "Icon colors", type: "toggle" },
+      ...logoFields,
+    ],
+    initialState: {
+      ...bannerInitialState,
+      contentSize: DEFAULT_CONTENT_SIZE,
+      icons: DEFAULT_ICONS,
+      iconsPerRow: DEFAULT_ICONS_PER_ROW,
+      showLabels: true,
+      showIconColors: true,
+    },
+  };
 
 export const contributionBannerDefinition: TemplateDefinition<
   TemplateSettings["contribution-banner"]

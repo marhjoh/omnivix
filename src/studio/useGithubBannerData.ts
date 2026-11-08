@@ -29,13 +29,13 @@ export function useGithubBannerData({
   templateId,
   state,
   username,
-  initialGithubData,
+  initialApiData,
 }: {
   templateId: TemplateId;
   state: BannerSettings;
   username: string;
-  /** GitHub data the server already loaded, keyed by URL. */
-  initialGithubData: Record<string, unknown>;
+  /** API data the server already loaded, keyed by URL. */
+  initialApiData: Record<string, unknown>;
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
 
@@ -46,19 +46,19 @@ export function useGithubBannerData({
   // and selected needs nothing more from GitHub.
   const urls = githubDataUrls({ githubData, username, year: yearOf(state) });
 
-  const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
+  const initialUser = initialData<GithubUserNormalized>(initialApiData, urls.user);
   const userFetch = useApiQuery<GithubUserNormalized>(urls.user, { initial: initialUser });
   const contributionsFetch = useApiQuery<ContributionsNormalized>(urls.contributions, {
     // Another year keeps the current grid until it arrives, instead of flashing "Loading".
     keepKey: username,
-    initial: initialData<ContributionsNormalized>(initialGithubData, urls.contributions),
+    initial: initialData<ContributionsNormalized>(initialApiData, urls.contributions),
   });
   const repoListsFetch = useApiQuery<RepoLists>(urls.repos, {
-    initial: initialData<RepoLists>(initialGithubData, urls.repos),
+    initial: initialData<RepoLists>(initialApiData, urls.repos),
   });
   const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
   const organizationsFetch = useApiQuery<OrganizationNormalized[]>(urls.organizations, {
-    initial: initialData<OrganizationNormalized[]>(initialGithubData, urls.organizations),
+    initial: initialData<OrganizationNormalized[]>(initialApiData, urls.organizations),
   });
   const organizations = organizationsFetch.error ? undefined : organizationsFetch.data;
 

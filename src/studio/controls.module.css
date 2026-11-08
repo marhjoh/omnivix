@@ -478,3 +478,19 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
 }
+
+/* A CheckList row that isn't a button, like a picked icon with its own Remove button. */
+.listRow {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.listRow + .listRow {
+  border-top: 1px solid var(--control-border);
+}
