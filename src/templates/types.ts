@@ -17,6 +17,7 @@ export const TEMPLATE_IDS = [
   "intro-banner",
   "terminal-banner",
   "ai-usage-banner",
+  "certifications-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;
@@ -45,6 +46,8 @@ interface FieldValues {
   iconPicker: string;
   /** Opens the AI usage dialog, which saves what the banner draws (aiUsage.ts). */
   usagePaste: string;
+  /** Rows of certifications, saved as certifications.ts encodes them. */
+  certificationList: string;
 }
 
 export type EditorFieldType = keyof FieldValues;
@@ -97,7 +100,7 @@ export interface RenderData {
   contributions?: ContributionsNormalized;
   repos?: RepoNormalized[];
   organizations?: OrganizationNormalized[];
-  /** The tech stack and intro banners' icons, loaded from Simple Icons. */
+  /** The tech stack, intro and certifications banners' icons, loaded from Simple Icons. */
   icons?: TechIcon[];
 }
 

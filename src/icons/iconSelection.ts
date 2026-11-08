@@ -1,4 +1,4 @@
-/** A Simple Icons brand icon, as the tech stack and intro banners draw it. */
+/** A Simple Icons brand icon, as the tech stack, intro and certifications banners draw it. */
 export interface TechIcon {
   slug: string;
   title: string;

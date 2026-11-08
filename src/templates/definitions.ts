@@ -32,6 +32,12 @@ import {
 } from "@/src/banner/intro";
 import { TERMINAL_TEXT_MAX_LENGTH, TERMINAL_TEXT_ROWS } from "@/src/banner/terminal";
 import {
+  DEFAULT_BADGES_PER_ROW,
+  DEFAULT_CERTIFICATIONS,
+  MAX_BADGES_PER_ROW,
+  MIN_BADGES_PER_ROW,
+} from "@/src/banner/certifications";
+import {
   AUTHOR_MAX_LENGTH,
   DEFAULT_QUOTE_STYLE,
   QUOTE_COLOR_OPTIONS,
@@ -438,6 +444,51 @@ export const aiUsageBannerDefinition: TemplateDefinition<TemplateSettings["ai-us
     showHeatmap: true,
     showModels: true,
     showAgents: true,
+    showIconColors: true,
+  },
+};
+
+export const certificationsBannerDefinition: TemplateDefinition<
+  TemplateSettings["certifications-banner"]
+> = {
+  meta: {
+    id: "certifications-banner",
+    title: "Certifications Banner",
+    description: "Your certifications, as badges.",
+    needsUsername: false,
+    githubData: [],
+  },
+  schema: [
+    sizeField,
+    backgroundField,
+    alignmentField,
+    contentSizeField,
+    {
+      key: "certifications",
+      label: "Certifications",
+      type: "certificationList",
+      required: true,
+    },
+    {
+      key: "badgesPerRow",
+      label: "Badges per row",
+      type: "range",
+      min: MIN_BADGES_PER_ROW,
+      max: MAX_BADGES_PER_ROW,
+      step: 1,
+    },
+    { key: "showIssuer", label: "Issuer", type: "toggle" },
+    { key: "showYear", label: "Year", type: "toggle" },
+    { key: "showIconColors", label: "Icon colors", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    certifications: DEFAULT_CERTIFICATIONS,
+    badgesPerRow: DEFAULT_BADGES_PER_ROW,
+    showIssuer: true,
+    showYear: true,
     showIconColors: true,
   },
 };

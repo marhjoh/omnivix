@@ -37,9 +37,9 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 
 /**
  * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote,
- * the tech stack banner for its icons, the intro banner for a name and the AI usage banner for
- * pasted ccusage output. The action opens the username or usage dialog, or puts the cursor in that
- * setting's field.
+ * the tech stack banner for its icons, the intro banner for a name, the certifications banner for a
+ * named certification and the AI usage banner for pasted ccusage output. The action opens the
+ * username or usage dialog, or puts the cursor in that setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
   switch (missingSetting) {
@@ -54,6 +54,12 @@ export function previewEmptyCopy(missingSetting: string) {
         title: "Add your tech stack",
         hint: "Search for icons in the sidebar to add them here.",
         actionLabel: "Add icons",
+      };
+    case "certifications":
+      return {
+        title: "Add your certifications",
+        hint: "Add a certification with a name in the sidebar to see it here.",
+        actionLabel: "Add certifications",
       };
     case "usage":
       return {

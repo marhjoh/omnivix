@@ -38,6 +38,11 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "authorColor",
     ],
   },
+  // Only the certifications banner has these.
+  {
+    title: "Certifications",
+    keys: ["certifications", "badgesPerRow", "showIssuer", "showYear"],
+  },
   // Only the intro banner has these.
   { title: "Intro", keys: ["name", "headline", "tagline", "photoImage", "showHeadline"] },
   {

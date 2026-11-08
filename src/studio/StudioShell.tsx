@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { templateRegistry } from "@/src/templates/registry";
-import type { TemplateId } from "@/src/templates/types";
+import type { EditorFieldSchema, StudioSettings, TemplateId } from "@/src/templates/types";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
 import { PreviewArtboard } from "@/src/studio/preview/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview/computePreviewContentState";
@@ -30,10 +30,17 @@ import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
 import { useIcons } from "@/src/studio/useIcons";
+import { drawnIcons } from "@/src/icons/bannerIcons";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
 import { fieldValue } from "@/src/studio/fieldValue";
+import { namedCertifications } from "@/src/banner/certifications";
 
-function isBlank(value: unknown): boolean {
+/** True when a required setting has nothing to show, like a certification list without names. */
+function isMissing(field: EditorFieldSchema, state: StudioSettings): boolean {
+  if (field.type === "certificationList") {
+    return namedCertifications(fieldValue(state, field)).length === 0;
+  }
+  const value = fieldValue(state, field);
   return typeof value === "string" && !value.trim();
 }
 
@@ -71,11 +78,8 @@ export function StudioShell({
     link,
   });
   const github = useGithubBannerData({ templateId, state, username, initialApiData });
-  // The intro banner's hidden icons aren't loaded, so a failed load can't block a banner without
-  // them. The icon picker still loads its own.
-  const shownIcons =
-    "icons" in state && (!("showIcons" in state) || state.showIcons) ? state.icons : "";
-  const icons = useIcons(shownIcons, initialApiData);
+  // The icon picker and the certification rows load their own icons.
+  const icons = useIcons(drawnIcons(state), initialApiData);
   const problem = github.problem ?? icons.problem;
   const data = useMemo(() => ({ ...github.data, icons: icons.data }), [github.data, icons.data]);
   const retry = () => {
@@ -130,7 +134,7 @@ export function StudioShell({
   const missingSetting =
     needsUsername && !username.trim()
       ? "username"
-      : definition.schema.find((field) => field.required && isBlank(fieldValue(state, field)))?.key;
+      : definition.schema.find((field) => field.required && isMissing(field, state))?.key;
   const previewState = computePreviewContentState({
     missingSetting,
     hasProblem: problem !== null,

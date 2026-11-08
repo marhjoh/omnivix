@@ -45,6 +45,32 @@ test("the tech stack banner adds an icon found by search", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the certifications banner adds a certification with a suggested issuer", async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto("/studio/certifications-banner");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+
+  await page.getByRole("button", { name: "Add certification" }).click();
+  await page.getByLabel("Certification 5 name").fill("Docker Certified Associate");
+  await page.getByRole("combobox", { name: "Certification 5 issuer" }).fill("docker");
+  await page.getByRole("option", { name: "Docker", exact: true }).click();
+  await expect(page.getByRole("combobox", { name: "Certification 5 issuer" })).toHaveValue(
+    "Docker",
+  );
+  await page.getByLabel("Certification 5 year").fill("2026");
+  await expect(preview(page).getByText("Docker Certified Associate")).toBeVisible();
+  await expect(preview(page).getByText("Docker · 2026")).toBeVisible();
+
+  // Focus stays with a moved certification, so pressing again keeps moving it.
+  await page.getByRole("button", { name: "Move Docker Certified Associate up" }).press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Move Docker Certified Associate up" }),
+  ).toBeFocused();
+  await expect(page.getByLabel("Certification 4 name")).toHaveValue("Docker Certified Associate");
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
 test("the intro banner shows a typed name and link without GitHub data", async ({ page }) => {
   const errors = pageErrors(page);
   await page.goto("/studio/intro-banner");

@@ -9,6 +9,7 @@ import {
 } from "@/src/export/format";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
 import { MAX_ICONS } from "@/src/icons/iconSelection";
+import { MAX_CERTIFICATIONS } from "@/src/banner/certifications";
 import {
   BANNER_SIZES,
   BANNER_SIZE_KEYS,
@@ -49,6 +50,9 @@ export const EXAMPLE_LINK: { templateId: TemplateId; query: Record<string, strin
 };
 
 const code = (value: unknown) => `\`${typeof value === "string" ? value : JSON.stringify(value)}\``;
+
+/** A Markdown table cell. GitHub's tables split on `|`, even inside code. */
+const cell = (text: string) => text.replaceAll("|", "\\|");
 
 /** "`a`, `b` or `c`" */
 function oneOf(values: readonly unknown[]): string {
@@ -91,6 +95,8 @@ function accepts(field: EditorFieldSchema): string {
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     case "iconPicker":
       return `[Simple Icons](https://simpleicons.org) slugs, comma-separated, at most ${MAX_ICONS}, e.g. \`typescript, nextdotjs\`; unknown slugs are left out`;
+    case "certificationList":
+      return `certifications separated by \`;\`, each as \`name|issuer|year|slug\`, at most ${MAX_CERTIFICATIONS}, e.g. \`Terraform Associate|HashiCorp|2024|hashicorp\`; the year and the [Simple Icons](https://simpleicons.org) slug can be empty, and one needs a name`;
     case "usagePaste":
       return `usage as the studio saves it after a [ccusage](https://github.com/ryoppippi/ccusage) paste, not empty; copy it from a studio link`;
     default:
@@ -199,7 +205,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
         .filter((field) => field.type !== "sizeSelect")
         .map(
           (field) =>
-            `| \`${field.key}\` | ${field.label}: ${accepts(field)} | ${defaultOf(field.key, defaults[field.key])} |`,
+            `| \`${field.key}\` | ${cell(`${field.label}: ${accepts(field)}`)} | ${cell(defaultOf(field.key, defaults[field.key]))} |`,
         );
       if (meta.needsUsername) rows.unshift("| `username` | GitHub username, required | |");
       return [

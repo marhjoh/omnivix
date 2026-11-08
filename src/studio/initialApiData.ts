@@ -13,6 +13,7 @@ import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { iconsUrl, parseIconSelection } from "@/src/icons/iconSelection";
 import { techIcons } from "@/src/icons/simpleIcons";
+import { drawnIcons } from "@/src/icons/bannerIcons";
 
 /**
  * How long the studio page waits for GitHub data. It's usually in the server cache and takes
@@ -31,9 +32,9 @@ export async function loadInitialApiData(
   return { ...(await loadGithubData(templateId, state)), ...iconData(state) };
 }
 
-/** The tech stack and intro banners' icons. They're on this server, so there's no wait. */
+/** The banner's Simple Icons. They're on this server, so there's no wait. */
 function iconData(state: BannerSettings): Record<string, unknown> {
-  const value = "icons" in state ? state.icons : "";
+  const value = drawnIcons(state);
   const url = iconsUrl(value);
   return url ? { [url]: techIcons(parseIconSelection(value)) } : {};
 }
