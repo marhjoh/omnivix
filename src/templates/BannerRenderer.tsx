@@ -10,6 +10,7 @@ import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
 import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { StatsBannerRenderer } from "@/src/templates/stats-banner/Renderer";
+import { TechStackBannerRenderer } from "@/src/templates/tech-stack-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
 import type { RenderData, RendererProps, TemplateId } from "@/src/templates/types";
 import type { TemplateSettings } from "@/src/templates/stateSchemas";
@@ -18,6 +19,7 @@ const RENDERERS: { [K in TemplateId]: ComponentType<RendererProps<K>> } = {
   "github-banner": GithubBannerRenderer,
   "repos-banner": ReposBannerRenderer,
   "stats-banner": StatsBannerRenderer,
+  "tech-stack-banner": TechStackBannerRenderer,
   "contribution-banner": ContributionBannerRenderer,
   "quote-banner": QuoteBannerRenderer,
 };

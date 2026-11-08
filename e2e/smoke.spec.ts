@@ -31,6 +31,19 @@ test("the quote banner loads and downloads as a PNG", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the tech stack banner adds an icon found by search", async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto("/studio/tech-stack-banner");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+
+  await page.getByRole("combobox", { name: "Icons" }).fill("rust");
+  await page.getByRole("option", { name: "Rust", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Remove Rust" })).toBeVisible();
+  await expect(preview(page).getByText("Rust", { exact: true })).toBeVisible();
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
 test("a transparent image URL has no background color", async ({ request }) => {
   const response = await request.get("/banner/quote-banner.png?transparent=true");
   expect(response.status()).toBe(200);

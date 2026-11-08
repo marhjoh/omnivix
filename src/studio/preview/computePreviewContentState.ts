@@ -25,27 +25,40 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
   organizations: "organizations",
 };
 
-/** "Loading profile and contributions…", from the GitHub data the banner draws. */
+/**
+ * "Loading profile and contributions…", from the GitHub data the banner draws. A banner without
+ * GitHub data only waits for the tech stack banner's icons.
+ */
 export function previewLoadingMessage(githubData: readonly GithubDataKind[]): string {
+  if (githubData.length === 0) return "Loading icons…";
   const names = new Intl.ListFormat("en-US").format(githubData.map((kind) => DATA_NAMES[kind]));
   return `Loading ${names}…`;
 }
 
 /**
- * Copy for an empty preview. GitHub banners wait for a username, and the quote banner waits for its
- * quote, the only other required setting. The action opens the username dialog or puts the cursor
- * in that setting's field.
+ * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote and
+ * the tech stack banner for its icons. The action opens the username dialog or puts the cursor in
+ * that setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
-  return missingSetting === "username"
-    ? {
+  switch (missingSetting) {
+    case "username":
+      return {
         title: "Choose a GitHub username",
         hint: "Enter a username to load this banner's data.",
         actionLabel: "Choose username",
-      }
-    : {
+      };
+    case "icons":
+      return {
+        title: "Add your tech stack",
+        hint: "Search for icons in the sidebar to add them here.",
+        actionLabel: "Add icons",
+      };
+    default:
+      return {
         title: "Add your quote",
         hint: "Enter quote text in the sidebar to see it here.",
         actionLabel: "Add quote",
       };
+  }
 }

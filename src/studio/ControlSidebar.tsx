@@ -12,6 +12,7 @@ import type {
 } from "@/src/templates/types";
 import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect";
 import { ColorSelect } from "@/src/studio/ColorSelect";
+import { IconPicker } from "@/src/studio/IconPicker";
 import {
   AuthorPrefixSelect,
   FontSelect,
@@ -206,6 +207,14 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
       catalog={repoCatalog}
       valueCsv={fieldValue(state, field)}
       onChange={(csv) => onChange("selectedRepos", csv)}
+    />
+  ),
+  iconPicker: (field, { state, onChange }) => (
+    <IconPicker
+      id={field.key}
+      label={fieldLabel(field)}
+      value={fieldValue(state, field)}
+      onChange={(value) => onChange(field.key, value)}
     />
   ),
 };

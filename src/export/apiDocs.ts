@@ -8,6 +8,7 @@ import {
   EXPORT_PIXEL_RATIOS,
 } from "@/src/export/format";
 import { MAX_REPOS } from "@/src/lib/repoSelection";
+import { MAX_ICONS } from "@/src/icons/iconSelection";
 import {
   BANNER_SIZES,
   BANNER_SIZE_KEYS,
@@ -86,6 +87,8 @@ function accepts(field: EditorFieldSchema): string {
       return `a public \`https://\` ${linkFormatsOf("logoImage")} image URL; leave out for none`;
     case "repoMultiSelect":
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
+    case "iconPicker":
+      return `[Simple Icons](https://simpleicons.org) slugs, comma-separated, at most ${MAX_ICONS}, e.g. \`typescript, nextdotjs\`; unknown slugs are left out`;
     default:
       return "";
   }

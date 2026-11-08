@@ -7,11 +7,13 @@ import type {
   OrganizationNormalized,
   RepoNormalized,
 } from "@/src/github/types";
+import type { TechIcon } from "@/src/icons/iconSelection";
 
 export const TEMPLATE_IDS = [
   "github-banner",
   "repos-banner",
   "stats-banner",
+  "tech-stack-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;
@@ -36,6 +38,7 @@ interface FieldValues {
   sizeSelect: string;
   range: number;
   repoMultiSelect: string;
+  iconPicker: string;
 }
 
 export type EditorFieldType = keyof FieldValues;
@@ -88,6 +91,8 @@ export interface RenderData {
   contributions?: ContributionsNormalized;
   repos?: RepoNormalized[];
   organizations?: OrganizationNormalized[];
+  /** The tech stack banner's icons, loaded from Simple Icons. */
+  icons?: TechIcon[];
 }
 
 /** What every template's renderer gets. It draws the content; BannerRenderer adds the frame. */

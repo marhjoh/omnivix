@@ -8,6 +8,8 @@ import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { isRepoSelection, MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { isGithubUsername } from "@/src/lib/githubUsername";
+import { isIconSelection, MAX_ICONS } from "@/src/icons/iconSelection";
+import { MAX_ICONS_PER_ROW, MIN_ICONS_PER_ROW } from "@/src/banner/techStack";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
@@ -121,6 +123,18 @@ const STATE_SCHEMAS = {
     showLongestStreak: flag,
     showLanguages: flag,
     showOrganizations: flag,
+    showIconColors: flag,
+  }),
+  "tech-stack-banner": Schema.Struct({
+    ...bannerFields,
+    contentSize,
+    icons: requiredText.check(
+      Schema.makeFilter(isIconSelection, {
+        message: `Must be at most ${MAX_ICONS} Simple Icons slugs, comma-separated, each once`,
+      }),
+    ),
+    iconsPerRow: numberBetween(MIN_ICONS_PER_ROW, MAX_ICONS_PER_ROW),
+    showLabels: flag,
     showIconColors: flag,
   }),
   "contribution-banner": Schema.Struct({

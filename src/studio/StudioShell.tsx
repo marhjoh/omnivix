@@ -28,6 +28,7 @@ import { BANNER_SIZES, type BannerView } from "@/src/lib/sizes";
 import styles from "@/src/studio/studio.module.css";
 import { useBannerSettings } from "@/src/studio/useBannerSettings";
 import { useGithubBannerData } from "@/src/studio/useGithubBannerData";
+import { useIcons } from "@/src/studio/useIcons";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
 import { fieldValue } from "@/src/studio/fieldValue";
 
@@ -43,7 +44,7 @@ export function StudioShell({
   initialPreviewView,
   start,
   link,
-  initialGithubData,
+  initialApiData,
 }: {
   templateId: TemplateId;
   initialSidebarCollapsed: boolean;
@@ -57,8 +58,8 @@ export function StudioShell({
   start: StartingSettings;
   /** Settings from a studio link (`?username=…&themeId=…`), applied over the saved ones. */
   link: LinkSettings | null;
-  /** GitHub data the server already loaded, keyed by URL. */
-  initialGithubData: Record<string, unknown>;
+  /** API data the server already loaded, keyed by URL. */
+  initialApiData: Record<string, unknown>;
 }) {
   const { theme: appTheme } = useTheme();
   const definition = templateRegistry[templateId];
@@ -68,7 +69,14 @@ export function StudioShell({
     start,
     link,
   });
-  const github = useGithubBannerData({ templateId, state, username, initialGithubData });
+  const github = useGithubBannerData({ templateId, state, username, initialApiData });
+  const icons = useIcons("icons" in state ? state.icons : "", initialApiData);
+  const problem = github.problem ?? icons.problem;
+  const data = useMemo(() => ({ ...github.data, icons: icons.data }), [github.data, icons.data]);
+  const retry = () => {
+    github.retry();
+    icons.retry();
+  };
   const sidebar = useStudioSidebar(initialSidebarCollapsed);
   const { toast, showError, showSuccess, dismissToast } = useToast();
 
@@ -106,8 +114,8 @@ export function StudioShell({
       : definition.schema.find((field) => field.required && isBlank(fieldValue(state, field)))?.key;
   const previewState = computePreviewContentState({
     missingSetting,
-    hasProblem: github.problem !== null,
-    dataReady: github.dataReady,
+    hasProblem: problem !== null,
+    dataReady: github.dataReady && icons.ready,
   });
 
   const background = backgroundFromState(state);
@@ -142,11 +150,11 @@ export function StudioShell({
   const livePreview = useMemo(
     () => ({
       previewState,
-      problem: github.problem,
+      problem,
       bannerState: previewBannerState,
-      data: github.data,
+      data,
     }),
-    [previewState, github.problem, previewBannerState, github.data],
+    [previewState, problem, previewBannerState, data],
   );
   // Only hold a finished preview. An empty or error state goes straight to loading.
   const shownPreview = useHoldDuringLoad(
@@ -164,6 +172,7 @@ export function StudioShell({
     logoImage.status === "failed" ||
     shownPreview !== livePreview ||
     github.contributionsStale ||
+    icons.stale ||
     shownBackground !== backgroundFields ||
     logoImage.status === "loading";
 
@@ -258,7 +267,7 @@ export function StudioShell({
             missingSetting={missingSetting}
             exporting={bannerExport.exporting !== null}
             transparent={shownFormat === "transparent"}
-            onRetry={github.retry}
+            onRetry={retry}
             onChangeUsername={openUsernameModal}
             onEditSetting={sidebar.focusSetting}
             backgroundAdjust={

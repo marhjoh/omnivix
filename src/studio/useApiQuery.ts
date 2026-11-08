@@ -40,7 +40,7 @@ export function useApiQuery<T>(
      * switching the contributions year keeps the old year on screen instead of flashing "loading".
      */
     keepKey?: string;
-    /** Data for this URL from the server render (see initialGithubData). */
+    /** Data for this URL from the server render (see the studio page). */
     initial?: T;
   } = {},
 ) {
@@ -70,6 +70,6 @@ export function useApiQuery<T>(
 }
 
 /** Data for `url` from the server render, if there is any. */
-export function initialData<T>(initialGithubData: Record<string, unknown>, url: string | null) {
-  return url ? (initialGithubData[url] as T | undefined) : undefined;
+export function initialData<T>(initialApiData: Record<string, unknown>, url: string | null) {
+  return url ? (initialApiData[url] as T | undefined) : undefined;
 }
