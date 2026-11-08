@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.36.0](https://github.com/marhjoh/omnivix/compare/v1.35.0...v1.36.0) (2026-11-08)
+
+
+### Features
+
+* add a Certifications banner ([3e32f33](https://github.com/marhjoh/omnivix/commit/3e32f33bb7a1f9805839b06d08d8047c5379a8d7))
+
+
+### Bug Fixes
+
+* show every banner in the hero's middle columns ([3e32f33](https://github.com/marhjoh/omnivix/commit/3e32f33bb7a1f9805839b06d08d8047c5379a8d7))
+
 ## [1.35.0](https://github.com/marhjoh/omnivix/compare/v1.34.0...v1.35.0) (2026-11-08)
 
 
