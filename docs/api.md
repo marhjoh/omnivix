@@ -21,6 +21,7 @@ The API answers with:
 - `400`: an invalid request, with an `issues` list naming each field that failed, or an image that can't be used, with only an `error`
 - `404`: a GitHub user that doesn't exist
 - `413`: settings too long to export, such as a very long quote
+- `422`: a latest posts banner whose feed can't be read, with the reason in `error`
 - `429`: a rate limit: GitHub's (`"limit": "github"`) or the daily export quota (`"limit": "daily-exports"`), both with a `resetAt` time, or the [burst limit](deployment.md#rate-limits) without one
 - `500`: a failed export; trying again may work
 
@@ -46,7 +47,7 @@ In the studio, the export panel's Copy group copies it as a link, Markdown or HT
 
 - **Settings:** values that aren't valid use the defaults. Uploaded images can't go in a URL. Images stop at 2×, which is sharp on any screen and keeps photo banners small.
 - **Caching:** an image is cached for a day (`s-maxage=86400`). After that, the old image is served while a new one renders (`stale-while-revalidate=604800`), so a README never waits on a render. Errors are cached for 5 minutes.
-- **Limit:** 30 renders a day per GitHub username, or per banner for the quote, tech stack, intro, AI usage and certifications banners. Cached images don't count.
+- **Limit:** 30 renders a day per GitHub username, or per banner for the quote, tech stack, intro, AI usage, certifications and latest posts banners. Cached images don't count.
 
 Responses are like the export API's:
 
@@ -54,6 +55,7 @@ Responses are like the export API's:
 - `400`: settings it can't render, with `issues`: a GitHub banner without a valid `username`, or a format the size doesn't take (`.png` for `reddit`); or an image link that can't be used
 - `404`: an unknown template or extension, or a GitHub user that doesn't exist
 - `413`: settings too long to render
+- `422`: a feed that can't be read
 - `429`: the daily limit (`"limit": "banner-images"`) or GitHub's (`"limit": "github"`), with `resetAt` and `Retry-After`
 - `500`: a failed render
 
@@ -70,5 +72,6 @@ All routes, including the ones the app uses internally:
 | `/banner/[templateId].png`, `.jpg`                                       | The image URL above                                               |
 | `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                                        |
 | `/api/icons/catalog`, `/api/icons?slugs=`                                | Simple Icons for the tech stack, intro and certifications banners |
+| `/api/feed?url=`                                                         | A feed's newest posts, for the latest posts banner                |
 | `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time                      |
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools                   |

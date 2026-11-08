@@ -1,6 +1,6 @@
 # Architecture
 
-Omnivix is a Next.js app on Vercel that turns public GitHub data, typed text and pasted AI usage into downloadable banners. No user accounts are needed.
+Omnivix is a Next.js app on Vercel that turns public GitHub data, blog feeds, typed text and pasted AI usage into downloadable banners. No user accounts are needed.
 
 ## Rendering
 
@@ -17,7 +17,7 @@ flowchart LR
 Two kinds of scaling keep the preview and the export identical:
 
 - **The whole banner:** the preview renders it at its real export size (for example 1584 × 396) and shrinks it with a CSS `transform` to fit the window (`previewScale.ts`).
-- **The content inside it:** the GitHub, repos, stats, tech stack, intro, terminal, AI usage, certifications and contribution banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
+- **The content inside it:** the GitHub, repos, stats, tech stack, intro, terminal, AI usage, certifications, latest posts and contribution banners lay out their content at a fixed size, then scale it to fit the banner (`FitContent.tsx`). XL fits the banner with a margin, and each smaller size is 80% of the one above. The quote banner uses fixed type sizes instead.
 
 YouTube and Reddit crop the banner differently on each device (`views` in `sizes.ts`). YouTube phones show the middle 1546 × 423, desktop the 2560 × 423 strip it's in, and TVs the whole image. Reddit's app shows the middle half of a 3:1 upload, with its buttons, the avatar and a fade over parts of it. The content and the logo fit the safe area, the part every device shows clearly (the phone view on YouTube), and the preview shows one view at a time.
 
@@ -74,6 +74,16 @@ No API gives a person's coding agent usage, so the AI usage banner reads the out
 - **Read in the browser:** `ccusage.ts` checks the JSON by hand, because `effect` stays out of the browser. The paste goes in a dialog (`UsageModal.tsx`), and one it can't read is reported in a toast.
 - **Only what the banner draws is kept:** the last 365 days as one level (0–4) per day, the totals and the model and agent shares. `aiUsage.ts` writes them as one short `usage` setting of about 600 characters, so it fits the settings cookie, a studio link and the export token. The JSON itself is never saved or sent.
 
+## Feeds
+
+The latest posts banner reads a blog's RSS or Atom feed. The visitor gives the link, so the server treats the feed as untrusted.
+
+- **Fetched like linked images:** `fetchPublic` (`src/lib/publicFetch.ts`) only follows https links to public addresses, redirects included, and stops at a size limit. Feeds also have an 8-second timeout and a 2 MB limit.
+- **Parsed on the server:** `fast-xml-parser` reads the XML, and `Schema` checks its shape. Nested DOCTYPE entities aren't expanded, so a "billion laughs" feed can't blow up. Only titles and dates are kept, at most six posts.
+- **Profile links:** the studio's dialog turns dev.to, Medium, Hashnode and Substack profile links into their feed links, so the `feed` setting is always a feed link.
+- **Cached:** `src/feeds/client.ts` keeps each feed for 30 minutes, and `/api/feed` sends the same time to the CDN. The route is limited per IP.
+- **Export:** a feed that can't be read fails before Chromium starts, with the reason as a `422`.
+
 ## Code map
 
 ### `app/`
@@ -96,11 +106,15 @@ The editor: sidebar, preview (`preview/`) and export button. Saved settings are 
 
 Server-side export, on Effect. The export API (`route.ts`) and image URLs (`bannerImageRoute.ts`) share one render (`renderBanner.ts`), with validation in `payload.ts`, signed tokens in `exportToken.ts` and the Playwright capture in `playwright.ts`. A render stops after 45 seconds, and Chromium is closed even when it fails. `apiDocs.ts` writes the export part of `/llms.txt`.
 
-**Invariant:** the render page loads nothing except the app itself and GitHub profile photos.
+**Invariant:** the render page loads nothing except the app itself and GitHub profile photos. Linked images and feeds are downloaded on the server first.
 
 ### `src/github/`
 
 GitHub data, on Effect. `api.ts` sends each GraphQL query with `fetch` and decodes the answer with `Schema`. Its `githubRest` does the same for the REST API, for what GraphQL doesn't give our token: a following count that includes organizations, and a user's public organizations; network errors, timeouts and 5xx answers are tried once more. `client.ts` keeps the results in an Effect `Cache` per kind of data, which also shares concurrent lookups, for the times in `cacheTimes.ts` (browser-safe, as the landing FAQ quotes them). The API routes (`route.ts`) send the same cache time to Vercel's CDN and limit requests per IP (`src/lib/requestLimits.ts`, see [deployment.md](deployment.md#rate-limits)). When GitHub's rate limit is reached, `rateLimit.ts` stops sending requests until it resets. Failures are typed errors (`errors.ts`).
+
+### `src/feeds/`
+
+RSS and Atom feeds for the latest posts banner, on Effect: the cached client (`client.ts`), the parser (`parseFeed.ts`) and the `/api/feed` handler (`route.ts`). See [Feeds](#feeds).
 
 ### `src/icons/`
 
@@ -120,7 +134,7 @@ What `app/not-found.tsx`, `error.tsx` and `global-error.tsx` render.
 
 ### `src/lib/`, `src/ui/`, `src/theme/`
 
-Shared helpers (banner sizes and platforms in `sizes.ts`), generic UI pieces and the light/dark theme.
+Shared helpers (banner sizes and platforms in `sizes.ts`, safe downloads of visitors' links in `publicFetch.ts`), generic UI pieces and the light/dark theme.
 
 ### `public/`, `scripts/`
 
