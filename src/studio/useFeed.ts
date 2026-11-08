@@ -27,10 +27,12 @@ function feedProblem(
   }
   if (!error) return null;
   if (status === 400 || status === 422) {
+    // "That link isn't an RSS or Atom feed. Look for the blog's RSS link." becomes the heading
+    // and the hint. A heading has no closing period.
+    const [first, ...rest] = error.split(/(?<=\.)\s+/);
     return {
-      // Used as a heading, so drop the closing period.
-      title: error.replace(/\.$/, ""),
-      hint: "Check the link, or use another feed.",
+      title: first.replace(/\.$/, ""),
+      hint: rest.join(" ") || "Check the link, or use another feed.",
       action: "change-feed",
     };
   }
