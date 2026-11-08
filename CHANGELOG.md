@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.0](https://github.com/marhjoh/omnivix/compare/v1.30.0...v1.31.0) (2026-11-08)
+
+
+### Features
+
+* add a Stats banner ([#277](https://github.com/marhjoh/omnivix/issues/277)) ([b22c280](https://github.com/marhjoh/omnivix/commit/b22c280e925ba8c7464e4a9bc1b439b114dc7b85))
+
 ## [1.30.0](https://github.com/marhjoh/omnivix/compare/v1.29.1...v1.30.0) (2026-11-07)
 
 
