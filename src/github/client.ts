@@ -4,13 +4,14 @@ import type {
   ContributionDayNormalized,
   ContributionsNormalized,
   GithubUserNormalized,
+  OrganizationNormalized,
   RepoLists,
   RepoNormalized,
 } from "@/src/github/types";
 import { contributionRange } from "@/src/github/contributionRange";
 import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
-import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
+import { githubQuery, githubRest, QUOTA_FIELDS } from "@/src/github/api";
 
 /** Each cache keeps at most this many entries and drops the oldest first. */
 const CACHE_CAPACITY = 500;
@@ -44,32 +45,60 @@ function userKey(username: string) {
   return username.toLowerCase();
 }
 
+const TotalCount = Schema.Struct({ totalCount: Schema.Number });
+
 const UserSummary = Schema.Struct({
   user: Schema.Struct({
     login: Schema.String,
     name: Schema.NullOr(Schema.String),
     avatarUrl: Schema.String,
     createdAt: Schema.String,
+    repositories: TotalCount,
+    followers: TotalCount,
+    pullRequests: TotalCount,
   }),
 });
 
+/** GraphQL's `following` only counts users. REST's also counts organizations, like the profile. */
+const RestUser = Schema.Struct({ following: Schema.Number });
+
 const users = githubCache(
   (login) =>
-    githubQuery(
-      `
-        query UserSummary($username: String!) {
-          ${QUOTA_FIELDS}
-          user(login: $username) {
-            login
-            name
-            avatarUrl
-            createdAt
-          }
-        }
-      `,
-      { username: login },
-      UserSummary,
-    ).pipe(Effect.map(({ user }): GithubUserNormalized => user)),
+    Effect.all(
+      [
+        githubQuery(
+          `
+            query UserSummary($username: String!) {
+              ${QUOTA_FIELDS}
+              user(login: $username) {
+                login
+                name
+                avatarUrl
+                createdAt
+                repositories(ownerAffiliations: OWNER, privacy: PUBLIC) { totalCount }
+                followers { totalCount }
+                pullRequests { totalCount }
+              }
+            }
+          `,
+          { username: login },
+          UserSummary,
+        ),
+        githubRest(`/users/${encodeURIComponent(login)}`, RestUser),
+      ],
+      { concurrency: "unbounded" },
+    ).pipe(
+      Effect.map(([{ user }, { following }]): GithubUserNormalized => ({
+        login: user.login,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt,
+        publicRepos: user.repositories.totalCount,
+        followers: user.followers.totalCount,
+        following,
+        pullRequests: user.pullRequests.totalCount,
+      })),
+    ),
   () => TTL_SHORT,
 );
 
@@ -295,4 +324,30 @@ const repoLists = githubCache(
 /** The pinned repositories and the owner's public ones, most recently updated first. */
 export function getRepoLists(username: string): Effect.Effect<RepoLists, GithubError> {
   return Cache.get(repoLists, userKey(username));
+}
+
+/** GitHub lists at most 100 per page. Few users are public members of more. */
+const Organizations = Schema.Array(
+  Schema.Struct({ login: Schema.String, avatar_url: Schema.String }),
+);
+
+/** GraphQL needs a token with the `read:org` scope for organizations. REST doesn't. */
+const organizations = githubCache(
+  (login) =>
+    githubRest(`/users/${encodeURIComponent(login)}/orgs?per_page=100`, Organizations).pipe(
+      Effect.map((orgs) =>
+        orgs.map((org): OrganizationNormalized => ({
+          login: org.login,
+          avatarUrl: org.avatar_url,
+        })),
+      ),
+    ),
+  () => TTL_SHORT,
+);
+
+/** The organizations the user is a public member of. Private memberships aren't listed. */
+export function getOrganizations(
+  username: string,
+): Effect.Effect<OrganizationNormalized[], GithubError> {
+  return Cache.get(organizations, userKey(username));
 }

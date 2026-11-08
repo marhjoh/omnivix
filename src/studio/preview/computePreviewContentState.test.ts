@@ -26,5 +26,8 @@ describe("previewLoadingMessage", () => {
     expect(previewLoadingMessage(["user", "contributions"])).toBe(
       "Loading profile and contributions…",
     );
+    expect(previewLoadingMessage(["user", "contributions", "repos"])).toBe(
+      "Loading profile, contributions, and repositories…",
+    );
   });
 });

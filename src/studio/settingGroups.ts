@@ -18,7 +18,7 @@ export const STYLE_GROUP = "Style";
 
 const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   { title: "Format", keys: ["size"] },
-  { title: STYLE_GROUP, keys: ["themeId", "cellShape", "backgroundImage"] },
+  { title: STYLE_GROUP, keys: ["themeId", "cellShape", "showIconColors", "backgroundImage"] },
   {
     title: "Layout",
     keys: ["alignment", "profilePosition", "contentSize", "authorSize"],
@@ -39,6 +39,22 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
+  // Only the stats banner has these.
+  {
+    title: "Stats",
+    keys: [
+      "showRepoCount",
+      "showStarCount",
+      "showFollowerCount",
+      "showFollowingCount",
+      "showPullRequestCount",
+      "showContributionCount",
+      "showCurrentStreak",
+      "showLongestStreak",
+      "showLanguages",
+      "showOrganizations",
+    ],
+  },
   // Everything else, in schema order. New settings land here until they get a group.
   { title: "Content", keys: null },
 ];

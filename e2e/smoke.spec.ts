@@ -83,7 +83,12 @@ test.describe("GitHub banners", () => {
     ]);
   });
 
-  for (const templateId of ["github-banner", "repos-banner", "contribution-banner"]) {
+  for (const templateId of [
+    "github-banner",
+    "repos-banner",
+    "stats-banner",
+    "contribution-banner",
+  ]) {
     test(`${templateId} loads with its data`, async ({ page }) => {
       const errors = pageErrors(page);
       await fakeGithub(page, () => "data");

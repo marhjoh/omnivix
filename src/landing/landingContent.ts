@@ -43,7 +43,7 @@ export const HOW_IT_WORKS = [
   {
     word: "Pick.",
     title: "Pick a template",
-    body: "Your GitHub profile, repositories, contribution heatmap or a quote.",
+    body: "Your GitHub profile, stats, repositories, contribution heatmap or a quote.",
   },
   {
     word: "Enter.",
@@ -107,12 +107,17 @@ export const FAQ = [
   {
     topic: "Your GitHub data",
     question: "What GitHub data does Omnivix use, and is it stored?",
-    answer: `Only public data: your name, avatar, contributions and repositories with their languages, stars and forks. GitHub data is cached briefly (up to ${inWords(TTL_LONG / HOUR_MS)} hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address. Omnivix also counts visits and exports per day, without cookies and without storing who you are.`,
+    answer: `Only public data: your name, avatar, contributions, follower and pull request counts, public organizations, and repositories with their languages, stars and forks. GitHub data is cached briefly (up to ${inWords(TTL_LONG / HOUR_MS)} hours for past years' contributions), not saved to a database. To prevent abuse, Redis temporarily stores request counts linked to a hash of your IP address. Omnivix also counts visits and exports per day, without cookies and without storing who you are.`,
   },
   {
     topic: "Your GitHub data",
     question: "Why are some of my contributions missing?",
     answer: `Omnivix shows the same contributions as your GitHub profile. Private work only counts once you turn on “Include private contributions on my profile” at https://github.com/settings/profile. Commits from another account or service, an email address not linked to your account, or a non-default branch never count. New contributions can take up to ${TTL_SHORT / MINUTE_MS} minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions.`,
+  },
+  {
+    topic: "Your GitHub data",
+    question: "Why don't my organizations show?",
+    answer: `Omnivix only shows organizations where your membership is public, and GitHub makes new memberships private. To change one, open the organization on GitHub, go to People and set your membership to Public. It can take ${TTL_SHORT / MINUTE_MS} minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/organization-membership/publicizing-or-hiding-organization-membership.`,
   },
 ] as const satisfies readonly {
   topic: (typeof FAQ_TOPICS)[number];

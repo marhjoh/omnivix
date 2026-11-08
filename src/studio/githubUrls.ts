@@ -23,5 +23,9 @@ export function githubDataUrls({
         ? `/api/github/contributions?username=${user}&year=${encodeURIComponent(year)}`
         : null,
     repos: username && githubData.includes("repos") ? `/api/github/repos?username=${user}` : null,
+    organizations:
+      username && githubData.includes("organizations")
+        ? `/api/github/organizations?username=${user}`
+        : null,
   };
 }

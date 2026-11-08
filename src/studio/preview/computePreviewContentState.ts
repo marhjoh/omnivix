@@ -22,11 +22,13 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
   user: "profile",
   contributions: "contributions",
   repos: "repositories",
+  organizations: "organizations",
 };
 
 /** "Loading profile and contributions…", from the GitHub data the banner draws. */
 export function previewLoadingMessage(githubData: readonly GithubDataKind[]): string {
-  return `Loading ${githubData.map((kind) => DATA_NAMES[kind]).join(" and ")}…`;
+  const names = new Intl.ListFormat("en-US").format(githubData.map((kind) => DATA_NAMES[kind]));
+  return `Loading ${names}…`;
 }
 
 /**

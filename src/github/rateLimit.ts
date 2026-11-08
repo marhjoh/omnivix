@@ -1,7 +1,7 @@
 import "server-only";
 import { Effect } from "effect";
 import { GithubRateLimited } from "@/src/github/errors";
-import type { GithubQuota } from "@/src/github/graphql";
+import type { GithubQuota } from "@/src/github/api";
 
 /** Used when GitHub reports a limit without saying when it resets. */
 const DEFAULT_WAIT_MS = 60_000;

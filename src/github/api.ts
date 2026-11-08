@@ -3,7 +3,7 @@ import { Effect, Schedule, Schema } from "effect";
 import { GithubRateLimited, GithubRequestFailed, GithubUserNotFound } from "@/src/github/errors";
 import { guardRateLimit, rateLimitResetAt, warnIfQuotaLow } from "@/src/github/rateLimit";
 
-const ENDPOINT = "https://api.github.com/graphql";
+const API = "https://api.github.com";
 
 /** The limit for one request. The studio page waits far less (initialGithubData). */
 const REQUEST_TIMEOUT = "10 seconds";
@@ -43,19 +43,18 @@ const Quota = Schema.Struct({ rateLimit: Schema.optional(GithubQuota) });
 
 const failed = (cause: unknown, transient = false) => new GithubRequestFailed({ cause, transient });
 
-function post(body: string) {
+function send(path: string, init: { method: "GET" | "POST"; body?: string }) {
   const token = process.env.GITHUB_TOKEN;
   if (!token) return Effect.die(new Error("GITHUB_TOKEN is not set"));
   return Effect.tryPromise({
     try: (signal) =>
-      fetch(ENDPOINT, {
-        method: "POST",
+      fetch(`${API}${path}`, {
+        ...init,
         headers: {
           authorization: `bearer ${token}`,
           "content-type": "application/json",
           "user-agent": "omnivix",
         },
-        body,
         signal,
       }),
     catch: (cause) => failed(cause, true),
@@ -77,7 +76,10 @@ export function githubQuery<S extends Schema.Decoder<unknown>>(
   schema: S,
 ): Effect.Effect<S["Type"], GithubRateLimited | GithubUserNotFound | GithubRequestFailed> {
   const request = Effect.gen(function* () {
-    const response = yield* post(JSON.stringify({ query, variables }));
+    const response = yield* send("/graphql", {
+      method: "POST",
+      body: JSON.stringify({ query, variables }),
+    });
     const body = yield* Effect.tryPromise({
       try: () => response.json() as Promise<unknown>,
       catch: (cause) => failed(cause, response.status >= 500),
@@ -108,6 +110,43 @@ export function githubQuery<S extends Schema.Decoder<unknown>>(
       Effect.mapError((cause) => failed(cause)),
     );
   });
+  return retried(request);
+}
+
+/**
+ * Fetches a REST endpoint and decodes the JSON with `schema`, for the few numbers GraphQL doesn't
+ * have. A 404 means the user doesn't exist. Retries like `githubQuery`.
+ */
+export function githubRest<S extends Schema.Decoder<unknown>>(
+  path: string,
+  schema: S,
+): Effect.Effect<S["Type"], GithubRateLimited | GithubUserNotFound | GithubRequestFailed> {
+  const request = Effect.gen(function* () {
+    const response = yield* send(path, { method: "GET" });
+    const resetAt = rateLimitResetAt(response);
+    if (resetAt) return yield* new GithubRateLimited({ resetAt });
+    if (response.status === 404) return yield* new GithubUserNotFound();
+    if (!response.ok) {
+      return yield* failed(
+        new Error(`GitHub answered HTTP ${response.status}`),
+        response.status >= 500,
+      );
+    }
+    return yield* Effect.tryPromise({
+      try: () => response.json() as Promise<unknown>,
+      catch: (cause) => failed(cause),
+    }).pipe(
+      Effect.flatMap(Schema.decodeUnknownEffect(schema)),
+      Effect.mapError((cause) => (cause instanceof GithubRequestFailed ? cause : failed(cause))),
+    );
+  });
+  return retried(request);
+}
+
+/** Tries transient failures once more, and stops sending requests after a rate limit. */
+function retried<A>(
+  request: Effect.Effect<A, GithubRateLimited | GithubUserNotFound | GithubRequestFailed>,
+) {
   return guardRateLimit(
     request.pipe(
       Effect.retry({
