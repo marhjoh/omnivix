@@ -13,7 +13,7 @@ vi.mock("@/src/stats/quality", async (importOriginal) => ({
   saveQuality,
 }));
 
-vi.mock("@/src/github/graphql", () => ({ githubQuery, QUOTA_FIELDS: "" }));
+vi.mock("@/src/github/api", () => ({ githubQuery, QUOTA_FIELDS: "" }));
 
 const { dailyMeasurementsRoute } = await import("./dailyMeasurements");
 

@@ -88,13 +88,14 @@ export function StudioShell({
 
   const { size } = state;
   const fill = state.contentSize === "fill";
-  // Disable settings that don't apply right now. A photo that failed can't be shown, a user without
-  // public organizations has none to show, Fill covers the whole banner, and with no quote marks
-  // there's nothing to color.
+  // Disable settings that don't apply right now.
   const disabledFields = new Set<string>();
+  // Nothing to show: the photo failed to load, or the user has no public organizations.
   if (github.avatarFailed) disabledFields.add("showAvatar");
   if (github.noOrganizations) disabledFields.add("showOrganizations");
+  // Fill covers the whole banner.
   if (fill) disabledFields.add("alignment");
+  // No quote marks to color.
   if ("quoteMarks" in state && state.quoteMarks === "none") disabledFields.add("markColor");
 
   // The first missing setting the banner needs. The username comes first because nothing loads

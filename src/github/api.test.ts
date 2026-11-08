@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Effect, Exit, Schema } from "effect";
-import { githubQuery, githubRest } from "./graphql";
+import { githubQuery, githubRest } from "./api";
 
 const User = Schema.Struct({ user: Schema.Struct({ login: Schema.String }) });
 

@@ -11,7 +11,7 @@ import type {
 import { contributionRange } from "@/src/github/contributionRange";
 import { contributionsTtlMs, TTL_SHORT } from "@/src/github/cacheTimes";
 import type { GithubError } from "@/src/github/errors";
-import { githubQuery, githubRest, QUOTA_FIELDS } from "@/src/github/graphql";
+import { githubQuery, githubRest, QUOTA_FIELDS } from "@/src/github/api";
 
 /** Each cache keeps at most this many entries and drops the oldest first. */
 const CACHE_CAPACITY = 500;

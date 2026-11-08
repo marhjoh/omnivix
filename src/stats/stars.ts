@@ -1,7 +1,7 @@
 import "server-only";
 import { Effect, Schema } from "effect";
 import type { GithubError } from "@/src/github/errors";
-import { githubQuery, QUOTA_FIELDS } from "@/src/github/graphql";
+import { githubQuery, QUOTA_FIELDS } from "@/src/github/api";
 import { SITE_LINKS } from "@/src/lib/site";
 
 const QUERY = `
