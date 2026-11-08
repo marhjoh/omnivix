@@ -10,7 +10,7 @@ import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
 import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
-import { BASE_URL, DESKTOP_VIEWPORT, kb, USERNAME } from "./shared.mjs";
+import { BASE_URL, DESKTOP_VIEWPORT, demoAiUsage, kb, USERNAME } from "./shared.mjs";
 
 const OUT_DIR = join(process.cwd(), "docs/images");
 const WEBP = { quality: 90, smartSubsample: true } as const;
@@ -28,12 +28,19 @@ async function newPage(viewport: { width: number; height: number }, theme: Theme
   return context.newPage();
 }
 
-/** Opens a template in the studio with a background, and waits until it can be exported. */
-async function studio(page: Page, templateId: TemplateId, background: string): Promise<Buffer> {
+/** Opens a template in the studio with a background and settings, and waits until it can be exported. */
+async function studio(
+  page: Page,
+  templateId: TemplateId,
+  background: string,
+  settings: Record<string, unknown> = {},
+): Promise<Buffer> {
   await page.context().addCookies([
     {
       name: settingsCookie(templateId).name,
-      value: encodeURIComponent(JSON.stringify({ backgroundImage: presetSrcById(background) })),
+      value: encodeURIComponent(
+        JSON.stringify({ backgroundImage: presetSrcById(background), ...settings }),
+      ),
       url: BASE_URL,
     },
   ]);
@@ -79,6 +86,7 @@ try {
     await studio(demo, "tech-stack-banner", "lisbon"),
     await studio(demo, "intro-banner", "sydney"),
     await studio(demo, "terminal-banner", "swiss-alps"),
+    await studio(demo, "ai-usage-banner", "sahara", { usage: demoAiUsage() }),
     await studio(demo, "contribution-banner", "toronto"),
     await studio(demo, "quote-banner", "new-york"),
   ];
