@@ -117,7 +117,7 @@ export const FAQ = [
   {
     topic: "Your GitHub data",
     question: "Why don't my organizations show?",
-    answer: `The Stats banner only shows organizations where your membership is public, and GitHub makes new memberships private. To change one, open the organization on GitHub, go to People and set your membership to Public. It can take ${TTL_SHORT / MINUTE_MS} minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/organization-membership/publicizing-or-hiding-organization-membership.`,
+    answer: `Omnivix only shows organizations where your membership is public, and GitHub makes new memberships private. To change one, open the organization on GitHub, go to People and set your membership to Public. It can take ${TTL_SHORT / MINUTE_MS} minutes to show. More in GitHub's guide at https://docs.github.com/en/account-and-profile/how-tos/organization-membership/publicizing-or-hiding-organization-membership.`,
   },
 ] as const satisfies readonly {
   topic: (typeof FAQ_TOPICS)[number];
