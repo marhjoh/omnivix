@@ -10,7 +10,7 @@ import { THEME_COOKIE_NAME, type Theme } from "@/src/theme/theme";
 import { settingsCookie, USERNAME_COOKIE } from "@/src/studio/studioCookies";
 import type { TemplateId } from "@/src/templates/types";
 import { studioPath } from "@/src/lib/site";
-import { BASE_URL, DESKTOP_VIEWPORT, demoAiUsage, kb, USERNAME } from "./shared.mjs";
+import { BASE_URL, DEMO_FEED, DESKTOP_VIEWPORT, demoAiUsage, kb, USERNAME } from "./shared.mjs";
 
 const OUT_DIR = join(process.cwd(), "docs/images");
 const WEBP = { quality: 90, smartSubsample: true } as const;
@@ -88,6 +88,7 @@ try {
     await studio(demo, "terminal-banner", "swiss-alps"),
     await studio(demo, "ai-usage-banner", "sahara", { usage: demoAiUsage() }),
     await studio(demo, "certifications-banner", "norwegian-fjord"),
+    await studio(demo, "latest-posts-banner", "lisbon", { feed: DEMO_FEED }),
     await studio(demo, "contribution-banner", "toronto"),
     await studio(demo, "quote-banner", "new-york"),
   ];

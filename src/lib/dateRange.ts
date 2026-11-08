@@ -6,6 +6,12 @@ const DATE = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
+/** A day (YYYY-MM-DD) as "Nov 8, 2026", the same on the server and in the browser. */
+export function formatDay(day: string): string {
+  // Date-only ISO strings parse as UTC.
+  return DATE.format(new Date(day));
+}
+
 /**
  * Two days (YYYY-MM-DD) as "Oct 5 – Nov 8, 2026". The first year shows only when it differs.
  *

@@ -14,6 +14,7 @@ import { RepoMultiSelect, type RepoCatalog } from "@/src/studio/RepoMultiSelect"
 import { ColorSelect } from "@/src/studio/ColorSelect";
 import { IconPicker } from "@/src/studio/IconPicker";
 import { UsageField } from "@/src/studio/UsageField";
+import { FeedField } from "@/src/studio/FeedField";
 import { CertificationList } from "@/src/studio/CertificationList";
 import {
   AuthorPrefixSelect,
@@ -56,6 +57,7 @@ interface FieldContext {
   onError: (message: string) => number;
   onErrorResolved: (toastId: number) => void;
   onOpenUsage: () => void;
+  onOpenFeed: () => void;
 }
 
 type FieldOfType<T extends EditorFieldType> = Extract<EditorFieldSchema, { type: T }>;
@@ -238,6 +240,9 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
       onChange={(value) => onChange(field.key, value)}
     />
   ),
+  feedLink: (field, { state, onOpenFeed }) => (
+    <FeedField label={fieldLabel(field)} value={fieldValue(state, field)} onOpen={onOpenFeed} />
+  ),
   usagePaste: (field, { state, onOpenUsage }) => (
     <UsageField label={fieldLabel(field)} value={fieldValue(state, field)} onOpen={onOpenUsage} />
   ),
@@ -287,6 +292,7 @@ export function ControlSidebar({
   onError,
   onErrorResolved,
   onOpenUsage,
+  onOpenFeed,
 }: {
   schema: EditorFieldSchema[];
   state: StudioSettings;
@@ -303,6 +309,8 @@ export function ControlSidebar({
   onErrorResolved: (toastId: number) => void;
   /** Opens the AI usage dialog. */
   onOpenUsage: () => void;
+  /** Opens the feed dialog. */
+  onOpenFeed: () => void;
   /** The Profile section at the top, for templates that need a username. */
   profile?: { username: string; onChangeUsername: () => void };
 }) {
@@ -321,6 +329,7 @@ export function ControlSidebar({
     onError,
     onErrorResolved,
     onOpenUsage,
+    onOpenFeed,
   };
 
   const renderField = (field: EditorFieldSchema) => {

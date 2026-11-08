@@ -62,6 +62,8 @@ export function useApiQuery<T>(
     // Show only our API's messages. Network errors like "Failed to fetch" get the fallback.
     error: error ? fetchError?.message || FALLBACK_ERROR : null,
     notFound: fetchError?.status === 404,
+    /** The error response's HTTP status, or null for a network error. */
+    status: fetchError?.status ?? null,
     limit: fetchError?.limit ?? null,
     loading: query.isFetching,
     /** Fetches again, even if the data is fresh. */

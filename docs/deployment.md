@@ -40,6 +40,7 @@ Per IP, answered with `429`:
 
 - `POST /api/export`: 30 per 10 minutes, a Vercel Firewall rule, and 25 per UTC day (`EXPORT_DAILY_LIMIT`), counted in Upstash Redis
 - `/api/github/*`: 60 per 10 minutes, counted in Upstash Redis
+- `/api/feed`: 30 per 10 minutes, counted in Upstash Redis
 
 `/api/icons` has no limit. It reads icons bundled with the app, and the CDN caches the answers.
 

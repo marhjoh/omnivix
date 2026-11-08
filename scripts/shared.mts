@@ -17,6 +17,13 @@ export function kb(bytes: number): string {
 }
 
 /**
+ * Made-up posts for the latest posts banner's screenshots (docs/demo-feed.xml). The export only
+ * reads public https:// feeds, so it's read from GitHub.
+ */
+export const DEMO_FEED =
+  "https://raw.githubusercontent.com/marhjoh/omnivix/main/docs/demo-feed.xml";
+
+/**
  * Made-up usage for the AI usage banner's screenshots, because ccusage only reads the logs on the
  * machine it runs on. It's busier toward the end and quieter on weekends.
  */

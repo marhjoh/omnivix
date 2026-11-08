@@ -71,6 +71,49 @@ test("the certifications banner adds a certification with a suggested issuer", a
   expect(errors).toEqual([]);
 });
 
+test("the latest posts banner asks for a feed and shows its posts", async ({ page }) => {
+  const errors = pageErrors(page);
+  const requested: string[] = [];
+  await page.route("**/api/feed?**", (route) => {
+    requested.push(new URL(route.request().url()).searchParams.get("url") ?? "");
+    return route.fulfill({
+      json: {
+        posts: [
+          { title: "Shipping a banner generator", date: "2026-11-02" },
+          { title: "What I learned from RSS", date: "2026-10-12" },
+        ],
+      },
+    });
+  });
+  await page.goto("/studio/latest-posts-banner");
+  const dialog = page.getByRole("dialog", { name: "Add your feed" });
+  await expect(dialog).toBeVisible();
+
+  await dialog.getByLabel("Feed link", { exact: true }).fill("dev.to/ada");
+  await dialog.getByRole("button", { name: "Use feed" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(preview(page).getByText("Shipping a banner generator")).toBeVisible();
+  await expect(preview(page).getByText("Nov 2, 2026")).toBeVisible();
+  expect(requested).toContain("https://dev.to/feed/ada");
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
+test("the latest posts banner explains a feed it can't read", async ({ page }) => {
+  await page.route("**/api/feed?**", (route) =>
+    route.fulfill({ status: 422, json: { error: "That feed has no posts yet." } }),
+  );
+  await page.goto("/studio/latest-posts-banner");
+  const dialog = page.getByRole("dialog", { name: "Add your feed" });
+  await dialog.getByLabel("Feed link", { exact: true }).fill("example.com/feed.xml");
+  await dialog.getByRole("button", { name: "Use feed" }).click();
+
+  await expect(preview(page)).toContainText("That feed has no posts yet");
+  await preview(page).getByRole("button", { name: "Change feed" }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByLabel("Feed link", { exact: true })).toHaveValue("example.com/feed.xml");
+});
+
 test("the intro banner shows a typed name and link without GitHub data", async ({ page }) => {
   const errors = pageErrors(page);
   await page.goto("/studio/intro-banner");

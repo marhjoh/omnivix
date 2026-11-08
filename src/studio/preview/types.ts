@@ -6,9 +6,10 @@ export interface PreviewProblem {
   hint: string;
   /**
    * The button under the message. "retry" refetches, for problems that may go away on their own.
-   * "change-username" opens the username dialog. Left out when only the sidebar can fix it.
+   * "change-username" opens the username dialog and "change-feed" the feed dialog. Left out when
+   * only the sidebar can fix it.
    */
-  action?: "retry" | "change-username";
+  action?: "retry" | "change-username" | "change-feed";
   /** "Try again" stays disabled until then, e.g. until a rate limit resets. */
   retryAt?: Date;
 }

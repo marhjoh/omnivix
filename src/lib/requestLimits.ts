@@ -17,6 +17,9 @@ export const githubDataLimit = perIp(
   requestLimit("github-data", Ratelimit.slidingWindow(60, "10 m")),
 );
 
+/** Each feed someone enters is one request. CDN hits don't count. */
+export const feedLimit = perIp(requestLimit("feeds", Ratelimit.slidingWindow(30, "10 m")));
+
 /**
  * Counted per UTC day, so it resets at midnight UTC. Copy counts too, because it uses the same
  * route.

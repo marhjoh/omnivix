@@ -7,6 +7,7 @@ import { createExportToken } from "@/src/export/exportToken";
 import { captureBanner } from "@/src/export/playwright";
 import { EXPORT_FORMAT_DETAILS } from "@/src/export/format";
 import { ExportTimedOut } from "@/src/export/errors";
+import { getFeed } from "@/src/feeds/client";
 import type { TimedLimit } from "@/src/lib/apiError";
 import { errorResponse, githubErrorResponses, tooManyRequests } from "@/src/lib/apiResponse";
 import { usernameOf } from "@/src/lib/githubUsername";
@@ -76,6 +77,9 @@ export async function renderBanner(
 
   return Effect.runPromise(
     Effect.gen(function* () {
+      // A feed that can't be read fails here with its reason, before Chromium starts. The render
+      // page loads it again, usually from this server's cache.
+      if ("feed" in banner.state) yield* getFeed(banner.state.feed);
       const { payload, images } = yield* resolveExportImages(banner);
       const image = yield* captureBanner({
         url: renderUrl(request, payload.templateId, createExportToken(payload)),
@@ -101,6 +105,7 @@ export async function renderBanner(
       }),
       Effect.catchTags({
         UnusableImage: ({ message }) => Effect.succeed(errorResponse(message, 400)),
+        FeedUnreadable: ({ message }) => Effect.succeed(errorResponse(message, 422)),
         // The render page loads the GitHub data and reports these problems.
         ...githubErrorResponses(usernameOf(banner.state)),
       }),

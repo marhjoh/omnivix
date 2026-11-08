@@ -8,6 +8,7 @@ import {
   terminalBannerDefinition,
   aiUsageBannerDefinition,
   certificationsBannerDefinition,
+  latestPostsBannerDefinition,
   quoteBannerDefinition,
 } from "@/src/templates/definitions";
 import type { TemplateDefinition, TemplateId } from "@/src/templates/types";
@@ -22,6 +23,7 @@ export const templateRegistry: { [K in TemplateId]: TemplateDefinition<TemplateS
   "terminal-banner": terminalBannerDefinition,
   "ai-usage-banner": aiUsageBannerDefinition,
   "certifications-banner": certificationsBannerDefinition,
+  "latest-posts-banner": latestPostsBannerDefinition,
   "contribution-banner": contributionBannerDefinition,
   "quote-banner": quoteBannerDefinition,
 };

@@ -17,7 +17,7 @@
 
 ## Features
 
-- **Ten templates:** GitHub, Repos, Stats, Tech Stack, Intro, Terminal, AI Usage, Certifications, Contribution and Quote banners
+- **Eleven templates:** GitHub, Repos, Stats, Tech Stack, Intro, Terminal, AI Usage, Certifications, Latest Posts, Contribution and Quote banners
 - **Sized for every platform:** LinkedIn, X, Bluesky, YouTube, Twitch, Reddit and more
 - **Backgrounds:** 14 built-in, an image link or your own upload
 - **Your logo,** from a link or an upload

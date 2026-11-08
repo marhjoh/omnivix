@@ -95,6 +95,8 @@ function accepts(field: EditorFieldSchema): string {
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     case "iconPicker":
       return `[Simple Icons](https://simpleicons.org) slugs, comma-separated, at most ${MAX_ICONS}, e.g. \`typescript, nextdotjs\`; unknown slugs are left out`;
+    case "feedLink":
+      return "an `https://` RSS or Atom feed link, not empty; the studio turns dev.to, Medium, Hashnode and Substack profile links into feed links";
     case "certificationList":
       return `certifications separated by \`;\`, each as \`name|issuer|year|slug\`, at most ${MAX_CERTIFICATIONS}, e.g. \`Terraform Associate|HashiCorp|2024|hashicorp\`; the year and the [Simple Icons](https://simpleicons.org) slug can be empty, and one needs a name`;
     case "usagePaste":

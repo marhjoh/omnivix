@@ -10,6 +10,7 @@ export const LANDING_TEMPLATE_ORDER: readonly TemplateId[] = [
   "terminal-banner",
   "ai-usage-banner",
   "certifications-banner",
+  "latest-posts-banner",
   "quote-banner",
   "contribution-banner",
 ];

@@ -1,6 +1,6 @@
 # Omnivix
 
-A Next.js app on Vercel that turns public GitHub data, typed text and pasted AI usage into downloadable profile banners. No user accounts.
+A Next.js app on Vercel that turns public GitHub data, blog feeds, typed text and pasted AI usage into downloadable profile banners. No user accounts.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
@@ -34,14 +34,14 @@ TypeScript 6 and Node 24. Use `pnpm` only; `pnpm-lock.yaml` is the source of tru
 
 - `pnpm dev`: dev server at http://localhost:3000 (needs `GITHUB_TOKEN` in `.env.local`)
 - `pnpm test`: Vitest; tests sit next to the code as `src/**/*.test.ts`
-- `pnpm test:e2e`: Playwright smoke tests in `e2e/` against a production build (`pnpm build` first); they fake GitHub's data, so they need no token
+- `pnpm test:e2e`: Playwright smoke tests in `e2e/` against a production build (`pnpm build` first); they fake GitHub's data and feeds, so they need no token
 - `pnpm lint`, `pnpm typecheck`, `pnpm knip`, `pnpm format`
 
 ## Layout
 
 - `app/`: routes only (pages, API handlers, metadata). Keep handlers thin; logic lives in `src/`.
 - `src/studio/`: the editor. `src/templates/`: one folder per banner template. `src/banner/`: shared banner pieces.
-- `src/export/`: server-side PNG/JPEG export. `src/github/`: GitHub GraphQL client and cache. `src/icons/`: Simple Icons for the tech stack, intro and certifications banners.
+- `src/export/`: server-side PNG/JPEG export. `src/github/`: GitHub GraphQL client and cache. `src/icons/`: Simple Icons for the tech stack, intro and certifications banners. `src/feeds/`: RSS and Atom feeds for the latest posts banner.
 - `src/lib/`, `src/ui/`, `src/theme/`: shared helpers, UI pieces and theme.
 
 The studio preview and the export render the same `BannerRenderer`. `POST /api/export` validates the settings, signs them into a short-lived token, opens `/render/[templateId]?token=…` in Playwright and returns a screenshot. Details: [docs/architecture.md](docs/architecture.md), [docs/api.md](docs/api.md), [docs/deployment.md](docs/deployment.md).
@@ -56,13 +56,13 @@ The studio preview and the export render the same `BannerRenderer`. `POST /api/e
 
 ### Effect
 
-The server runs on Effect 4: the export API (`src/export/`), the GitHub client and routes (`src/github/`), and the settings schemas (`src/templates/stateSchemas.ts`, `src/lib/schema.ts`).
+The server runs on Effect 4: the export API (`src/export/`), the GitHub client and routes (`src/github/`), the feed client and route (`src/feeds/`), and the settings schemas (`src/templates/stateSchemas.ts`, `src/lib/schema.ts`).
 
 - Server only: every module that imports `effect` starts with `import "server-only"`, so a browser import fails the build. Never import `effect` from code that runs in the browser: it adds about 50 KB to a page (measured in #205). The studio uses TanStack Query and checks nothing itself: its controls keep settings valid, and the export API checks them. The one exception is pasted ccusage output, which `src/banner/ccusage.ts` checks by hand.
 - Most examples online and most AI output are Effect 3. Work from the installed docs: `Effect.catchAll` is now `Effect.catch`, `Effect.either` is `Effect.result`, and errors are `Schema.TaggedError` classes.
 - Check a module's `@stability` tag before using it; unstable ones can change in a minor release, which is why the version is pinned.
 - Route handlers stay plain Next.js: build one Effect and run it with `Effect.runPromise` at the edge, turning each tagged error into its response there with `Effect.catchTags` (see `src/export/route.ts`).
-- Validate untrusted input (requests, GitHub responses, links) with `Schema`. Give each field its own message (`src/lib/schema.ts`), so an issue never repeats the value that failed.
+- Validate untrusted input (requests, GitHub responses, feeds, links) with `Schema`. Download visitors' links with `fetchPublic` (`src/lib/publicFetch.ts`), never plain `fetch`. Give each field its own message (`src/lib/schema.ts`), so an issue never repeats the value that failed.
 - Resources that must close, like Chromium, use `Effect.acquireRelease` inside `Effect.scoped`, so a timeout or failure still closes them (see `captureBanner`).
 
 ### UI
@@ -89,7 +89,7 @@ American English everywhere: code, comments, UI copy, docs, commits and PRs (cus
 - PRs are squash-merged and the PR title becomes the commit, so write it as a [Conventional Commit](https://www.conventionalcommits.org). It decides the release-please version bump; never edit the version or `CHANGELOG.md`.
 - Keep PRs small, and link issues with `Closes #` or `Refs #`. More in [CONTRIBUTING.md](CONTRIBUTING.md).
 - Write issues and PRs with the templates in `.github/`: `ISSUE_TEMPLATE/task.md` or `bug.md`, and `pull_request_template.md`. Keep their headings and drop only the sections they mark as optional.
-- A PR that changes the UI includes screenshots under "Screenshots". Capture them with Playwright at 2× from `pnpm build` and `pnpm start --port <free port>`, in light and dark when the change shows in both. Save them outside the repo.
+- A PR that changes the UI includes screenshots under "Screenshots". Capture them with Playwright at 2× from `pnpm build` and `pnpm start --port <free port>`, in light and dark when the change shows in both. Save them outside the repo. Put them in a Markdown table, one image per cell (such as Dark | Light), so they show small side by side.
 - Attach images with `gh pr create` or `gh pr edit` and `--attach` (gh 2.99 or later). Write `![alt](./shot.webp)` in a `--body-file` and pass `--attach ./shot.webp`, and gh swaps the path for the uploaded image. Don't commit screenshots or push them to a branch.
 
 ## Checks
