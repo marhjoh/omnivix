@@ -32,7 +32,7 @@ The studio reads the same settings from the URL, so a link can open a banner tha
 https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset
 ```
 
-Values that aren't valid are ignored. Uploaded backgrounds and logos can't be linked. Positions are `x,y` in percent (`contentPosition=100,0`), `backgroundZoom` is a number from 1 to 1.5, and `backgroundOpacity` is a percent from 0 to 100.
+Values that aren't valid are ignored. Uploaded backgrounds, logos and photos can't be linked. Positions are `x,y` in percent (`contentPosition=100,0`), `backgroundZoom` is a number from 1 to 1.5, and `backgroundOpacity` is a percent from 0 to 100.
 
 ## Image URL
 
@@ -46,7 +46,7 @@ In the studio, the export panel's Copy group copies it as a link, Markdown or HT
 
 - **Settings:** values that aren't valid use the defaults. Uploaded images can't go in a URL. Images stop at 2×, which is sharp on any screen and keeps photo banners small.
 - **Caching:** an image is cached for a day (`s-maxage=86400`). After that, the old image is served while a new one renders (`stale-while-revalidate=604800`), so a README never waits on a render. Errors are cached for 5 minutes.
-- **Limit:** 30 renders a day per GitHub username, or per banner for the quote and tech stack banners. Cached images don't count.
+- **Limit:** 30 renders a day per GitHub username, or per banner for the quote, tech stack and intro banners. Cached images don't count.
 
 Responses are like the export API's:
 
@@ -61,14 +61,14 @@ Responses are like the export API's:
 
 All routes, including the ones the app uses internally:
 
-| Route                                                                    | Purpose                                         |
-| ------------------------------------------------------------------------ | ----------------------------------------------- |
-| `/`                                                                      | Landing page                                    |
-| `/studio/[templateId]`                                                   | The editor for one template                     |
-| `/render/[templateId]`                                                   | The page the export screenshots; needs a token  |
-| `POST /api/export`                                                       | The export API above                            |
-| `/banner/[templateId].png`, `.jpg`                                       | The image URL above                             |
-| `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                      |
-| `/api/icons/catalog`, `/api/icons?slugs=`                                | Simple Icons for the tech stack banner          |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time    |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools |
+| Route                                                                    | Purpose                                           |
+| ------------------------------------------------------------------------ | ------------------------------------------------- |
+| `/`                                                                      | Landing page                                      |
+| `/studio/[templateId]`                                                   | The editor for one template                       |
+| `/render/[templateId]`                                                   | The page the export screenshots; needs a token    |
+| `POST /api/export`                                                       | The export API above                              |
+| `/banner/[templateId].png`, `.jpg`                                       | The image URL above                               |
+| `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                        |
+| `/api/icons/catalog`, `/api/icons?slugs=`                                | Simple Icons for the tech stack and intro banners |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time      |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools   |
