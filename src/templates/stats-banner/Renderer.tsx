@@ -12,7 +12,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cardStyle } from "@/src/banner/card";
-import { CardLabel, ICON_COLORS, ShareBar, StatTile, type IconColor } from "@/src/banner/statCards";
+import { CardLabel, ShareBar, StatTile } from "@/src/banner/statCards";
+import { ICON_COLORS, type IconColor } from "@/src/banner/iconColor";
 import { ProfileBanner } from "@/src/banner/ProfileBlock";
 import { contributionStreaks, formatCount, starsReceived, topLanguages } from "@/src/banner/stats";
 import { bannerUiChrome, type BannerUiChrome } from "@/src/theme/theme";

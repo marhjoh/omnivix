@@ -15,14 +15,8 @@ import { cardStyle } from "@/src/banner/card";
 import { ContributionGrid, contributionGridStyle } from "@/src/banner/ContributionGrid";
 import { contentFit } from "@/src/banner/contentPosition";
 import { FitContent } from "@/src/banner/FitContent";
-import {
-  CardLabel,
-  ICON_COLORS,
-  ShareBar,
-  StatTile,
-  type IconColor,
-  type Share,
-} from "@/src/banner/statCards";
+import { CardLabel, ShareBar, StatTile, type Share } from "@/src/banner/statCards";
+import { ICON_COLORS, type IconColor } from "@/src/banner/iconColor";
 import { contributionStreaks, formatCount } from "@/src/banner/stats";
 import { bannerUiChrome } from "@/src/theme/theme";
 import type { RendererProps } from "@/src/templates/types";

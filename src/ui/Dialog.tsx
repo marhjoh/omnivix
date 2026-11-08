@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useEffectEvent, useRef, type ReactNode, type RefObject } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
@@ -22,6 +22,8 @@ export function Dialog({
   children: ReactNode;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  // Not a dependency below, so a new onCancel doesn't move the focus again.
+  const cancel = useEffectEvent(onCancel);
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +34,7 @@ export function Dialog({
     field?.setSelectionRange(field.value.length, field.value.length);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onCancel();
+        cancel();
         return;
       }
       if (e.key !== "Tab" || !dialogRef.current) return;
@@ -54,7 +56,7 @@ export function Dialog({
       window.removeEventListener("keydown", onKeyDown);
       returnFocusTo?.focus();
     };
-  }, [open, onCancel, initialFocus]);
+  }, [open, initialFocus]);
 
   return (
     // Skip the fade when the dialog is open on load (a first visit). It then shows with the first

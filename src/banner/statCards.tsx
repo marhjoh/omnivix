@@ -1,20 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { FORK_COLOR, LanguageDot, STAR_COLOR } from "@/src/banner/card";
+import { LanguageDot } from "@/src/banner/card";
 import type { BannerUiChrome } from "@/src/theme/theme";
 
 // The stats and AI usage banners' cards.
-
-/** The repos banner's star and fork colors, and a few more in the same tone. */
-export const ICON_COLORS = {
-  blue: "#58a6ff",
-  yellow: STAR_COLOR,
-  purple: FORK_COLOR,
-  green: "#3fb950",
-  orange: "#ff7b45",
-};
-
-export type IconColor = keyof typeof ICON_COLORS;
 
 /** GitHub's gray for languages without a color, used for "Other" too. */
 const NO_SHARE_COLOR = "#8b949e";
