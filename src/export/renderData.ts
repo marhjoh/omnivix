@@ -16,8 +16,8 @@ import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
 /**
  * Loads the data the render page draws, only what this banner needs: GitHub data, and the tech
- * stack banner's icons. The export has already
- * checked the settings, so the username and year are valid.
+ * stack and intro banners' icons. The export has already checked the settings, so the username
+ * and year are valid.
  */
 export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
   const username = usernameOf(state);

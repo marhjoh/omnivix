@@ -20,6 +20,8 @@ function changed(field: EditorFieldSchema, initial: unknown): unknown {
       return "/backgrounds/london.avif";
     case "logoPicker":
       return "https://example.com/logo.svg";
+    case "photoPicker":
+      return "https://example.com/photo.jpg";
     case "colorPicker":
       return "#ff6600";
     case "repoMultiSelect":

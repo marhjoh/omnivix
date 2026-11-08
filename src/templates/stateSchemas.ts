@@ -11,6 +11,12 @@ import { isGithubUsername } from "@/src/lib/githubUsername";
 import { isIconSelection, MAX_ICONS } from "@/src/icons/iconSelection";
 import { MAX_ICONS_PER_ROW, MIN_ICONS_PER_ROW } from "@/src/banner/techStack";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
+import {
+  HEADLINE_MAX_LENGTH,
+  LINK_MAX_LENGTH,
+  NAME_MAX_LENGTH,
+  TAGLINE_MAX_LENGTH,
+} from "@/src/banner/intro";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
 import {
@@ -82,6 +88,12 @@ const profileFields = {
   profilePosition: oneOf(PROFILE_POSITIONS),
 };
 
+const iconSelection = Schema.makeFilter(isIconSelection, {
+  message: `Must be at most ${MAX_ICONS} Simple Icons slugs, comma-separated, each once`,
+});
+
+const link = text.check(textUpTo(LINK_MAX_LENGTH));
+
 const quoteColor = textWhere(isQuoteColor, "Unknown color");
 
 const STATE_SCHEMAS = {
@@ -128,13 +140,27 @@ const STATE_SCHEMAS = {
   "tech-stack-banner": Schema.Struct({
     ...bannerFields,
     contentSize,
-    icons: requiredText.check(
-      Schema.makeFilter(isIconSelection, {
-        message: `Must be at most ${MAX_ICONS} Simple Icons slugs, comma-separated, each once`,
-      }),
-    ),
+    icons: requiredText.check(iconSelection),
     iconsPerRow: numberBetween(MIN_ICONS_PER_ROW, MAX_ICONS_PER_ROW),
     showLabels: flag,
+    showIconColors: flag,
+  }),
+  "intro-banner": Schema.Struct({
+    ...bannerFields,
+    contentSize,
+    name: requiredText.check(textUpTo(NAME_MAX_LENGTH)),
+    headline: text.check(textUpTo(HEADLINE_MAX_LENGTH)),
+    tagline: text.check(textUpTo(TAGLINE_MAX_LENGTH)),
+    photoImage: Schema.optional(text),
+    github: link,
+    linkedin: link,
+    x: link,
+    website: link,
+    email: link,
+    icons: text.check(iconSelection),
+    showHeadline: flag,
+    showLinks: flag,
+    showIcons: flag,
     showIconColors: flag,
   }),
   "contribution-banner": Schema.Struct({

@@ -70,7 +70,11 @@ export function StudioShell({
     link,
   });
   const github = useGithubBannerData({ templateId, state, username, initialApiData });
-  const icons = useIcons("icons" in state ? state.icons : "", initialApiData);
+  // The intro banner's hidden icons aren't loaded, so a failed load can't block a banner without
+  // them. The icon picker still loads its own.
+  const shownIcons =
+    "icons" in state && (!("showIcons" in state) || state.showIcons) ? state.icons : "";
+  const icons = useIcons(shownIcons, initialApiData);
   const problem = github.problem ?? icons.problem;
   const data = useMemo(() => ({ ...github.data, icons: icons.data }), [github.data, icons.data]);
   const retry = () => {
@@ -105,6 +109,8 @@ export function StudioShell({
   if (fill) disabledFields.add("alignment");
   // No quote marks to color.
   if ("quoteMarks" in state && state.quoteMarks === "none") disabledFields.add("markColor");
+  // No icons to color.
+  if ("showIcons" in state && !state.showIcons) disabledFields.add("showIconColors");
 
   // The first missing setting the banner needs. The username comes first because nothing loads
   // without it. Then come required fields such as the quote.
@@ -123,6 +129,11 @@ export function StudioShell({
   /** Only a chosen background that shows in the preview can be moved and zoomed. */
   const adjustableBackground = backgroundImage.usableSrc ? background : undefined;
   const logoImage = useBannerImage(state.logoImage, "logo", showError);
+  const photoImage = useBannerImage(
+    "photoImage" in state ? state.photoImage : undefined,
+    "photo",
+    showError,
+  );
 
   const backgroundFields = useMemo(
     () => ({
@@ -142,8 +153,13 @@ export function StudioShell({
   // one.
   const shownBackground = useKeepWhile(backgroundFields, backgroundImage.status === "loading");
   const previewBannerState = useMemo(
-    () => ({ ...state, ...shownBackground, logoImage: logoImage.usableSrc }),
-    [state, shownBackground, logoImage.usableSrc],
+    () => ({
+      ...state,
+      ...shownBackground,
+      logoImage: logoImage.usableSrc,
+      ...("photoImage" in state && { photoImage: photoImage.usableSrc }),
+    }),
+    [state, shownBackground, logoImage.usableSrc, photoImage.usableSrc],
   );
   // What the preview and the Download button show. They always change together. A fast load
   // keeps the previous preview instead of flashing the loading screen (see useHoldDuringLoad).
@@ -165,16 +181,18 @@ export function StudioShell({
   // Download and Copy don't explain why they're off. The preview shows the empty, loading or
   // problem state, and a broken image gets a toast. They're also off while the preview shows an
   // older version, so a download always matches what's on screen. That covers a held preview, the
-  // previous year's grid, the old background and a logo that's still loading.
+  // previous year's grid, the old background and a logo or photo that's still loading.
   const exportBlocked =
     shownPreview.previewState !== "ready" ||
     backgroundImage.status === "failed" ||
     logoImage.status === "failed" ||
+    photoImage.status === "failed" ||
     shownPreview !== livePreview ||
     github.contributionsStale ||
     icons.stale ||
     shownBackground !== backgroundFields ||
-    logoImage.status === "loading";
+    logoImage.status === "loading" ||
+    photoImage.status === "loading";
 
   const shownFormat = shownDownloadFormat(
     BANNER_SIZES[size],

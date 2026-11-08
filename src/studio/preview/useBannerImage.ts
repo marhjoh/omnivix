@@ -6,8 +6,8 @@ import { isDataUrl, isHttpsUrl } from "@/src/lib/imageSource";
 import { useImageStatus } from "@/src/studio/useImageStatus";
 
 /**
- * Loads an image setting (background or logo) for the preview. An image that fails is left out of
- * the preview and blocks the export, but stays in the sidebar. Failures are reported here once, for
+ * Loads an image setting (background, logo or photo) for the preview. An image that fails is left
+ * out of the preview and blocks the export, but stays in the sidebar. Failures are reported here once, for
  * presets, uploads and links the studio opened with. Links typed later are reported by the link
  * field (useImageLinkField).
  */

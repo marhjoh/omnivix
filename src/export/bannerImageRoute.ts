@@ -82,7 +82,7 @@ async function bannerImage(request: NextRequest, file: string): Promise<Response
 
 /**
  * All image URLs for one GitHub user share a count, so changing the query doesn't reset it.
- * Banners without a user, like the quote and tech stack banners, each count on their own.
+ * Banners without a user, like the quote, tech stack and intro banners, each count on their own.
  */
 function limitKey(banner: ParsedExportRequest): string {
   const username = usernameOf(banner.state).toLowerCase();

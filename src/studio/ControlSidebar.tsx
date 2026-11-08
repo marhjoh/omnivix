@@ -19,7 +19,7 @@ import {
   FontStyleSelect,
   QuoteMarksSelect,
 } from "@/src/studio/QuoteFields";
-import { BackgroundField, LogoField } from "@/src/studio/ImageFields";
+import { BackgroundField, LogoField, PhotoField } from "@/src/studio/ImageFields";
 import { ResetButton } from "@/src/studio/ResetButton";
 import {
   AppearancePicker,
@@ -186,6 +186,15 @@ const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
     <LogoField
       field={field}
       sizeField={ctx.schema.find((f) => f.key === "logoSize")}
+      state={ctx.state}
+      onChange={ctx.onChange}
+      onError={ctx.onError}
+      onErrorResolved={ctx.onErrorResolved}
+    />
+  ),
+  photoPicker: (field, ctx) => (
+    <PhotoField
+      field={field}
       state={ctx.state}
       onChange={ctx.onChange}
       onError={ctx.onError}

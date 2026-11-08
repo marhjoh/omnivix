@@ -6,7 +6,7 @@ import {
   type BannerBackground,
 } from "@/src/banner/background";
 import { isDefaultLogoPosition } from "@/src/banner/logo";
-import { BACKGROUND_UPLOAD, LOGO_UPLOAD } from "@/src/lib/imageUpload";
+import { BACKGROUND_UPLOAD, LOGO_UPLOAD, PHOTO_UPLOAD } from "@/src/lib/imageUpload";
 import { ImagePicker } from "@/src/studio/ImagePicker";
 import { ResetButton } from "@/src/studio/ResetButton";
 import { fieldLabel } from "@/src/studio/settingGroups";
@@ -18,7 +18,7 @@ import { RangeField } from "@/src/ui/RangeField";
 /** Zoom slider step: 5 percentage points. */
 const ZOOM_STEP = 0.05;
 
-interface ImageFieldProps<T extends "logoPicker" | "backgroundPicker"> {
+interface ImageFieldProps<T extends "logoPicker" | "backgroundPicker" | "photoPicker"> {
   field: Extract<EditorFieldSchema, { type: T }>;
   state: BannerSettings;
   onChange: (key: string, value: unknown) => void;
@@ -62,6 +62,22 @@ export function LogoField({
         />
       ) : null}
     </ImagePicker>
+  );
+}
+
+/** The intro banner's photo. */
+export function PhotoField({ field, state, onChange, ...props }: ImageFieldProps<"photoPicker">) {
+  return (
+    <ImagePicker
+      id={field.key}
+      label={fieldLabel(field)}
+      menuLabel="Photo options"
+      policy={PHOTO_UPLOAD}
+      value={fieldValue(state, field)}
+      onChange={(next) => onChange(field.key, next)}
+      onError={props.onError}
+      onErrorResolved={props.onErrorResolved}
+    />
   );
 }
 
