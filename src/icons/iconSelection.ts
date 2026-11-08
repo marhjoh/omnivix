@@ -1,4 +1,4 @@
-/** A Simple Icons brand icon, as the tech stack banner draws it. */
+/** A Simple Icons brand icon, as the tech stack and intro banners draw it. */
 export interface TechIcon {
   slug: string;
   title: string;
@@ -11,7 +11,7 @@ export interface TechIcon {
 /** What the icon picker searches. */
 export type IconCatalogEntry = Omit<TechIcon, "path">;
 
-/** The tech stack banner shows at most this many icons. */
+/** A banner shows at most this many icons. */
 export const MAX_ICONS = 24;
 
 /** Simple Icons slugs are lowercase letters and digits, and a few have an underscore. */
@@ -23,6 +23,15 @@ export function parseIconSelection(value: string): string[] {
     .split(",")
     .map((slug) => slug.trim())
     .filter(Boolean);
+}
+
+/**
+ * The loaded icons in the setting's order. Icons still loading, or that Simple Icons doesn't have,
+ * are left out. `icons` may also hold icons that were removed from the setting since.
+ */
+export function iconsInOrder(value: string, icons: readonly TechIcon[] = []): TechIcon[] {
+  const bySlug = new Map(icons.map((icon) => [icon.slug, icon]));
+  return parseIconSelection(value).flatMap((slug) => bySlug.get(slug) ?? []);
 }
 
 /**
