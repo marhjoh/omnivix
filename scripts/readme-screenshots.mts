@@ -75,6 +75,8 @@ try {
   const frames = [
     await studio(demo, "github-banner", "london"),
     await studio(demo, "repos-banner", "seoul"),
+    await studio(demo, "stats-banner", "chicago"),
+    await studio(demo, "tech-stack-banner", "lisbon"),
     await studio(demo, "contribution-banner", "toronto"),
     await studio(demo, "quote-banner", "new-york"),
   ];
