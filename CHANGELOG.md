@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.0](https://github.com/marhjoh/omnivix/compare/v1.36.0...v1.37.0) (2026-11-08)
+
+
+### Features
+
+* add a Latest posts banner ([#290](https://github.com/marhjoh/omnivix/issues/290)) ([8d2277d](https://github.com/marhjoh/omnivix/commit/8d2277d08df079d723233021da1fa38f11e394a4))
+
 ## [1.36.0](https://github.com/marhjoh/omnivix/compare/v1.35.0...v1.36.0) (2026-11-08)
 
 
