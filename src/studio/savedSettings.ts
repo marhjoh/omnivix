@@ -8,7 +8,7 @@ import type {
   StudioSettings,
   TemplateId,
 } from "@/src/templates/types";
-import { DEFAULT_GRID_COLORS_ID, GRID_COLOR_IDS } from "@/src/banner/gridColors";
+import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { oneOfOr } from "@/src/lib/isOneOf";
 import { presetBySrc } from "@/src/backgrounds/presets";
 import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/background";
@@ -17,6 +17,7 @@ import { isQuoteColor } from "@/src/banner/quoteStyle";
 import { clampPosition, isPosition } from "@/src/banner/position";
 import { isHttpsUrl } from "@/src/lib/imageSource";
 import { isContributionYear } from "@/src/lib/contributionYear";
+import { isAiUsage } from "@/src/banner/aiUsage";
 
 /**
  * Each image setting with the settings that belong to that image. A background's position goes
@@ -73,6 +74,8 @@ function fitsField(field: EditorFieldSchema, value: unknown): boolean {
       return typeof value === "string" && isRepoSelection(value);
     case "iconPicker":
       return typeof value === "string" && isIconSelection(value);
+    case "usagePaste":
+      return typeof value === "string" && (value === "" || isAiUsage(value));
     // removeUnsavableImages checks these.
     case "backgroundPicker":
     case "logoPicker":
@@ -125,7 +128,7 @@ export function applySavedSettings(
   }
   // The grid colors field has no options to check because its picker draws the presets itself.
   if ("themeId" in prev) {
-    merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, DEFAULT_GRID_COLORS_ID);
+    merged.themeId = oneOfOr(GRID_COLOR_IDS, merged.themeId, prev.themeId);
   }
   // The year's options depend on the account's age, so the field has none to check against.
   if ("year" in prev && !(typeof merged.year === "string" && isContributionYear(merged.year))) {

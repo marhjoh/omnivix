@@ -3,11 +3,11 @@ import type { ContributionDayNormalized, ContributionsNormalized } from "@/src/g
 import { buildCalendarLayout, DAY_LABEL_ROWS } from "@/src/banner/contributionCalendarLayout";
 import type { ContributionCellShape } from "@/src/banner/cellShape";
 import { gridColorsById, type GridColorPreset } from "@/src/banner/gridColors";
-import type { ContributionGridSettings } from "@/src/templates/stateSchemas";
+import type { GridStyleSettings } from "@/src/templates/stateSchemas";
 import { gridTextCells } from "@/src/banner/gridText";
 
 /** The Grid colors and Cell shape settings, as the grid takes them. */
-export function contributionGridStyle(state: ContributionGridSettings) {
+export function contributionGridStyle(state: GridStyleSettings) {
   return { colors: gridColorsById(state.themeId), cellShape: state.cellShape };
 }
 

@@ -19,6 +19,7 @@ import { TopBar } from "@/src/studio/TopBar";
 import { ExportControls } from "@/src/studio/ExportControls";
 import { useBannerExport } from "@/src/studio/useBannerExport";
 import { UsernameModal } from "@/src/studio/UsernameModal";
+import { UsageModal } from "@/src/studio/UsageModal";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio } from "@/src/export/format";
 import { shownDownloadFormat, type DownloadFormat } from "@/src/studio/downloadFormat";
@@ -97,6 +98,18 @@ export function StudioShell({
     updateState("username", newUsername);
     closeUsernameModal();
   }
+
+  // The AI usage banner asks for a paste right away when it has none, like the username above.
+  const [showUsageModal, setShowUsageModal] = useState("usage" in state && !state.usage);
+  const openUsageModal = useCallback(() => setShowUsageModal(true), []);
+  const closeUsageModal = useCallback(() => setShowUsageModal(false), []);
+  function handleUsageSubmit(usage: string) {
+    updateState("usage", usage);
+    closeUsageModal();
+    // A problem with an earlier paste no longer applies.
+    dismissToast();
+  }
+  const modalOpen = showUsernameModal || showUsageModal;
 
   const { size } = state;
   const fill = state.contentSize === "fill";
@@ -209,16 +222,23 @@ export function StudioShell({
 
   return (
     <div className={styles.shell}>
-      <Toast toast={toast} onDismiss={dismissToast} className={styles.toast} />
       <UsernameModal
         open={showUsernameModal}
         currentUsername={username}
         onSubmit={handleUsernameSubmit}
         onCancel={closeUsernameModal}
       />
+      <UsageModal
+        open={showUsageModal}
+        onSubmit={handleUsageSubmit}
+        onCancel={closeUsageModal}
+        onError={showError}
+      />
+      {/* After the dialogs, so a toast shows above them. */}
+      <Toast toast={toast} onDismiss={dismissToast} className={styles.toast} />
 
-      {/* Unreachable while the username dialog is open. */}
-      <header className={styles.topbar} inert={showUsernameModal}>
+      {/* Unreachable while a dialog is open. */}
+      <header className={styles.topbar} inert={modalOpen}>
         <TopBar
           templateId={templateId}
           sidebarExpanded={sidebar.sidebarExpanded}
@@ -244,7 +264,7 @@ export function StudioShell({
         data-sidebar-collapsed={sidebar.sidebarCollapsed}
         data-sidebar-open={sidebar.drawerOpen}
         data-sidebar-animating={sidebar.sidebarAnimating}
-        inert={showUsernameModal}
+        inert={modalOpen}
       >
         <aside id="studio-sidebar" className={styles.sidebar} aria-label="Banner settings">
           <div className={styles.sidebarInner}>
@@ -261,6 +281,7 @@ export function StudioShell({
               adjustableBackground={adjustableBackground}
               onError={showError}
               onErrorResolved={dismissToast}
+              onOpenUsage={openUsageModal}
             />
           </div>
         </aside>
@@ -287,7 +308,9 @@ export function StudioShell({
             transparent={shownFormat === "transparent"}
             onRetry={retry}
             onChangeUsername={openUsernameModal}
-            onEditSetting={sidebar.focusSetting}
+            onEditSetting={(key) =>
+              key === "usage" ? openUsageModal() : sidebar.focusSetting(key)
+            }
             backgroundAdjust={
               adjustableBackground
                 ? {

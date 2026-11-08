@@ -8,6 +8,7 @@ import type { EditorFieldSchema, TemplateDefinition } from "@/src/templates/type
 import type {
   BaseSettings,
   ContributionGridSettings,
+  GridStyleSettings,
   ProfileSettings,
   TemplateSettings,
 } from "@/src/templates/stateSchemas";
@@ -89,7 +90,7 @@ const contributionGridInitialState: ContributionGridSettings = {
 };
 
 /** The sidebar labels this "Grid colors" (settingGroups.ts). */
-const gridColorsField: EditorFieldSchema<ContributionGridSettings> = {
+const gridColorsField: EditorFieldSchema<GridStyleSettings> = {
   key: "themeId",
   label: "Theme",
   type: "select",
@@ -101,7 +102,7 @@ const yearField: EditorFieldSchema<ContributionGridSettings> = {
   type: "select",
 };
 
-const cellShapeField: EditorFieldSchema<ContributionGridSettings> = {
+const cellShapeField: EditorFieldSchema<GridStyleSettings> = {
   key: "cellShape",
   label: "Cell shape",
   type: "select",
@@ -392,6 +393,52 @@ export const terminalBannerDefinition: TemplateDefinition<TemplateSettings["term
     showLanguages: true,
     showColorBlocks: true,
     showWindow: true,
+  },
+};
+
+export const aiUsageBannerDefinition: TemplateDefinition<TemplateSettings["ai-usage-banner"]> = {
+  meta: {
+    id: "ai-usage-banner",
+    title: "AI Usage Banner",
+    description: "Your coding agent usage, from ccusage.",
+    needsUsername: false,
+    githubData: [],
+  },
+  schema: [
+    sizeField,
+    gridColorsField,
+    backgroundField,
+    alignmentField,
+    contentSizeField,
+    cellShapeField,
+    { key: "usage", label: "AI usage", type: "usagePaste", required: true },
+    { key: "showTokenCount", label: "Tokens", type: "toggle" },
+    // Hidden when the paste has no cost (ControlSidebar).
+    { key: "showCost", label: "Cost", type: "toggle" },
+    { key: "showActiveDays", label: "Active days", type: "toggle" },
+    { key: "showCurrentStreak", label: "Current streak", type: "toggle" },
+    { key: "showLongestStreak", label: "Longest streak", type: "toggle" },
+    { key: "showHeatmap", label: "Heatmap", type: "toggle" },
+    { key: "showModels", label: "Models", type: "toggle" },
+    { key: "showAgents", label: "Agents", type: "toggle" },
+    { key: "showIconColors", label: "Icon colors", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    themeId: "claude",
+    cellShape: DEFAULT_CELL_SHAPE,
+    usage: "",
+    showTokenCount: true,
+    showCost: true,
+    showActiveDays: true,
+    showCurrentStreak: false,
+    showLongestStreak: true,
+    showHeatmap: true,
+    showModels: true,
+    showAgents: true,
+    showIconColors: true,
   },
 };
 

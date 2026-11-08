@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { fakeGithub, USERNAME } from "./github";
+import { encodeAiUsage, USAGE_DAYS } from "@/src/banner/aiUsage";
 import { ADMIN_PASSWORD } from "../playwright.config";
 
 /** Collects errors the page throws or logs to the console. */
@@ -54,6 +55,62 @@ test("the intro banner shows a typed name and link without GitHub data", async (
   await expect(preview(page).getByText("Ada Lovelace", { exact: true })).toBeVisible();
   await expect(preview(page).getByText("ada.dev", { exact: true })).toBeVisible();
   await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
+test("the AI usage banner reads ccusage output pasted in its dialog", async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto("/studio/ai-usage-banner");
+  const dialog = page.getByRole("dialog", { name: "Add your AI usage" });
+  const field = dialog.getByLabel("ccusage output");
+  await expect(field).toBeFocused();
+
+  await expect(dialog.getByRole("button", { name: "Use usage" })).toBeDisabled();
+  await field.fill("not ccusage");
+  await dialog.getByRole("button", { name: "Use usage" }).click();
+  await expect(page.getByText("This isn't JSON.")).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(preview(page)).toContainText("Add your AI usage");
+  await expect(download(page)).toBeDisabled();
+
+  await page.getByRole("button", { name: "Add usage", exact: true }).click();
+  await field.fill(
+    JSON.stringify({
+      daily: [
+        {
+          date: "2026-10-01",
+          totalTokens: 5000,
+          totalCost: 3.2,
+          modelBreakdowns: [{ modelName: "claude-haiku-4-5-20251001", inputTokens: 5000 }],
+        },
+      ],
+    }),
+  );
+  await dialog.getByRole("button", { name: "Use usage" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("This isn't JSON.")).toBeHidden();
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await expect(preview(page).getByText("Haiku 4.5")).toBeVisible();
+  await expect(page.getByRole("button", { name: "AI usage Oct 1, 2026" })).toBeVisible();
+  await expect(download(page)).toBeEnabled();
+  expect(errors).toEqual([]);
+});
+
+test("a studio link with AI usage renders the same on the server and in the browser", async ({
+  page,
+}) => {
+  const errors = pageErrors(page);
+  const usage = encodeAiUsage({
+    end: "2026-11-07",
+    levels: "0".repeat(USAGE_DAYS - 40) + "2".repeat(40),
+    tokens: 5000,
+    cost: 3,
+    models: [{ name: "Opus 5.5", percent: 100 }],
+    agents: [{ name: "Claude Code", percent: 100 }],
+  });
+  await page.goto(`/studio/ai-usage-banner?usage=${encodeURIComponent(usage)}`);
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await expect(page.getByRole("button", { name: "AI usage Sep 29 – Nov 7, 2026" })).toBeVisible();
   expect(errors).toEqual([]);
 });
 

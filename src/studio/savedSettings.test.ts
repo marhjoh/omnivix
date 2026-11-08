@@ -150,14 +150,21 @@ describe("applySavedSettings and the template schemas", () => {
     "backgroundOpacity",
   ];
 
-  for (const { meta, initialState } of getTemplates()) {
+  for (const { meta, schema, initialState } of getTemplates()) {
+    // A banner can start without the input it waits for, such as the AI usage banner's paste.
+    const defaults: Readonly<Record<string, unknown>> = initialState;
+    const waiting = schema
+      .filter((field) => field.required && defaults[field.key] === "")
+      .map((field) => ({ path: `state.${field.key}`, message: "Required" }));
+
     it.each(BAD_VALUES)(
       `gives ${meta.id} settings its schema takes, when %j was saved`,
       (value) => {
         const keys = [...Object.keys(initialState), ...OPTIONAL_KEYS];
         const saved = Object.fromEntries(keys.map((key) => [key, value]));
         const state = applySavedSettings(initialState, meta.id, saved, "octocat");
-        expect(checkTemplateState(meta.id, state)).toMatchObject({ ok: true });
+        const result = checkTemplateState(meta.id, state);
+        expect(result.ok ? [] : result.issues).toEqual(waiting);
       },
     );
   }

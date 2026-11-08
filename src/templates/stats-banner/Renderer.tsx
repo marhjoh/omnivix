@@ -11,15 +11,11 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { cardStyle, FORK_COLOR, LanguageDot, STAR_COLOR } from "@/src/banner/card";
+import { cardStyle } from "@/src/banner/card";
+import { CardLabel, ShareBar, StatTile } from "@/src/banner/statCards";
+import { ICON_COLORS, type IconColor } from "@/src/banner/iconColor";
 import { ProfileBanner } from "@/src/banner/ProfileBlock";
-import {
-  contributionStreaks,
-  formatCount,
-  starsReceived,
-  topLanguages,
-  type LanguageShare,
-} from "@/src/banner/stats";
+import { contributionStreaks, formatCount, starsReceived, topLanguages } from "@/src/banner/stats";
 import { bannerUiChrome, type BannerUiChrome } from "@/src/theme/theme";
 import type { OrganizationNormalized } from "@/src/github/types";
 import type { RendererProps } from "@/src/templates/types";
@@ -27,19 +23,6 @@ import type { RendererProps } from "@/src/templates/types";
 const TILE_COLUMN_PX = 124;
 const GAP_PX = 8;
 const CARD_PADDING = "10px 12px";
-/** GitHub's gray for languages without a color, used for "Other" too. */
-const NO_LANGUAGE_COLOR = "#8b949e";
-
-/** The repos banner's star and fork colors, and a few more in the same tone. */
-const ICON_COLORS = {
-  blue: "#58a6ff",
-  yellow: STAR_COLOR,
-  purple: FORK_COLOR,
-  green: "#3fb950",
-  orange: "#ff7b45",
-};
-
-type IconColor = keyof typeof ICON_COLORS;
 
 interface Tile {
   label: string;
@@ -141,11 +124,12 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
               gap: GAP_PX,
             }}
           >
-            {tiles.map((tile) => (
+            {tiles.map(({ color, value, ...tile }) => (
               <StatTile
                 key={tile.label}
-                tile={tile}
-                iconColor={iconColor(tile.color)}
+                {...tile}
+                value={formatCount(value)}
+                iconColor={iconColor(color)}
                 chrome={chrome}
                 style={card}
               />
@@ -153,7 +137,7 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
           </div>
         )}
         {languages.length > 0 && (
-          <LanguageBar languages={languages} chrome={chrome} style={fullWidthCard} />
+          <ShareBar shares={languages} chrome={chrome} style={fullWidthCard} />
         )}
         {state.showOrganizations && organizations.length > 0 && (
           <OrganizationsCard
@@ -165,74 +149,6 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
         )}
       </div>
     </ProfileBanner>
-  );
-}
-
-function StatTile({
-  tile: { label, icon: Icon, value, unit },
-  iconColor,
-  chrome,
-  style,
-}: {
-  tile: Tile;
-  iconColor: string | undefined;
-  chrome: BannerUiChrome;
-  style: CSSProperties;
-}) {
-  return (
-    <div style={style}>
-      <CardLabel icon={Icon} label={label} iconColor={iconColor} chrome={chrome} />
-      <p
-        style={{
-          margin: "5px 0 0",
-          fontSize: 22,
-          fontWeight: 700,
-          lineHeight: 1.1,
-          letterSpacing: "-0.02em",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {formatCount(value)}
-        {unit && (
-          <span
-            style={{ marginLeft: 4, fontSize: 12, fontWeight: 500, color: chrome.cardTextMuted }}
-          >
-            {unit}
-          </span>
-        )}
-      </p>
-    </div>
-  );
-}
-
-/** A card's icon and muted label. */
-function CardLabel({
-  icon: Icon,
-  label,
-  iconColor,
-  chrome,
-}: {
-  icon: LucideIcon;
-  label: string;
-  /** Without one, the icon takes the label's muted color. */
-  iconColor: string | undefined;
-  chrome: BannerUiChrome;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 5,
-        fontSize: 11,
-        lineHeight: 1.2,
-        color: chrome.cardTextMuted,
-        whiteSpace: "nowrap",
-      }}
-    >
-      <Icon size={12} strokeWidth={2.25} aria-hidden color={iconColor} />
-      {label}
-    </div>
   );
 }
 
@@ -259,50 +175,6 @@ function OrganizationsCard({
             alt=""
             style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0 }}
           />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function LanguageBar({
-  languages,
-  chrome,
-  style,
-}: {
-  languages: LanguageShare[];
-  chrome: BannerUiChrome;
-  style: CSSProperties;
-}) {
-  return (
-    <div style={style}>
-      <div style={{ display: "flex", gap: 2, height: 8, borderRadius: 999, overflow: "hidden" }}>
-        {languages.map((language) => (
-          <span
-            key={language.name}
-            style={{ flex: language.share, background: language.color ?? NO_LANGUAGE_COLOR }}
-          />
-        ))}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "4px 12px",
-          marginTop: 8,
-          fontSize: 11,
-          lineHeight: 1.35,
-        }}
-      >
-        {languages.map((language) => (
-          <span
-            key={language.name}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
-          >
-            <LanguageDot color={language.color ?? NO_LANGUAGE_COLOR} />
-            {language.name}
-            <span style={{ color: chrome.cardTextMuted }}>{Math.round(language.share * 100)}%</span>
-          </span>
         ))}
       </div>
     </div>

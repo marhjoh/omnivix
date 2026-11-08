@@ -91,6 +91,8 @@ function accepts(field: EditorFieldSchema): string {
       return `repository names, comma-separated, at most ${MAX_REPOS} (used when \`mode\` is \`selected\`)`;
     case "iconPicker":
       return `[Simple Icons](https://simpleicons.org) slugs, comma-separated, at most ${MAX_ICONS}, e.g. \`typescript, nextdotjs\`; unknown slugs are left out`;
+    case "usagePaste":
+      return `usage as the studio saves it after a [ccusage](https://github.com/ryoppippi/ccusage) paste, not empty; copy it from a studio link`;
     default:
       return "";
   }

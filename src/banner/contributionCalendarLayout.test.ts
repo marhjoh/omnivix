@@ -222,4 +222,17 @@ describe("buildCalendarLayout — month labels", () => {
     });
     expect(feb!.colIndex).toBe(febWeekIdx);
   });
+
+  it("leaves out a month that starts in the last column", () => {
+    // Nov 1, 2026 is a Sunday, so it starts the last week.
+    const { monthLabels } = buildCalendarLayout({
+      weeks: buildWeeksForRange("2025-11-08", "2026-11-07"),
+      months: [
+        { firstDay: "2026-10-01", name: "October" },
+        { firstDay: "2026-11-01", name: "November" },
+      ],
+      rangeEndYmd: "2026-11-07",
+    });
+    expect(monthLabels.map(({ label }) => label)).toEqual(["Oct"]);
+  });
 });
