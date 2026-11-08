@@ -10,13 +10,7 @@ import {
   Trophy,
   type LucideIcon,
 } from "lucide-react";
-import {
-  activeDays,
-  decodeAiUsage,
-  usageCalendar,
-  usageStart,
-  type UsageShare,
-} from "@/src/banner/aiUsage";
+import { activeDays, decodeAiUsage, usageCalendar, type UsageShare } from "@/src/banner/aiUsage";
 import { cardStyle } from "@/src/banner/card";
 import { ContributionGrid, contributionGridStyle } from "@/src/banner/ContributionGrid";
 import { contentFit } from "@/src/banner/contentPosition";
@@ -138,7 +132,7 @@ export function AiUsageBannerRenderer({ state, uiTheme }: RendererProps<"ai-usag
   const agents = state.showAgents ? withColors(usage.agents, brand) : [];
   const card: CSSProperties = { ...cardStyle(chrome), padding: SIZING.cardPadding };
   const iconColor = (color: IconColor) => (state.showIconColors ? ICON_COLORS[color] : undefined);
-  const range = `${MONTH_YEAR.format(new Date(usageStart(usage.end)))} – ${MONTH_YEAR.format(new Date(usage.end))}`;
+  const range = `${MONTH_YEAR.format(new Date(calendar.weeks[0].firstDay))} – ${MONTH_YEAR.format(new Date(usage.end))}`;
 
   const shareCards = [
     { label: "Models", icon: Sparkles, color: "purple", shares: models },
@@ -171,19 +165,21 @@ export function AiUsageBannerRenderer({ state, uiTheme }: RendererProps<"ai-usag
         {(state.showHeatmap || shownShareCards.length > 0) && (
           <div style={{ display: "flex", gap: SIZING.gap }}>
             {state.showHeatmap && (
-              <div style={{ ...card, display: "flex", flexDirection: "column" }}>
+              // Fills the row when a short range makes the grid narrower than the tiles above.
+              <div style={{ ...card, flex: "1 1 auto", display: "flex", flexDirection: "column" }}>
                 <CardLabel
                   icon={CalendarRange}
                   label={range}
                   iconColor={iconColor("green")}
                   chrome={chrome}
                 />
-                {/* Centered when the models and agents beside it are taller. */}
+                {/* Centered when the card is larger than the grid. */}
                 <div
                   style={{
                     flex: 1,
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     marginTop: 6,
                     color: chrome.cardTextMuted,
                   }}

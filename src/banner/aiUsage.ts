@@ -3,6 +3,9 @@ import type { ContributionsNormalized, ContributionWeekNormalized } from "@/src/
 /** The AI usage banner covers this many days, ending on the last day of the paste. */
 export const USAGE_DAYS = 365;
 
+/** The heatmap shows at least 13 weeks, so a short paste still looks like a calendar. */
+const MIN_SHOWN_DAYS = 91;
+
 /** Shares after this many are added up as "Other". */
 export const MAX_SHARES = 5;
 
@@ -125,18 +128,21 @@ export function activeDays({ levels }: AiUsage): number {
 }
 
 /**
- * The days as a contribution calendar, so the banner can use the contribution grid and streaks.
- * A day's count is its level.
+ * The days the heatmap shows, as a contribution calendar, so the banner can use the contribution
+ * grid and streaks. It starts on the first day with usage, and shows at least 13 weeks and at most
+ * a year. A day's count is its level.
  */
 export function usageCalendar(usage: AiUsage): ContributionsNormalized {
-  const startMs = utcMs(usageStart(usage.end));
+  const firstActive = usage.levels.search(/[1-4]/);
+  const shown = Math.min(USAGE_DAYS, Math.max(MIN_SHOWN_DAYS, USAGE_DAYS - firstActive));
+  const startMs = utcMs(usage.end) - (shown - 1) * DAY_MS;
   const weeks: ContributionWeekNormalized[] = [];
-  for (let i = 0; i < USAGE_DAYS; i++) {
+  for (let i = 0; i < shown; i++) {
     const ms = startMs + i * DAY_MS;
     const date = toYmd(ms);
     const weekday = new Date(ms).getUTCDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
     if (weekday === 0 || weeks.length === 0) weeks.push({ firstDay: date, days: [] });
-    const level = Number(usage.levels[i]) as 0 | 1 | 2 | 3 | 4;
+    const level = Number(usage.levels[USAGE_DAYS - shown + i]) as 0 | 1 | 2 | 3 | 4;
     weeks.at(-1)!.days.push({ date, count: level, level, weekday });
   }
   const months = [];

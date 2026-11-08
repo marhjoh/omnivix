@@ -50,23 +50,40 @@ describe("decodeAiUsage", () => {
 });
 
 describe("usageCalendar", () => {
-  const calendar = usageCalendar(usage);
-  const calendarDays = calendar.weeks.flatMap((week) => week.days);
+  const days = (levels: string) =>
+    usageCalendar({ ...usage, levels }).weeks.flatMap((week) => week.days);
 
-  it("has a day for each level, ending on the last day", () => {
-    expect(calendarDays).toHaveLength(USAGE_DAYS);
-    expect(calendarDays.at(-1)).toEqual({ date: "2026-11-07", count: 2, level: 2, weekday: 6 });
-    expect(calendarDays[0].date).toBe("2025-11-08");
+  it("shows 13 weeks for a short paste, ending on the last day", () => {
+    const shown = days(usage.levels);
+    expect(shown).toHaveLength(91);
+    expect(shown[0].date).toBe("2026-08-09");
+    expect(shown.at(-1)).toEqual({ date: "2026-11-07", count: 2, level: 2, weekday: 6 });
+  });
+
+  it("starts on the first day with usage when that's further back", () => {
+    const shown = days("0".repeat(165) + "3" + "0".repeat(USAGE_DAYS - 166));
+    expect(shown).toHaveLength(200);
+    expect(shown[0]).toMatchObject({ date: "2026-04-22", level: 3 });
+  });
+
+  it("shows a year at most", () => {
+    const shown = days("1".repeat(USAGE_DAYS));
+    expect(shown).toHaveLength(USAGE_DAYS);
+    expect(shown[0].date).toBe("2025-11-08");
   });
 
   it("starts each week on a Sunday", () => {
-    for (const week of calendar.weeks.slice(1)) expect(week.days[0].weekday).toBe(0);
+    for (const week of usageCalendar(usage).weeks.slice(1)) expect(week.days[0].weekday).toBe(0);
   });
 
   it("labels each month, starting with the first day shown", () => {
-    expect(calendar.months[0]).toEqual({ firstDay: "2025-11-08", name: "November" });
-    expect(calendar.months.at(-1)).toEqual({ firstDay: "2026-11-01", name: "November" });
-    expect(calendar.months).toHaveLength(13);
+    const { months } = usageCalendar(usage);
+    expect(months.map(({ firstDay }) => firstDay)).toEqual([
+      "2026-08-09",
+      "2026-09-01",
+      "2026-10-01",
+      "2026-11-01",
+    ]);
   });
 
   it("counts active days and finds the first one", () => {
