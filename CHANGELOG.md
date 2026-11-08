@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.0](https://github.com/marhjoh/omnivix/compare/v1.33.0...v1.34.0) (2026-11-08)
+
+
+### Features
+
+* add a Terminal banner ([#284](https://github.com/marhjoh/omnivix/issues/284)) ([fe795e7](https://github.com/marhjoh/omnivix/commit/fe795e7b6f87944cee0ed079722eae533499100b))
+
 ## [1.33.0](https://github.com/marhjoh/omnivix/compare/v1.32.0...v1.33.0) (2026-11-08)
 
 
