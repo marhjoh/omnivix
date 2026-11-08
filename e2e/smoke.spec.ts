@@ -88,6 +88,7 @@ test("the AI usage banner reads ccusage output pasted in its dialog", async ({ p
   );
   await dialog.getByRole("button", { name: "Use usage" }).click();
   await expect(dialog).toBeHidden();
+  await expect(page.getByText("This isn't JSON.")).toBeHidden();
   await expect(preview(page)).toHaveAttribute("data-state", "ready");
   await expect(preview(page).getByText("Haiku 4.5")).toBeVisible();
   await expect(page.getByRole("button", { name: "AI usage Oct 1, 2026" })).toBeVisible();

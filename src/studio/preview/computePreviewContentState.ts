@@ -38,8 +38,8 @@ export function previewLoadingMessage(githubData: readonly GithubDataKind[]): st
 /**
  * Copy for an empty preview. GitHub banners wait for a username, the quote banner for its quote,
  * the tech stack banner for its icons, the intro banner for a name and the AI usage banner for
- * pasted ccusage output. The action opens the
- * username dialog or puts the cursor in that setting's field.
+ * pasted ccusage output. The action opens the username or usage dialog, or puts the cursor in that
+ * setting's field.
  */
 export function previewEmptyCopy(missingSetting: string) {
   switch (missingSetting) {

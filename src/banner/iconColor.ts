@@ -1,7 +1,10 @@
 import type { Theme } from "@/src/theme/theme";
 import { FORK_COLOR, STAR_COLOR } from "@/src/banner/card";
 
-/** The stats cards' icon colors: the repos banner's star and fork colors, and a few more in the same tone. */
+/**
+ * The stats cards' icon colors: the repos banner's star and fork colors, and a few more in the same
+ * tone.
+ */
 export const ICON_COLORS = {
   blue: "#58a6ff",
   yellow: STAR_COLOR,

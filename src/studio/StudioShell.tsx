@@ -106,6 +106,8 @@ export function StudioShell({
   function handleUsageSubmit(usage: string) {
     updateState("usage", usage);
     closeUsageModal();
+    // A problem with an earlier paste no longer applies.
+    dismissToast();
   }
   const modalOpen = showUsernameModal || showUsageModal;
 
