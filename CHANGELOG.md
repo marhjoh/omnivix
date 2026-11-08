@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.0](https://github.com/marhjoh/omnivix/compare/v1.31.0...v1.32.0) (2026-11-08)
+
+
+### Features
+
+* add a Tech Stack banner ([#279](https://github.com/marhjoh/omnivix/issues/279)) ([49dc4ee](https://github.com/marhjoh/omnivix/commit/49dc4eebdd82e1bb85fe876440b95e2776353199))
+
 ## [1.31.0](https://github.com/marhjoh/omnivix/compare/v1.30.0...v1.31.0) (2026-11-08)
 
 
