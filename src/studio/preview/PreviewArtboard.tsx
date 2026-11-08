@@ -11,6 +11,7 @@ import { BannerRenderer } from "@/src/templates/BannerRenderer";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, RenderData, TemplateId } from "@/src/templates/types";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
+import { previewLoadingMessage } from "@/src/studio/preview/computePreviewContentState";
 import { PreviewStatus } from "@/src/studio/preview/PreviewStatus";
 import previewStyles from "@/src/studio/preview/preview.module.css";
 import { cssFitWidth, previewScale } from "@/src/studio/preview/previewScale";
@@ -87,7 +88,7 @@ export function PreviewArtboard({
   };
 }) {
   const dims = BANNER_SIZES[size];
-  const { meta } = templateRegistry[templateId];
+  const { meta, initialState } = templateRegistry[templateId];
   const [stageRef, available] = useElementSize<HTMLDivElement>();
   const views = bannerViews(dims);
   const activeView = shownView(dims, view);
@@ -172,7 +173,7 @@ export function PreviewArtboard({
               previewState={previewState}
               problem={problem}
               missingSetting={missingSetting}
-              githubData={meta.githubData}
+              loadingMessage={previewLoadingMessage(meta.githubData, "feed" in initialState)}
               onRetry={onRetry}
               onChangeUsername={onChangeUsername}
               onEditSetting={onEditSetting}

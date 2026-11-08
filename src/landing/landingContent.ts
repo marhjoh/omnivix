@@ -43,7 +43,7 @@ export const HOW_IT_WORKS = [
   {
     word: "Pick.",
     title: "Pick a template",
-    body: "Your GitHub profile, stats, repositories, tech stack, an intro with your links, a terminal-style summary, your AI coding usage, your certifications, contribution heatmap or a quote.",
+    body: "Your GitHub profile, stats, repositories, tech stack, an intro with your links, a terminal-style summary, your AI coding usage, your certifications, your latest blog posts, contribution heatmap or a quote.",
   },
   {
     word: "Enter.",

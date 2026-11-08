@@ -37,6 +37,7 @@ import {
   MAX_BADGES_PER_ROW,
   MIN_BADGES_PER_ROW,
 } from "@/src/banner/certifications";
+import { DEFAULT_POSTS, MAX_POSTS, MIN_POSTS } from "@/src/banner/feed";
 import {
   AUTHOR_MAX_LENGTH,
   DEFAULT_QUOTE_STYLE,
@@ -490,6 +491,42 @@ export const certificationsBannerDefinition: TemplateDefinition<
     showIssuer: true,
     showYear: true,
     showIconColors: true,
+  },
+};
+
+export const latestPostsBannerDefinition: TemplateDefinition<
+  TemplateSettings["latest-posts-banner"]
+> = {
+  meta: {
+    id: "latest-posts-banner",
+    title: "Latest Posts Banner",
+    description: "Your newest blog posts, from an RSS or Atom feed.",
+    needsUsername: false,
+    githubData: [],
+  },
+  schema: [
+    sizeField,
+    backgroundField,
+    alignmentField,
+    contentSizeField,
+    { key: "feed", label: "Feed", type: "feedLink", required: true },
+    {
+      key: "postCount",
+      label: "Number of posts",
+      type: "range",
+      min: MIN_POSTS,
+      max: MAX_POSTS,
+      step: 1,
+    },
+    { key: "showDates", label: "Dates", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    feed: "",
+    postCount: DEFAULT_POSTS,
+    showDates: true,
   },
 };
 

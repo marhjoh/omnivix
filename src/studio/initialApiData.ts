@@ -14,10 +14,12 @@ import { usernameOf } from "@/src/lib/githubUsername";
 import { iconsUrl, parseIconSelection } from "@/src/icons/iconSelection";
 import { techIcons } from "@/src/icons/simpleIcons";
 import { drawnIcons } from "@/src/icons/bannerIcons";
+import { feedApiUrl } from "@/src/banner/feed";
+import { getFeed } from "@/src/feeds/client";
 
 /**
- * How long the studio page waits for GitHub data. It's usually in the server cache and takes
- * milliseconds. If GitHub is slow, the page renders without it and the browser loads the rest.
+ * How long the studio page waits for GitHub data and feeds. They're usually in the server cache and
+ * take milliseconds. If one is slow, the page renders without it and the browser loads the rest.
  */
 const WAIT_MS = 800;
 
@@ -29,7 +31,21 @@ export async function loadInitialApiData(
   templateId: TemplateId,
   state: BannerSettings,
 ): Promise<Record<string, unknown>> {
-  return { ...(await loadGithubData(templateId, state)), ...iconData(state) };
+  const [github, feed] = await Promise.all([loadGithubData(templateId, state), loadFeed(state)]);
+  return { ...github, ...feed, ...iconData(state) };
+}
+
+/** The latest posts banner's feed. Like GitHub data, it's left out if it takes too long. */
+async function loadFeed(state: BannerSettings): Promise<Record<string, unknown>> {
+  if (!("feed" in state)) return {};
+  const url = feedApiUrl(state.feed);
+  if (!url) return {};
+  const timeout = new Promise<undefined>((resolve) => setTimeout(resolve, WAIT_MS));
+  const feed = await Promise.race([
+    Effect.runPromise(getFeed(state.feed)).catch(() => undefined),
+    timeout,
+  ]);
+  return feed ? { [url]: feed } : {};
 }
 
 /** The banner's Simple Icons. They're on this server, so there's no wait. */

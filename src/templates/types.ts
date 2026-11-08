@@ -8,6 +8,7 @@ import type {
   RepoNormalized,
 } from "@/src/github/types";
 import type { TechIcon } from "@/src/icons/iconSelection";
+import type { Feed } from "@/src/banner/feed";
 
 export const TEMPLATE_IDS = [
   "github-banner",
@@ -18,6 +19,7 @@ export const TEMPLATE_IDS = [
   "terminal-banner",
   "ai-usage-banner",
   "certifications-banner",
+  "latest-posts-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;
@@ -48,6 +50,8 @@ interface FieldValues {
   usagePaste: string;
   /** Rows of certifications, saved as certifications.ts encodes them. */
   certificationList: string;
+  /** Opens the feed dialog, which saves a feed link. */
+  feedLink: string;
 }
 
 export type EditorFieldType = keyof FieldValues;
@@ -102,6 +106,8 @@ export interface RenderData {
   organizations?: OrganizationNormalized[];
   /** The tech stack, intro and certifications banners' icons, loaded from Simple Icons. */
   icons?: TechIcon[];
+  /** The latest posts banner's posts, loaded from its feed. */
+  feed?: Feed;
 }
 
 /** What every template's renderer gets. It draws the content; BannerRenderer adds the frame. */

@@ -15,6 +15,7 @@ import { IntroBannerRenderer } from "@/src/templates/intro-banner/Renderer";
 import { TerminalBannerRenderer } from "@/src/templates/terminal-banner/Renderer";
 import { AiUsageBannerRenderer } from "@/src/templates/ai-usage-banner/Renderer";
 import { CertificationsBannerRenderer } from "@/src/templates/certifications-banner/Renderer";
+import { LatestPostsBannerRenderer } from "@/src/templates/latest-posts-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
 import type { RenderData, RendererProps, TemplateId } from "@/src/templates/types";
 import type { TemplateSettings } from "@/src/templates/stateSchemas";
@@ -28,6 +29,7 @@ const RENDERERS: { [K in TemplateId]: ComponentType<RendererProps<K>> } = {
   "terminal-banner": TerminalBannerRenderer,
   "ai-usage-banner": AiUsageBannerRenderer,
   "certifications-banner": CertificationsBannerRenderer,
+  "latest-posts-banner": LatestPostsBannerRenderer,
   "contribution-banner": ContributionBannerRenderer,
   "quote-banner": QuoteBannerRenderer,
 };

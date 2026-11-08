@@ -9,6 +9,7 @@ import {
 import { techIcons } from "@/src/icons/simpleIcons";
 import { parseIconSelection } from "@/src/icons/iconSelection";
 import { drawnIcons } from "@/src/icons/bannerIcons";
+import { getFeed } from "@/src/feeds/client";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import { yearOf } from "@/src/lib/contributionYear";
@@ -16,8 +17,8 @@ import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
 /**
- * Loads the data the render page draws, only what this banner needs: GitHub data, and the Simple
- * Icons of the tech stack, intro and certifications banners. The export has already checked the
+ * Loads the data the render page draws, only what this banner needs: GitHub data, the Simple Icons
+ * of the tech stack, intro and certifications banners, and the latest posts banner's feed. The export has already checked the
  * settings, so the username and year are valid.
  */
 export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
@@ -41,6 +42,7 @@ export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
         : none,
       organizations: needs.has("organizations") ? getOrganizations(username) : none,
       icons: Effect.succeed(techIcons(parseIconSelection(drawnIcons(state)))),
+      feed: "feed" in state ? getFeed(state.feed) : none,
     },
     { concurrency: "unbounded" },
   );

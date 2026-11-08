@@ -19,6 +19,7 @@ import {
 } from "@/src/banner/intro";
 import { TERMINAL_TEXT_MAX_LENGTH } from "@/src/banner/terminal";
 import { isAiUsage } from "@/src/banner/aiUsage";
+import { isFeedLink, MAX_POSTS, MIN_POSTS } from "@/src/banner/feed";
 import {
   CERTIFICATION_NAME_MAX_LENGTH,
   ISSUER_MAX_LENGTH,
@@ -128,6 +129,13 @@ const certifications = requiredText.check(
   }),
   Schema.makeFilter((value: string) => value === "" || namedCertifications(value).length > 0, {
     message: "Must have a certification with a name",
+  }),
+);
+
+/** Empty until a feed is added. An empty value only gets "Required". */
+const feedLink = requiredText.check(
+  Schema.makeFilter((value: string) => value === "" || isFeedLink(value), {
+    message: "Must be an https:// feed link",
   }),
 );
 
@@ -241,6 +249,13 @@ const STATE_SCHEMAS = {
     showIssuer: flag,
     showYear: flag,
     showIconColors: flag,
+  }),
+  "latest-posts-banner": Schema.Struct({
+    ...bannerFields,
+    contentSize,
+    feed: feedLink,
+    postCount: numberBetween(MIN_POSTS, MAX_POSTS),
+    showDates: flag,
   }),
   "contribution-banner": Schema.Struct({
     ...bannerFields,

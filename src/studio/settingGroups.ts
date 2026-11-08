@@ -17,8 +17,10 @@ export function fieldLabel(field: EditorFieldSchema): string {
 export const STYLE_GROUP = "Style";
 
 const GROUPS: Array<{ title: string; keys: string[] | null }> = [
-  // Only the AI usage banner has this. It's at the top, like the GitHub banners' Profile.
+  // Only the AI usage and latest posts banners have these. They're at the top, like the GitHub
+  // banners' Profile.
   { title: "Usage", keys: ["usage"] },
+  { title: "Feed", keys: ["feed", "postCount", "showDates"] },
   { title: "Format", keys: ["size"] },
   { title: STYLE_GROUP, keys: ["themeId", "cellShape", "showIconColors", "backgroundImage"] },
   {

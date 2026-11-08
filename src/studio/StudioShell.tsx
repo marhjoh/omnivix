@@ -20,6 +20,8 @@ import { ExportControls } from "@/src/studio/ExportControls";
 import { useBannerExport } from "@/src/studio/useBannerExport";
 import { UsernameModal } from "@/src/studio/UsernameModal";
 import { UsageModal } from "@/src/studio/UsageModal";
+import { FeedModal } from "@/src/studio/FeedModal";
+import { useFeed } from "@/src/studio/useFeed";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import type { ExportPixelRatio } from "@/src/export/format";
 import { shownDownloadFormat, type DownloadFormat } from "@/src/studio/downloadFormat";
@@ -80,11 +82,16 @@ export function StudioShell({
   const github = useGithubBannerData({ templateId, state, username, initialApiData });
   // The icon picker and the certification rows load their own icons.
   const icons = useIcons(drawnIcons(state), initialApiData);
-  const problem = github.problem ?? icons.problem;
-  const data = useMemo(() => ({ ...github.data, icons: icons.data }), [github.data, icons.data]);
+  const feed = useFeed("feed" in state ? state.feed : "", initialApiData);
+  const problem = github.problem ?? icons.problem ?? feed.problem;
+  const data = useMemo(
+    () => ({ ...github.data, icons: icons.data, feed: feed.data }),
+    [github.data, icons.data, feed.data],
+  );
   const retry = () => {
     github.retry();
     icons.retry();
+    feed.retry();
   };
   const sidebar = useStudioSidebar(initialSidebarCollapsed);
   const { toast, showError, showSuccess, dismissToast } = useToast();
@@ -113,7 +120,18 @@ export function StudioShell({
     // A problem with an earlier paste no longer applies.
     dismissToast();
   }
-  const modalOpen = showUsernameModal || showUsageModal;
+
+  // The latest posts banner asks for a feed right away when it has none.
+  const [showFeedModal, setShowFeedModal] = useState("feed" in state && !state.feed);
+  const openFeedModal = useCallback(() => setShowFeedModal(true), []);
+  const closeFeedModal = useCallback(() => setShowFeedModal(false), []);
+  function handleFeedSubmit(link: string) {
+    updateState("feed", link);
+    closeFeedModal();
+    // A problem with an earlier link no longer applies.
+    dismissToast();
+  }
+  const modalOpen = showUsernameModal || showUsageModal || showFeedModal;
 
   const { size } = state;
   const fill = state.contentSize === "fill";
@@ -138,7 +156,7 @@ export function StudioShell({
   const previewState = computePreviewContentState({
     missingSetting,
     hasProblem: problem !== null,
-    dataReady: github.dataReady && icons.ready,
+    dataReady: github.dataReady && icons.ready && feed.ready,
   });
 
   const background = backgroundFromState(state);
@@ -238,6 +256,13 @@ export function StudioShell({
         onCancel={closeUsageModal}
         onError={showError}
       />
+      <FeedModal
+        open={showFeedModal}
+        currentFeed={"feed" in state ? state.feed : ""}
+        onSubmit={handleFeedSubmit}
+        onCancel={closeFeedModal}
+        onError={showError}
+      />
       {/* After the dialogs, so a toast shows above them. */}
       <Toast toast={toast} onDismiss={dismissToast} className={styles.toast} />
 
@@ -286,6 +311,7 @@ export function StudioShell({
               onError={showError}
               onErrorResolved={dismissToast}
               onOpenUsage={openUsageModal}
+              onOpenFeed={openFeedModal}
             />
           </div>
         </aside>
@@ -313,7 +339,11 @@ export function StudioShell({
             onRetry={retry}
             onChangeUsername={openUsernameModal}
             onEditSetting={(key) =>
-              key === "usage" ? openUsageModal() : sidebar.focusSetting(key)
+              key === "usage"
+                ? openUsageModal()
+                : key === "feed"
+                  ? openFeedModal()
+                  : sidebar.focusSetting(key)
             }
             backgroundAdjust={
               adjustableBackground

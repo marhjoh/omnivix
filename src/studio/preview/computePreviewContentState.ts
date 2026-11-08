@@ -26,10 +26,14 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
 };
 
 /**
- * "Loading profile and contributions…", from the GitHub data the banner draws. A banner without
- * GitHub data only waits for its Simple Icons.
+ * "Loading profile and contributions…", from the GitHub data the banner draws. The latest posts
+ * banner waits for its feed, and other banners without GitHub data only for their Simple Icons.
  */
-export function previewLoadingMessage(githubData: readonly GithubDataKind[]): string {
+export function previewLoadingMessage(
+  githubData: readonly GithubDataKind[],
+  loadsFeed = false,
+): string {
+  if (loadsFeed) return "Loading posts…";
   if (githubData.length === 0) return "Loading icons…";
   const names = new Intl.ListFormat("en-US").format(githubData.map((kind) => DATA_NAMES[kind]));
   return `Loading ${names}…`;
@@ -60,6 +64,12 @@ export function previewEmptyCopy(missingSetting: string) {
         title: "Add your certifications",
         hint: "Add a certification with a name in the sidebar to see it here.",
         actionLabel: "Add certifications",
+      };
+    case "feed":
+      return {
+        title: "Add your feed",
+        hint: "Add an RSS or Atom link to show your latest posts.",
+        actionLabel: "Add feed",
       };
     case "usage":
       return {

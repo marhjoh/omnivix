@@ -1,19 +1,15 @@
 import { PreviewLoading, PreviewMessage } from "@/src/studio/preview/PreviewMessage";
-import {
-  previewEmptyCopy,
-  previewLoadingMessage,
-} from "@/src/studio/preview/computePreviewContentState";
+import { previewEmptyCopy } from "@/src/studio/preview/computePreviewContentState";
 import type { PreviewContentState, PreviewProblem } from "@/src/studio/preview/types";
 import { useTimeReached } from "@/src/ui/useTimeReached";
 import previewStyles from "@/src/studio/preview/preview.module.css";
-import type { GithubDataKind } from "@/src/templates/types";
 
 /** What the preview shows in place of the banner: loading, what's missing, or the problem. */
 export function PreviewStatus({
   previewState,
   problem,
   missingSetting,
-  githubData,
+  loadingMessage,
   onRetry,
   onChangeUsername,
   onEditSetting,
@@ -22,7 +18,7 @@ export function PreviewStatus({
   problem: PreviewProblem | null;
   /** What an empty preview asks for: "username", or a required setting's key. */
   missingSetting: string | undefined;
-  githubData: readonly GithubDataKind[];
+  loadingMessage: string;
   onRetry: () => void;
   onChangeUsername: () => void;
   /** Opens the settings with the cursor in this setting's field. */
@@ -32,7 +28,7 @@ export function PreviewStatus({
 
   let content;
   if (previewState === "loading") {
-    content = <PreviewLoading message={previewLoadingMessage(githubData)} />;
+    content = <PreviewLoading message={loadingMessage} />;
   } else if (previewState === "empty") {
     const setting = missingSetting!;
     const copy = previewEmptyCopy(setting);
@@ -58,7 +54,9 @@ export function PreviewStatus({
             ? { label: "Try again", onClick: onRetry, disabled: !retryReached }
             : action === "change-username"
               ? { label: "Change username", onClick: onChangeUsername }
-              : undefined
+              : action === "change-feed"
+                ? { label: "Change feed", onClick: () => onEditSetting("feed") }
+                : undefined
         }
       />
     );
