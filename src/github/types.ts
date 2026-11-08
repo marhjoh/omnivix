@@ -11,6 +11,12 @@ export interface GithubUserNormalized {
   pullRequests: number;
 }
 
+/** An organization the user is a public member of. */
+export interface OrganizationNormalized {
+  login: string;
+  avatarUrl: string;
+}
+
 export interface RepoNormalized {
   id: string;
   name: string;

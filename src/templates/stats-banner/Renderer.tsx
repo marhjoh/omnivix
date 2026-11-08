@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import {
   BookMarked,
+  Building2,
   CalendarDays,
   Flame,
   GitPullRequest,
@@ -20,6 +21,7 @@ import {
   type LanguageShare,
 } from "@/src/banner/stats";
 import { bannerUiChrome, type BannerUiChrome } from "@/src/theme/theme";
+import type { OrganizationNormalized } from "@/src/github/types";
 import type { RendererProps } from "@/src/templates/types";
 
 const TILE_COLUMN_PX = 124;
@@ -53,7 +55,7 @@ function days(count: number) {
 
 export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"stats-banner">) {
   const chrome = bannerUiChrome(uiTheme);
-  const { user, contributions, repos = [] } = data;
+  const { user, contributions, repos = [], organizations = [] } = data;
   const streaks = contributions ? contributionStreaks(contributions) : { current: 0, longest: 0 };
 
   const tiles = (
@@ -118,7 +120,16 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
   const languages = state.showLanguages ? topLanguages(repos) : [];
   // Every banner size is wide, so up to six tiles share one row. Seven or eight make two rows.
   const columns = tiles.length <= 6 ? tiles.length : Math.ceil(tiles.length / 2);
+  const shownOrganizations = state.showOrganizations ? organizations : [];
   const card: CSSProperties = { ...cardStyle(chrome), padding: CARD_PADDING };
+  // Zero width with a full min-width: a wide card wraps at the tiles' width instead of widening
+  // the banner content.
+  const fullWidthCard: CSSProperties = {
+    ...card,
+    width: tiles.length ? 0 : undefined,
+    minWidth: "100%",
+  };
+  const iconColor = (color: IconColor) => (state.showIconColors ? ICON_COLORS[color] : undefined);
 
   return (
     <ProfileBanner state={state} user={user} chrome={chrome}>
@@ -135,7 +146,7 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
               <StatTile
                 key={tile.label}
                 tile={tile}
-                iconColor={state.showIconColors ? ICON_COLORS[tile.color] : undefined}
+                iconColor={iconColor(tile.color)}
                 chrome={chrome}
                 style={card}
               />
@@ -143,12 +154,14 @@ export function StatsBannerRenderer({ state, data, uiTheme }: RendererProps<"sta
           </div>
         )}
         {languages.length > 0 && (
-          <LanguageBar
-            languages={languages}
+          <LanguageBar languages={languages} chrome={chrome} style={fullWidthCard} />
+        )}
+        {shownOrganizations.length > 0 && (
+          <OrganizationsCard
+            organizations={shownOrganizations}
+            iconColor={iconColor("blue")}
             chrome={chrome}
-            // Zero width with a full min-width: the legend wraps at the tiles' width instead of
-            // widening the banner content.
-            style={{ ...card, width: tiles.length ? 0 : undefined, minWidth: "100%" }}
+            style={fullWidthCard}
           />
         )}
       </div>
@@ -163,27 +176,13 @@ function StatTile({
   style,
 }: {
   tile: Tile;
-  /** Without one, the icon takes the label's muted color. */
   iconColor: string | undefined;
   chrome: BannerUiChrome;
   style: CSSProperties;
 }) {
   return (
     <div style={style}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          fontSize: 11,
-          lineHeight: 1.2,
-          color: chrome.cardTextMuted,
-          whiteSpace: "nowrap",
-        }}
-      >
-        <Icon size={12} strokeWidth={2.25} aria-hidden color={iconColor} />
-        {label}
-      </div>
+      <CardLabel icon={Icon} label={label} iconColor={iconColor} chrome={chrome} />
       <p
         style={{
           margin: "5px 0 0",
@@ -203,6 +202,66 @@ function StatTile({
           </span>
         )}
       </p>
+    </div>
+  );
+}
+
+/** A card's icon and muted label. */
+function CardLabel({
+  icon: Icon,
+  label,
+  iconColor,
+  chrome,
+}: {
+  icon: LucideIcon;
+  label: string;
+  /** Without one, the icon takes the label's muted color. */
+  iconColor: string | undefined;
+  chrome: BannerUiChrome;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        fontSize: 11,
+        lineHeight: 1.2,
+        color: chrome.cardTextMuted,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <Icon size={12} strokeWidth={2.25} aria-hidden color={iconColor} />
+      {label}
+    </div>
+  );
+}
+
+function OrganizationsCard({
+  organizations,
+  iconColor,
+  chrome,
+  style,
+}: {
+  organizations: OrganizationNormalized[];
+  iconColor: string | undefined;
+  chrome: BannerUiChrome;
+  style: CSSProperties;
+}) {
+  return (
+    <div style={style}>
+      <CardLabel icon={Building2} label="Organizations" iconColor={iconColor} chrome={chrome} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+        {organizations.map((organization) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={organization.login}
+            src={organization.avatarUrl}
+            alt=""
+            style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0 }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

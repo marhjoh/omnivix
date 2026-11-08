@@ -1,5 +1,10 @@
 import type { Page, Route } from "@playwright/test";
-import type { ContributionsNormalized, GithubUserNormalized, RepoLists } from "@/src/github/types";
+import type {
+  ContributionsNormalized,
+  GithubUserNormalized,
+  OrganizationNormalized,
+  RepoLists,
+} from "@/src/github/types";
 
 // Fake GitHub data for the studio, answered in the browser, because CI has no GitHub token.
 
@@ -56,6 +61,10 @@ const repos: RepoLists = {
   owned: [repo("hello-world", 120), repo("spoon-knife", 80), repo("linguist", 40)],
 };
 
+const organizations: OrganizationNormalized[] = [
+  { login: "github", avatarUrl: "https://avatars.githubusercontent.com/u/9919" },
+];
+
 /** A 1×1 PNG for the profile photo. */
 const PIXEL = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
@@ -95,6 +104,7 @@ export async function fakeGithub(page: Page, answer: () => GithubAnswer) {
       case "data": {
         if (url.pathname.endsWith("/user-summary")) return route.fulfill({ json: user });
         if (url.pathname.endsWith("/repos")) return route.fulfill({ json: repos });
+        if (url.pathname.endsWith("/organizations")) return route.fulfill({ json: organizations });
         const year = Number(url.searchParams.get("year")) || new Date().getUTCFullYear();
         return route.fulfill({ json: contributions(year) });
       }

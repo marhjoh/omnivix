@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Effect, Exit, Schema } from "effect";
-import { githubQuery } from "./graphql";
+import { githubQuery, githubRest } from "./graphql";
 
 const User = Schema.Struct({ user: Schema.Struct({ login: Schema.String }) });
 
@@ -23,12 +23,28 @@ afterEach(() => {
 const run = () => Effect.runPromiseExit(githubQuery("query", { username: "octocat" }, User));
 
 /** The failure's tag, or "Success". */
-async function outcome() {
-  const exit = await run();
+async function outcome(result: Promise<Exit.Exit<unknown, unknown>> = run()) {
+  const exit = await result;
   if (Exit.isSuccess(exit)) return "Success";
   const error = exit.cause.reasons.find((reason) => reason._tag === "Fail");
   return error && "error" in error ? (error.error as { _tag: string })._tag : "Defect";
 }
+
+describe("githubRest", () => {
+  const Following = Schema.Struct({ following: Schema.Number });
+  const rest = () => Effect.runPromiseExit(githubRest("/users/octocat", Following));
+
+  it("decodes the body", async () => {
+    fetchMock.mockResolvedValueOnce(json(200, { login: "octocat", following: 21 }));
+    expect(await rest()).toEqual(Exit.succeed({ following: 21 }));
+    expect(fetchMock.mock.calls[0][0]).toBe("https://api.github.com/users/octocat");
+  });
+
+  it("reports a missing user", async () => {
+    fetchMock.mockResolvedValueOnce(json(404, { message: "Not Found" }));
+    expect(await outcome(rest())).toBe("GithubUserNotFound");
+  });
+});
 
 describe("githubQuery", () => {
   it("decodes the data and sends the token", async () => {

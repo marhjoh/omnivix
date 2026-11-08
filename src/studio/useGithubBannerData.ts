@@ -3,6 +3,7 @@ import { preload } from "react-dom";
 import type {
   ContributionsNormalized,
   GithubUserNormalized,
+  OrganizationNormalized,
   RepoLists,
   RepoNormalized,
 } from "@/src/github/types";
@@ -56,6 +57,10 @@ export function useGithubBannerData({
     initial: initialData<RepoLists>(initialGithubData, urls.repos),
   });
   const repoLists = repoListsFetch.error ? undefined : repoListsFetch.data;
+  const organizationsFetch = useApiQuery<OrganizationNormalized[]>(urls.organizations, {
+    initial: initialData<OrganizationNormalized[]>(initialGithubData, urls.organizations),
+  });
+  const organizations = organizationsFetch.error ? undefined : organizationsFetch.data;
 
   const user = userFetch.error ? undefined : userFetch.data;
   const repos = useMemo(
@@ -64,8 +69,8 @@ export function useGithubBannerData({
   );
   const contributions = contributionsFetch.data;
   const data = useMemo<RenderData>(
-    () => ({ user, contributions, repos }),
-    [user, contributions, repos],
+    () => ({ user, contributions, repos, organizations }),
+    [user, contributions, repos, organizations],
   );
 
   // The GitHub, repos and stats banners show the avatar. When the photo is on, wait for it too, so
@@ -100,6 +105,7 @@ export function useGithubBannerData({
     user: userFetch,
     contributions: contributions && !contributionsFetch.stale ? null : contributionsFetch,
     repos: repoListsFetch,
+    organizations: organizationsFetch,
   };
   const failedFetch = githubData.map((kind) => fetches[kind]).find((fetch) => fetch?.error);
   // A repos banner with no repositories is treated like a failed fetch. The preview says why
@@ -123,7 +129,7 @@ export function useGithubBannerData({
 
   // Only refetch what failed.
   function retry() {
-    for (const query of [userFetch, contributionsFetch, repoListsFetch]) {
+    for (const query of [userFetch, contributionsFetch, repoListsFetch, organizationsFetch]) {
       if (query.error) void query.refetch();
     }
   }

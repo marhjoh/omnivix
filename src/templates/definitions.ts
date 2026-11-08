@@ -199,7 +199,7 @@ export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-b
     title: "Stats Banner",
     description: "Stars, followers, and streaks.",
     needsUsername: true,
-    githubData: ["user", "contributions", "repos"],
+    githubData: ["user", "contributions", "repos", "organizations"],
   },
   schema: [
     sizeField,
@@ -217,6 +217,7 @@ export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-b
     { key: "showCurrentStreak", label: "Current streak", type: "toggle" },
     { key: "showLongestStreak", label: "Longest streak", type: "toggle" },
     { key: "showLanguages", label: "Languages", type: "toggle" },
+    { key: "showOrganizations", label: "Organizations", type: "toggle" },
     { key: "showIconColors", label: "Icon colors", type: "toggle" },
     ...logoFields,
   ],
@@ -233,6 +234,7 @@ export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-b
     showCurrentStreak: true,
     showLongestStreak: true,
     showLanguages: true,
+    showOrganizations: false,
     showIconColors: true,
   },
 };

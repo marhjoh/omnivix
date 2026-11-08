@@ -22,6 +22,7 @@ const DATA_NAMES: Record<GithubDataKind, string> = {
   user: "profile",
   contributions: "contributions",
   repos: "repositories",
+  organizations: "organizations",
 };
 
 /** "Loading profile and contributions…", from the GitHub data the banner draws. */

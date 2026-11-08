@@ -1,6 +1,11 @@
 import "server-only";
 import { Effect } from "effect";
-import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
+import {
+  getContributions,
+  getOrganizations,
+  getRepoLists,
+  getUserSummary,
+} from "@/src/github/client";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner } from "@/src/lib/repoSelection";
 import { yearOf } from "@/src/lib/contributionYear";
@@ -30,6 +35,7 @@ export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
             ),
           )
         : none,
+      organizations: needs.has("organizations") ? getOrganizations(username) : none,
     },
     { concurrency: "unbounded" },
   );

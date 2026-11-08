@@ -61,13 +61,13 @@ Responses are like the export API's:
 
 All routes, including the ones the app uses internally:
 
-| Route                                                      | Purpose                                         |
-| ---------------------------------------------------------- | ----------------------------------------------- |
-| `/`                                                        | Landing page                                    |
-| `/studio/[templateId]`                                     | The editor for one template                     |
-| `/render/[templateId]`                                     | The page the export screenshots; needs a token  |
-| `POST /api/export`                                         | The export API above                            |
-| `/banner/[templateId].png`, `.jpg`                         | The image URL above                             |
-| `/api/github/user-summary`, `/contributions`, `/repos`     | GitHub data for the studio                      |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image` | Link-preview images, generated at build time    |
-| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                 | Crawl rules, sitemap and a summary for AI tools |
+| Route                                                                    | Purpose                                         |
+| ------------------------------------------------------------------------ | ----------------------------------------------- |
+| `/`                                                                      | Landing page                                    |
+| `/studio/[templateId]`                                                   | The editor for one template                     |
+| `/render/[templateId]`                                                   | The page the export screenshots; needs a token  |
+| `POST /api/export`                                                       | The export API above                            |
+| `/banner/[templateId].png`, `.jpg`                                       | The image URL above                             |
+| `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                      |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time    |
+| `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools |

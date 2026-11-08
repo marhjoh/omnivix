@@ -52,6 +52,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "showCurrentStreak",
       "showLongestStreak",
       "showLanguages",
+      "showOrganizations",
     ],
   },
   // Everything else, in schema order. New settings land here until they get a group.

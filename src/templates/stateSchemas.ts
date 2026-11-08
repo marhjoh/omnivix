@@ -120,6 +120,7 @@ const STATE_SCHEMAS = {
     showCurrentStreak: flag,
     showLongestStreak: flag,
     showLanguages: flag,
+    showOrganizations: flag,
     showIconColors: flag,
   }),
   "contribution-banner": Schema.Struct({

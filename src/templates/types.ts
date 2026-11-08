@@ -4,6 +4,7 @@ import type { TemplateSettings } from "@/src/templates/stateSchemas";
 import type {
   ContributionsNormalized,
   GithubUserNormalized,
+  OrganizationNormalized,
   RepoNormalized,
 } from "@/src/github/types";
 
@@ -74,7 +75,7 @@ interface TemplateMeta {
   githubData: GithubDataKind[];
 }
 
-export type GithubDataKind = "user" | "contributions" | "repos";
+export type GithubDataKind = "user" | "contributions" | "repos" | "organizations";
 
 export interface TemplateDefinition<S extends BannerSettings = BannerSettings> {
   meta: TemplateMeta;
@@ -86,6 +87,7 @@ export interface RenderData {
   user?: GithubUserNormalized;
   contributions?: ContributionsNormalized;
   repos?: RepoNormalized[];
+  organizations?: OrganizationNormalized[];
 }
 
 /** What every template's renderer gets. It draws the content; BannerRenderer adds the frame. */
