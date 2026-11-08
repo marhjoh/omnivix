@@ -12,6 +12,7 @@ import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
 import { StatsBannerRenderer } from "@/src/templates/stats-banner/Renderer";
 import { TechStackBannerRenderer } from "@/src/templates/tech-stack-banner/Renderer";
 import { IntroBannerRenderer } from "@/src/templates/intro-banner/Renderer";
+import { TerminalBannerRenderer } from "@/src/templates/terminal-banner/Renderer";
 import { QuoteBannerRenderer } from "@/src/templates/quote-banner/Renderer";
 import type { RenderData, RendererProps, TemplateId } from "@/src/templates/types";
 import type { TemplateSettings } from "@/src/templates/stateSchemas";
@@ -22,6 +23,7 @@ const RENDERERS: { [K in TemplateId]: ComponentType<RendererProps<K>> } = {
   "stats-banner": StatsBannerRenderer,
   "tech-stack-banner": TechStackBannerRenderer,
   "intro-banner": IntroBannerRenderer,
+  "terminal-banner": TerminalBannerRenderer,
   "contribution-banner": ContributionBannerRenderer,
   "quote-banner": QuoteBannerRenderer,
 };

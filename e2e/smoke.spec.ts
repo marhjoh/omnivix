@@ -113,6 +113,7 @@ test.describe("GitHub banners", () => {
     "github-banner",
     "repos-banner",
     "stats-banner",
+    "terminal-banner",
     "contribution-banner",
   ]) {
     test(`${templateId} loads with its data`, async ({ page }) => {

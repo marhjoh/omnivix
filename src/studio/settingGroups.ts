@@ -42,12 +42,26 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
     title: "Links",
     keys: ["github", "linkedin", "x", "website", "email", "showLinks"],
   },
+  // Only the terminal banner has these.
+  {
+    title: "Terminal",
+    keys: [
+      "keyColor",
+      "role",
+      "location",
+      "editor",
+      "shell",
+      "os",
+      "showColorBlocks",
+      "showWindow",
+    ],
+  },
   // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Only the tech stack and intro banners have these.
   { title: "Icons", keys: ["icons", "iconsPerRow", "showLabels", "showIcons"] },
-  // Only the stats banner has these.
+  // Only the stats and terminal banners have these.
   {
     title: "Stats",
     keys: [
@@ -59,6 +73,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "showContributionCount",
       "showCurrentStreak",
       "showLongestStreak",
+      "showStreak",
       "showLanguages",
       "showOrganizations",
     ],

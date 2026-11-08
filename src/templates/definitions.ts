@@ -29,6 +29,7 @@ import {
   NAME_MAX_LENGTH,
   TAGLINE_MAX_LENGTH,
 } from "@/src/banner/intro";
+import { TERMINAL_TEXT_MAX_LENGTH, TERMINAL_TEXT_ROWS } from "@/src/banner/terminal";
 import {
   AUTHOR_MAX_LENGTH,
   DEFAULT_QUOTE_STYLE,
@@ -336,6 +337,61 @@ export const introBannerDefinition: TemplateDefinition<TemplateSettings["intro-b
     showLinks: true,
     showIcons: true,
     showIconColors: true,
+  },
+};
+
+export const terminalBannerDefinition: TemplateDefinition<TemplateSettings["terminal-banner"]> = {
+  meta: {
+    id: "terminal-banner",
+    title: "Terminal Banner",
+    description: "Your setup and stats, terminal style.",
+    needsUsername: true,
+    githubData: ["user", "contributions", "repos"],
+  },
+  schema: [
+    sizeField,
+    backgroundField,
+    alignmentField,
+    contentSizeField,
+    { key: "keyColor", label: "Key color", type: "colorPicker", options: QUOTE_COLOR_OPTIONS },
+    ...TERMINAL_TEXT_ROWS.map(
+      ({ key, label }): EditorFieldSchema<TemplateSettings["terminal-banner"]> => ({
+        key,
+        label,
+        type: "text",
+        maxLength: TERMINAL_TEXT_MAX_LENGTH,
+      }),
+    ),
+    { key: "showAvatar", label: "Profile photo", type: "toggle" },
+    { key: "showRepoCount", label: "Repos", type: "toggle" },
+    { key: "showStarCount", label: "Stars", type: "toggle" },
+    { key: "showFollowerCount", label: "Followers", type: "toggle" },
+    { key: "showContributionCount", label: "Contributions", type: "toggle" },
+    { key: "showStreak", label: "Streak", type: "toggle" },
+    { key: "showLanguages", label: "Languages", type: "toggle" },
+    { key: "showColorBlocks", label: "Color blocks", type: "toggle" },
+    { key: "showWindow", label: "Window", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    username: "",
+    showAvatar: true,
+    role: "Developer",
+    location: "",
+    editor: "VS Code",
+    shell: "zsh",
+    os: "macOS",
+    keyColor: "blue",
+    showRepoCount: true,
+    showStarCount: true,
+    showFollowerCount: true,
+    showContributionCount: true,
+    showStreak: true,
+    showLanguages: true,
+    showColorBlocks: true,
+    showWindow: true,
   },
 };
 

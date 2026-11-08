@@ -25,7 +25,12 @@ const BACKGROUND = "sydney";
 /** LinkedIn and X, where the issue tested uploads. */
 const SIZES: BannerSize[] = ["wide", "header"];
 /** The templates that show the GitHub profile photo. */
-const AVATAR_TEMPLATES: TemplateId[] = ["github-banner", "repos-banner", "stats-banner"];
+const AVATAR_TEMPLATES: TemplateId[] = [
+  "github-banner",
+  "repos-banner",
+  "stats-banner",
+  "terminal-banner",
+];
 /** The largest avatar GitHub serves, whatever size is asked for. */
 const AVATAR_SOURCE_PX = 460;
 /** Block size in banner pixels. In the image it's multiplied by the pixel ratio. */

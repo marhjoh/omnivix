@@ -7,6 +7,7 @@ export const LANDING_TEMPLATE_ORDER: readonly TemplateId[] = [
   "stats-banner",
   "tech-stack-banner",
   "intro-banner",
+  "terminal-banner",
   "quote-banner",
   "contribution-banner",
 ];
