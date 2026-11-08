@@ -1,4 +1,5 @@
 import type { RepoNormalized } from "@/src/github/types";
+import { cardStyle, FORK_COLOR, LanguageDot, STAR_COLOR } from "@/src/banner/card";
 import { ELLIPSIS, lineClamp } from "@/src/banner/textStyle";
 import type { BannerUiChrome } from "@/src/theme/theme";
 
@@ -10,9 +11,6 @@ interface RepoCardProps {
   showForks: boolean;
   chrome: BannerUiChrome;
 }
-
-const STAR_COLOR = "#f2cc60";
-const FORK_COLOR = "#b392f0";
 
 export function RepoCard({
   repo,
@@ -28,16 +26,11 @@ export function RepoCard({
   return (
     <article
       style={{
-        border: `1px solid ${chrome.cardBorder}`,
-        borderRadius: 10,
+        ...cardStyle(chrome),
         padding: "10px 14px",
-        background: chrome.cardBg,
-        color: chrome.cardText,
         minWidth: 0,
-        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        boxShadow: chrome.cardShadow,
       }}
     >
       {/* Not a heading: the preview is one image to screen readers. */}
@@ -92,18 +85,7 @@ export function RepoCard({
                 gap: 5,
               }}
             >
-              {repo.languageColor && (
-                <span
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "50%",
-                    background: repo.languageColor,
-                    display: "inline-block",
-                    flexShrink: 0,
-                  }}
-                />
-              )}
+              {repo.languageColor && <LanguageDot color={repo.languageColor} />}
               {repo.language}
             </span>
           )}

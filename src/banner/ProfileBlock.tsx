@@ -10,7 +10,7 @@ import type { BannerUiChrome } from "@/src/theme/theme";
 /** Sizes before scaling. FitContent scales the profile with the rest of the content. */
 const SIZING = { avatar: 28, name: 13, handle: 12 };
 
-/** Content for the GitHub and repos banners: the avatar, name and @handle above `children`. */
+/** Content for the GitHub, repos and stats banners: the avatar, name and @handle above `children`. */
 export function ProfileBanner({
   state,
   user,

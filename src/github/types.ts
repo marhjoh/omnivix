@@ -4,6 +4,11 @@ export interface GithubUserNormalized {
   avatarUrl: string;
   /** When the account was created (ISO). The studio offers contribution years from then on. */
   createdAt: string;
+  /** Public repositories the user owns, forks included, like the count on their profile. */
+  publicRepos: number;
+  followers: number;
+  following: number;
+  pullRequests: number;
 }
 
 export interface RepoNormalized {

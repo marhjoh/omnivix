@@ -72,7 +72,7 @@ const contributionGridFields = {
   cellShape: oneOf(CONTRIBUTION_CELL_SHAPES),
 };
 
-/** Shared by the GitHub and repos banners. */
+/** Shared by the GitHub, repos and stats banners. */
 const profileFields = {
   username: githubUsername,
   showAvatar: flag,
@@ -107,6 +107,21 @@ const STATE_SCHEMAS = {
     showForks: flag,
     contentSize,
   }),
+  "stats-banner": Schema.Struct({
+    ...bannerFields,
+    ...profileFields,
+    contentSize,
+    showRepoCount: flag,
+    showStarCount: flag,
+    showFollowerCount: flag,
+    showFollowingCount: flag,
+    showPullRequestCount: flag,
+    showContributionCount: flag,
+    showCurrentStreak: flag,
+    showLongestStreak: flag,
+    showLanguages: flag,
+    showIconColors: flag,
+  }),
   "contribution-banner": Schema.Struct({
     ...bannerFields,
     ...contributionGridFields,
@@ -140,7 +155,7 @@ export type TemplateSettings = { [K in TemplateId]: (typeof STATE_SCHEMAS)[K]["T
 /** The settings every banner has. */
 export type BaseSettings = Schema.Struct<typeof bannerFields>["Type"];
 
-/** The GitHub and repos banners' profile settings. */
+/** The GitHub, repos and stats banners' profile settings. */
 export type ProfileSettings = Schema.Struct<typeof profileFields>["Type"];
 
 /** The GitHub and contribution banners' grid settings. */

@@ -4,6 +4,7 @@ import type { TemplateId } from "@/src/templates/types";
 export const LANDING_TEMPLATE_ORDER: readonly TemplateId[] = [
   "github-banner",
   "repos-banner",
+  "stats-banner",
   "quote-banner",
   "contribution-banner",
 ];

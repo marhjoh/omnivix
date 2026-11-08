@@ -44,12 +44,18 @@ function userKey(username: string) {
   return username.toLowerCase();
 }
 
+const TotalCount = Schema.Struct({ totalCount: Schema.Number });
+
 const UserSummary = Schema.Struct({
   user: Schema.Struct({
     login: Schema.String,
     name: Schema.NullOr(Schema.String),
     avatarUrl: Schema.String,
     createdAt: Schema.String,
+    repositories: TotalCount,
+    followers: TotalCount,
+    following: TotalCount,
+    pullRequests: TotalCount,
   }),
 });
 
@@ -64,12 +70,27 @@ const users = githubCache(
             name
             avatarUrl
             createdAt
+            repositories(ownerAffiliations: OWNER, privacy: PUBLIC) { totalCount }
+            followers { totalCount }
+            following { totalCount }
+            pullRequests { totalCount }
           }
         }
       `,
       { username: login },
       UserSummary,
-    ).pipe(Effect.map(({ user }): GithubUserNormalized => user)),
+    ).pipe(
+      Effect.map(({ user }): GithubUserNormalized => ({
+        login: user.login,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt,
+        publicRepos: user.repositories.totalCount,
+        followers: user.followers.totalCount,
+        following: user.following.totalCount,
+        pullRequests: user.pullRequests.totalCount,
+      })),
+    ),
   () => TTL_SHORT,
 );
 

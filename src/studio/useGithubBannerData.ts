@@ -9,6 +9,7 @@ import type {
 import { limitResetAt } from "@/src/lib/apiError";
 import { limitMessage, REQUEST_LIMIT_MESSAGE } from "@/src/lib/rateLimitMessage";
 import { reposForBanner } from "@/src/lib/repoSelection";
+import { yearOf } from "@/src/lib/contributionYear";
 import { githubDataUrls } from "@/src/studio/githubUrls";
 import { fetchProblem, noReposProblem } from "@/src/studio/preview/previewProblems";
 import type { PreviewProblem } from "@/src/studio/preview/types";
@@ -37,12 +38,12 @@ export function useGithubBannerData({
 }) {
   const { needsUsername, githubData } = templateRegistry[templateId].meta;
 
-  const repoMode = "mode" in state ? state.mode : "pinned";
+  // Only the repos banner picks repositories.
+  const repoMode = "mode" in state ? state.mode : undefined;
   const selectedRepos = "selectedRepos" in state ? state.selectedRepos : "";
   // One request returns both repository lists. Picking repositories or switching between pinned
   // and selected needs nothing more from GitHub.
-  const year = "year" in state ? state.year : "";
-  const urls = githubDataUrls({ githubData, username, year });
+  const urls = githubDataUrls({ githubData, username, year: yearOf(state) });
 
   const initialUser = initialData<GithubUserNormalized>(initialGithubData, urls.user);
   const userFetch = useApiQuery<GithubUserNormalized>(urls.user, { initial: initialUser });
@@ -67,10 +68,11 @@ export function useGithubBannerData({
     [user, contributions, repos],
   );
 
-  // The GitHub and repos banners show the avatar. When the photo is on, wait for it too, so a slow
-  // connection doesn't show the banner with an empty spot. It's preloaded even when off, so turning
-  // it on doesn't flash the loading state. The photo from the server render counts as loaded, like
-  // the rest of the first paint, because the page is already loading it (preloaded here).
+  // The GitHub, repos and stats banners show the avatar. When the photo is on, wait for it too, so
+  // a slow connection doesn't show the banner with an empty spot. It's preloaded even when off, so
+  // turning it on doesn't flash the loading state. The photo from the server render counts as
+  // loaded, like the rest of the first paint, because the page is already loading it (preloaded
+  // here).
   const avatarUrl = githubData.includes("user") ? data.user?.avatarUrl : undefined;
   const serverAvatarUrl = initialUser?.avatarUrl;
   if (serverAvatarUrl) preload(serverAvatarUrl, { as: "image" });
@@ -102,7 +104,7 @@ export function useGithubBannerData({
   const failedFetch = githubData.map((kind) => fetches[kind]).find((fetch) => fetch?.error);
   // A repos banner with no repositories is treated like a failed fetch. The preview says why
   // instead of drawing an empty banner, and export is blocked.
-  const noRepos = githubData.includes("repos") && dataReady && data.repos?.length === 0;
+  const noRepos = dataReady && data.repos?.length === 0;
   const failedError = failedFetch?.error ?? null;
   const failedLimit = failedFetch?.limit ?? null;
   const failedNotFound = failedFetch?.notFound ?? false;
@@ -115,7 +117,7 @@ export function useGithubBannerData({
         username,
       });
     }
-    if (noRepos) return noReposProblem(repoMode, selectedRepos);
+    if (repoMode && noRepos) return noReposProblem(repoMode, selectedRepos);
     return null;
   }, [failedError, failedLimit, failedNotFound, username, noRepos, repoMode, selectedRepos]);
 

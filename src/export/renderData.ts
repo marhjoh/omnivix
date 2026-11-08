@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { getContributions, getRepoLists, getUserSummary } from "@/src/github/client";
 import { usernameOf } from "@/src/lib/githubUsername";
 import { reposForBanner } from "@/src/lib/repoSelection";
+import { yearOf } from "@/src/lib/contributionYear";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 
@@ -17,16 +18,18 @@ export function loadRenderData(templateId: TemplateId, state: BannerSettings) {
   return Effect.all(
     {
       user: needs.has("user") ? getUserSummary(username) : none,
-      contributions:
-        needs.has("contributions") && "year" in state
-          ? getContributions(username, state.year)
-          : none,
-      repos:
-        needs.has("repos") && "mode" in state
-          ? getRepoLists(username).pipe(
-              Effect.map((lists) => reposForBanner(lists, state.mode, state.selectedRepos)),
-            )
-          : none,
+      contributions: needs.has("contributions") ? getContributions(username, yearOf(state)) : none,
+      repos: needs.has("repos")
+        ? getRepoLists(username).pipe(
+            Effect.map((lists) =>
+              reposForBanner(
+                lists,
+                "mode" in state ? state.mode : undefined,
+                "selectedRepos" in state ? state.selectedRepos : "",
+              ),
+            ),
+          )
+        : none,
     },
     { concurrency: "unbounded" },
   );

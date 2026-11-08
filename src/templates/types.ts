@@ -10,6 +10,7 @@ import type {
 export const TEMPLATE_IDS = [
   "github-banner",
   "repos-banner",
+  "stats-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;

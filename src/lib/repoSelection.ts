@@ -30,12 +30,16 @@ export function reposShown(mode: RepoMode, maxRepos: number): number {
   return mode === "selected" ? MAX_REPOS : Math.round(maxRepos);
 }
 
-/** Selected repositories keep the order they were picked in. */
+/**
+ * The repositories a banner draws. Selected ones keep the order they were picked in. Without a mode
+ * (the stats banner, which picks none) it's all owned ones.
+ */
 export function reposForBanner(
   lists: RepoLists,
-  mode: RepoMode,
+  mode: RepoMode | undefined,
   selectedRepos: string,
 ): RepoNormalized[] {
+  if (mode === undefined) return lists.owned;
   if (mode !== "selected") return lists.pinned;
   const byName = new Map(lists.owned.map((repo) => [repo.name, repo]));
   return parseRepoSelection(selectedRepos).flatMap((name) => byName.get(name) ?? []);

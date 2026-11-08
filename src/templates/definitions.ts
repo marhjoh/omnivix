@@ -93,7 +93,7 @@ const cellShapeField: EditorFieldSchema<ContributionGridSettings> = {
   options: CONTRIBUTION_CELL_SHAPE_OPTIONS,
 };
 
-/** Shared by the GitHub and repos banners. */
+/** Shared by the GitHub, repos and stats banners. */
 const profileInitialState: ProfileSettings = {
   username: "",
   showAvatar: true,
@@ -190,6 +190,50 @@ export const reposBannerDefinition: TemplateDefinition<TemplateSettings["repos-b
     showStars: true,
     showForks: true,
     contentSize: DEFAULT_CONTENT_SIZE,
+  },
+};
+
+export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-banner"]> = {
+  meta: {
+    id: "stats-banner",
+    title: "Stats Banner",
+    description: "Stars, followers, and streaks.",
+    needsUsername: true,
+    githubData: ["user", "contributions", "repos"],
+  },
+  schema: [
+    sizeField,
+    backgroundField,
+    alignmentField,
+    profilePositionField,
+    contentSizeField,
+    ...profileFields,
+    { key: "showRepoCount", label: "Repos", type: "toggle" },
+    { key: "showStarCount", label: "Stars", type: "toggle" },
+    { key: "showFollowerCount", label: "Followers", type: "toggle" },
+    { key: "showFollowingCount", label: "Following", type: "toggle" },
+    { key: "showPullRequestCount", label: "Pull requests", type: "toggle" },
+    { key: "showContributionCount", label: "Contributions", type: "toggle" },
+    { key: "showCurrentStreak", label: "Current streak", type: "toggle" },
+    { key: "showLongestStreak", label: "Longest streak", type: "toggle" },
+    { key: "showLanguages", label: "Languages", type: "toggle" },
+    { key: "showIconColors", label: "Icon colors", type: "toggle" },
+    ...logoFields,
+  ],
+  initialState: {
+    ...bannerInitialState,
+    ...profileInitialState,
+    contentSize: DEFAULT_CONTENT_SIZE,
+    showRepoCount: true,
+    showStarCount: true,
+    showFollowerCount: true,
+    showFollowingCount: false,
+    showPullRequestCount: false,
+    showContributionCount: true,
+    showCurrentStreak: true,
+    showLongestStreak: true,
+    showLanguages: true,
+    showIconColors: true,
   },
 };
 

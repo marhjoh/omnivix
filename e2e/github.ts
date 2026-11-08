@@ -10,6 +10,10 @@ const user: GithubUserNormalized = {
   name: "The Octocat",
   avatarUrl: "https://avatars.githubusercontent.com/u/583231",
   createdAt: "2011-01-25T18:44:36Z",
+  publicRepos: 8,
+  followers: 4000,
+  following: 9,
+  pullRequests: 30,
 };
 
 const ymd = (ms: number) => new Date(ms).toISOString().slice(0, 10);
