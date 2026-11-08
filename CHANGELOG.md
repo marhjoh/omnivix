@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.35.0](https://github.com/marhjoh/omnivix/compare/v1.34.0...v1.35.0) (2026-11-08)
+
+
+### Features
+
+* add an AI usage banner ([f4227af](https://github.com/marhjoh/omnivix/commit/f4227afba57cd0ebd7031970beef343741f2366c))
+* add Claude and OpenAI grid colors ([f4227af](https://github.com/marhjoh/omnivix/commit/f4227afba57cd0ebd7031970beef343741f2366c))
+
+
+### Bug Fixes
+
+* leave out a month label in the contribution grid's last column ([f4227af](https://github.com/marhjoh/omnivix/commit/f4227afba57cd0ebd7031970beef343741f2366c))
+
 ## [1.34.0](https://github.com/marhjoh/omnivix/compare/v1.33.0...v1.34.0) (2026-11-08)
 
 
