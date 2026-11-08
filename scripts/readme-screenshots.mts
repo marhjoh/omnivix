@@ -78,6 +78,7 @@ try {
     await studio(demo, "stats-banner", "chicago"),
     await studio(demo, "tech-stack-banner", "lisbon"),
     await studio(demo, "intro-banner", "sydney"),
+    await studio(demo, "terminal-banner", "swiss-alps"),
     await studio(demo, "contribution-banner", "toronto"),
     await studio(demo, "quote-banner", "new-york"),
   ];
