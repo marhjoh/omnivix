@@ -29,7 +29,7 @@ export function linkQuery(templateId: TemplateId, state: BannerSettings): URLSea
   const query = new URLSearchParams();
   for (const key of keys) {
     const value = values[key];
-    if (value === undefined || value === "" || value === defaults[key]) continue;
+    if (value === undefined || value === defaults[key]) continue;
     if (key in IMAGE_SETTINGS && !isSavableImage(key, value)) return null;
     query.set(key, isPosition(value) ? `${value.x},${value.y}` : String(value));
   }

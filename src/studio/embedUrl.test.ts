@@ -82,6 +82,15 @@ describe("linkQuery", () => {
     );
   });
 
+  it("keeps a cleared setting whose default isn't empty", () => {
+    const { initialState } = getTemplates().find(({ meta }) => meta.id === "intro-banner")!;
+    const query = linkQuery("intro-banner", { ...initialState, github: "" })!;
+    expect(String(query)).toBe("github=");
+    expect(parseLinkSettings("intro-banner", Object.fromEntries(query))?.settings).toEqual({
+      github: "",
+    });
+  });
+
   it("can't link an upload", () => {
     const { initialState } = getTemplates().find(({ meta }) => meta.id === "quote-banner")!;
     expect(
