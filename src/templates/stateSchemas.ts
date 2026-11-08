@@ -17,6 +17,7 @@ import {
   NAME_MAX_LENGTH,
   TAGLINE_MAX_LENGTH,
 } from "@/src/banner/intro";
+import { TERMINAL_TEXT_MAX_LENGTH } from "@/src/banner/terminal";
 import { CONTRIBUTION_CELL_SHAPES } from "@/src/banner/cellShape";
 import { GRID_TEXT_MAX_LENGTH, isGridText } from "@/src/banner/gridText";
 import {
@@ -96,6 +97,8 @@ const link = text.check(textUpTo(LINK_MAX_LENGTH));
 
 const quoteColor = textWhere(isQuoteColor, "Unknown color");
 
+const terminalText = text.check(textUpTo(TERMINAL_TEXT_MAX_LENGTH));
+
 const STATE_SCHEMAS = {
   "github-banner": Schema.Struct({
     ...bannerFields,
@@ -162,6 +165,26 @@ const STATE_SCHEMAS = {
     showLinks: flag,
     showIcons: flag,
     showIconColors: flag,
+  }),
+  "terminal-banner": Schema.Struct({
+    ...bannerFields,
+    contentSize,
+    username: githubUsername,
+    showAvatar: flag,
+    role: terminalText,
+    location: terminalText,
+    editor: terminalText,
+    shell: terminalText,
+    os: terminalText,
+    keyColor: quoteColor,
+    showRepoCount: flag,
+    showStarCount: flag,
+    showFollowerCount: flag,
+    showContributionCount: flag,
+    showStreak: flag,
+    showLanguages: flag,
+    showColorBlocks: flag,
+    showWindow: flag,
   }),
   "contribution-banner": Schema.Struct({
     ...bannerFields,

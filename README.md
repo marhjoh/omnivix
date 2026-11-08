@@ -17,7 +17,7 @@
 
 ## Features
 
-- **Seven templates:** GitHub, Repos, Stats, Tech Stack, Intro, Contribution and Quote banners
+- **Eight templates:** GitHub, Repos, Stats, Tech Stack, Intro, Terminal, Contribution and Quote banners
 - **Sized for every platform:** LinkedIn, X, Bluesky, YouTube, Twitch, Reddit and more
 - **Backgrounds:** 14 built-in, an image link or your own upload
 - **Your logo,** from a link or an upload
@@ -28,7 +28,7 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/images/studio-demo.webp" alt="The studio cycling through the GitHub, Repos, Stats, Tech Stack, Intro, Contribution and Quote templates, each on a city background" width="800" />
+  <img src="docs/images/studio-demo.webp" alt="The studio cycling through the GitHub, Repos, Stats, Tech Stack, Intro, Terminal, Contribution and Quote templates, each on a city background" width="800" />
 </p>
 
 <table>

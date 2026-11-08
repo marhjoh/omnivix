@@ -12,9 +12,8 @@ export const inter = localFont({
 });
 
 /*
- * The quote banner's other fonts (src/banner/quoteStyle.ts), self-hosted from Fontsource.
- * SIL Open Font License or Apache License 2.0. They aren't preloaded because only that banner uses
- * them, and the export waits for fonts to load anyway.
+ * The quote and terminal banners' fonts (src/banner/quoteStyle.ts), from Fontsource. SIL Open Font
+ * License or Apache License 2.0. Only those banners use them, so they aren't preloaded.
  */
 
 const interItalic = localFont({

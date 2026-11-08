@@ -15,6 +15,7 @@ export const TEMPLATE_IDS = [
   "stats-banner",
   "tech-stack-banner",
   "intro-banner",
+  "terminal-banner",
   "contribution-banner",
   "quote-banner",
 ] as const;

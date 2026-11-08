@@ -4,7 +4,7 @@ import type { BannerUiChrome } from "@/src/theme/theme";
 export const STAR_COLOR = "#f2cc60";
 export const FORK_COLOR = "#b392f0";
 
-/** The frame of the repos and stats banners' cards. Padding and layout are up to each card. */
+/** The frame of the repos and stats banners' cards and the terminal banner's window. Padding and layout are up to each card. */
 export function cardStyle(chrome: BannerUiChrome): CSSProperties {
   return {
     border: `1px solid ${chrome.cardBorder}`,

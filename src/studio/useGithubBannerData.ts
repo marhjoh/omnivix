@@ -73,7 +73,7 @@ export function useGithubBannerData({
     [user, contributions, repos, organizations],
   );
 
-  // The GitHub, repos and stats banners show the avatar. When the photo is on, wait for it too, so
+  // The GitHub, repos, stats and terminal banners show the avatar. When the photo is on, wait for it too, so
   // a slow connection doesn't show the banner with an empty spot. It's preloaded even when off, so
   // turning it on doesn't flash the loading state. The photo from the server render counts as
   // loaded, like the rest of the first paint, because this page preloads it.
