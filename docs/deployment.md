@@ -41,4 +41,6 @@ Per IP, answered with `429`:
 - `POST /api/export`: 30 per 10 minutes, a Vercel Firewall rule, and 25 per UTC day (`EXPORT_DAILY_LIMIT`), counted in Upstash Redis
 - `/api/github/*`: 60 per 10 minutes, counted in Upstash Redis
 
+`/api/icons` has no limit. It reads icons bundled with the app, and the CDN caches the answers.
+
 Per banner: [image URLs](api.md#image-url) (`/banner/*`) render at most 30 times per UTC day per GitHub username, or per banner without one, in Upstash Redis. It isn't per IP because README images all come through GitHub's image proxy. Cached copies don't count.

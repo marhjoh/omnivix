@@ -41,7 +41,7 @@ TypeScript 6 and Node 24. Use `pnpm` only; `pnpm-lock.yaml` is the source of tru
 
 - `app/`: routes only (pages, API handlers, metadata). Keep handlers thin; logic lives in `src/`.
 - `src/studio/`: the editor. `src/templates/`: one folder per banner template. `src/banner/`: shared banner pieces.
-- `src/export/`: server-side PNG/JPEG export. `src/github/`: GitHub GraphQL client and cache.
+- `src/export/`: server-side PNG/JPEG export. `src/github/`: GitHub GraphQL client and cache. `src/icons/`: Simple Icons for the tech stack banner.
 - `src/lib/`, `src/ui/`, `src/theme/`: shared helpers, UI pieces and theme.
 
 The studio preview and the export render the same `BannerRenderer`. `POST /api/export` validates the settings, signs them into a short-lived token, opens `/render/[templateId]?token=…` in Playwright and returns a screenshot. Details: [docs/architecture.md](docs/architecture.md), [docs/api.md](docs/api.md), [docs/deployment.md](docs/deployment.md).
