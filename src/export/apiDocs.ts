@@ -197,7 +197,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     "For the export API's `state`, studio links and image URLs.",
     "",
-    'Every template also takes `contentPosition`, `logoPosition` and `backgroundPosition`, which the studio sets when the preview is dragged: `{ "x": 0–100, "y": 0–100 }`, where 0 is the left or top and 100 the right or bottom. `contentPosition` and `logoPosition` place the content and the logo in the room left around them inside the banner\'s padding. By default the content follows `alignment` and is centered vertically, and the logo is at the top right. `backgroundPosition` places the background image; by default it\'s centered, or at a built-in background\'s focus.',
+    'Every template also takes `contentPosition`, `logoPosition`, `creditPosition` and `backgroundPosition`, which the studio sets when the preview is dragged: `{ "x": 0–100, "y": 0–100 }`, where 0 is the left or top and 100 the right or bottom. `contentPosition`, `logoPosition` and `creditPosition` place the content, the logo and the credit in the room left around them inside the banner\'s padding. By default the content follows `alignment` and is centered vertically, the logo is at the top right and the credit at the bottom right. `backgroundPosition` places the background image; by default it\'s centered, or at a built-in background\'s focus.',
     "",
     `\`backgroundZoom\`, from ${code(MIN_BACKGROUND_ZOOM)} to ${code(MAX_BACKGROUND_ZOOM)}, zooms the background in; the default is ${code(MIN_BACKGROUND_ZOOM)}. \`backgroundOpacity\`, from ${code(0)} to ${code(100)} percent, sets how strongly it shows; the default is ${code(DEFAULT_BACKGROUND_OPACITY)}.`,
     "",

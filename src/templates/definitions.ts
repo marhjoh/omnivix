@@ -16,6 +16,11 @@ import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 import {
+  CREDIT_STYLE_OPTIONS,
+  DEFAULT_CREDIT_SIZE,
+  DEFAULT_CREDIT_STYLE,
+} from "@/src/banner/credit";
+import {
   DEFAULT_ICONS,
   DEFAULT_ICONS_PER_ROW,
   MAX_ICONS_PER_ROW,
@@ -52,10 +57,15 @@ import {
 // The sidebar shows fields in `schema` order. Validation is in stateSchemas.ts.
 
 /** Defaults every banner shares. The background has none. */
-const bannerInitialState: Pick<BaseSettings, "size" | "logoSize" | "alignment"> = {
+const bannerInitialState: Pick<
+  BaseSettings,
+  "size" | "logoSize" | "alignment" | "credit" | "creditSize"
+> = {
   size: DEFAULT_BANNER_SIZE,
   logoSize: DEFAULT_LOGO_SIZE,
   alignment: DEFAULT_CONTENT_ALIGN,
+  credit: DEFAULT_CREDIT_STYLE,
+  creditSize: DEFAULT_CREDIT_SIZE,
 };
 
 const sizeField: EditorFieldSchema<BaseSettings> = {
@@ -70,9 +80,12 @@ const backgroundField: EditorFieldSchema<BaseSettings> = {
   type: "backgroundPicker",
 };
 
-const logoFields: EditorFieldSchema<BaseSettings>[] = [
+/** The logo and the credit, which sit on top of every banner. */
+const overlayFields: EditorFieldSchema<BaseSettings>[] = [
   { key: "logoImage", label: "Logo", type: "logoPicker" },
   { key: "logoSize", label: "Logo size", type: "select", options: CONTENT_SIZE_OPTIONS },
+  { key: "credit", label: "Credit", type: "select", options: CREDIT_STYLE_OPTIONS },
+  { key: "creditSize", label: "Credit size", type: "select", options: CONTENT_SIZE_OPTIONS },
 ];
 
 const alignmentField: EditorFieldSchema<BaseSettings> = {
@@ -157,7 +170,7 @@ export const githubBannerDefinition: TemplateDefinition<TemplateSettings["github
     { key: "showMonthLabels", label: "Months", type: "toggle" },
     { key: "showDayLabels", label: "Weekdays", type: "toggle" },
     { key: "showTotal", label: "Contributions", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -200,7 +213,7 @@ export const reposBannerDefinition: TemplateDefinition<TemplateSettings["repos-b
     { key: "showLanguage", label: "Language", type: "toggle" },
     { key: "showStars", label: "Stars", type: "toggle" },
     { key: "showForks", label: "Forks", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -242,7 +255,7 @@ export const statsBannerDefinition: TemplateDefinition<TemplateSettings["stats-b
     { key: "showLanguages", label: "Languages", type: "toggle" },
     { key: "showOrganizations", label: "Organizations", type: "toggle" },
     { key: "showIconColors", label: "Icon colors", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -287,7 +300,7 @@ export const techStackBannerDefinition: TemplateDefinition<TemplateSettings["tec
       },
       { key: "showLabels", label: "Names", type: "toggle" },
       { key: "showIconColors", label: "Icon colors", type: "toggle" },
-      ...logoFields,
+      ...overlayFields,
     ],
     initialState: {
       ...bannerInitialState,
@@ -327,7 +340,7 @@ export const introBannerDefinition: TemplateDefinition<TemplateSettings["intro-b
     { key: "showLinks", label: "Links", type: "toggle" },
     { key: "showIcons", label: "Icons", type: "toggle" },
     { key: "showIconColors", label: "Icon colors", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -379,7 +392,7 @@ export const terminalBannerDefinition: TemplateDefinition<TemplateSettings["term
     { key: "showLanguages", label: "Languages", type: "toggle" },
     { key: "showColorBlocks", label: "Color blocks", type: "toggle" },
     { key: "showWindow", label: "Window", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -429,7 +442,7 @@ export const aiUsageBannerDefinition: TemplateDefinition<TemplateSettings["ai-us
     { key: "showModels", label: "Models", type: "toggle" },
     { key: "showAgents", label: "Agents", type: "toggle" },
     { key: "showIconColors", label: "Icon colors", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -481,7 +494,7 @@ export const certificationsBannerDefinition: TemplateDefinition<
     { key: "showIssuer", label: "Issuer", type: "toggle" },
     { key: "showYear", label: "Year", type: "toggle" },
     { key: "showIconColors", label: "Icon colors", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -519,7 +532,7 @@ export const latestPostsBannerDefinition: TemplateDefinition<
       step: 1,
     },
     { key: "showDates", label: "Dates", type: "toggle" },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,
@@ -548,7 +561,7 @@ export const contributionBannerDefinition: TemplateDefinition<
     alignmentField,
     { ...contentSizeField, options: [...CONTENT_SIZE_OPTIONS, { label: "Fill", value: "fill" }] },
     cellShapeField,
-    ...logoFields,
+    ...overlayFields,
     {
       key: "gridText",
       label: "Text",
@@ -603,7 +616,7 @@ export const quoteBannerDefinition: TemplateDefinition<TemplateSettings["quote-b
     { key: "author", label: "Author", type: "text", maxLength: AUTHOR_MAX_LENGTH },
     { key: "authorPrefix", label: "Author prefix", type: "select", options: AUTHOR_PREFIX_OPTIONS },
     { key: "authorSize", label: "Author size", type: "select", options: CONTENT_SIZE_OPTIONS },
-    ...logoFields,
+    ...overlayFields,
   ],
   initialState: {
     ...bannerInitialState,

@@ -18,11 +18,20 @@ import { cssFitWidth, previewScale } from "@/src/studio/preview/previewScale";
 import { useElementSize } from "@/src/studio/preview/useElementSize";
 import { BackgroundDragSurface } from "@/src/studio/preview/BackgroundDragSurface";
 import { PlacementDragSurface } from "@/src/studio/preview/PlacementDragSurface";
-import { BANNER_CONTENT_ATTRIBUTE, BANNER_LOGO_ATTRIBUTE } from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
 import { PreviewPhotosContext } from "@/src/banner/Frame";
 import { PreviewViewToggle } from "@/src/studio/preview/PreviewViewToggle";
 import { ExportProgress } from "@/src/studio/preview/ExportProgress";
+
+/** A banner item that can be dragged in the preview. */
+export interface PlacementAdjust {
+  /** The attribute that marks the item in the banner, e.g. `BANNER_CONTENT_ATTRIBUTE`. */
+  target: string;
+  /** What the item is called, e.g. "content". */
+  name: string;
+  position: Position;
+  onMove: (position: Position) => void;
+}
 
 /** The end of the preview's label for each device view. */
 const VIEW_LABELS: Record<BannerView, string> = {
@@ -47,8 +56,7 @@ export function PreviewArtboard({
   onChangeUsername,
   onEditSetting,
   backgroundAdjust,
-  contentAdjust,
-  logoAdjust,
+  placements,
 }: {
   templateId: TemplateId;
   size: BannerSize;
@@ -76,16 +84,11 @@ export function PreviewArtboard({
     zoom: number;
     onMove: (position: Position) => void;
   };
-  /** Set when the banner's content can be moved (not when it fills the banner). */
-  contentAdjust?: {
-    position: Position;
-    onMove: (position: Position) => void;
-  };
-  /** Set when the banner has a logo that shows. */
-  logoAdjust?: {
-    position: Position;
-    onMove: (position: Position) => void;
-  };
+  /**
+   * The items that can be dragged, such as the content and the logo. In the banner's order, so
+   * later ones are on top where they overlap.
+   */
+  placements: PlacementAdjust[];
 }) {
   const dims = BANNER_SIZES[size];
   const { meta, initialState } = templateRegistry[templateId];
@@ -143,27 +146,15 @@ export function PreviewArtboard({
                   {backgroundAdjust && (
                     <BackgroundDragSurface {...backgroundAdjust} frame={dims} scale={scale} />
                   )}
-                  {contentAdjust && (
+                  {placements.map((placement) => (
                     <PlacementDragSurface
-                      {...contentAdjust}
-                      target={BANNER_CONTENT_ATTRIBUTE}
-                      name="content"
+                      key={placement.target}
+                      {...placement}
                       frame={dims}
                       shown={shown}
                       scale={scale}
                     />
-                  )}
-                  {/* After the content's surface, so the logo is on top where they overlap. */}
-                  {logoAdjust && (
-                    <PlacementDragSurface
-                      {...logoAdjust}
-                      target={BANNER_LOGO_ATTRIBUTE}
-                      name="logo"
-                      frame={dims}
-                      shown={shown}
-                      scale={scale}
-                    />
-                  )}
+                  ))}
                 </>
               )}
               <ExportProgress running={exporting} />

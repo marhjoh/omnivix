@@ -1,9 +1,16 @@
 import { contentBox } from "@/src/banner/fit";
 import { clampPercent, roundPercent, type Position } from "@/src/banner/position";
-import type { BannerBox, Box } from "@/src/lib/sizes";
+import {
+  BANNER_SIZES,
+  safeAreaOf,
+  type BannerBox,
+  type BannerSize,
+  type Box,
+  type Rect,
+} from "@/src/lib/sizes";
 
 /**
- * Places the content or the logo in the banner's padded box (`contentBox`). A position is a
+ * Places the content, the logo or the credit in the banner's padded box (`contentBox`). A position is a
  * percentage of the room left around the item, from 0 (left or top) to 100 (right or bottom).
  * Because it's relative, it carries over when the format or the item's size changes.
  */
@@ -11,6 +18,7 @@ import type { BannerBox, Box } from "@/src/lib/sizes";
 /** Mark the items the banner places, so the studio preview can find them to drag. */
 export const BANNER_CONTENT_ATTRIBUTE = "data-banner-content";
 export const BANNER_LOGO_ATTRIBUTE = "data-banner-logo";
+export const BANNER_CREDIT_ATTRIBUTE = "data-banner-credit";
 /** Marks the background image, whose natural size the preview needs to pan it. */
 export const BANNER_BACKGROUND_ATTRIBUTE = "data-banner-background";
 
@@ -19,6 +27,28 @@ export const BANNER_ROOT_CLASS = "banner-export-root";
 
 /** While dragging, items snap to the edges and the middle of the box. */
 const SNAP_POINTS = [0, 50, 100];
+
+/** An item placed in the padded box, like the logo or the credit. */
+export interface PlacedItem {
+  position: Position;
+  /** In banner pixels. */
+  height: number;
+  /** The padded box it moves in (`contentBox`), in banner pixels. */
+  box: Rect;
+}
+
+/**
+ * An item `heightShare` of the safe area's height tall. Sizing by the safe area makes it look the
+ * same in every format.
+ */
+export function placedItem(size: BannerSize, position: Position, heightShare: number): PlacedItem {
+  const format = BANNER_SIZES[size];
+  return {
+    position,
+    height: Math.round(safeAreaOf(format).height * heightShare),
+    box: contentBox(format),
+  };
+}
 
 /** CSS that places an item at `position` without measuring it. */
 export function placementStyle({ x, y }: Position) {

@@ -57,7 +57,12 @@ export function removeUnsavableImages(state: Record<string, unknown>): void {
 }
 
 /** Positions set by dragging in the preview. They aren't in the schema, so they're checked here. */
-export const POSITION_KEYS = ["contentPosition", "backgroundPosition", "logoPosition"] as const;
+export const POSITION_KEYS = [
+  "contentPosition",
+  "backgroundPosition",
+  "logoPosition",
+  "creditPosition",
+] as const;
 
 function isNumberFrom(value: unknown, min = -Infinity, max = Infinity): boolean {
   return typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;

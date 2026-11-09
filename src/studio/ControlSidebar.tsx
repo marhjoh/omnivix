@@ -37,6 +37,7 @@ import {
   contentPositionFromState,
   isDefaultContentPosition,
 } from "@/src/banner/contentPosition";
+import { isDefaultCreditPosition } from "@/src/banner/credit";
 import { fieldValue } from "@/src/studio/fieldValue";
 import { fieldLabel, groupFields, STYLE_GROUP } from "@/src/studio/settingGroups";
 import { UsernameField } from "@/src/studio/UsernameField";
@@ -118,6 +119,21 @@ const BY_KEY: Partial<Record<string, FieldRenderer<"select">>> = {
       />
     );
   },
+  credit: (field, ctx) => (
+    <Select
+      {...textProps(field, ctx)}
+      options={field.options ?? []}
+      labelAction={
+        // Only once the credit has been moved in the preview.
+        ctx.state.credit === "off" || isDefaultCreditPosition(ctx.state) ? null : (
+          <ResetButton
+            label="Reset credit position"
+            onClick={() => ctx.onChange("creditPosition", undefined)}
+          />
+        )
+      }
+    />
+  ),
 };
 
 const BY_TYPE: { [T in EditorFieldType]: FieldRenderer<T> } = {
@@ -269,6 +285,7 @@ function renderByType<T extends EditorFieldType>(
 function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   // Shown inside the logo's picker once there's a logo.
   if (field.key === "logoSize") return true;
+  if (field.key === "creditSize") return state.credit === "off";
   // Selected mode shows the repository picker instead of the amount slider.
   const selectedMode = "mode" in state && state.mode === "selected";
   if (field.key === "maxRepos") return selectedMode;

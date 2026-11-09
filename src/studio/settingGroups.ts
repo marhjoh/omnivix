@@ -7,6 +7,8 @@ const LABELS: Record<string, string> = {
   maxRepos: "Number of repos",
   logoImage: "Image",
   logoSize: "Size",
+  credit: "Style",
+  creditSize: "Size",
 };
 
 export function fieldLabel(field: EditorFieldSchema): string {
@@ -67,6 +69,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   },
   // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
+  { title: "Credit", keys: ["credit", "creditSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Only the tech stack and intro banners have these.
   { title: "Icons", keys: ["icons", "iconsPerRow", "showLabels", "showIcons"] },

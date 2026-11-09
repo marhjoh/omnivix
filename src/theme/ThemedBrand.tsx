@@ -1,10 +1,9 @@
 import Image, { type ImageProps } from "next/image";
-import { BRAND_LOGO_SIZE } from "@/src/lib/site";
+import { brandSrc, BRAND_LOGO_SIZE } from "@/src/lib/site";
 
 /*
  * Both variants render, and CSS on <html data-theme> shows one (see globals.css). The logo then
- * switches in the same frame as the colors and is right before React hydrates. The "light" artwork
- * is the one for dark backgrounds.
+ * switches in the same frame as the colors and is right before React hydrates.
  */
 
 /** The width and height props must match the wordmark's ratio at the h-9 height. */
@@ -22,7 +21,7 @@ function ThemedImage({
       {(["dark", "light"] as const).map((theme) => (
         <Image
           key={theme}
-          src={`/brand/${name}-${theme === "dark" ? "light" : "dark"}.svg`}
+          src={brandSrc(name, theme)}
           alt={alt}
           className={`${className} show-in-${theme}`}
           unoptimized

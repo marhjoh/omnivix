@@ -4,11 +4,17 @@ import { useCallback, useMemo, useState } from "react";
 import { templateRegistry } from "@/src/templates/registry";
 import type { EditorFieldSchema, StudioSettings, TemplateId } from "@/src/templates/types";
 import { ControlSidebar } from "@/src/studio/ControlSidebar";
-import { PreviewArtboard } from "@/src/studio/preview/PreviewArtboard";
+import { PreviewArtboard, type PlacementAdjust } from "@/src/studio/preview/PreviewArtboard";
 import { computePreviewContentState } from "@/src/studio/preview/computePreviewContentState";
 import { Toast, useToast } from "@/src/ui/Toast";
 import { useBannerImage } from "@/src/studio/preview/useBannerImage";
 import { logoPositionFromState } from "@/src/banner/logo";
+import { creditFromState } from "@/src/banner/credit";
+import {
+  BANNER_CONTENT_ATTRIBUTE,
+  BANNER_CREDIT_ATTRIBUTE,
+  BANNER_LOGO_ATTRIBUTE,
+} from "@/src/banner/placement";
 import type { Position } from "@/src/banner/position";
 import { useHoldDuringLoad } from "@/src/ui/useHoldDuringLoad";
 import { useKeepWhile } from "@/src/ui/useKeepWhile";
@@ -242,6 +248,40 @@ export function StudioShell({
     dismissToast,
   });
 
+  const credit = creditFromState(state);
+  const placements: PlacementAdjust[] = [
+    ...(fill
+      ? []
+      : [
+          {
+            target: BANNER_CONTENT_ATTRIBUTE,
+            name: "content",
+            position: contentPositionFromState(state),
+            onMove: moveContent,
+          },
+        ]),
+    ...(logoImage.usableSrc
+      ? [
+          {
+            target: BANNER_LOGO_ATTRIBUTE,
+            name: "logo",
+            position: logoPositionFromState(state),
+            onMove: (position: Position) => updateState("logoPosition", position),
+          },
+        ]
+      : []),
+    ...(credit
+      ? [
+          {
+            target: BANNER_CREDIT_ATTRIBUTE,
+            name: "credit",
+            position: credit.position,
+            onMove: (position: Position) => updateState("creditPosition", position),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className={styles.shell}>
       <UsernameModal
@@ -354,17 +394,7 @@ export function StudioShell({
                   }
                 : undefined
             }
-            contentAdjust={
-              fill ? undefined : { position: contentPositionFromState(state), onMove: moveContent }
-            }
-            logoAdjust={
-              logoImage.usableSrc
-                ? {
-                    position: logoPositionFromState(state),
-                    onMove: (position: Position) => updateState("logoPosition", position),
-                  }
-                : undefined
-            }
+            placements={placements}
           />
         </main>
       </div>
