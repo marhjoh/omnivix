@@ -15,6 +15,7 @@ import { Spinner } from "@/src/ui/Spinner";
 import { useDisclosure } from "@/src/ui/useDisclosure";
 import { TileGroup } from "@/src/studio/TileGroup";
 import { EmbedLinks } from "@/src/studio/EmbedLinks";
+import { PanelAction, PanelActionGroup } from "@/src/studio/PanelAction";
 import type { ExportKind } from "@/src/studio/useBannerExport";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import type { Theme } from "@/src/theme/theme";
@@ -32,7 +33,8 @@ function ChoiceTile({ label, hint }: { label: string; hint: string }) {
 
 /**
  * The Download button with its options panel, for the right side of the studio header. The panel
- * holds resolution, format and the Copy group, so the header only needs one button.
+ * holds resolution, format and the Copy, Embed and Share groups, so the header only needs one
+ * button.
  */
 export function ExportControls({
   onDownload,
@@ -67,7 +69,6 @@ export function ExportControls({
 }) {
   const { open, setOpen, close, rootRef, toggleRef, onBlur } = useDisclosure();
   const panelId = useId();
-  const copyTitleId = useId();
   const hasBackgroundImage = backgroundFromState(banner.state) !== undefined;
   const shownFormat = shownDownloadFormat(bannerFormat, format, hasBackgroundImage);
   const { name: formatLabel, file: shownFile } = DOWNLOAD_FORMAT_DETAILS[shownFormat];
@@ -168,22 +169,19 @@ export function ExportControls({
               {(option) => <ChoiceTile {...option} />}
             </TileGroup>
           </div>
-          <div role="group" aria-labelledby={copyTitleId} className={controls.panelActions}>
-            <p id={copyTitleId} className="field-label px-2 pt-1 pb-1">
-              Copy
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                close();
-                onCopy();
-              }}
-              disabled={exportBlocked}
-              className={controls.panelAction}
-            >
-              <Copy className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-              Image
-            </button>
+          <div className={controls.panelActions}>
+            <PanelActionGroup title="Copy">
+              <PanelAction
+                Icon={Copy}
+                disabled={exportBlocked}
+                onClick={() => {
+                  close();
+                  onCopy();
+                }}
+              >
+                Image
+              </PanelAction>
+            </PanelActionGroup>
             <EmbedLinks
               {...banner}
               format={shownFormat}
