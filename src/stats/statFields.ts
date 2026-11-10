@@ -31,6 +31,7 @@ export const SERIES = {
   limits: "limits",
   failures: "failures",
   failureMessage: "failures:message",
+  llmsReader: "llms:reader",
 } as const;
 
 const MAX_MESSAGE_LENGTH = 120;

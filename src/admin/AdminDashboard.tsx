@@ -163,6 +163,13 @@ function Stats({
         <Breakdown title="File formats" totals={totals} series={SERIES.format} />
       </Section>
 
+      <Section
+        title="AI agents"
+        note="Requests for llms.txt, by who sent them. Page views leave bots out."
+      >
+        <Breakdown title="llms.txt readers" totals={totals} series={SERIES.llmsReader} />
+      </Section>
+
       <Section title="Problems">
         <Breakdown title="Limit hits" totals={totals} series={SERIES.limits} />
         <Card title="Failure messages">
