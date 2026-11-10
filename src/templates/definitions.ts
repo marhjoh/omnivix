@@ -442,7 +442,7 @@ export const aiUsageBannerDefinition: TemplateDefinition<TemplateSettings["ai-us
     cellShapeField,
     { key: "usage", label: "AI usage", type: "usagePaste", required: true },
     { key: "showTokenCount", label: "Tokens", type: "toggle" },
-    // Hidden when the paste has no cost (ControlSidebar).
+    // Disabled when the paste has no cost (StudioShell).
     { key: "showCost", label: "Cost", type: "toggle" },
     { key: "showActiveDays", label: "Active days", type: "toggle" },
     { key: "showCurrentStreak", label: "Current streak", type: "toggle" },

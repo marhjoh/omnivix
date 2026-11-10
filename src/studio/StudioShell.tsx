@@ -42,6 +42,7 @@ import { drawnIcons } from "@/src/icons/bannerIcons";
 import { useStudioSidebar } from "@/src/studio/useStudioSidebar";
 import { fieldValue } from "@/src/studio/fieldValue";
 import { namedCertifications } from "@/src/banner/certifications";
+import { decodeAiUsage } from "@/src/banner/aiUsage";
 
 /** True when a required setting has nothing to show, like a certification list without names. */
 function isMissing(field: EditorFieldSchema, state: StudioSettings): boolean {
@@ -152,6 +153,12 @@ export function StudioShell({
   if ("quoteMarks" in state && state.quoteMarks === "none") disabledFields.add("markColor");
   // No icons to color.
   if ("showIcons" in state && !state.showIcons) disabledFields.add("showIconColors");
+  // The paste has no cost (`ccusage --no-cost`) or no agents (without `--by-agent`).
+  if ("usage" in state) {
+    const usage = decodeAiUsage(state.usage);
+    if (usage?.cost == null) disabledFields.add("showCost");
+    if (!usage?.agents.length) disabledFields.add("showAgents");
+  }
 
   // The first missing setting the banner needs. The username comes first because nothing loads
   // without it. Then come required fields such as the quote.
