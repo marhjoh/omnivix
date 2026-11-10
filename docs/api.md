@@ -43,7 +43,7 @@ Values that aren't valid are ignored. Uploaded backgrounds, logos and photos can
 ![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)
 ```
 
-In the studio, the export panel's Copy group copies it as a link, Markdown or HTML.
+In the studio, the export panel's Embed group copies it as is, or as Markdown or HTML that link the image to the studio, so a click opens the banner ready to change. The Share group copies the studio link.
 
 - **Settings:** values that aren't valid use the defaults. Uploaded images can't go in a URL. Images stop at 2×, which is sharp on any screen and keeps photo banners small.
 - **Caching:** an image is cached for a day (`s-maxage=86400`). After that, the old image is served while a new one renders (`stale-while-revalidate=604800`), so a README never waits on a render. Errors are cached for 5 minutes.

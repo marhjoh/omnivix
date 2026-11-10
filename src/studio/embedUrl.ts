@@ -9,6 +9,13 @@ import {
 } from "@/src/export/format";
 import { DOWNLOAD_FORMAT_DETAILS, type DownloadFormat } from "@/src/studio/downloadFormat";
 import { DEFAULT_THEME, type Theme } from "@/src/theme/theme";
+import { studioPath } from "@/src/lib/site";
+
+/** Keeps `,` `/` `:` unescaped, so positions and image links stay readable. */
+function withQuery(url: string, params: URLSearchParams): string {
+  const search = params.toString().replace(/%2C|%2F|%3A/g, decodeURIComponent);
+  return search ? `${url}?${search}` : url;
+}
 
 /**
  * Builds the query of a studio link or image URL for banner `state`. `parseLinkSettings` reads it.
@@ -55,8 +62,13 @@ export function bannerImageUrl(
   if (pixelRatio < IMAGE_URL_PIXEL_RATIO) params.set("pixelRatio", String(pixelRatio));
   if (uiTheme !== DEFAULT_THEME) params.set("uiTheme", uiTheme);
   if (transparent) params.set("transparent", "true");
-  const path = `/banner/${templateId}.${EXPORT_FORMAT_DETAILS[file].extension}`;
-  // Keep `,` `/` `:` unescaped so positions and image links stay readable.
-  const search = params.toString().replace(/%2C|%2F|%3A/g, decodeURIComponent);
-  return `${origin}${path}${search ? `?${search}` : ""}`;
+  return withQuery(
+    `${origin}/banner/${templateId}.${EXPORT_FORMAT_DETAILS[file].extension}`,
+    params,
+  );
+}
+
+/** The studio link that opens the banner with these settings, ready to change. */
+export function studioUrl(origin: string, templateId: TemplateId, query: URLSearchParams): string {
+  return withQuery(`${origin}${studioPath(templateId)}`, query);
 }

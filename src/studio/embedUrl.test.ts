@@ -4,7 +4,7 @@ import type { BannerSettings, EditorFieldSchema } from "@/src/templates/types";
 import { GRID_COLOR_IDS } from "@/src/banner/gridColors";
 import { LATEST_YEAR } from "@/src/lib/contributionYear";
 import { encodeAiUsage, USAGE_DAYS } from "@/src/banner/aiUsage";
-import { bannerImageUrl, linkQuery } from "./embedUrl";
+import { bannerImageUrl, linkQuery, studioUrl } from "./embedUrl";
 import { parseLinkSettings } from "./parseLinkSettings";
 
 /** A valid value for the setting that isn't its default. */
@@ -57,6 +57,7 @@ const DRAGGED = {
   backgroundOpacity: 60,
   contentPosition: { x: 100, y: 0 },
   logoPosition: { x: 0, y: 0 },
+  creditPosition: { x: 0, y: 50 },
 };
 
 const IMAGE_OPTIONS = { format: "png", pixelRatio: 3, uiTheme: "dark" } as const;
@@ -142,6 +143,21 @@ describe("bannerImageUrl", () => {
       }),
     ).toBe(
       "https://omnivix.example/banner/github-banner.png?username=octocat&contentPosition=100,0&transparent=true",
+    );
+  });
+});
+
+describe("studioUrl", () => {
+  it("opens the studio with the banner's settings", () => {
+    const query = new URLSearchParams({ username: "octocat", credit: "chip" });
+    expect(studioUrl("https://omnivix.example", "github-banner", query)).toBe(
+      "https://omnivix.example/studio/github-banner?username=octocat&credit=chip",
+    );
+  });
+
+  it("is the template's studio without settings", () => {
+    expect(studioUrl("https://omnivix.example", "quote-banner", new URLSearchParams())).toBe(
+      "https://omnivix.example/studio/quote-banner",
     );
   });
 });

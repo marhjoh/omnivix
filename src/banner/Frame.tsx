@@ -4,8 +4,12 @@ import { backgroundImageStyle, type BannerBackground } from "@/src/banner/backgr
 import { previewPhotoSrcSet } from "@/src/backgrounds/presets";
 import { PREVIEW_PHOTO_SIZES } from "@/src/studio/layout";
 import type { BannerLogo } from "@/src/banner/logo";
+import type { Rect } from "@/src/lib/sizes";
+import type { BannerCredit } from "@/src/banner/credit";
+import { CreditMark } from "@/src/banner/CreditMark";
 import {
   BANNER_BACKGROUND_ATTRIBUTE,
+  BANNER_CREDIT_ATTRIBUTE,
   BANNER_LOGO_ATTRIBUTE,
   BANNER_ROOT_CLASS,
   placementStyle,
@@ -26,20 +30,27 @@ function fadeInLateBackground(event: SyntheticEvent<HTMLImageElement>) {
   if (!("loadedEarly" in img.dataset)) img.dataset.fadeIn = "";
 }
 
+/** The padded box an item moves in. Plain CSS places the item, so the server render is right. */
+function PaddedBox({ box, zIndex, children }: PropsWithChildren<{ box: Rect; zIndex: number }>) {
+  return <div style={{ position: "absolute", ...box, zIndex }}>{children}</div>;
+}
+
 /**
  * The banner's root, the same in the preview and the export. It stacks the background image, the
- * content and the logo. The preview draws its ring and rounded corners outside it
+ * content, the logo and the credit. The preview draws its ring and rounded corners outside it
  * (`.omnivix-artboard`) so they stay crisp when the banner is scaled.
  */
 export function Frame({
   children,
   background,
   logo,
+  credit,
   uiTheme,
   transparent,
 }: PropsWithChildren<{
   background?: BannerBackground;
   logo?: BannerLogo;
+  credit?: BannerCredit;
   uiTheme: Theme;
   /** Leaves out the theme's color. */
   transparent: boolean;
@@ -87,8 +98,7 @@ export function Frame({
         {children}
       </div>
       {logo ? (
-        // The padded box the logo moves in. Plain CSS places it, so the server render is right.
-        <div style={{ position: "absolute", ...logo.box, zIndex: 2 }}>
+        <PaddedBox box={logo.box} zIndex={2}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logo.src}
@@ -103,7 +113,17 @@ export function Frame({
               objectFit: "contain",
             }}
           />
-        </div>
+        </PaddedBox>
+      ) : null}
+      {credit ? (
+        <PaddedBox box={credit.box} zIndex={3}>
+          <div
+            {...{ [BANNER_CREDIT_ATTRIBUTE]: "" }}
+            style={{ ...placementStyle(credit.position), width: "max-content" }}
+          >
+            <CreditMark credit={credit} uiTheme={uiTheme} />
+          </div>
+        </PaddedBox>
       ) : null}
     </div>
   );

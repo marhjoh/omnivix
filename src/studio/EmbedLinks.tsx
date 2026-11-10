@@ -1,30 +1,38 @@
-import { Code, FileText, Link, type LucideIcon } from "lucide-react";
+import { Code, FileText, Link, Share2, type LucideIcon } from "lucide-react";
 import type { ExportPixelRatio } from "@/src/export/format";
 import type { DownloadFormat } from "@/src/studio/downloadFormat";
-import { bannerImageUrl, linkQuery } from "@/src/studio/embedUrl";
+import { bannerImageUrl, linkQuery, studioUrl } from "@/src/studio/embedUrl";
+import { PanelAction, PanelActionGroup } from "@/src/studio/PanelAction";
 import { templateRegistry } from "@/src/templates/registry";
 import type { BannerSettings, TemplateId } from "@/src/templates/types";
 import { usernameOf } from "@/src/lib/githubUsername";
 import type { Theme } from "@/src/theme/theme";
-import controls from "@/src/studio/controls.module.css";
+
+const escapeAttribute = (url: string) => url.replaceAll("&", "&amp;");
 
 const SNIPPETS: ReadonlyArray<{
   name: string;
   Icon: LucideIcon;
-  write: (url: string, alt: string) => string;
+  write: (image: string, studio: string, alt: string) => string;
 }> = [
-  { name: "Link", Icon: Link, write: (url) => url },
-  { name: "Markdown", Icon: FileText, write: (url, alt) => `![${alt}](${url})` },
+  { name: "Image URL", Icon: Link, write: (image) => image },
+  {
+    name: "Markdown",
+    Icon: FileText,
+    write: (image, studio, alt) => `[![${alt}](${image})](${studio})`,
+  },
   {
     name: "HTML",
     Icon: Code,
-    write: (url, alt) => `<img src="${url.replaceAll("&", "&amp;")}" alt="${alt}">`,
+    write: (image, studio, alt) =>
+      `<a href="${escapeAttribute(studio)}"><img src="${escapeAttribute(image)}" alt="${alt}"></a>`,
   },
 ];
 
 /**
- * The export panel's embed rows: the banner's image URL, copied as a link, Markdown or HTML. The
- * URL follows the panel's resolution and format.
+ * The export panel's Embed and Share groups. Embed copies the banner's image URL, which follows the
+ * panel's resolution and format. Its Markdown and HTML link the image to the studio, so a click
+ * opens the banner there. Share copies that studio link.
  */
 export function EmbedLinks({
   templateId,
@@ -48,34 +56,46 @@ export function EmbedLinks({
   const query = linkQuery(templateId, state);
   const { title, needsUsername } = templateRegistry[templateId].meta;
   const alt = needsUsername ? `${title} by @${usernameOf(state)}` : title;
+  const linkDisabled = disabled || query === null;
+
+  // Built on click, because the origin is only known in the browser.
+  const imageUrl = (query: URLSearchParams) =>
+    bannerImageUrl(window.location.origin, templateId, query, { format, pixelRatio, uiTheme });
+  const studioLink = (query: URLSearchParams) =>
+    studioUrl(window.location.origin, templateId, query);
 
   return (
     <>
-      {query === null && (
-        <p className="px-2 pb-1 text-xs text-muted">
-          Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
-        </p>
-      )}
-      {SNIPPETS.map(({ name, Icon, write }) => (
-        <button
-          key={name}
-          type="button"
-          disabled={disabled || query === null}
+      <PanelActionGroup title="Embed">
+        {query === null && (
+          <p className="px-2 pb-1 text-xs text-muted">
+            Uploaded images can&apos;t go in a link. Use a built-in background or an image link.
+          </p>
+        )}
+        {SNIPPETS.map(({ name, Icon, write }) => (
+          <PanelAction
+            key={name}
+            Icon={Icon}
+            disabled={linkDisabled}
+            onClick={() => {
+              if (query) onCopy(write(imageUrl(query), studioLink(query), alt), name);
+            }}
+          >
+            {name}
+          </PanelAction>
+        ))}
+      </PanelActionGroup>
+      <PanelActionGroup title="Share">
+        <PanelAction
+          Icon={Share2}
+          disabled={linkDisabled}
           onClick={() => {
-            if (!query) return;
-            const url = bannerImageUrl(window.location.origin, templateId, query, {
-              format,
-              pixelRatio,
-              uiTheme,
-            });
-            onCopy(write(url, alt), name);
+            if (query) onCopy(studioLink(query), "Studio link");
           }}
-          className={controls.panelAction}
         >
-          <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-          {name}
-        </button>
-      ))}
+          Studio link
+        </PanelAction>
+      </PanelActionGroup>
     </>
   );
 }

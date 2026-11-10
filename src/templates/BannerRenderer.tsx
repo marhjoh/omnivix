@@ -6,6 +6,7 @@ import { useTheme } from "@/src/theme/ThemeProvider";
 import { Frame } from "@/src/banner/Frame";
 import { backgroundFromState } from "@/src/banner/background";
 import { logoFromState } from "@/src/banner/logo";
+import { creditFromState } from "@/src/banner/credit";
 import { ContributionBannerRenderer } from "@/src/templates/contribution-banner/Renderer";
 import { GithubBannerRenderer } from "@/src/templates/github-banner/Renderer";
 import { ReposBannerRenderer } from "@/src/templates/repos-banner/Renderer";
@@ -58,6 +59,7 @@ export function BannerRenderer<K extends TemplateId>({
       transparent={transparent}
       background={backgroundFromState(state)}
       logo={logoFromState(state)}
+      credit={creditFromState(state)}
     >
       <Renderer state={state} data={data} uiTheme={shownTheme} />
     </Frame>

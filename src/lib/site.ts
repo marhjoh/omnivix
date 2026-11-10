@@ -9,6 +9,11 @@ export const ERROR_PAGE_TITLE = `Something broke · ${SITE_NAME}`;
 /** The wordmark's size. Keep it in sync with the viewBox of public/brand/logo*.svg. */
 export const BRAND_LOGO_SIZE = { width: 968, height: 274 } as const;
 
+/** The brand file to show on a `background` of this theme. The "light" artwork is for dark ones. */
+export function brandSrc(name: "logo" | "icon", background: "light" | "dark"): string {
+  return `/brand/${name}-${background === "dark" ? "light" : "dark"}.svg`;
+}
+
 export const SITE_TAGLINE = "Create profile banners you actually want to use";
 
 /** The best-known platforms, for copy that can't list all of them. */
@@ -47,6 +52,8 @@ export function studioPath(templateId: TemplateId): string {
 
 /** Outbound links for attribution and support. */
 export const SITE_LINKS = {
+  /** The production site, for text that must name it in every environment. */
+  site: "https://omnivix.vercel.app",
   maintainerHandle: "marhjoh",
   maintainerProfile: "https://github.com/marhjoh",
   repo: "https://github.com/marhjoh/omnivix",

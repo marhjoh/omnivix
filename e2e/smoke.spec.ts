@@ -205,7 +205,7 @@ test("picking Transparent shows the preview over a checkerboard", async ({ page 
   await expect(download(page)).toHaveAccessibleName("Download transparent PNG");
 });
 
-test("the export panel copies the banner's image URL as Markdown", async ({
+test("the export panel copies the banner's image URL as Markdown that links to the studio", async ({
   page,
   context,
   request,
@@ -218,14 +218,31 @@ test("the export panel copies the banner's image URL as Markdown", async ({
   await expect(page.getByText("Markdown copied.")).toBeVisible();
 
   const markdown = await page.evaluate(() => navigator.clipboard.readText());
-  const [, url] = /^!\[Quote Banner\]\((\S+)\)$/.exec(markdown) ?? [];
+  const [, url, studio] = /^\[!\[Quote Banner\]\((\S+)\)\]\((\S+)\)$/.exec(markdown) ?? [];
   expect(url).toMatch(/\/banner\/quote-banner\.png/);
+  expect(new URL(studio).pathname).toBe("/studio/quote-banner");
   const image = await request.get(url);
   expect(image.status()).toBe(200);
   expect(image.headers()["cache-control"]).toBe(
     "public, s-maxage=86400, stale-while-revalidate=604800",
   );
   expect((await image.body()).subarray(0, 4)).toEqual(PNG_SIGNATURE);
+});
+
+test("the export panel copies a studio link that opens the banner's settings", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/studio/quote-banner?credit=chip&quote=Ship%20it");
+  await expect(preview(page)).toHaveAttribute("data-state", "ready");
+  await page.getByRole("button", { name: /^Export options/ }).click();
+  await page.getByRole("button", { name: "Studio link", exact: true }).click();
+  await expect(page.getByText("Studio link copied.")).toBeVisible();
+
+  const link = new URL(await page.evaluate(() => navigator.clipboard.readText()));
+  expect(link.pathname).toBe("/studio/quote-banner");
+  expect(Object.fromEntries(link.searchParams)).toEqual({ credit: "chip", quote: "Ship it" });
 });
 
 test.describe("GitHub banners", () => {
