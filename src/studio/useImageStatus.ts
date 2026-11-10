@@ -34,9 +34,9 @@ export function useImageStatus(
   useEffect(() => {
     if (!src) return;
     const img = new Image();
-    let cancelled = false;
+    let canceled = false;
     const settle = (status: "loaded" | "failed") => {
-      if (cancelled) return;
+      if (canceled) return;
       if (status === "loaded" && !isDataUrl(src)) loadedSrcs.add(src);
       setResult({ src, status });
     };
@@ -53,7 +53,7 @@ export function useImageStatus(
     if (srcSet) img.srcset = srcSet;
     img.src = src;
     return () => {
-      cancelled = true;
+      canceled = true;
       img.onload = null;
       img.onerror = null;
     };

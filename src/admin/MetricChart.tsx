@@ -106,7 +106,7 @@ export function MetricChart({
 
       <div className="mt-2 ml-10 flex justify-between text-xs text-muted">
         <span>{dayLabel(points[0].day, unit)}</span>
-        <span>{unit === "day" ? "Today" : "This week"} so far</span>
+        <span>{unit === "day" ? "Today" : "Last 7 days"} so far</span>
       </div>
     </figure>
   );

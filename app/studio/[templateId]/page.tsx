@@ -28,7 +28,8 @@ export async function generateMetadata({
     return {};
   }
   const { meta } = templateRegistry[templateId];
-  const description = `${meta.description} Create a ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
+  const article = /^[aeiou]/i.test(meta.title) ? "an" : "a";
+  const description = `${meta.description} Create ${article} ${meta.title} for ${SITE_PLATFORMS} and more. Free, no sign-up.`;
   const url = studioPath(templateId);
   const title = `${meta.title} · ${SITE_NAME}`;
   // Next replaces the layout's twitter object instead of merging it, so set every field.

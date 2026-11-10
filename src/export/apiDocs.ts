@@ -121,6 +121,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
   const endpoint = new URL("/api/export", siteUrl).toString();
   const exampleQuery = new URLSearchParams(EXAMPLE_LINK.query);
   const imageUrl = new URL(`/banner/${EXAMPLE_LINK.templateId}.png?${exampleQuery}`, siteUrl);
+  const studioUrl = new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${exampleQuery}`, siteUrl);
   const sizes = BANNER_SIZE_KEYS.map((key) => {
     const format = BANNER_SIZES[key];
     return `${code(key)} (${format.label}, ${format.width} × ${format.height}: ${platformNames(format)})`;
@@ -172,6 +173,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     '- `400`: `{ "error": "…", "issues": [{ "path": "state.username", "message": "Required" }] }`, one issue per field that failed. An image that can\'t be used is a `400` with only an `error`.',
     '- `404`: the GitHub user doesn\'t exist, with `issues: [{ "path": "state.username", … }]`.',
     "- `413`: the settings are too long to export, such as a very long quote.",
+    "- `422`: a latest posts banner whose feed can't be read, with the reason in `error`.",
     `- \`429\`: a rate limit. GitHub's, on banners with GitHub data: ${limitBody("github")}. The daily export quota per IP address: ${limitBody("daily-exports")}. Or the burst limit, 30 per 10 minutes per IP address, with no \`resetAt\`.`,
     "- `500`: the export failed; trying again may work.",
     "",
@@ -179,7 +181,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     "To give a user a banner they can still adjust, link to the studio with the same settings as query parameters:",
     "",
-    `${new URL(`${studioPath(EXAMPLE_LINK.templateId)}?${exampleQuery}`, siteUrl)}`,
+    `${studioUrl}`,
     "",
     "`size` and the settings below work as in the export API; toggles are `true` or `false`. `backgroundImage` can be a built-in background or an `https://` link, and `logoImage` and `photoImage` an `https://` link; uploaded images can't be linked. Positions are `x,y`, e.g. `contentPosition=100,0`. The studio leaves out values that aren't valid and keeps the rest.",
     "",
@@ -189,7 +191,7 @@ export function exportApiDocs(siteUrl: URL): string[] {
     "",
     `${imageUrl}`,
     "",
-    `It also takes \`pixelRatio\` (\`1\` or \`2\`, default \`2\`), \`uiTheme\` and, for \`.png\` without a background image, \`transparent=true\`. Invalid values use the defaults. In Markdown: \`![My banner](${imageUrl})\`.`,
+    `It also takes \`pixelRatio\` (\`1\` or \`2\`, default \`2\`), \`uiTheme\` and, for \`.png\` without a background image, \`transparent=true\`. Invalid values use the defaults. In Markdown, linked to the studio so a click opens the banner ready to change: \`[![My banner](${imageUrl})](${studioUrl})\`.`,
     "",
     `Images are cached for a day. Each GitHub username, or each banner without one, gets 30 renders a day. Over that, the answer is ${limitBody("banner-images")}. Errors are JSON, as in the export API.`,
     "",

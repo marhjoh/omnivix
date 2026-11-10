@@ -17,7 +17,10 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-border/50 bg-surface/20 px-4 py-10 sm:py-12">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-between">
-        <Link href="/" className="shrink-0 transition-opacity hover:opacity-85">
+        <Link
+          href="/"
+          className="shrink-0 transition-opacity duration-(--hover-fade) hover:opacity-85"
+        >
           <ThemedLogo className="h-8 w-auto sm:h-9" />
         </Link>
         {/* Same rounded links and sliding hover/focus highlight as the site header. */}
@@ -25,7 +28,7 @@ export function LandingFooter() {
           as="nav"
           layoutId="footer-highlight"
           className="flex max-w-2xl flex-wrap items-center justify-center gap-x-1.5 gap-y-2 text-sm text-muted sm:justify-end"
-          aria-label="Credits, support, repository, and release notes"
+          aria-label="Footer"
         >
           <span className="flex items-center">
             <span className="pr-1">Maintained by</span>

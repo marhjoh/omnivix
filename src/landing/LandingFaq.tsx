@@ -35,7 +35,12 @@ export function LandingFaq() {
         </SectionHeading>
         <p className="mb-8 text-sm text-muted md:mb-10">
           Something missing?{" "}
-          <a href={SITE_LINKS.newIssue} className={textLinkClass}>
+          <a
+            href={SITE_LINKS.newIssue}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={textLinkClass}
+          >
             Open an issue on GitHub
           </a>
           .

@@ -15,7 +15,7 @@ import {
 /** `-y` stops npx from asking to install ccusage, which would land in the copied output. */
 export const CCUSAGE_COMMAND = "npx -y ccusage@latest daily --json --by-agent";
 
-const NOT_DAILY = "Paste the output of ccusage daily --json.";
+const NOT_DAILY = "Paste the output of ccusage daily --json --by-agent.";
 
 /** Agent ids from ccusage's README. Others get a capital letter. */
 const AGENT_NAMES: Record<string, string> = {

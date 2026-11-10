@@ -177,7 +177,7 @@ function Stats({
         </Card>
       </Section>
 
-      <Section title="Project" note={measuredNote(current)}>
+      <Section title="Project">
         <div className="grid grid-cols-2 content-start gap-3">
           <MeasurementTile
             label="GitHub stars"
@@ -345,9 +345,6 @@ function Funnel({ totals }: { totals: Record<string, number> }) {
       ) : (
         <Empty />
       )}
-      <p className="mt-3 text-xs text-muted">
-        Visitors are counted once a day. Someone who comes back another day counts again.
-      </p>
     </Card>
   );
 }
@@ -390,24 +387,9 @@ function FailureMessages({ rows }: { rows: [string, number][] }) {
   );
 }
 
-function measuredOn(day: string): string {
-  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 /** A measurement's values in the period, oldest first, skipping days without one. */
 function measurements(days: DailyStats[], field: string): number[] {
   return days.flatMap(({ counts }) => (field in counts ? [counts[field]] : []));
-}
-
-function measuredNote(days: DailyStats[]): string {
-  const last = days.findLast(({ counts }) =>
-    Object.keys(counts).some((field) => field.startsWith("quality:")),
-  );
-  return last ? `Measured once a day, last on ${measuredOn(last.day)}.` : "Measured once a day.";
 }
 
 /** Like the tiles above the chart, for a value that's measured instead of counted. */
@@ -430,7 +412,7 @@ function MeasurementTile({
     <div className="rounded-xl border border-border bg-surface p-4">
       <span className="block text-sm text-muted">{label}</span>
       {last === undefined ? (
-        <span className="mt-1 block text-xs text-muted">Not measured yet</span>
+        <span className="mt-1 block text-xs text-muted">Not measured in this period</span>
       ) : (
         <>
           <span className="mt-1 block text-3xl font-semibold tabular-nums">{format(last)}</span>
@@ -492,7 +474,7 @@ function Lighthouse({ current }: { current: DailyStats[] }) {
           </tbody>
         </table>
       ) : (
-        <p className="text-sm text-muted">Not measured yet. A job runs Lighthouse once a day.</p>
+        <p className="text-sm text-muted">Not measured in this period.</p>
       )}
     </Card>
   );

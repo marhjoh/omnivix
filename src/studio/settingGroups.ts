@@ -2,8 +2,6 @@ import type { EditorFieldSchema } from "@/src/templates/types";
 
 /** Sidebar names for settings whose schema label is unclear there. */
 const LABELS: Record<string, string> = {
-  size: "Platform",
-  themeId: "Grid colors",
   maxRepos: "Number of repos",
   logoImage: "Image",
   logoSize: "Size",
