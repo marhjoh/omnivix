@@ -14,12 +14,12 @@ describe("groupFields", () => {
       ["Format", ["size"]],
       ["Style", ["themeId", "cellShape", "backgroundImage"]],
       ["Layout", ["alignment", "profilePosition", "contentSize"]],
-      ["Logo", ["logoImage", "logoSize"]],
-      ["Credit", ["credit", "creditContent", "creditSize"]],
       [
         "Content",
         ["year", "showAvatar", "showDisplayName", "showMonthLabels", "showDayLabels", "showTotal"],
       ],
+      ["Logo", ["logoImage", "logoSize"]],
+      ["Credit", ["credit", "creditContent", "creditSize"]],
     ]);
   });
 

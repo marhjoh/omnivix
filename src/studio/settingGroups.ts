@@ -66,9 +66,6 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
       "showWindow",
     ],
   },
-  // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
-  { title: "Logo", keys: ["logoImage", "logoSize"] },
-  { title: "Credit", keys: ["credit", "creditContent", "creditSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Only the tech stack and intro banners have these.
   { title: "Icons", keys: ["icons", "iconsPerRow", "showLabels", "showIcons"] },
@@ -97,6 +94,8 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   },
   // Everything else, in schema order. New settings land here until they get a group.
   { title: "Content", keys: null },
+  { title: "Logo", keys: ["logoImage", "logoSize"] },
+  { title: "Credit", keys: ["credit", "creditContent", "creditSize"] },
 ];
 
 export interface SettingGroup {
