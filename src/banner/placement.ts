@@ -10,9 +10,9 @@ import {
 } from "@/src/lib/sizes";
 
 /**
- * Places the content, the logo or the credit in the banner's padded box (`contentBox`). A position is a
- * percentage of the room left around the item, from 0 (left or top) to 100 (right or bottom).
- * Because it's relative, it carries over when the format or the item's size changes.
+ * Places the content, the logo or the credit in the banner's padded box (`contentBox`). A position
+ * is a percentage of the room left around the item, from 0 (left or top) to 100 (right or
+ * bottom). Because it's relative, it carries over when the format or the item's size changes.
  */
 
 /** Mark the items the banner places, so the studio preview can find them to drag. */

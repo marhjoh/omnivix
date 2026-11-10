@@ -149,9 +149,9 @@ describe("bannerImageUrl", () => {
 
 describe("studioUrl", () => {
   it("opens the studio with the banner's settings", () => {
-    const query = new URLSearchParams({ username: "octocat", credit: "badge" });
+    const query = new URLSearchParams({ username: "octocat", credit: "chip" });
     expect(studioUrl("https://omnivix.example", "github-banner", query)).toBe(
-      "https://omnivix.example/studio/github-banner?username=octocat&credit=badge",
+      "https://omnivix.example/studio/github-banner?username=octocat&credit=chip",
     );
   });
 

@@ -16,7 +16,9 @@ import { MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { currentYear } from "@/src/lib/contributionYear";
 import { DEFAULT_LOGO_SIZE } from "@/src/banner/logo";
 import {
+  CREDIT_CONTENT_OPTIONS,
   CREDIT_STYLE_OPTIONS,
+  DEFAULT_CREDIT_CONTENT,
   DEFAULT_CREDIT_SIZE,
   DEFAULT_CREDIT_STYLE,
 } from "@/src/banner/credit";
@@ -59,12 +61,13 @@ import {
 /** Defaults every banner shares. The background has none. */
 const bannerInitialState: Pick<
   BaseSettings,
-  "size" | "logoSize" | "alignment" | "credit" | "creditSize"
+  "size" | "logoSize" | "alignment" | "credit" | "creditContent" | "creditSize"
 > = {
   size: DEFAULT_BANNER_SIZE,
   logoSize: DEFAULT_LOGO_SIZE,
   alignment: DEFAULT_CONTENT_ALIGN,
   credit: DEFAULT_CREDIT_STYLE,
+  creditContent: DEFAULT_CREDIT_CONTENT,
   creditSize: DEFAULT_CREDIT_SIZE,
 };
 
@@ -85,6 +88,12 @@ const overlayFields: EditorFieldSchema<BaseSettings>[] = [
   { key: "logoImage", label: "Logo", type: "logoPicker" },
   { key: "logoSize", label: "Logo size", type: "select", options: CONTENT_SIZE_OPTIONS },
   { key: "credit", label: "Credit", type: "select", options: CREDIT_STYLE_OPTIONS },
+  {
+    key: "creditContent",
+    label: "Credit content",
+    type: "select",
+    options: CREDIT_CONTENT_OPTIONS,
+  },
   { key: "creditSize", label: "Credit size", type: "select", options: CONTENT_SIZE_OPTIONS },
 ];
 

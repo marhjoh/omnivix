@@ -234,7 +234,7 @@ test("the export panel copies a studio link that opens the banner's settings", a
   context,
 }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/studio/quote-banner?credit=badge&quote=Ship%20it");
+  await page.goto("/studio/quote-banner?credit=chip&quote=Ship%20it");
   await expect(preview(page)).toHaveAttribute("data-state", "ready");
   await page.getByRole("button", { name: /^Export options/ }).click();
   await page.getByRole("button", { name: "Studio link", exact: true }).click();
@@ -242,7 +242,7 @@ test("the export panel copies a studio link that opens the banner's settings", a
 
   const link = new URL(await page.evaluate(() => navigator.clipboard.readText()));
   expect(link.pathname).toBe("/studio/quote-banner");
-  expect(Object.fromEntries(link.searchParams)).toEqual({ credit: "badge", quote: "Ship it" });
+  expect(Object.fromEntries(link.searchParams)).toEqual({ credit: "chip", quote: "Ship it" });
 });
 
 test.describe("GitHub banners", () => {

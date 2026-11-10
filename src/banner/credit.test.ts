@@ -5,16 +5,18 @@ import { creditFromState, isDefaultCreditPosition } from "./credit";
 const base = templateRegistry["quote-banner"].initialState;
 
 describe("creditFromState", () => {
-  it("is off by default", () => {
-    expect(base.credit).toBe("off");
+  it("is none by default", () => {
+    expect(base.credit).toBe("none");
     expect(creditFromState(base)).toBeUndefined();
   });
 
-  it("starts at the bottom right, at S, inside the banner's padding", () => {
-    expect(creditFromState({ ...base, credit: "badge", size: "wide" })).toEqual({
-      style: "badge",
+  it("shows the logo at the bottom right, at S, inside the banner's padding", () => {
+    expect(creditFromState({ ...base, credit: "chip", size: "wide" })).toEqual({
+      style: "chip",
+      content: "logo",
+      haze: 0,
       position: { x: 100, y: 100 },
-      height: 24,
+      height: 20,
       box: { left: 32, top: 32, width: 1520, height: 332 },
     });
   });
@@ -23,12 +25,20 @@ describe("creditFromState", () => {
     expect(
       creditFromState({
         ...base,
-        credit: "logo",
+        credit: "stacked",
+        creditContent: "repo",
         size: "header",
         creditSize: "xl",
         creditPosition: { x: 0, y: 0 },
       }),
-    ).toMatchObject({ position: { x: 0, y: 0 }, height: 60 });
+    ).toMatchObject({ content: "repo", position: { x: 0, y: 0 }, height: 48 });
+  });
+
+  it("hazes only photos stronger than the default opacity", () => {
+    const photo = { ...base, credit: "stacked", backgroundImage: "/backgrounds/chicago.avif" };
+    expect(creditFromState({ ...photo, credit: "stacked" })?.haze).toBe(0);
+    expect(creditFromState({ ...photo, credit: "stacked", backgroundOpacity: 64 })?.haze).toBe(0.5);
+    expect(creditFromState({ ...photo, credit: "stacked", backgroundOpacity: 100 })?.haze).toBe(1);
   });
 });
 

@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   logoImage: "Image",
   logoSize: "Size",
   credit: "Style",
+  creditContent: "Shows",
   creditSize: "Size",
 };
 
@@ -69,7 +70,7 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   },
   // The logo's size shows inside its picker (LogoField in ImageFields.tsx).
   { title: "Logo", keys: ["logoImage", "logoSize"] },
-  { title: "Credit", keys: ["credit", "creditSize"] },
+  { title: "Credit", keys: ["credit", "creditContent", "creditSize"] },
   { title: "Repositories", keys: ["mode", "selectedRepos", "maxRepos"] },
   // Only the tech stack and intro banners have these.
   { title: "Icons", keys: ["icons", "iconsPerRow", "showLabels", "showIcons"] },

@@ -5,7 +5,7 @@ import { MAX_BACKGROUND_ZOOM, MIN_BACKGROUND_ZOOM } from "@/src/banner/backgroun
 import { CONTENT_ALIGNS } from "@/src/banner/contentPosition";
 import { PROFILE_POSITIONS } from "@/src/banner/profilePosition";
 import { CONTENT_SIZES, CONTENT_SIZES_OR_FILL } from "@/src/banner/contentSize";
-import { CREDIT_STYLES } from "@/src/banner/credit";
+import { CREDIT_CONTENTS, CREDIT_STYLES } from "@/src/banner/credit";
 import { BANNER_SIZE_KEYS } from "@/src/lib/sizes";
 import { isRepoSelection, MAX_REPOS, REPO_MODES } from "@/src/lib/repoSelection";
 import { isGithubUsername } from "@/src/lib/githubUsername";
@@ -76,6 +76,7 @@ const bannerFields = {
   /** Set by dragging the logo in the preview. */
   logoPosition: Schema.optional(position),
   credit: oneOf(CREDIT_STYLES),
+  creditContent: oneOf(CREDIT_CONTENTS),
   creditSize: oneOf(CONTENT_SIZES),
   /** Set by dragging the credit in the preview. */
   creditPosition: Schema.optional(position),
