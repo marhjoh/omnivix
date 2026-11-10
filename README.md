@@ -21,8 +21,9 @@
 - **Sized for every platform:** LinkedIn, X, Bluesky, YouTube, Twitch, Reddit and more
 - **Backgrounds:** 14 built-in, an image link or your own upload
 - **Your logo,** from a link or an upload
-- **Drag to place** the content, logo and background
-- **Export:** PNG or JPEG up to 3×, copy to the clipboard, or embed an image link that stays up to date
+- **Drag to place** the content, logo, credit and background
+- **Export:** PNG or JPEG up to 3×, copy to the clipboard, embed an image that stays up to date and opens the studio when clicked, or share a studio link
+- **An optional credit,** a small "made with Omnivix" mark for uploaded banners
 - **Light and dark mode,** on phone and desktop
 
 ## Screenshots
