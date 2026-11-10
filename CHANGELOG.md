@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.38.0](https://github.com/marhjoh/omnivix/compare/v1.37.0...v1.38.0) (2026-11-10)
+
+
+### Features
+
+* add an optional Omnivix credit to every banner ([d242461](https://github.com/marhjoh/omnivix/commit/d2424614f62885a229cc5bb239cf632110413a9a))
+* link embedded banners to the studio and add a studio link ([d242461](https://github.com/marhjoh/omnivix/commit/d2424614f62885a229cc5bb239cf632110413a9a))
+
 ## [1.37.0](https://github.com/marhjoh/omnivix/compare/v1.36.0...v1.37.0) (2026-11-08)
 
 
