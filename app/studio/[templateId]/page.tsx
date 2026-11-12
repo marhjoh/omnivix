@@ -24,8 +24,9 @@ export async function generateMetadata({
   params: Promise<{ templateId: string }>;
 }): Promise<Metadata> {
   const { templateId } = await params;
+  // The page's notFound() doesn't bring in not-found.tsx's title.
   if (!isTemplateId(templateId)) {
-    return {};
+    return { title: "Page not found" };
   }
   const { meta } = templateRegistry[templateId];
   const article = /^[aeiou]/i.test(meta.title) ? "an" : "a";
