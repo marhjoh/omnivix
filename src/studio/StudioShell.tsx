@@ -153,6 +153,8 @@ export function StudioShell({
   if ("quoteMarks" in state && state.quoteMarks === "none") disabledFields.add("markColor");
   // No icons to color.
   if ("showIcons" in state && !state.showIcons) disabledFields.add("showIconColors");
+  // No text to put the contributions behind.
+  if ("gridText" in state && !state.gridText) disabledFields.add("showContributions");
   // The paste has no cost (`ccusage --no-cost`) or no agents (without `--by-agent`).
   if ("usage" in state) {
     const usage = decodeAiUsage(state.usage);

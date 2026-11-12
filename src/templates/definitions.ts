@@ -578,7 +578,7 @@ export const contributionBannerDefinition: TemplateDefinition<
       maxLength: GRID_TEXT_MAX_LENGTH,
       format: toGridText,
     },
-    // Shown once there's text: off leaves the grid empty behind it.
+    // Disabled until there's text (StudioShell). Off leaves the grid empty behind the text.
     { key: "showContributions", label: "Contributions", type: "toggle" },
   ],
   initialState: {

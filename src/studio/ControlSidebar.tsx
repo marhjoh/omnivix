@@ -290,8 +290,6 @@ function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   const selectedMode = "mode" in state && state.mode === "selected";
   if (field.key === "maxRepos") return selectedMode;
   if (field.type === "repoMultiSelect") return !selectedMode;
-  // Only once there's text to put something behind.
-  if (field.key === "showContributions") return "gridText" in state && !state.gridText;
   return false;
 }
 
