@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.38.1](https://github.com/marhjoh/omnivix/compare/v1.38.0...v1.38.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* add a username placeholder to the username field ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* count who reads llms.txt ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* disable the AI usage toggles that have no data ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* disable the Contributions toggle until there's text ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* drop the partial first week from the yearly admin chart ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* keep the 404 title for unknown studio templates ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* list the terminal's text fields before Key color ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* name the template in each studio link preview's alt text ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* show every template in the studio's template switcher ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* show Logo and Credit last in the sidebar ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+* write blank CSV cells for days without a measurement ([44d506f](https://github.com/marhjoh/omnivix/commit/44d506fb7d77f4af531b3ffa71731f426a3174a3))
+
 ## [1.38.0](https://github.com/marhjoh/omnivix/compare/v1.37.0...v1.38.0) (2026-11-10)
 
 
