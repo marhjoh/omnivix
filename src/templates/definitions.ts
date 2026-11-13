@@ -56,7 +56,8 @@ import {
   QUOTE_MARKS_OPTIONS,
 } from "@/src/banner/quoteStyle";
 
-// The sidebar shows fields in `schema` order. Validation is in stateSchemas.ts.
+// The sidebar groups fields by key (settingGroups.ts), and `schema` order only matters inside a
+// group. Validation is in stateSchemas.ts.
 
 /** Defaults every banner shares. The background has none. */
 const bannerInitialState: Pick<
@@ -73,7 +74,7 @@ const bannerInitialState: Pick<
 
 const sizeField: EditorFieldSchema<BaseSettings> = {
   key: "size",
-  label: "Type",
+  label: "Platform",
   type: "sizeSelect",
 };
 
@@ -118,10 +119,9 @@ const contributionGridInitialState: ContributionGridSettings = {
   cellShape: DEFAULT_CELL_SHAPE,
 };
 
-/** The sidebar labels this "Grid colors" (settingGroups.ts). */
 const gridColorsField: EditorFieldSchema<GridStyleSettings> = {
   key: "themeId",
-  label: "Theme",
+  label: "Grid colors",
   type: "select",
 };
 
@@ -442,7 +442,7 @@ export const aiUsageBannerDefinition: TemplateDefinition<TemplateSettings["ai-us
     cellShapeField,
     { key: "usage", label: "AI usage", type: "usagePaste", required: true },
     { key: "showTokenCount", label: "Tokens", type: "toggle" },
-    // Hidden when the paste has no cost (ControlSidebar).
+    // Disabled when the paste has no cost (StudioShell).
     { key: "showCost", label: "Cost", type: "toggle" },
     { key: "showActiveDays", label: "Active days", type: "toggle" },
     { key: "showCurrentStreak", label: "Current streak", type: "toggle" },
@@ -578,7 +578,7 @@ export const contributionBannerDefinition: TemplateDefinition<
       maxLength: GRID_TEXT_MAX_LENGTH,
       format: toGridText,
     },
-    // Shown once there's text: off leaves the grid empty behind it.
+    // Disabled until there's text (StudioShell). Off leaves the grid empty behind the text.
     { key: "showContributions", label: "Contributions", type: "toggle" },
   ],
   initialState: {

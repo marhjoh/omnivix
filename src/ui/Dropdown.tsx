@@ -126,15 +126,15 @@ export function DropdownList({
   if (!open) return null;
   // The popover classes are in app/globals.css.
   const placement = floating
-    ? "absolute top-full left-0 z-50 mt-1.5 w-max rounded-lg"
-    : "popover-attached";
+    ? "absolute top-full left-0 z-50 mt-1.5 max-h-[calc(100dvh-4.5rem)] w-max rounded-lg"
+    : "popover-attached max-h-72";
   return (
     <div
       id={listId}
       role="listbox"
       aria-label={label}
       onKeyDown={onListKeyDown}
-      className={`popover max-h-72 overflow-y-auto p-1 ${placement}`}
+      className={`popover overflow-y-auto p-1 ${placement}`}
     >
       {children}
     </div>

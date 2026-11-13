@@ -60,6 +60,7 @@ export function UsernameModal({
           <PrefixedInput
             ref={inputRef}
             prefix="https://github.com/"
+            placeholder="username"
             autoComplete="username"
             aria-labelledby="username-modal-title"
             value={value}

@@ -9,7 +9,7 @@ import { SERIES } from "@/src/stats/statFields";
 const LIMIT_LABELS: Record<string, string> = {
   "daily-exports": "Daily exports, per IP",
   "banner-images": "Image URLs, per banner",
-  requests: "GitHub routes, per IP",
+  requests: "GitHub and feed routes, per IP",
   github: "GitHub's own limit",
 } satisfies Record<TimedLimit, string>;
 

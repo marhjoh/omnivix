@@ -48,7 +48,7 @@ export type ChartPoint = {
 
 /**
  * One point per day, or per week for long periods, counted back from today. The last one is still
- * running.
+ * running. Days left over at the start are dropped, so no point covers less than the others.
  */
 export function chartPoints(
   current: DailyStats[],
@@ -59,8 +59,8 @@ export function chartPoints(
   const sum = (days: DailyStats[]) =>
     days.reduce((total, { counts }) => total + (counts[field] ?? 0), 0);
   const points: ChartPoint[] = [];
-  for (let end = current.length; end > 0; end -= daysPerPoint) {
-    const start = Math.max(0, end - daysPerPoint);
+  for (let end = current.length; end >= daysPerPoint; end -= daysPerPoint) {
+    const start = end - daysPerPoint;
     points.unshift({
       day: current[start].day,
       value: sum(current.slice(start, end)),

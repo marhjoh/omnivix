@@ -44,7 +44,6 @@ import { UsernameField } from "@/src/studio/UsernameField";
 import { useTheme } from "@/src/theme/ThemeProvider";
 import { bannerUiChrome, type Theme } from "@/src/theme/theme";
 import { currentYear, LATEST_YEAR } from "@/src/lib/contributionYear";
-import { decodeAiUsage } from "@/src/banner/aiUsage";
 
 interface FieldContext {
   schema: EditorFieldSchema[];
@@ -291,10 +290,6 @@ function isHidden(field: EditorFieldSchema, state: BannerSettings): boolean {
   const selectedMode = "mode" in state && state.mode === "selected";
   if (field.key === "maxRepos") return selectedMode;
   if (field.type === "repoMultiSelect") return !selectedMode;
-  // Only once there's text to put something behind.
-  if (field.key === "showContributions") return "gridText" in state && !state.gridText;
-  // Output made with `ccusage --no-cost` has no cost to show.
-  if (field.key === "showCost") return "usage" in state && decodeAiUsage(state.usage)?.cost == null;
   return false;
 }
 

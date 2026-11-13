@@ -48,7 +48,7 @@ export function LandingHeader() {
           <motion.div layout className="relative shrink-0">
             <Link
               href="/"
-              className="shrink-0 transition-opacity hover:opacity-85"
+              className="shrink-0 transition-opacity duration-(--hover-fade) hover:opacity-85"
               aria-label="Omnivix home"
             >
               {/* Below 300px the wordmark would push the nav off screen, so show the app icon. */}
@@ -65,7 +65,7 @@ export function LandingHeader() {
               as="nav"
               layoutId="landing-nav-highlight"
               className="flex items-center gap-1.5"
-              aria-label="Site"
+              aria-label="Header"
             >
               {SITE_NAV_LINKS.map((link) => (
                 <HoverHighlightItem key={link.id} id={link.id}>

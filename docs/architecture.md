@@ -122,7 +122,7 @@ Brand icons from [Simple Icons](https://simpleicons.org) for the tech stack, int
 
 ### `src/stats/`, `src/admin/`
 
-Usage stats, as daily counters in Upstash Redis (`stats.ts`), kept for 800 days so a year can be compared with the one before. `proxy.ts` counts page loads without cookies (`pageView.ts`). The export (`renderBanner.ts`) and every named 429 (`tooManyRequests`) count too. `statFields.ts` names the counters, and only values from fixed lists, referring sites and cleaned failure messages end up in them: no usernames, IPs, text or images. `src/admin/` is the private dashboard at `/admin`.
+Usage stats, as daily counters in Upstash Redis (`stats.ts`), kept for 800 days so a year can be compared with the one before. `proxy.ts` counts page loads without cookies (`pageView.ts`). It also counts who reads `/llms.txt` (`llmsRead.ts`). The export (`renderBanner.ts`) and every named 429 (`tooManyRequests`) count too. `statFields.ts` names the counters, and only values from fixed lists, referring sites, the first word of a User-Agent and cleaned failure messages end up in them: no usernames, IPs, text or images. `src/admin/` is the private dashboard at `/admin`.
 
 ### `src/landing/`, `src/og/`
 

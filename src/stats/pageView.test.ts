@@ -85,7 +85,7 @@ describe("countPageView", () => {
 
   it.each([
     ["an unknown template", visit("https://omnivix.app/studio/nope")],
-    ["another page", visit("https://omnivix.app/studio/github-banner/opengraph-image")],
+    ["another page", visit("https://omnivix.app/studio/github-banner/opengraph-image/og")],
     [
       "a prefetch",
       visit("https://omnivix.app/", { "sec-fetch-dest": "empty", "sec-fetch-mode": "cors" }),

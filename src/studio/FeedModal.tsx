@@ -66,7 +66,7 @@ export function FeedModal({
             inputMode="url"
             autoComplete="url"
             maxLength={FEED_LINK_MAX_LENGTH}
-            placeholder="yourblog.com/rss.xml"
+            placeholder="blog.com/rss.xml"
             aria-label="Feed link"
             value={draft}
             onChange={(e) => setDraft(withoutScheme(e.target.value))}

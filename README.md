@@ -29,7 +29,7 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/images/studio-demo.webp" alt="The studio cycling through the GitHub, Repos, Stats, Tech Stack, Intro, Terminal, AI Usage, Contribution and Quote templates, each on a city background" width="800" />
+  <img src="docs/images/studio-demo.webp" alt="The studio cycling through the GitHub, Repos, Stats, Tech Stack, Intro, Terminal, AI Usage, Certifications, Latest Posts, Contribution and Quote templates, each on a city background" width="800" />
 </p>
 
 <table>

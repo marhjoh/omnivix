@@ -40,7 +40,7 @@ Values that aren't valid are ignored. Uploaded backgrounds, logos and photos can
 `GET /banner/<templateId>.png`, or `.jpg` for JPEG, returns the banner as an image for a README or website. It takes the same query as a studio link, plus `pixelRatio` (`1` or `2`, default `2`), `uiTheme` (`light` or `dark`) and, for `.png` without a background image, `transparent=true`. To get a studio link's image URL, change its path:
 
 ```md
-![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)
+[![Contribution Banner by @marhjoh](https://omnivix.vercel.app/banner/contribution-banner.png?username=marhjoh&size=header&themeId=sunset)](https://omnivix.vercel.app/studio/contribution-banner?username=marhjoh&size=header&themeId=sunset)
 ```
 
 In the studio, the export panel's Embed group copies it as is, or as Markdown or HTML that link the image to the studio, so a click opens the banner ready to change. The Share group copies the studio link.
@@ -73,5 +73,5 @@ All routes, including the ones the app uses internally:
 | `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                                        |
 | `/api/icons/catalog`, `/api/icons?slugs=`                                | Simple Icons for the tech stack, intro and certifications banners |
 | `/api/feed?url=`                                                         | A feed's newest posts, for the latest posts banner                |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time                      |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image/og`            | Link-preview images, generated at build time                      |
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools                   |
