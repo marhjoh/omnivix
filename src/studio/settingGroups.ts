@@ -56,12 +56,12 @@ const GROUPS: Array<{ title: string; keys: string[] | null }> = [
   {
     title: "Terminal",
     keys: [
-      "keyColor",
       "role",
       "location",
       "editor",
       "shell",
       "os",
+      "keyColor",
       "showColorBlocks",
       "showWindow",
     ],
