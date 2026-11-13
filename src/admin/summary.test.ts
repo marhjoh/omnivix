@@ -34,15 +34,15 @@ describe("chartPoints", () => {
     ]);
   });
 
-  it("adds up weeks for long periods, ending today", () => {
+  it("adds up whole weeks for long periods, ending today", () => {
     const stats = days(Array.from({ length: 200 }, () => 1)).map((day, index) => ({
       ...day,
       day: String(index),
     }));
     const { points, daysPerPoint } = chartPoints(stats.slice(100), stats.slice(0, 100), "exports");
     expect(daysPerPoint).toBe(7);
-    expect(points).toHaveLength(15);
-    expect(points[0]).toMatchObject({ day: "100", value: 2, previous: 2 });
+    expect(points).toHaveLength(14);
+    expect(points[0]).toMatchObject({ day: "102", value: 7, previous: 7 });
     expect(points.at(-1)).toMatchObject({ day: "193", value: 7 });
   });
 });
