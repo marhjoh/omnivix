@@ -73,5 +73,5 @@ All routes, including the ones the app uses internally:
 | `/api/github/user-summary`, `/contributions`, `/repos`, `/organizations` | GitHub data for the studio                                        |
 | `/api/icons/catalog`, `/api/icons?slugs=`                                | Simple Icons for the tech stack, intro and certifications banners |
 | `/api/feed?url=`                                                         | A feed's newest posts, for the latest posts banner                |
-| `/opengraph-image`, `/studio/[templateId]/opengraph-image`               | Link-preview images, generated at build time                      |
+| `/opengraph-image`, `/studio/[templateId]/opengraph-image/og`            | Link-preview images, generated at build time                      |
 | `/robots.txt`, `/sitemap.xml`, `/llms.txt`                               | Crawl rules, sitemap and a summary for AI tools                   |
