@@ -9,6 +9,11 @@ export const KEEP_SECONDS = 800 * 24 * 60 * 60;
 
 export const COVERAGE_FIELD = "quality:coverage";
 
+/** A measurement, which a day may not have, unlike a counter that's 0. */
+export function isMeasurement(field: string): boolean {
+  return field.startsWith("quality:");
+}
+
 export const STARS_FIELD = "quality:stars";
 
 /** The quote banner's studio needs no GitHub user, so it always has a banner to measure. */
